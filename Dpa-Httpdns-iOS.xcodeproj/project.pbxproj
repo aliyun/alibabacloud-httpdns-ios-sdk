@@ -1,0 +1,377 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2123036F1AF36B7B0023B344 /* Dpa_Httpdns_iOS.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2123036E1AF36B7B0023B344 /* Dpa_Httpdns_iOS.h */; };
+		212303711AF36B7B0023B344 /* Dpa_Httpdns_iOS.m in Sources */ = {isa = PBXBuildFile; fileRef = 212303701AF36B7B0023B344 /* Dpa_Httpdns_iOS.m */; };
+		212303771AF36B7B0023B344 /* libDpa-Httpdns-iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2123036B1AF36B7B0023B344 /* libDpa-Httpdns-iOS.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		212303781AF36B7B0023B344 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 212303631AF36B7B0023B344 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2123036A1AF36B7B0023B344;
+			remoteInfo = "Dpa-Httpdns-iOS";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		212303691AF36B7B0023B344 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+				2123036F1AF36B7B0023B344 /* Dpa_Httpdns_iOS.h in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		2123036B1AF36B7B0023B344 /* libDpa-Httpdns-iOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libDpa-Httpdns-iOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2123036E1AF36B7B0023B344 /* Dpa_Httpdns_iOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Dpa_Httpdns_iOS.h; sourceTree = "<group>"; };
+		212303701AF36B7B0023B344 /* Dpa_Httpdns_iOS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Dpa_Httpdns_iOS.m; sourceTree = "<group>"; };
+		212303761AF36B7B0023B344 /* Dpa-Httpdns-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Dpa-Httpdns-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2123037C1AF36B7B0023B344 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		212303681AF36B7B0023B344 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		212303731AF36B7B0023B344 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				212303771AF36B7B0023B344 /* libDpa-Httpdns-iOS.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		212303621AF36B7B0023B344 = {
+			isa = PBXGroup;
+			children = (
+				2123036D1AF36B7B0023B344 /* Dpa-Httpdns-iOS */,
+				2123037A1AF36B7B0023B344 /* Dpa-Httpdns-iOSTests */,
+				2123036C1AF36B7B0023B344 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2123036C1AF36B7B0023B344 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2123036B1AF36B7B0023B344 /* libDpa-Httpdns-iOS.a */,
+				212303761AF36B7B0023B344 /* Dpa-Httpdns-iOSTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2123036D1AF36B7B0023B344 /* Dpa-Httpdns-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				2123036E1AF36B7B0023B344 /* Dpa_Httpdns_iOS.h */,
+				212303701AF36B7B0023B344 /* Dpa_Httpdns_iOS.m */,
+			);
+			path = "Dpa-Httpdns-iOS";
+			sourceTree = "<group>";
+		};
+		2123037A1AF36B7B0023B344 /* Dpa-Httpdns-iOSTests */ = {
+			isa = PBXGroup;
+			children = (
+				2123037B1AF36B7B0023B344 /* Supporting Files */,
+			);
+			path = "Dpa-Httpdns-iOSTests";
+			sourceTree = "<group>";
+		};
+		2123037B1AF36B7B0023B344 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				2123037C1AF36B7B0023B344 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2123036A1AF36B7B0023B344 /* Dpa-Httpdns-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2123037F1AF36B7B0023B344 /* Build configuration list for PBXNativeTarget "Dpa-Httpdns-iOS" */;
+			buildPhases = (
+				212303671AF36B7B0023B344 /* Sources */,
+				212303681AF36B7B0023B344 /* Frameworks */,
+				212303691AF36B7B0023B344 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Dpa-Httpdns-iOS";
+			productName = "Dpa-Httpdns-iOS";
+			productReference = 2123036B1AF36B7B0023B344 /* libDpa-Httpdns-iOS.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		212303751AF36B7B0023B344 /* Dpa-Httpdns-iOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 212303821AF36B7B0023B344 /* Build configuration list for PBXNativeTarget "Dpa-Httpdns-iOSTests" */;
+			buildPhases = (
+				212303721AF36B7B0023B344 /* Sources */,
+				212303731AF36B7B0023B344 /* Frameworks */,
+				212303741AF36B7B0023B344 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				212303791AF36B7B0023B344 /* PBXTargetDependency */,
+			);
+			name = "Dpa-Httpdns-iOSTests";
+			productName = "Dpa-Httpdns-iOSTests";
+			productReference = 212303761AF36B7B0023B344 /* Dpa-Httpdns-iOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		212303631AF36B7B0023B344 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0630;
+				ORGANIZATIONNAME = zhouzhuo;
+				TargetAttributes = {
+					2123036A1AF36B7B0023B344 = {
+						CreatedOnToolsVersion = 6.3;
+					};
+					212303751AF36B7B0023B344 = {
+						CreatedOnToolsVersion = 6.3;
+					};
+				};
+			};
+			buildConfigurationList = 212303661AF36B7B0023B344 /* Build configuration list for PBXProject "Dpa-Httpdns-iOS" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 212303621AF36B7B0023B344;
+			productRefGroup = 2123036C1AF36B7B0023B344 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2123036A1AF36B7B0023B344 /* Dpa-Httpdns-iOS */,
+				212303751AF36B7B0023B344 /* Dpa-Httpdns-iOSTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		212303741AF36B7B0023B344 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		212303671AF36B7B0023B344 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				212303711AF36B7B0023B344 /* Dpa_Httpdns_iOS.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		212303721AF36B7B0023B344 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		212303791AF36B7B0023B344 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2123036A1AF36B7B0023B344 /* Dpa-Httpdns-iOS */;
+			targetProxy = 212303781AF36B7B0023B344 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		2123037D1AF36B7B0023B344 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		2123037E1AF36B7B0023B344 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		212303801AF36B7B0023B344 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		212303811AF36B7B0023B344 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		212303831AF36B7B0023B344 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "Dpa-Httpdns-iOSTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		212303841AF36B7B0023B344 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "Dpa-Httpdns-iOSTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		212303661AF36B7B0023B344 /* Build configuration list for PBXProject "Dpa-Httpdns-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2123037D1AF36B7B0023B344 /* Debug */,
+				2123037E1AF36B7B0023B344 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2123037F1AF36B7B0023B344 /* Build configuration list for PBXNativeTarget "Dpa-Httpdns-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				212303801AF36B7B0023B344 /* Debug */,
+				212303811AF36B7B0023B344 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		212303821AF36B7B0023B344 /* Build configuration list for PBXNativeTarget "Dpa-Httpdns-iOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				212303831AF36B7B0023B344 /* Debug */,
+				212303841AF36B7B0023B344 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 212303631AF36B7B0023B344 /* Project object */;
+}
