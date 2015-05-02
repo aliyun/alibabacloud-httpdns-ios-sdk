@@ -7,9 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2123036F1AF36B7B0023B344 /* Dpa_Httpdns_iOS.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2123036E1AF36B7B0023B344 /* Dpa_Httpdns_iOS.h */; };
-		212303711AF36B7B0023B344 /* Dpa_Httpdns_iOS.m in Sources */ = {isa = PBXBuildFile; fileRef = 212303701AF36B7B0023B344 /* Dpa_Httpdns_iOS.m */; };
 		212303771AF36B7B0023B344 /* libDpa-Httpdns-iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2123036B1AF36B7B0023B344 /* libDpa-Httpdns-iOS.a */; };
+		212303871AF370DB0023B344 /* HttpdnsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 212303861AF370DB0023B344 /* HttpdnsService.m */; };
+		2123038B1AF371570023B344 /* HttpdnsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2123038A1AF371570023B344 /* HttpdnsModel.m */; };
+		2123038E1AF372E90023B344 /* HttpdnsRequestScheduler.m in Sources */ = {isa = PBXBuildFile; fileRef = 2123038D1AF372E90023B344 /* HttpdnsRequestScheduler.m */; };
+		212303911AF3732D0023B344 /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 212303901AF3732D0023B344 /* HttpdnsRequest.m */; };
+		212303941AF378E50023B344 /* HttpdnsUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 212303931AF378E50023B344 /* HttpdnsUtil.m */; };
+		21EF47911AF3DD400042D0AE /* HttpdnsLocalCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 21EF47901AF3DD400042D0AE /* HttpdnsLocalCache.m */; };
+		21EF47941AF485C90042D0AE /* HttpdnsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 21EF47931AF485C90042D0AE /* HttpdnsConfig.m */; };
+		21EF479C1AF4C0D90042D0AE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 21EF479B1AF4C0D90042D0AE /* main.m */; };
+		21EF47A11AF4C27B0042D0AE /* HttpdnsRequestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21EF47A01AF4C27B0042D0AE /* HttpdnsRequestTest.m */; };
+		21EF47A41AF4C46E0042D0AE /* HttpdnsLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 21EF47A31AF4C46E0042D0AE /* HttpdnsLog.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,18 +37,43 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
-				2123036F1AF36B7B0023B344 /* Dpa_Httpdns_iOS.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21EF47971AF4C0D90042D0AE /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		2123036B1AF36B7B0023B344 /* libDpa-Httpdns-iOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libDpa-Httpdns-iOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		2123036E1AF36B7B0023B344 /* Dpa_Httpdns_iOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Dpa_Httpdns_iOS.h; sourceTree = "<group>"; };
-		212303701AF36B7B0023B344 /* Dpa_Httpdns_iOS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Dpa_Httpdns_iOS.m; sourceTree = "<group>"; };
 		212303761AF36B7B0023B344 /* Dpa-Httpdns-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Dpa-Httpdns-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2123037C1AF36B7B0023B344 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		212303851AF370DB0023B344 /* HttpdnsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsService.h; sourceTree = "<group>"; };
+		212303861AF370DB0023B344 /* HttpdnsService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsService.m; sourceTree = "<group>"; };
+		212303891AF371570023B344 /* HttpdnsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsModel.h; sourceTree = "<group>"; };
+		2123038A1AF371570023B344 /* HttpdnsModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsModel.m; sourceTree = "<group>"; };
+		2123038C1AF372E90023B344 /* HttpdnsRequestScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsRequestScheduler.h; sourceTree = "<group>"; };
+		2123038D1AF372E90023B344 /* HttpdnsRequestScheduler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsRequestScheduler.m; sourceTree = "<group>"; };
+		2123038F1AF3732D0023B344 /* HttpdnsRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsRequest.h; sourceTree = "<group>"; };
+		212303901AF3732D0023B344 /* HttpdnsRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsRequest.m; sourceTree = "<group>"; };
+		212303921AF378E50023B344 /* HttpdnsUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsUtil.h; sourceTree = "<group>"; };
+		212303931AF378E50023B344 /* HttpdnsUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtil.m; sourceTree = "<group>"; };
+		21EF478F1AF3DD400042D0AE /* HttpdnsLocalCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsLocalCache.h; sourceTree = "<group>"; };
+		21EF47901AF3DD400042D0AE /* HttpdnsLocalCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsLocalCache.m; sourceTree = "<group>"; };
+		21EF47921AF485C90042D0AE /* HttpdnsConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsConfig.h; sourceTree = "<group>"; };
+		21EF47931AF485C90042D0AE /* HttpdnsConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsConfig.m; sourceTree = "<group>"; };
+		21EF47991AF4C0D90042D0AE /* DevelopmentTestPlayAround */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DevelopmentTestPlayAround; sourceTree = BUILT_PRODUCTS_DIR; };
+		21EF479B1AF4C0D90042D0AE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		21EF47A01AF4C27B0042D0AE /* HttpdnsRequestTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsRequestTest.m; sourceTree = "<group>"; };
+		21EF47A21AF4C46E0042D0AE /* HttpdnsLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsLog.h; sourceTree = "<group>"; };
+		21EF47A31AF4C46E0042D0AE /* HttpdnsLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsLog.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +92,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		21EF47961AF4C0D90042D0AE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -67,6 +107,7 @@
 			children = (
 				2123036D1AF36B7B0023B344 /* Dpa-Httpdns-iOS */,
 				2123037A1AF36B7B0023B344 /* Dpa-Httpdns-iOSTests */,
+				21EF479A1AF4C0D90042D0AE /* DevelopmentTestPlayAround */,
 				2123036C1AF36B7B0023B344 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -76,6 +117,7 @@
 			children = (
 				2123036B1AF36B7B0023B344 /* libDpa-Httpdns-iOS.a */,
 				212303761AF36B7B0023B344 /* Dpa-Httpdns-iOSTests.xctest */,
+				21EF47991AF4C0D90042D0AE /* DevelopmentTestPlayAround */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -83,8 +125,22 @@
 		2123036D1AF36B7B0023B344 /* Dpa-Httpdns-iOS */ = {
 			isa = PBXGroup;
 			children = (
-				2123036E1AF36B7B0023B344 /* Dpa_Httpdns_iOS.h */,
-				212303701AF36B7B0023B344 /* Dpa_Httpdns_iOS.m */,
+				212303851AF370DB0023B344 /* HttpdnsService.h */,
+				212303861AF370DB0023B344 /* HttpdnsService.m */,
+				212303891AF371570023B344 /* HttpdnsModel.h */,
+				2123038A1AF371570023B344 /* HttpdnsModel.m */,
+				2123038C1AF372E90023B344 /* HttpdnsRequestScheduler.h */,
+				2123038D1AF372E90023B344 /* HttpdnsRequestScheduler.m */,
+				2123038F1AF3732D0023B344 /* HttpdnsRequest.h */,
+				212303901AF3732D0023B344 /* HttpdnsRequest.m */,
+				212303921AF378E50023B344 /* HttpdnsUtil.h */,
+				212303931AF378E50023B344 /* HttpdnsUtil.m */,
+				21EF478F1AF3DD400042D0AE /* HttpdnsLocalCache.h */,
+				21EF47901AF3DD400042D0AE /* HttpdnsLocalCache.m */,
+				21EF47921AF485C90042D0AE /* HttpdnsConfig.h */,
+				21EF47931AF485C90042D0AE /* HttpdnsConfig.m */,
+				21EF47A21AF4C46E0042D0AE /* HttpdnsLog.h */,
+				21EF47A31AF4C46E0042D0AE /* HttpdnsLog.m */,
 			);
 			path = "Dpa-Httpdns-iOS";
 			sourceTree = "<group>";
@@ -93,6 +149,7 @@
 			isa = PBXGroup;
 			children = (
 				2123037B1AF36B7B0023B344 /* Supporting Files */,
+				21EF47A01AF4C27B0042D0AE /* HttpdnsRequestTest.m */,
 			);
 			path = "Dpa-Httpdns-iOSTests";
 			sourceTree = "<group>";
@@ -103,6 +160,14 @@
 				2123037C1AF36B7B0023B344 /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		21EF479A1AF4C0D90042D0AE /* DevelopmentTestPlayAround */ = {
+			isa = PBXGroup;
+			children = (
+				21EF479B1AF4C0D90042D0AE /* main.m */,
+			);
+			path = DevelopmentTestPlayAround;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -143,6 +208,23 @@
 			productReference = 212303761AF36B7B0023B344 /* Dpa-Httpdns-iOSTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		21EF47981AF4C0D90042D0AE /* DevelopmentTestPlayAround */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 21EF479D1AF4C0D90042D0AE /* Build configuration list for PBXNativeTarget "DevelopmentTestPlayAround" */;
+			buildPhases = (
+				21EF47951AF4C0D90042D0AE /* Sources */,
+				21EF47961AF4C0D90042D0AE /* Frameworks */,
+				21EF47971AF4C0D90042D0AE /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DevelopmentTestPlayAround;
+			productName = DevelopmentTestPlayAround;
+			productReference = 21EF47991AF4C0D90042D0AE /* DevelopmentTestPlayAround */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -156,6 +238,9 @@
 						CreatedOnToolsVersion = 6.3;
 					};
 					212303751AF36B7B0023B344 = {
+						CreatedOnToolsVersion = 6.3;
+					};
+					21EF47981AF4C0D90042D0AE = {
 						CreatedOnToolsVersion = 6.3;
 					};
 				};
@@ -174,6 +259,7 @@
 			targets = (
 				2123036A1AF36B7B0023B344 /* Dpa-Httpdns-iOS */,
 				212303751AF36B7B0023B344 /* Dpa-Httpdns-iOSTests */,
+				21EF47981AF4C0D90042D0AE /* DevelopmentTestPlayAround */,
 			);
 		};
 /* End PBXProject section */
@@ -193,7 +279,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				212303711AF36B7B0023B344 /* Dpa_Httpdns_iOS.m in Sources */,
+				212303871AF370DB0023B344 /* HttpdnsService.m in Sources */,
+				212303911AF3732D0023B344 /* HttpdnsRequest.m in Sources */,
+				2123038B1AF371570023B344 /* HttpdnsModel.m in Sources */,
+				212303941AF378E50023B344 /* HttpdnsUtil.m in Sources */,
+				21EF47941AF485C90042D0AE /* HttpdnsConfig.m in Sources */,
+				21EF47911AF3DD400042D0AE /* HttpdnsLocalCache.m in Sources */,
+				21EF47A41AF4C46E0042D0AE /* HttpdnsLog.m in Sources */,
+				2123038E1AF372E90023B344 /* HttpdnsRequestScheduler.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -201,6 +294,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21EF47A11AF4C27B0042D0AE /* HttpdnsRequestTest.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21EF47951AF4C0D90042D0AE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21EF479C1AF4C0D90042D0AE /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -343,6 +445,29 @@
 			};
 			name = Release;
 		};
+		21EF479E1AF4C0D90042D0AE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		21EF479F1AF4C0D90042D0AE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -362,12 +487,22 @@
 				212303811AF36B7B0023B344 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		212303821AF36B7B0023B344 /* Build configuration list for PBXNativeTarget "Dpa-Httpdns-iOSTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				212303831AF36B7B0023B344 /* Debug */,
 				212303841AF36B7B0023B344 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		21EF479D1AF4C0D90042D0AE /* Build configuration list for PBXNativeTarget "DevelopmentTestPlayAround" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21EF479E1AF4C0D90042D0AE /* Debug */,
+				21EF479F1AF4C0D90042D0AE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 		};
