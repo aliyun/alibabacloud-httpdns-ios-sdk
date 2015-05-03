@@ -18,6 +18,7 @@
 		21EF479C1AF4C0D90042D0AE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 21EF479B1AF4C0D90042D0AE /* main.m */; };
 		21EF47A11AF4C27B0042D0AE /* HttpdnsRequestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21EF47A01AF4C27B0042D0AE /* HttpdnsRequestTest.m */; };
 		21EF47A41AF4C46E0042D0AE /* HttpdnsLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 21EF47A31AF4C46E0042D0AE /* HttpdnsLog.m */; };
+		21EF47A61AF5D3EB0042D0AE /* HttpdnsUtilTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21EF47A51AF5D3EB0042D0AE /* HttpdnsUtilTest.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,6 +75,7 @@
 		21EF47A01AF4C27B0042D0AE /* HttpdnsRequestTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsRequestTest.m; sourceTree = "<group>"; };
 		21EF47A21AF4C46E0042D0AE /* HttpdnsLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsLog.h; sourceTree = "<group>"; };
 		21EF47A31AF4C46E0042D0AE /* HttpdnsLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsLog.m; sourceTree = "<group>"; };
+		21EF47A51AF5D3EB0042D0AE /* HttpdnsUtilTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtilTest.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -150,6 +152,7 @@
 			children = (
 				2123037B1AF36B7B0023B344 /* Supporting Files */,
 				21EF47A01AF4C27B0042D0AE /* HttpdnsRequestTest.m */,
+				21EF47A51AF5D3EB0042D0AE /* HttpdnsUtilTest.m */,
 			);
 			path = "Dpa-Httpdns-iOSTests";
 			sourceTree = "<group>";
@@ -295,6 +298,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				21EF47A11AF4C27B0042D0AE /* HttpdnsRequestTest.m in Sources */,
+				21EF47A61AF5D3EB0042D0AE /* HttpdnsUtilTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

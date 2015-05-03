@@ -10,23 +10,22 @@
 #import "HttpdnsConfig.h"
 #import "HttpdnsUtil.h"
 
-@interface DnsRquestOperation : NSOperation
-
-@property (nonatomic, strong) NSString *queryHostsStringParam;
-
--(instancetype)initWithHostsStringParam:(NSString *)hostsString;
--(void)main;
-
-@end
-
 @implementation HttpdnsRequestScheduler
 
+-(instancetype)init {
+    _syncQueue = dispatch_queue_create("com.alibaba.sdk.httpdns", NULL);
+    _asyncQueue = [[NSOperationQueue alloc] init];
+    [_asyncQueue setMaxConcurrentOperationCount:2];
+    return self;
+}
+
 -(instancetype)initWithCacheHosts:(NSMutableDictionary *)hosts {
+    _syncQueue = dispatch_queue_create("com.alibaba.sdk.httpdns", NULL);
+    _asyncQueue = [[NSOperationQueue alloc] init];
+    [_asyncQueue setMaxConcurrentOperationCount:2];
     dispatch_sync(_syncQueue, ^{
         [_hostManagerDict addEntriesFromDictionary:hosts];
     });
-    _asyncQueue = [[NSOperationQueue alloc] init];
-    [_asyncQueue setMaxConcurrentOperationCount:2];
     return self;
 }
 
@@ -48,6 +47,8 @@
 -(HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host {
     __block HttpdnsHostObject *result = nil;
     dispatch_sync(_syncQueue, ^{
+        // 一个域名单独被添加时，等待一秒钟看看随后有没有别的域名要查询，合并为一个查询
+        // 这期间如果添加的域名超过五个，会立即开始查询
         if ([_lookupQueue count] == 0) {
             _timer = [NSTimer scheduledTimerWithTimeInterval:1
                                              target:self
@@ -76,8 +77,6 @@
 
 }
 
-// 一个域名单独被添加时，等待一秒钟看看随后有没有别的域名要查询，合并为一个查询
-// 这期间如果添加的域名超过五个，会立即开始查询
 -(void)waitSometimeAndExecuteLookup {
     dispatch_sync(_syncQueue, ^{
         if ([_lookupQueue count] > 0) {
