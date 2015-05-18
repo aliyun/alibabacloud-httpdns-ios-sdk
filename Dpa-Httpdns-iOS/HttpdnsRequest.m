@@ -25,6 +25,7 @@ NSString * const HTTPDNS_ACCESSKEYSECRET = @"hello";
 
 #pragma mark LookupIpAction
 
+// 解析httpdns请求返回的结果
 -(NSMutableArray *)parseHostInfoFromHttpResponse:(NSData *)body {
     NSMutableArray *result = [[NSMutableArray alloc] init];
     NSError *error;
@@ -50,6 +51,7 @@ NSString * const HTTPDNS_ACCESSKEYSECRET = @"hello";
     return result;
 }
 
+// 构造httpdns解析请求头
 -(NSMutableURLRequest *)constructRequestWith:(NSString *)hostsString {
     NSString *timestamp = [HttpdnsUtil currentEpochTimeInSecondString];
     NSString *url = [NSString stringWithFormat:@"http://%@/resolve?host=%@&version=%@&appid=%@&timestamp=%@",
@@ -70,13 +72,17 @@ NSString * const HTTPDNS_ACCESSKEYSECRET = @"hello";
     return request;
 }
 
--(NSMutableArray *)lookupALLHostsFromServer:(NSString *)hostsString {
+// 发起网络请求，解析域名，同步方法
+-(NSMutableArray *)lookupALLHostsFromServer:(NSString *)hostsString error:(NSError **)error {
     NSMutableURLRequest *request = [self constructRequestWith:hostsString];
 
-    NSError *error;
-    NSURLResponse *response;
-    NSData *result = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+    NSHTTPURLResponse *response;
+    NSData *result = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:error];
     if (error) {
+        // TODO 处理网络异常
+        return nil;
+    } else if ([response statusCode] != 200) {
+        // TODO 处理http异常
         return nil;
     }
 

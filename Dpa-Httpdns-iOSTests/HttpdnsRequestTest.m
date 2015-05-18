@@ -29,8 +29,10 @@
 - (void)testRequestOneHost {
     NSString *hostName = @"www.taobao.com";
     HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
-    NSMutableArray *result = [request lookupALLHostsFromServer:hostName];
-    XCTAssertNotNil(result, @"resuet is nil!!");
+    NSError *error;
+    NSMutableArray *result = [request lookupALLHostsFromServer:hostName error:&error];
+    XCTAssertNil(error, @"error!");
+    XCTAssertNotNil(result, @"result is nil!!");
 }
 
 - (void)testExample {

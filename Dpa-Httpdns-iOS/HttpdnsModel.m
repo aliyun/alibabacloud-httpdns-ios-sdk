@@ -11,17 +11,20 @@
 
 @implementation HttpdnsHostObject
 
--(instancetype)initWithHostName:(NSString *)hostName inState:(HostState) state {
-    _hostName = hostName;
-    _currentState = state;
+-(instancetype)init {
+    _hostName = nil;
+    _currentState = INITIALIZE;
+    _lastLookupTime = 0;
+    _ttl = -1;
+    _ips = nil;
     return self;
 }
 
--(BOOL)isExspired {
+-(BOOL)isExpired {
     long long currentEpoch = (long long)[[[NSDate alloc] init] timeIntervalSince1970];
     if (_lastLookupTime + _ttl > currentEpoch) {
-        return YES;
+        return NO;
     }
-    return NO;
+    return YES;
 }
 @end

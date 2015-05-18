@@ -24,8 +24,9 @@
 #pragma mark init
 
 -(instancetype)init {
-    NSMutableDictionary *cacheHosts = [HttpdnsLocalCache readFromLocalCache];
-    _requestScheduler = [[HttpdnsRequestScheduler alloc] initWithCacheHosts:cacheHosts];
+    _requestScheduler = [[HttpdnsRequestScheduler alloc] init];
+    NSDictionary *cacheHosts = [HttpdnsLocalCache readFromLocalCache];
+    [_requestScheduler readCacheHosts:cacheHosts];
     return self;
 }
 

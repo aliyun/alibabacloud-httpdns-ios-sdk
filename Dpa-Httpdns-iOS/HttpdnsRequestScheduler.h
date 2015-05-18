@@ -30,7 +30,7 @@
 
 
 // 每次启动，先从本地cache加载数据
--(instancetype)initWithCacheHosts:(NSMutableDictionary *)hosts;
+-(void)readCacheHosts:(NSDictionary *)hosts;
 
 // 添加预解析域名，并立即启动查询
 -(void)addPreResolveHosts:(NSArray *)hosts;

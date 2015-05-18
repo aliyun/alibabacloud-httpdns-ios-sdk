@@ -25,7 +25,7 @@
     [super tearDown];
 }
 
-- (void)testBase64Sha1SignAlgorithem {
+- (void)testBase64Sha1SignAlgorithm {
     NSString *sk = @"hello";
     NSString *appid = @"123456";
     NSString *host=@"www.taobao.com,mcgw.alipay.com";

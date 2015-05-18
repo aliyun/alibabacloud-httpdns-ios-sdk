@@ -19,24 +19,30 @@
     return self;
 }
 
--(instancetype)initWithCacheHosts:(NSMutableDictionary *)hosts {
-    _syncQueue = dispatch_queue_create("com.alibaba.sdk.httpdns", NULL);
-    _asyncQueue = [[NSOperationQueue alloc] init];
-    [_asyncQueue setMaxConcurrentOperationCount:2];
+-(void)readCacheHosts:(NSDictionary *)hosts {
     dispatch_sync(_syncQueue, ^{
+        // 不是初始化状态，本地缓存读取到的数据不生效
+        if ([_hostManagerDict count] != 0) {
+            return;
+        }
         [_hostManagerDict addEntriesFromDictionary:hosts];
     });
-    return self;
 }
 
 -(void)addPreResolveHosts:(NSArray *)hosts {
     dispatch_sync(_syncQueue, ^{
         for (NSString *hostName in hosts) {
-            if ([_hostManagerDict objectForKey:hostName] == nil) {
+            HttpdnsHostObject *hostObject = [_hostManagerDict objectForKey:hostName];
+            // 如果已经存在，且未过期或已经出于查询状态，则不继续添加
+            if (hostObject &&
+                (![hostObject isExpired] || [hostObject getState] != QUERYING)
+                ) {
                 continue;
             }
-            HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] initWithHostName:hostName
-                                                                                inState:QUERYING];
+
+            hostObject = [[HttpdnsHostObject alloc] init];
+            [hostObject setHostName:hostName];
+            [hostObject setState:QUERYING];
             [_hostManagerDict setObject:hostObject forKey:hostName];
             [_lookupQueue addObject:hostName];
         }
@@ -58,12 +64,13 @@
         }
         result = [_hostManagerDict objectForKey:host];
         if (!result) {
-            HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] initWithHostName:host
-                                                                                inState:QUERYING];
+            HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
+            [hostObject setHostName:host];
+            [hostObject setState:QUERYING];
             [_hostManagerDict setObject:hostObject forKey:host];
             [_lookupQueue addObject:host];
         }
-        if ([result isExspired] && [result getState] != QUERYING) {
+        if ([result isExpired] && [result getState] != QUERYING) {
             [result setState:QUERYING];
             [_lookupQueue addObject:[result getHostName]];
         }
@@ -72,11 +79,15 @@
     return result;
 }
 
-// 用查询得到的结果更新Manager中管理着的域名
+// 用查询得到的结果更新Manager中管理着的域名，需要运行在同步块中
 -(void)mergeLookupResultToManager:(NSMutableArray *)result {
-
+    for (HttpdnsHostObject *hostObject in result) {
+        NSString *hostName = [hostObject getHostName];
+        [_hostManagerDict setObject:hostObject forKey:hostName];
+    }
 }
 
+// 添加首个查询域名后等待五秒钟，不管够不够五个，立即查询
 -(void)waitSometimeAndExecuteLookup {
     dispatch_sync(_syncQueue, ^{
         if ([_lookupQueue count] > 0) {
@@ -85,7 +96,7 @@
     });
 }
 
-// 尝试执行域名查询，如果正在等待查询的域名超过阈值，则启动查询
+// 尝试执行域名查询，如果正在等待查询的域名超过阈值，则启动查询，需要运行在同步块中
 -(void)tryToExecuteTheLookupAction {
     if ([_lookupQueue count] < MIN_HOST_NUM_PER_REQEUST) {
         return;
@@ -96,7 +107,7 @@
     [self immediatelyExecuteTheLookupAction];
 }
 
-// 立即将等待查询对列里的域名组装，执行查询
+// 立即将等待查询对列里的域名组装，执行查询，需要运行在同步块中
 -(void)immediatelyExecuteTheLookupAction {
     while ([_lookupQueue count] > 0) {
         NSMutableArray *hostsToLookup = [[NSMutableArray alloc] init];
@@ -107,8 +118,12 @@
         NSString *requestHostStringParam = [hostsToLookup componentsJoinedByString:@","];
         NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
             @autoreleasepool {
+                NSError *error;
                 HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
-                NSMutableArray *result = [request lookupALLHostsFromServer:requestHostStringParam];
+                NSMutableArray *result = [request lookupALLHostsFromServer:requestHostStringParam error:&error];
+                if (error) {
+                    // TODO 处理重试逻辑
+                }
                 dispatch_sync(_syncQueue, ^{
                     [self mergeLookupResultToManager:result];
                 });
