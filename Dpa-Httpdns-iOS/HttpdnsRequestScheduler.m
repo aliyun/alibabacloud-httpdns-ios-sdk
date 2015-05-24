@@ -53,12 +53,12 @@
 -(HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host {
     __block HttpdnsHostObject *result = nil;
     dispatch_sync(_syncQueue, ^{
-        // 一个域名单独被添加时，等待一秒钟看看随后有没有别的域名要查询，合并为一个查询
+        // 一个域名单独被添加时，等待一段时间看看随后有没有别的域名要查询，合并为一个查询
         // 这期间如果添加的域名超过五个，会立即开始查询
         if ([_lookupQueue count] == 0) {
-            _timer = [NSTimer scheduledTimerWithTimeInterval:1
+            _timer = [NSTimer scheduledTimerWithTimeInterval:5
                                              target:self
-                                           selector:@selector(waitSometimeAndExecuteLookup)
+                                           selector:@selector(arrivalTimeAndExecuteLookup)
                                            userInfo:nil
                                             repeats:NO];
         }
@@ -74,6 +74,7 @@
             [result setState:QUERYING];
             [_lookupQueue addObject:[result getHostName]];
         }
+        // TODO 怎样判断快过期，快过期要更新
         [self tryToExecuteTheLookupAction];
     });
     return result;
@@ -87,8 +88,8 @@
     }
 }
 
-// 添加首个查询域名后等待五秒钟，不管够不够五个，立即查询
--(void)waitSometimeAndExecuteLookup {
+// 定时器到期，开始查询
+-(void)arrivalTimeAndExecuteLookup {
     dispatch_sync(_syncQueue, ^{
         if ([_lookupQueue count] > 0) {
             [self immediatelyExecuteTheLookupAction];

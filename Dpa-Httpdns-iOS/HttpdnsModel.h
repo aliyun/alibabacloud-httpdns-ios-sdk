@@ -8,14 +8,14 @@
 
 #import <Foundation/Foundation.h>
 
-typedef enum {
+typedef NS_ENUM(NSInteger, HostState) {
     INITIALIZE,
     QUERYING,
     EXPIRED,
     VALID
-} HostState;
+};
 
-@interface HttpdnsIpObject: NSObject<NSCopying>
+@interface HttpdnsIpObject: NSObject<NSCoding>
 
 @property (nonatomic, strong, getter=getIpString) NSString *ip;
 
@@ -23,7 +23,7 @@ typedef enum {
 
 
 
-@interface HttpdnsHostObject : NSObject
+@interface HttpdnsHostObject : NSObject<NSCoding>
 
 @property (nonatomic, strong, setter=setHostName:, getter=getHostName) NSString *hostName;
 @property (nonatomic, strong, setter=setIps:, getter=getIps) NSArray *ips;

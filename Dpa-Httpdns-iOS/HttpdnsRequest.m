@@ -10,6 +10,7 @@
 #import "HttpdnsUtil.h"
 
 NSString * const HTTPDNS_SERVER_IP = @"10.125.65.207:8100";
+NSString * const HTTPDNS_SERVER_BACKUP_HOST = @"";
 NSString * const HTTPDNS_VERSION_NUM = @"1";
 NSString * const HTTPDNS_APPID = @"123456";
 NSString * const HTTPDNS_ACCESSKEYID = @"httpdnstest";

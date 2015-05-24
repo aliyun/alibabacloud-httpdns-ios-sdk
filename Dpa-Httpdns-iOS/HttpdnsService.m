@@ -39,7 +39,7 @@
 -(NSString *)getIpByHost:(NSString *)host {
     HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host];
     if (hostObject) {
-        NSMutableArray *ips = [hostObject getIps];
+        NSArray *ips = [hostObject getIps];
         if (ips && [ips count] > 0) {
             return [[ips objectAtIndex:0] getIpString];
         }

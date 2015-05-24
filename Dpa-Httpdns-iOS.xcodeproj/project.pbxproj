@@ -14,7 +14,6 @@
 		212303911AF3732D0023B344 /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 212303901AF3732D0023B344 /* HttpdnsRequest.m */; };
 		212303941AF378E50023B344 /* HttpdnsUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 212303931AF378E50023B344 /* HttpdnsUtil.m */; };
 		216DFC3B1B08FC4D00FA915B /* HttpdnsLocalCacheTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 216DFC3A1B08FC4D00FA915B /* HttpdnsLocalCacheTest.m */; };
-		216DFC3E1B08FCE600FA915B /* HttpdnsTestUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 216DFC3D1B08FCE600FA915B /* HttpdnsTestUtil.m */; };
 		21EF47911AF3DD400042D0AE /* HttpdnsLocalCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 21EF47901AF3DD400042D0AE /* HttpdnsLocalCache.m */; };
 		21EF47941AF485C90042D0AE /* HttpdnsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 21EF47931AF485C90042D0AE /* HttpdnsConfig.m */; };
 		21EF479C1AF4C0D90042D0AE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 21EF479B1AF4C0D90042D0AE /* main.m */; };
@@ -69,8 +68,6 @@
 		212303921AF378E50023B344 /* HttpdnsUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsUtil.h; sourceTree = "<group>"; };
 		212303931AF378E50023B344 /* HttpdnsUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtil.m; sourceTree = "<group>"; };
 		216DFC3A1B08FC4D00FA915B /* HttpdnsLocalCacheTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsLocalCacheTest.m; sourceTree = "<group>"; };
-		216DFC3C1B08FCE600FA915B /* HttpdnsTestUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsTestUtil.h; sourceTree = "<group>"; };
-		216DFC3D1B08FCE600FA915B /* HttpdnsTestUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsTestUtil.m; sourceTree = "<group>"; };
 		21EF478F1AF3DD400042D0AE /* HttpdnsLocalCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsLocalCache.h; sourceTree = "<group>"; };
 		21EF47901AF3DD400042D0AE /* HttpdnsLocalCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsLocalCache.m; sourceTree = "<group>"; };
 		21EF47921AF485C90042D0AE /* HttpdnsConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsConfig.h; sourceTree = "<group>"; };
@@ -159,8 +156,6 @@
 				21EF47A01AF4C27B0042D0AE /* HttpdnsRequestTest.m */,
 				216DFC3A1B08FC4D00FA915B /* HttpdnsLocalCacheTest.m */,
 				21EF47A51AF5D3EB0042D0AE /* HttpdnsUtilTest.m */,
-				216DFC3C1B08FCE600FA915B /* HttpdnsTestUtil.h */,
-				216DFC3D1B08FCE600FA915B /* HttpdnsTestUtil.m */,
 			);
 			path = "Dpa-Httpdns-iOSTests";
 			sourceTree = "<group>";
@@ -308,7 +303,6 @@
 				21EF47A11AF4C27B0042D0AE /* HttpdnsRequestTest.m in Sources */,
 				216DFC3B1B08FC4D00FA915B /* HttpdnsLocalCacheTest.m in Sources */,
 				21EF47A61AF5D3EB0042D0AE /* HttpdnsUtilTest.m in Sources */,
-				216DFC3E1B08FCE600FA915B /* HttpdnsTestUtil.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -430,6 +424,11 @@
 		212303831AF36B7B0023B344 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					x86_64,
+					i386,
+				);
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
@@ -442,12 +441,18 @@
 				INFOPLIST_FILE = "Dpa-Httpdns-iOSTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "arm64 armv7 armv7s x86_64 i386";
 			};
 			name = Debug;
 		};
 		212303841AF36B7B0023B344 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					x86_64,
+					i386,
+				);
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
@@ -456,6 +461,7 @@
 				INFOPLIST_FILE = "Dpa-Httpdns-iOSTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "arm64 armv7 armv7s x86_64 i386";
 			};
 			name = Release;
 		};
