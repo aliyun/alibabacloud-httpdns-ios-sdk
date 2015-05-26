@@ -1,0 +1,495 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		21796E961B144208002F8DA1 /* ALBBHttpdnsSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796E8A1B144208002F8DA1 /* ALBBHttpdnsSDK.framework */; };
+		21796EB81B144220002F8DA1 /* HttpdnsConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 21796EA61B144220002F8DA1 /* HttpdnsConfig.h */; };
+		21796EB91B144220002F8DA1 /* HttpdnsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796EA71B144220002F8DA1 /* HttpdnsConfig.m */; };
+		21796EBA1B144220002F8DA1 /* HttpdnsLocalCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 21796EA81B144220002F8DA1 /* HttpdnsLocalCache.h */; };
+		21796EBB1B144220002F8DA1 /* HttpdnsLocalCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796EA91B144220002F8DA1 /* HttpdnsLocalCache.m */; };
+		21796EBC1B144220002F8DA1 /* HttpdnsLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 21796EAA1B144220002F8DA1 /* HttpdnsLog.h */; };
+		21796EBD1B144220002F8DA1 /* HttpdnsLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796EAB1B144220002F8DA1 /* HttpdnsLog.m */; };
+		21796EBE1B144220002F8DA1 /* HttpdnsModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 21796EAC1B144220002F8DA1 /* HttpdnsModel.h */; };
+		21796EBF1B144220002F8DA1 /* HttpdnsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796EAD1B144220002F8DA1 /* HttpdnsModel.m */; };
+		21796EC01B144220002F8DA1 /* HttpdnsRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 21796EAE1B144220002F8DA1 /* HttpdnsRequest.h */; };
+		21796EC11B144220002F8DA1 /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796EAF1B144220002F8DA1 /* HttpdnsRequest.m */; };
+		21796EC21B144220002F8DA1 /* HttpdnsRequestScheduler.h in Headers */ = {isa = PBXBuildFile; fileRef = 21796EB01B144220002F8DA1 /* HttpdnsRequestScheduler.h */; };
+		21796EC31B144220002F8DA1 /* HttpdnsRequestScheduler.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796EB11B144220002F8DA1 /* HttpdnsRequestScheduler.m */; };
+		21796EC41B144220002F8DA1 /* HttpdnsService.h in Headers */ = {isa = PBXBuildFile; fileRef = 21796EB21B144220002F8DA1 /* HttpdnsService.h */; };
+		21796EC51B144220002F8DA1 /* HttpdnsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796EB31B144220002F8DA1 /* HttpdnsService.m */; };
+		21796EC61B144220002F8DA1 /* HttpdnsTokenGen.h in Headers */ = {isa = PBXBuildFile; fileRef = 21796EB41B144220002F8DA1 /* HttpdnsTokenGen.h */; };
+		21796EC71B144220002F8DA1 /* HttpdnsTokenGen.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796EB51B144220002F8DA1 /* HttpdnsTokenGen.m */; };
+		21796EC81B144220002F8DA1 /* HttpdnsUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 21796EB61B144220002F8DA1 /* HttpdnsUtil.h */; };
+		21796EC91B144220002F8DA1 /* HttpdnsUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796EB71B144220002F8DA1 /* HttpdnsUtil.m */; };
+		21796ECF1B14422C002F8DA1 /* HttpdnsLocalCacheTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796ECA1B14422C002F8DA1 /* HttpdnsLocalCacheTest.m */; };
+		21796ED01B14422C002F8DA1 /* HttpdnsRequestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796ECB1B14422C002F8DA1 /* HttpdnsRequestTest.m */; };
+		21796ED11B14422C002F8DA1 /* HttpdnsServiceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796ECC1B14422C002F8DA1 /* HttpdnsServiceTest.m */; };
+		21796ED21B14422C002F8DA1 /* HttpdnsUtilTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796ECD1B14422C002F8DA1 /* HttpdnsUtilTest.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		21796E971B144208002F8DA1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 21796E811B144208002F8DA1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 21796E891B144208002F8DA1;
+			remoteInfo = ALBBHttpdnsSDK;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		21796E8A1B144208002F8DA1 /* ALBBHttpdnsSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ALBBHttpdnsSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		21796E8E1B144208002F8DA1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		21796E951B144208002F8DA1 /* ALBBHttpdnsSDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ALBBHttpdnsSDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		21796E9B1B144208002F8DA1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		21796EA61B144220002F8DA1 /* HttpdnsConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsConfig.h; sourceTree = "<group>"; };
+		21796EA71B144220002F8DA1 /* HttpdnsConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsConfig.m; sourceTree = "<group>"; };
+		21796EA81B144220002F8DA1 /* HttpdnsLocalCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsLocalCache.h; sourceTree = "<group>"; };
+		21796EA91B144220002F8DA1 /* HttpdnsLocalCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsLocalCache.m; sourceTree = "<group>"; };
+		21796EAA1B144220002F8DA1 /* HttpdnsLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsLog.h; sourceTree = "<group>"; };
+		21796EAB1B144220002F8DA1 /* HttpdnsLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsLog.m; sourceTree = "<group>"; };
+		21796EAC1B144220002F8DA1 /* HttpdnsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsModel.h; sourceTree = "<group>"; };
+		21796EAD1B144220002F8DA1 /* HttpdnsModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsModel.m; sourceTree = "<group>"; };
+		21796EAE1B144220002F8DA1 /* HttpdnsRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsRequest.h; sourceTree = "<group>"; };
+		21796EAF1B144220002F8DA1 /* HttpdnsRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsRequest.m; sourceTree = "<group>"; };
+		21796EB01B144220002F8DA1 /* HttpdnsRequestScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsRequestScheduler.h; sourceTree = "<group>"; };
+		21796EB11B144220002F8DA1 /* HttpdnsRequestScheduler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsRequestScheduler.m; sourceTree = "<group>"; };
+		21796EB21B144220002F8DA1 /* HttpdnsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsService.h; sourceTree = "<group>"; };
+		21796EB31B144220002F8DA1 /* HttpdnsService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsService.m; sourceTree = "<group>"; };
+		21796EB41B144220002F8DA1 /* HttpdnsTokenGen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsTokenGen.h; sourceTree = "<group>"; };
+		21796EB51B144220002F8DA1 /* HttpdnsTokenGen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsTokenGen.m; sourceTree = "<group>"; };
+		21796EB61B144220002F8DA1 /* HttpdnsUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsUtil.h; sourceTree = "<group>"; };
+		21796EB71B144220002F8DA1 /* HttpdnsUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtil.m; sourceTree = "<group>"; };
+		21796ECA1B14422C002F8DA1 /* HttpdnsLocalCacheTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsLocalCacheTest.m; sourceTree = "<group>"; };
+		21796ECB1B14422C002F8DA1 /* HttpdnsRequestTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsRequestTest.m; sourceTree = "<group>"; };
+		21796ECC1B14422C002F8DA1 /* HttpdnsServiceTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsServiceTest.m; sourceTree = "<group>"; };
+		21796ECD1B14422C002F8DA1 /* HttpdnsUtilTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtilTest.m; sourceTree = "<group>"; };
+		21796ECE1B14422C002F8DA1 /* TestIncludeAllHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestIncludeAllHeader.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		21796E861B144208002F8DA1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21796E921B144208002F8DA1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21796E961B144208002F8DA1 /* ALBBHttpdnsSDK.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		21796E801B144208002F8DA1 = {
+			isa = PBXGroup;
+			children = (
+				21796E8C1B144208002F8DA1 /* ALBBHttpdnsSDK */,
+				21796E991B144208002F8DA1 /* ALBBHttpdnsSDKTests */,
+				21796E8B1B144208002F8DA1 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		21796E8B1B144208002F8DA1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				21796E8A1B144208002F8DA1 /* ALBBHttpdnsSDK.framework */,
+				21796E951B144208002F8DA1 /* ALBBHttpdnsSDKTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		21796E8C1B144208002F8DA1 /* ALBBHttpdnsSDK */ = {
+			isa = PBXGroup;
+			children = (
+				21796EA61B144220002F8DA1 /* HttpdnsConfig.h */,
+				21796EA71B144220002F8DA1 /* HttpdnsConfig.m */,
+				21796EA81B144220002F8DA1 /* HttpdnsLocalCache.h */,
+				21796EA91B144220002F8DA1 /* HttpdnsLocalCache.m */,
+				21796EAA1B144220002F8DA1 /* HttpdnsLog.h */,
+				21796EAB1B144220002F8DA1 /* HttpdnsLog.m */,
+				21796EAC1B144220002F8DA1 /* HttpdnsModel.h */,
+				21796EAD1B144220002F8DA1 /* HttpdnsModel.m */,
+				21796EAE1B144220002F8DA1 /* HttpdnsRequest.h */,
+				21796EAF1B144220002F8DA1 /* HttpdnsRequest.m */,
+				21796EB01B144220002F8DA1 /* HttpdnsRequestScheduler.h */,
+				21796EB11B144220002F8DA1 /* HttpdnsRequestScheduler.m */,
+				21796EB21B144220002F8DA1 /* HttpdnsService.h */,
+				21796EB31B144220002F8DA1 /* HttpdnsService.m */,
+				21796EB41B144220002F8DA1 /* HttpdnsTokenGen.h */,
+				21796EB51B144220002F8DA1 /* HttpdnsTokenGen.m */,
+				21796EB61B144220002F8DA1 /* HttpdnsUtil.h */,
+				21796EB71B144220002F8DA1 /* HttpdnsUtil.m */,
+				21796E8D1B144208002F8DA1 /* Supporting Files */,
+			);
+			path = ALBBHttpdnsSDK;
+			sourceTree = "<group>";
+		};
+		21796E8D1B144208002F8DA1 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				21796E8E1B144208002F8DA1 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		21796E991B144208002F8DA1 /* ALBBHttpdnsSDKTests */ = {
+			isa = PBXGroup;
+			children = (
+				21796ECA1B14422C002F8DA1 /* HttpdnsLocalCacheTest.m */,
+				21796ECB1B14422C002F8DA1 /* HttpdnsRequestTest.m */,
+				21796ECC1B14422C002F8DA1 /* HttpdnsServiceTest.m */,
+				21796ECD1B14422C002F8DA1 /* HttpdnsUtilTest.m */,
+				21796ECE1B14422C002F8DA1 /* TestIncludeAllHeader.h */,
+				21796E9A1B144208002F8DA1 /* Supporting Files */,
+			);
+			path = ALBBHttpdnsSDKTests;
+			sourceTree = "<group>";
+		};
+		21796E9A1B144208002F8DA1 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				21796E9B1B144208002F8DA1 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		21796E871B144208002F8DA1 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21796EC01B144220002F8DA1 /* HttpdnsRequest.h in Headers */,
+				21796EB81B144220002F8DA1 /* HttpdnsConfig.h in Headers */,
+				21796EC21B144220002F8DA1 /* HttpdnsRequestScheduler.h in Headers */,
+				21796EC81B144220002F8DA1 /* HttpdnsUtil.h in Headers */,
+				21796EC41B144220002F8DA1 /* HttpdnsService.h in Headers */,
+				21796EBC1B144220002F8DA1 /* HttpdnsLog.h in Headers */,
+				21796EBE1B144220002F8DA1 /* HttpdnsModel.h in Headers */,
+				21796EBA1B144220002F8DA1 /* HttpdnsLocalCache.h in Headers */,
+				21796EC61B144220002F8DA1 /* HttpdnsTokenGen.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		21796E891B144208002F8DA1 /* ALBBHttpdnsSDK */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 21796EA01B144208002F8DA1 /* Build configuration list for PBXNativeTarget "ALBBHttpdnsSDK" */;
+			buildPhases = (
+				21796E851B144208002F8DA1 /* Sources */,
+				21796E861B144208002F8DA1 /* Frameworks */,
+				21796E871B144208002F8DA1 /* Headers */,
+				21796E881B144208002F8DA1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ALBBHttpdnsSDK;
+			productName = ALBBHttpdnsSDK;
+			productReference = 21796E8A1B144208002F8DA1 /* ALBBHttpdnsSDK.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		21796E941B144208002F8DA1 /* ALBBHttpdnsSDKTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 21796EA31B144208002F8DA1 /* Build configuration list for PBXNativeTarget "ALBBHttpdnsSDKTests" */;
+			buildPhases = (
+				21796E911B144208002F8DA1 /* Sources */,
+				21796E921B144208002F8DA1 /* Frameworks */,
+				21796E931B144208002F8DA1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				21796E981B144208002F8DA1 /* PBXTargetDependency */,
+			);
+			name = ALBBHttpdnsSDKTests;
+			productName = ALBBHttpdnsSDKTests;
+			productReference = 21796E951B144208002F8DA1 /* ALBBHttpdnsSDKTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		21796E811B144208002F8DA1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0630;
+				ORGANIZATIONNAME = zhouzhuo;
+				TargetAttributes = {
+					21796E891B144208002F8DA1 = {
+						CreatedOnToolsVersion = 6.3.2;
+					};
+					21796E941B144208002F8DA1 = {
+						CreatedOnToolsVersion = 6.3.2;
+					};
+				};
+			};
+			buildConfigurationList = 21796E841B144208002F8DA1 /* Build configuration list for PBXProject "ALBBHttpdnsSDK" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 21796E801B144208002F8DA1;
+			productRefGroup = 21796E8B1B144208002F8DA1 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				21796E891B144208002F8DA1 /* ALBBHttpdnsSDK */,
+				21796E941B144208002F8DA1 /* ALBBHttpdnsSDKTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		21796E881B144208002F8DA1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21796E931B144208002F8DA1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		21796E851B144208002F8DA1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21796EC91B144220002F8DA1 /* HttpdnsUtil.m in Sources */,
+				21796EC11B144220002F8DA1 /* HttpdnsRequest.m in Sources */,
+				21796EBB1B144220002F8DA1 /* HttpdnsLocalCache.m in Sources */,
+				21796EB91B144220002F8DA1 /* HttpdnsConfig.m in Sources */,
+				21796EBD1B144220002F8DA1 /* HttpdnsLog.m in Sources */,
+				21796EC71B144220002F8DA1 /* HttpdnsTokenGen.m in Sources */,
+				21796EC51B144220002F8DA1 /* HttpdnsService.m in Sources */,
+				21796EBF1B144220002F8DA1 /* HttpdnsModel.m in Sources */,
+				21796EC31B144220002F8DA1 /* HttpdnsRequestScheduler.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21796E911B144208002F8DA1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21796ECF1B14422C002F8DA1 /* HttpdnsLocalCacheTest.m in Sources */,
+				21796ED11B14422C002F8DA1 /* HttpdnsServiceTest.m in Sources */,
+				21796ED01B14422C002F8DA1 /* HttpdnsRequestTest.m in Sources */,
+				21796ED21B14422C002F8DA1 /* HttpdnsUtilTest.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		21796E981B144208002F8DA1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 21796E891B144208002F8DA1 /* ALBBHttpdnsSDK */;
+			targetProxy = 21796E971B144208002F8DA1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		21796E9E1B144208002F8DA1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		21796E9F1B144208002F8DA1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		21796EA11B144208002F8DA1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = ALBBHttpdnsSDK/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		21796EA21B144208002F8DA1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = ALBBHttpdnsSDK/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		21796EA41B144208002F8DA1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = ALBBHttpdnsSDKTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		21796EA51B144208002F8DA1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = ALBBHttpdnsSDKTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		21796E841B144208002F8DA1 /* Build configuration list for PBXProject "ALBBHttpdnsSDK" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21796E9E1B144208002F8DA1 /* Debug */,
+				21796E9F1B144208002F8DA1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		21796EA01B144208002F8DA1 /* Build configuration list for PBXNativeTarget "ALBBHttpdnsSDK" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21796EA11B144208002F8DA1 /* Debug */,
+				21796EA21B144208002F8DA1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		21796EA31B144208002F8DA1 /* Build configuration list for PBXNativeTarget "ALBBHttpdnsSDKTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21796EA41B144208002F8DA1 /* Debug */,
+				21796EA51B144208002F8DA1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 21796E811B144208002F8DA1 /* Project object */;
+}
