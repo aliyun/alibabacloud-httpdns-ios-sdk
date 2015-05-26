@@ -8,13 +8,14 @@
 
 #import "HttpdnsRequest.h"
 #import "HttpdnsUtil.h"
+#import "HttpdnsLog.h"
 
 NSString * const HTTPDNS_SERVER_IP = @"10.125.65.207:8100";
 NSString * const HTTPDNS_SERVER_BACKUP_HOST = @"";
 NSString * const HTTPDNS_VERSION_NUM = @"1";
-NSString * const HTTPDNS_APPID = @"123456";
-NSString * const HTTPDNS_ACCESSKEYID = @"httpdnstest";
-NSString * const HTTPDNS_ACCESSKEYSECRET = @"hello";
+NSString * const HTTPDNS_APPID = @"111111";
+NSString * const HTTPDNS_ACCESSKEYID = @"0HF1A3ggP6sI2lqk";
+NSString * const HTTPDNS_ACCESSKEYSECRET = @"8O6CLYwgbr4Nbn779IKe5f0wvElW9M";
 
 @implementation HttpdnsRequest
 
@@ -79,14 +80,17 @@ NSString * const HTTPDNS_ACCESSKEYSECRET = @"hello";
 
     NSHTTPURLResponse *response;
     NSData *result = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:error];
-    if (error) {
+    if (*error) {
         // TODO 处理网络异常
+        [HttpdnsLog LogD:@"Network error. error %@", *error];
         return nil;
     } else if ([response statusCode] != 200) {
         // TODO 处理http异常
+        [HttpdnsLog LogD:@"ReponseCode not 200, but %d.", [response statusCode]];
         return nil;
     }
 
+    [HttpdnsLog LogD:@"No network error occur."];
     return [self parseHostInfoFromHttpResponse:result];
 }
 

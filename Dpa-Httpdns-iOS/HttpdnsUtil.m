@@ -8,6 +8,7 @@
 
 #import "HttpdnsUtil.h"
 #import "CommonCrypto/CommonCrypto.h"
+#import "arpa/inet.h"
 
 @implementation HttpdnsUtil
 
@@ -33,5 +34,19 @@
 
 +(NSString *)currentEpochTimeInSecondString {
     return [NSString stringWithFormat:@"%lld", [HttpdnsUtil currentEpochTimeInSecond]];
+}
+
++(BOOL)checkIfIsAnIp:(NSString *)candidate {
+    const char *utf8 = [candidate UTF8String];
+
+    // Check valid IPv4.
+    struct in_addr dst;
+    int success = inet_pton(AF_INET, utf8, &(dst.s_addr));
+    if (success != 1) {
+        // Check valid IPv6.
+        struct in6_addr dst6;
+        success = inet_pton(AF_INET6, utf8, &dst6);
+    }
+    return (success == 1);
 }
 @end

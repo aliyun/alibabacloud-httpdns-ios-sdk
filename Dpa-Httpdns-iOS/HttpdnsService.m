@@ -9,6 +9,7 @@
 #import "HttpdnsService.h"
 #import "HttpdnsLocalCache.h"
 #import "HttpdnsModel.h"
+#import "HttpdnsUtil.h"
 
 @implementation HttpDnsService
 
@@ -37,6 +38,10 @@
 }
 
 -(NSString *)getIpByHost:(NSString *)host {
+    // 如果是ip，直接返回
+    if ([HttpdnsUtil checkIfIsAnIp:host]) {
+        return host;
+    }
     HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host];
     if (hostObject) {
         NSArray *ips = [hostObject getIps];

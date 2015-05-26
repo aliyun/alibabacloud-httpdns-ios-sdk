@@ -60,4 +60,10 @@
     }
     return YES;
 }
+
+@end
+
+@implementation FederationToken
+
+
 @end

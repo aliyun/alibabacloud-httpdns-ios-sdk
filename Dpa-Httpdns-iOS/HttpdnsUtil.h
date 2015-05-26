@@ -15,4 +15,6 @@
 +(long long)currentEpochTimeInSecond;
 
 +(NSString *)currentEpochTimeInSecondString;
+
++(BOOL)checkIfIsAnIp:(NSString *)candidate;
 @end

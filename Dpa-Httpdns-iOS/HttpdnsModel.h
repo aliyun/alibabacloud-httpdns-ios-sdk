@@ -47,5 +47,8 @@ typedef NS_ENUM(NSInteger, HostState) {
 @property (nonatomic, strong) NSString *accessKeyId;
 @property (nonatomic, strong) NSString *accessKeySecret;
 @property (nonatomic, strong) NSString *securityToken;
+@property (nonatomic, strong) NSString *federatedUser;
+@property (nonatomic) long expiration;
+@property (nonatomic) long localExpiration;
 
 @end

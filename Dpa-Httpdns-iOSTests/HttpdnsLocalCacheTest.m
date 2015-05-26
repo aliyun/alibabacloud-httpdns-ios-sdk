@@ -7,8 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "HttpdnsLocalCache.h"
-#import "HttpdnsModel.h"
+#import "TestIncludeAllHeader.h"
 
 @interface HttpdnsLocalCacheTest : XCTestCase
 

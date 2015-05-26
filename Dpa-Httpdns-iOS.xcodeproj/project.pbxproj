@@ -14,6 +14,8 @@
 		212303911AF3732D0023B344 /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 212303901AF3732D0023B344 /* HttpdnsRequest.m */; };
 		212303941AF378E50023B344 /* HttpdnsUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 212303931AF378E50023B344 /* HttpdnsUtil.m */; };
 		216DFC3B1B08FC4D00FA915B /* HttpdnsLocalCacheTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 216DFC3A1B08FC4D00FA915B /* HttpdnsLocalCacheTest.m */; };
+		21796DB81B11D92D002F8DA1 /* HttpdnsServiceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796DB71B11D92D002F8DA1 /* HttpdnsServiceTest.m */; };
+		21796DBF1B14316E002F8DA1 /* HttpdnsTokenGen.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796DBE1B14316E002F8DA1 /* HttpdnsTokenGen.m */; };
 		21EF47911AF3DD400042D0AE /* HttpdnsLocalCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 21EF47901AF3DD400042D0AE /* HttpdnsLocalCache.m */; };
 		21EF47941AF485C90042D0AE /* HttpdnsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 21EF47931AF485C90042D0AE /* HttpdnsConfig.m */; };
 		21EF479C1AF4C0D90042D0AE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 21EF479B1AF4C0D90042D0AE /* main.m */; };
@@ -29,6 +31,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 2123036A1AF36B7B0023B344;
 			remoteInfo = "Dpa-Httpdns-iOS";
+		};
+		21796DFC1B143C63002F8DA1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 212303631AF36B7B0023B344 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 21796DE21B143C63002F8DA1;
+			remoteInfo = HttpdnsTestApp;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -68,6 +77,12 @@
 		212303921AF378E50023B344 /* HttpdnsUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsUtil.h; sourceTree = "<group>"; };
 		212303931AF378E50023B344 /* HttpdnsUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtil.m; sourceTree = "<group>"; };
 		216DFC3A1B08FC4D00FA915B /* HttpdnsLocalCacheTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsLocalCacheTest.m; sourceTree = "<group>"; };
+		21796DB71B11D92D002F8DA1 /* HttpdnsServiceTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsServiceTest.m; sourceTree = "<group>"; };
+		21796DBA1B11DA5A002F8DA1 /* TestIncludeAllHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestIncludeAllHeader.h; sourceTree = "<group>"; };
+		21796DBD1B14316E002F8DA1 /* HttpdnsTokenGen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsTokenGen.h; sourceTree = "<group>"; };
+		21796DBE1B14316E002F8DA1 /* HttpdnsTokenGen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsTokenGen.m; sourceTree = "<group>"; };
+		21796DE31B143C63002F8DA1 /* HttpdnsTestApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HttpdnsTestApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		21796DFB1B143C63002F8DA1 /* HttpdnsTestAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HttpdnsTestAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		21EF478F1AF3DD400042D0AE /* HttpdnsLocalCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsLocalCache.h; sourceTree = "<group>"; };
 		21EF47901AF3DD400042D0AE /* HttpdnsLocalCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsLocalCache.m; sourceTree = "<group>"; };
 		21EF47921AF485C90042D0AE /* HttpdnsConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsConfig.h; sourceTree = "<group>"; };
@@ -93,6 +108,20 @@
 			buildActionMask = 2147483647;
 			files = (
 				212303771AF36B7B0023B344 /* libDpa-Httpdns-iOS.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21796DE01B143C63002F8DA1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21796DF81B143C63002F8DA1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -122,6 +151,8 @@
 				2123036B1AF36B7B0023B344 /* libDpa-Httpdns-iOS.a */,
 				212303761AF36B7B0023B344 /* Dpa-Httpdns-iOSTests.xctest */,
 				21EF47991AF4C0D90042D0AE /* DevelopmentTestPlayAround */,
+				21796DE31B143C63002F8DA1 /* HttpdnsTestApp.app */,
+				21796DFB1B143C63002F8DA1 /* HttpdnsTestAppTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -145,6 +176,8 @@
 				21EF47931AF485C90042D0AE /* HttpdnsConfig.m */,
 				21EF47A21AF4C46E0042D0AE /* HttpdnsLog.h */,
 				21EF47A31AF4C46E0042D0AE /* HttpdnsLog.m */,
+				21796DBD1B14316E002F8DA1 /* HttpdnsTokenGen.h */,
+				21796DBE1B14316E002F8DA1 /* HttpdnsTokenGen.m */,
 			);
 			path = "Dpa-Httpdns-iOS";
 			sourceTree = "<group>";
@@ -156,6 +189,8 @@
 				21EF47A01AF4C27B0042D0AE /* HttpdnsRequestTest.m */,
 				216DFC3A1B08FC4D00FA915B /* HttpdnsLocalCacheTest.m */,
 				21EF47A51AF5D3EB0042D0AE /* HttpdnsUtilTest.m */,
+				21796DB71B11D92D002F8DA1 /* HttpdnsServiceTest.m */,
+				21796DBA1B11DA5A002F8DA1 /* TestIncludeAllHeader.h */,
 			);
 			path = "Dpa-Httpdns-iOSTests";
 			sourceTree = "<group>";
@@ -214,6 +249,41 @@
 			productReference = 212303761AF36B7B0023B344 /* Dpa-Httpdns-iOSTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		21796DE21B143C63002F8DA1 /* HttpdnsTestApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 21796E031B143C63002F8DA1 /* Build configuration list for PBXNativeTarget "HttpdnsTestApp" */;
+			buildPhases = (
+				21796DDF1B143C63002F8DA1 /* Sources */,
+				21796DE01B143C63002F8DA1 /* Frameworks */,
+				21796DE11B143C63002F8DA1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HttpdnsTestApp;
+			productName = HttpdnsTestApp;
+			productReference = 21796DE31B143C63002F8DA1 /* HttpdnsTestApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		21796DFA1B143C63002F8DA1 /* HttpdnsTestAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 21796E061B143C63002F8DA1 /* Build configuration list for PBXNativeTarget "HttpdnsTestAppTests" */;
+			buildPhases = (
+				21796DF71B143C63002F8DA1 /* Sources */,
+				21796DF81B143C63002F8DA1 /* Frameworks */,
+				21796DF91B143C63002F8DA1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				21796DFD1B143C63002F8DA1 /* PBXTargetDependency */,
+			);
+			name = HttpdnsTestAppTests;
+			productName = HttpdnsTestAppTests;
+			productReference = 21796DFB1B143C63002F8DA1 /* HttpdnsTestAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		21EF47981AF4C0D90042D0AE /* DevelopmentTestPlayAround */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 21EF479D1AF4C0D90042D0AE /* Build configuration list for PBXNativeTarget "DevelopmentTestPlayAround" */;
@@ -246,6 +316,13 @@
 					212303751AF36B7B0023B344 = {
 						CreatedOnToolsVersion = 6.3;
 					};
+					21796DE21B143C63002F8DA1 = {
+						CreatedOnToolsVersion = 6.3.2;
+					};
+					21796DFA1B143C63002F8DA1 = {
+						CreatedOnToolsVersion = 6.3.2;
+						TestTargetID = 21796DE21B143C63002F8DA1;
+					};
 					21EF47981AF4C0D90042D0AE = {
 						CreatedOnToolsVersion = 6.3;
 					};
@@ -257,6 +334,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = 212303621AF36B7B0023B344;
 			productRefGroup = 2123036C1AF36B7B0023B344 /* Products */;
@@ -266,12 +344,28 @@
 				2123036A1AF36B7B0023B344 /* Dpa-Httpdns-iOS */,
 				212303751AF36B7B0023B344 /* Dpa-Httpdns-iOSTests */,
 				21EF47981AF4C0D90042D0AE /* DevelopmentTestPlayAround */,
+				21796DE21B143C63002F8DA1 /* HttpdnsTestApp */,
+				21796DFA1B143C63002F8DA1 /* HttpdnsTestAppTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		212303741AF36B7B0023B344 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21796DE11B143C63002F8DA1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21796DF91B143C63002F8DA1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -286,6 +380,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				212303871AF370DB0023B344 /* HttpdnsService.m in Sources */,
+				21796DBF1B14316E002F8DA1 /* HttpdnsTokenGen.m in Sources */,
 				212303911AF3732D0023B344 /* HttpdnsRequest.m in Sources */,
 				2123038B1AF371570023B344 /* HttpdnsModel.m in Sources */,
 				212303941AF378E50023B344 /* HttpdnsUtil.m in Sources */,
@@ -301,8 +396,23 @@
 			buildActionMask = 2147483647;
 			files = (
 				21EF47A11AF4C27B0042D0AE /* HttpdnsRequestTest.m in Sources */,
+				21796DB81B11D92D002F8DA1 /* HttpdnsServiceTest.m in Sources */,
 				216DFC3B1B08FC4D00FA915B /* HttpdnsLocalCacheTest.m in Sources */,
 				21EF47A61AF5D3EB0042D0AE /* HttpdnsUtilTest.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21796DDF1B143C63002F8DA1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21796DF71B143C63002F8DA1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -321,6 +431,11 @@
 			isa = PBXTargetDependency;
 			target = 2123036A1AF36B7B0023B344 /* Dpa-Httpdns-iOS */;
 			targetProxy = 212303781AF36B7B0023B344 /* PBXContainerItemProxy */;
+		};
+		21796DFD1B143C63002F8DA1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 21796DE21B143C63002F8DA1 /* HttpdnsTestApp */;
+			targetProxy = 21796DFC1B143C63002F8DA1 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -406,6 +521,10 @@
 		212303801AF36B7B0023B344 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -415,6 +534,10 @@
 		212303811AF36B7B0023B344 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -462,6 +585,68 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = "arm64 armv7 armv7s x86_64 i386";
+			};
+			name = Release;
+		};
+		21796E041B143C63002F8DA1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = HttpdnsTestApp/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		21796E051B143C63002F8DA1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				INFOPLIST_FILE = HttpdnsTestApp/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		21796E071B143C63002F8DA1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = HttpdnsTestAppTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HttpdnsTestApp.app/HttpdnsTestApp";
+			};
+			name = Debug;
+		};
+		21796E081B143C63002F8DA1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = HttpdnsTestAppTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HttpdnsTestApp.app/HttpdnsTestApp";
 			};
 			name = Release;
 		};
@@ -517,6 +702,22 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		21796E031B143C63002F8DA1 /* Build configuration list for PBXNativeTarget "HttpdnsTestApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21796E041B143C63002F8DA1 /* Debug */,
+				21796E051B143C63002F8DA1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		21796E061B143C63002F8DA1 /* Build configuration list for PBXNativeTarget "HttpdnsTestAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21796E071B143C63002F8DA1 /* Debug */,
+				21796E081B143C63002F8DA1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 		21EF479D1AF4C0D90042D0AE /* Build configuration list for PBXNativeTarget "DevelopmentTestPlayAround" */ = {
 			isa = XCConfigurationList;
