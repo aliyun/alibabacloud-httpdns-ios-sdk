@@ -9,13 +9,12 @@
 #import "HttpdnsRequest.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
+#import "HttpdnsTokenGen.h"
+#import "HttpdnsModel.h"
 
 NSString * const HTTPDNS_SERVER_IP = @"10.125.65.207:8100";
 NSString * const HTTPDNS_SERVER_BACKUP_HOST = @"";
 NSString * const HTTPDNS_VERSION_NUM = @"1";
-NSString * const HTTPDNS_APPID = @"111111";
-NSString * const HTTPDNS_ACCESSKEYID = @"0HF1A3ggP6sI2lqk";
-NSString * const HTTPDNS_ACCESSKEYSECRET = @"8O6CLYwgbr4Nbn779IKe5f0wvElW9M";
 
 @implementation HttpdnsRequest
 
@@ -48,49 +47,61 @@ NSString * const HTTPDNS_ACCESSKEYSECRET = @"8O6CLYwgbr4Nbn779IKe5f0wvElW9M";
         [hostObject setTTL:[[dict objectForKey:@"ttl"] longLongValue]];
         [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
         [hostObject setState:VALID];
+        HttpdnsLogDebug(@"[parseResponse] - host: %@ ips: %@", [hostObject getHostName], ipNums);
         [result addObject:hostObject];
     }
     return result;
 }
 
 // 构造httpdns解析请求头
--(NSMutableURLRequest *)constructRequestWith:(NSString *)hostsString {
+-(NSMutableURLRequest *)constructRequestWith:(NSString *)hostsString withToken:(HttpdnsToken *)token {
+    NSString *appId = [[HttpdnsTokenGen sharedInstance] appId];
     NSString *timestamp = [HttpdnsUtil currentEpochTimeInSecondString];
     NSString *url = [NSString stringWithFormat:@"http://%@/resolve?host=%@&version=%@&appid=%@&timestamp=%@",
-                     HTTPDNS_SERVER_IP, hostsString, HTTPDNS_VERSION_NUM, HTTPDNS_APPID, timestamp];
-    NSString *contentToSign = [NSString stringWithFormat:@"%@%@%@%@",
-                               HTTPDNS_VERSION_NUM, HTTPDNS_APPID, timestamp, hostsString];
+                     HTTPDNS_SERVER_IP, hostsString, HTTPDNS_VERSION_NUM, appId, timestamp];
+    NSString *contentToSign = [NSString stringWithFormat:@"%@%@%@%@%@",
+                               HTTPDNS_VERSION_NUM, appId, timestamp, hostsString, [token securityToken]];
     NSString *signature = [NSString stringWithFormat:@"HTTPDNS %@:%@",
-                           HTTPDNS_ACCESSKEYID,
-                           [HttpdnsUtil HMACSha1Sign:[contentToSign dataUsingEncoding:NSUTF8StringEncoding] withKey:HTTPDNS_ACCESSKEYSECRET]];
+                           [token accessKeyId],
+                           [HttpdnsUtil Base64HMACSha1Sign:[contentToSign dataUsingEncoding:NSUTF8StringEncoding] withKey:[token accessKeySecret]]];
+
+    HttpdnsLogDebug(@"[constructRequest] - ContentToSign: %@", contentToSign);
+    HttpdnsLogDebug(@"[constructRequest] - Signature: %@", signature);
 
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[[NSURL alloc] initWithString:url]];
     [request setHTTPMethod:@"GET"];
     [request setValue:signature forHTTPHeaderField:@"Authorization"];
-
-    [HttpdnsLog LogD:@"contentToSign: %@", contentToSign];
-    [HttpdnsLog LogD:@"signature: %@", signature];
+    [request setValue:[token securityToken] forHTTPHeaderField:@"X-HTTPDNS-Security-Token"];
 
     return request;
 }
 
 // 发起网络请求，解析域名，同步方法
--(NSMutableArray *)lookupALLHostsFromServer:(NSString *)hostsString error:(NSError **)error {
-    NSMutableURLRequest *request = [self constructRequestWith:hostsString];
+-(NSMutableArray *)lookupAllHostsFromServer:(NSString *)hostsString error:(NSError **)error {
+    HttpdnsLogDebug(@"[lookupAllHostFromServer] - ");
+    HttpdnsToken *token = [[HttpdnsTokenGen sharedInstance] getToken];
+    if (token == nil) {
+        HttpdnsLogError(@"[lookupAllHostFromServer] - token is nil");
+        NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:@"Token is null", @"ErrorMessage", nil];
+        *error = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10001 userInfo:dict];
+        return nil;
+    }
+    NSMutableURLRequest *request = [self constructRequestWith:hostsString withToken:token];
 
     NSHTTPURLResponse *response;
     NSData *result = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:error];
     if (*error) {
         // TODO 处理网络异常
-        [HttpdnsLog LogD:@"Network error. error %@", *error];
+        HttpdnsLogError(@"[lookupAllHostFromServer] - Network error. error %@", *error);
         return nil;
     } else if ([response statusCode] != 200) {
         // TODO 处理http异常
-        [HttpdnsLog LogD:@"ReponseCode not 200, but %d.", [response statusCode]];
+        HttpdnsLogDebug(@"[lookupAllHostFromServer] - ReponseCode not 200, but %lu.", [response statusCode]);
+        HttpdnsLogDebug(@"[lookupAllHostFromServer] - ReponseContent: %@", [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding]);
         return nil;
     }
 
-    [HttpdnsLog LogD:@"No network error occur."];
+    HttpdnsLogDebug(@"[lookupAllHostFromServer] - No network error occur.");
     return [self parseHostInfoFromHttpResponse:result];
 }
 

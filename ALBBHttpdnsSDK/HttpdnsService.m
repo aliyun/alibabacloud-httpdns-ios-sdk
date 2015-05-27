@@ -25,8 +25,8 @@
 #pragma mark init
 
 -(instancetype)init {
-    _requestScheduler = [[HttpdnsRequestScheduler alloc] init];
     NSDictionary *cacheHosts = [HttpdnsLocalCache readFromLocalCache];
+    _requestScheduler = [[HttpdnsRequestScheduler alloc] init];
     [_requestScheduler readCacheHosts:cacheHosts];
     return self;
 }
@@ -40,6 +40,7 @@
 -(NSString *)getIpByHost:(NSString *)host {
     // 如果是ip，直接返回
     if ([HttpdnsUtil checkIfIsAnIp:host]) {
+        HttpdnsLogDebug(@"[getIpByHost] - directly return this ip");
         return host;
     }
     HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host];
@@ -49,6 +50,7 @@
             return [[ips objectAtIndex:0] getIpString];
         }
     }
+    HttpdnsLogDebug(@"[getIpByHost] - this host haven't exist in cache yet");
     return nil;
 }
 

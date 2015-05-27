@@ -37,3 +37,10 @@ Scripts/build.sh
 Scripts/gcovr
 Scripts/jenkins.py
 Scripts/ocunit2junit
+
+# import framework
+###################
+*.framework/
+ALBB.bundle/
+yw_1222.jpg
+HttpdnsTestApp/

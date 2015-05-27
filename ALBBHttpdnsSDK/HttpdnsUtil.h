@@ -10,7 +10,7 @@
 
 @interface HttpdnsUtil : NSObject
 
-+(NSString *)HMACSha1Sign:(NSData *)data withKey:(NSString *)key;
++(NSString *)Base64HMACSha1Sign:(NSData *)data withKey:(NSString *)key;
 
 +(long long)currentEpochTimeInSecond;
 

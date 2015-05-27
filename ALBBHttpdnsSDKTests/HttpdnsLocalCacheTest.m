@@ -16,6 +16,7 @@
 @implementation HttpdnsLocalCacheTest
 
 - (void)setUp {
+    [HttpdnsLog enbaleLog];
     [super setUp];
     // Put setup code here. This method is called before the invocation of each test method in the class.
 }
@@ -26,14 +27,13 @@
 }
 
 - (void)testReadAndWriteNormally {
-    NSMutableDictionary *managerDict = [[NSMutableDictionary alloc] init];
+    HttpdnsIpObject *ip = [[HttpdnsIpObject alloc] init];
+    [ip setIp:@"223.5.5.5"];
     HttpdnsHostObject *host = [[HttpdnsHostObject alloc] init];
     [host setHostName:@"www.taobao.com"];
-    [managerDict setObject:host forKey:@"www.taobao.com"];
-    dispatch_queue_t syncQueue = dispatch_queue_create("com.alibaba.sdk.httpdns", NULL);
     NSMutableDictionary *testDict = [[NSMutableDictionary alloc] init];
-    [testDict setObject:@"fdsfd" forKey:@"fdfds"];
-    [HttpdnsLocalCache writeToLocalCache:testDict inQueue:syncQueue];
+    [testDict setObject:host forKey:@"fdfds"];
+    [HttpdnsLocalCache writeToLocalCache:testDict];
     NSDictionary *dict = [HttpdnsLocalCache readFromLocalCache];
     XCTAssertEqual(1, [dict count], @"Failed");
 }

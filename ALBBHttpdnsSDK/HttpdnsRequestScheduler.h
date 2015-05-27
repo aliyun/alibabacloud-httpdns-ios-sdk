@@ -38,4 +38,5 @@
 // 添加单个域名，返回当前拥有的该域名的信息，然后决定是否要查询
 -(HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host;
 
+-(void)mergeLookupResultToManager:(NSMutableArray *)result;
 @end

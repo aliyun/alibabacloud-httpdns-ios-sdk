@@ -9,16 +9,17 @@
 #import "HttpdnsModel.h"
 
 @implementation HttpdnsIpObject
+@synthesize ip;
 
--(instancetype)initWithCoder:(NSCoder *)aDecoder {
+-(id)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super init]) {
-        _ip = [aDecoder decodeObjectForKey:@"ip"];
+        ip = [aDecoder decodeObjectForKey:@"ip"];
     }
     return self;
 }
 
 -(void)encodeWithCoder:(NSCoder *)aCoder {
-    [aCoder encodeObject:_ip forKey:@"ip"];
+    [aCoder encodeObject:ip forKey:@"ip"];
 }
 
 @end
@@ -37,20 +38,20 @@
 -(instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super init]) {
         _hostName = [aDecoder decodeObjectForKey:@"hostName"];
-        _currentState = [aDecoder decodeIntegerForKey:@"currentState"];
         _lastLookupTime = [aDecoder decodeInt64ForKey:@"lastLookupTime"];
         _ttl = [aDecoder decodeInt64ForKey:@"ttl"];
         _ips = [aDecoder decodeObjectForKey:@"ips"];
+        _currentState = [aDecoder decodeIntegerForKey:@"currentState"];
     }
     return self;
 }
 
 -(void)encodeWithCoder:(NSCoder *)aCoder {
     [aCoder encodeObject:_hostName forKey:@"hostName"];
-    [aCoder encodeInteger:_currentState forKey:@"currentState"];
     [aCoder encodeInt64:_lastLookupTime forKey:@"lastLookupTime"];
     [aCoder encodeInt64:_ttl forKey:@"ttl"];
     [aCoder encodeObject:_ips forKey:@"ips"];
+    [aCoder encodeInteger:_currentState forKey:@"currentState"];
 }
 
 -(BOOL)isExpired {
@@ -58,12 +59,15 @@
     if (_lastLookupTime + _ttl > currentEpoch) {
         return NO;
     }
+    _currentState = EXPIRED;
     return YES;
 }
 
 @end
 
-@implementation FederationToken
+@implementation HttpdnsToken : NSObject
 
-
+-(NSString *)description {
+    return [NSString stringWithFormat:@"Token: ak = %@ sk = %@ sToken = %@", _accessKeyId, _accessKeySecret, _securityToken];
+}
 @end

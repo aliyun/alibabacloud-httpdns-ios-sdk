@@ -13,3 +13,6 @@
 #import "HttpdnsRequest.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLocalCache.h"
+#import "HttpdnsModel.h"
+#import "HttpdnsTokenGen.h"
+#import "HttpdnsLog.h"

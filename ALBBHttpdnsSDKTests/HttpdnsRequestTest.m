@@ -7,7 +7,8 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "HttpdnsRequest.h"
+#import "TestIncludeAllHeader.h"
+#import "HttpdnsLog.h"
 
 @interface HttpdnsRequestTest : XCTestCase
 
@@ -27,10 +28,12 @@
 }
 
 - (void)testRequestOneHost {
+    [[HttpdnsTokenGen sharedInstance] setUpEnvironment];
+    sleep(1);
     NSString *hostName = @"www.taobao.com";
     HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
     NSError *error;
-    NSMutableArray *result = [request lookupALLHostsFromServer:hostName error:&error];
+    NSMutableArray *result = [request lookupAllHostsFromServer:hostName error:&error];
     XCTAssertNil(error, @"error!");
     XCTAssertNotNil(result, @"result is nil!!");
 }

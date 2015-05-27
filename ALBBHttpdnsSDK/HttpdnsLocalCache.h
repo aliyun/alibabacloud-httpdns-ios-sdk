@@ -11,7 +11,9 @@
 
 @interface HttpdnsLocalCache : NSObject
 
-+(void)writeToLocalCache:(NSDictionary *)allHostObjectInManagerDict inQueue:(dispatch_queue_t)syncQueue;
++(void)writeToLocalCache:(NSDictionary *)allHostObjectInManagerDict;
 
 +(NSDictionary *)readFromLocalCache;
+
++(void)cleanLocalCache;
 @end

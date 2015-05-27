@@ -7,6 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
+#import "TestIncludeAllHeader.h"
 
 @interface HttpdnsServiceTest : XCTestCase
 
@@ -24,12 +25,16 @@
     [super tearDown];
 }
 
-- (void)testExample {
-    // This is an example of a functional test case.
-    XCTAssert(YES, @"Pass");
-}
-
 - (void)test_getIpByHost {
+    [[HttpdnsTokenGen sharedInstance] setUpEnvironment];
+    sleep(2);
+    // [HttpdnsLocalCache cleanLocalCache];
+    [HttpdnsLog enbaleLog];
+    HttpDnsService *dns = [HttpDnsService sharedInstance];
+    NSArray *hosts = [[NSArray alloc] initWithObjects:@"www.taobao.com", @"www.alipay.com", nil];
+    [dns setPreResolveHosts:hosts];
+    // [dns getIpByHost:@"img01.taobaocdn.com"];
+    CFRunLoopRun();
 }
 
 @end

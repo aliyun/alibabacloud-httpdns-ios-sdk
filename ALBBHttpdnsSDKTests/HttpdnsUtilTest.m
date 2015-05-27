@@ -33,7 +33,7 @@
     NSString *version = @"1";
     NSString *contentToSign = [NSString stringWithFormat:@"%@%@%@%@", version, appid, timestamp, host];
     NSData *dataToSign = [contentToSign dataUsingEncoding:NSUTF8StringEncoding];
-    NSString *sign = [HttpdnsUtil HMACSha1Sign:dataToSign withKey:sk];
+    NSString *sign = [HttpdnsUtil Base64HMACSha1Sign:dataToSign withKey:sk];
     NSLog(@"signature: %@", sign);
     XCTAssertEqual([sign isEqualToString:@"Tt8VgdCSMewCAmFqm76tSmRAJu4="], YES, @"is equal");
 }

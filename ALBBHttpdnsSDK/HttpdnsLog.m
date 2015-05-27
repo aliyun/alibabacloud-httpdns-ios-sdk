@@ -8,45 +8,21 @@
 
 #import "HttpdnsLog.h"
 
+
+BOOL HttpdnsLogIsEnable = NO;
+
 @implementation HttpdnsLog
 
-
 + (void)enbaleLog {
-    isEnable = true;
+    HttpdnsLogIsEnable = YES;
 }
 
 + (void)disableLog {
-    isEnable = false;
+    HttpdnsLogIsEnable = YES;
 }
 
-+ (void)LogE:(NSString *)format, ... {
-    if (isEnable) {
-        va_list ap;
-        va_start(ap, format);
-        format = [NSString stringWithFormat:@"HttpdnsLog error: %@", format];
-        NSLogv(format, ap);
-        va_end(ap);
-    }
-}
-
-+ (void)LogD:(NSString *)format, ... {
-    if (isEnable) {
-        va_list ap;
-        va_start(ap, format);
-        format = [NSString stringWithFormat:@"HttpdnsLog debug: %@", format];
-        NSLogv(format, ap);
-        va_end(ap);
-    }
-}
-
-+ (void)LogW:(NSString *)format, ... {
-    if (isEnable) {
-        va_list ap;
-        va_start(ap, format);
-        format = [NSString stringWithFormat:@"HttpdnsLog warn: %@", format];
-        NSLogv(format, ap);
-        va_end(ap);
-    }
++ (BOOL)isEnable {
+    return HttpdnsLogIsEnable;
 }
 
 @end

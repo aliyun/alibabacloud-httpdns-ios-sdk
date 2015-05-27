@@ -8,20 +8,21 @@
 
 #import <Foundation/Foundation.h>
 
+@interface HttpdnsIpObject: NSObject<NSCoding> {
+    NSString *ip;
+}
+
+@property (nonatomic, copy, getter=getIpString, setter=setIp:) NSString *ip;
+
+@end
+
+
 typedef NS_ENUM(NSInteger, HostState) {
     INITIALIZE,
     QUERYING,
     EXPIRED,
     VALID
 };
-
-@interface HttpdnsIpObject: NSObject<NSCoding>
-
-@property (nonatomic, strong, getter=getIpString) NSString *ip;
-
-@end
-
-
 
 @interface HttpdnsHostObject : NSObject<NSCoding>
 
@@ -42,13 +43,11 @@ typedef NS_ENUM(NSInteger, HostState) {
 
 
 
-@interface FederationToken : NSObject
+@interface HttpdnsToken : NSObject
 
 @property (nonatomic, strong) NSString *accessKeyId;
 @property (nonatomic, strong) NSString *accessKeySecret;
 @property (nonatomic, strong) NSString *securityToken;
-@property (nonatomic, strong) NSString *federatedUser;
-@property (nonatomic) long expiration;
-@property (nonatomic) long localExpiration;
 
+-(NSString *)description;
 @end

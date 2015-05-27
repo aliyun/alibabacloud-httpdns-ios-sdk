@@ -12,6 +12,6 @@
 
 @interface HttpdnsRequest : NSObject<NSURLConnectionDataDelegate>
 
--(NSMutableArray *)lookupALLHostsFromServer:(NSString *)hostsString error:(NSError **)error;
+-(NSMutableArray *)lookupAllHostsFromServer:(NSString *)hostsString error:(NSError **)error;
 
 @end

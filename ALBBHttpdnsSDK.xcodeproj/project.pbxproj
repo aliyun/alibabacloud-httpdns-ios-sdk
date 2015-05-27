@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		21796E961B144208002F8DA1 /* ALBBHttpdnsSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796E8A1B144208002F8DA1 /* ALBBHttpdnsSDK.framework */; };
 		21796EB81B144220002F8DA1 /* HttpdnsConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 21796EA61B144220002F8DA1 /* HttpdnsConfig.h */; };
 		21796EB91B144220002F8DA1 /* HttpdnsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796EA71B144220002F8DA1 /* HttpdnsConfig.m */; };
 		21796EBA1B144220002F8DA1 /* HttpdnsLocalCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 21796EA81B144220002F8DA1 /* HttpdnsLocalCache.h */; };
@@ -30,6 +29,51 @@
 		21796ED01B14422C002F8DA1 /* HttpdnsRequestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796ECB1B14422C002F8DA1 /* HttpdnsRequestTest.m */; };
 		21796ED11B14422C002F8DA1 /* HttpdnsServiceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796ECC1B14422C002F8DA1 /* HttpdnsServiceTest.m */; };
 		21796ED21B14422C002F8DA1 /* HttpdnsUtilTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796ECD1B14422C002F8DA1 /* HttpdnsUtilTest.m */; };
+		21796EE11B1443CA002F8DA1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796EE01B1443CA002F8DA1 /* main.m */; };
+		21796EE41B1443CA002F8DA1 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796EE31B1443CA002F8DA1 /* AppDelegate.m */; };
+		21796EE71B1443CA002F8DA1 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796EE61B1443CA002F8DA1 /* ViewController.m */; };
+		21796EEA1B1443CA002F8DA1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 21796EE81B1443CA002F8DA1 /* Main.storyboard */; };
+		21796EEC1B1443CA002F8DA1 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 21796EEB1B1443CA002F8DA1 /* Images.xcassets */; };
+		21796EEF1B1443CA002F8DA1 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 21796EED1B1443CA002F8DA1 /* LaunchScreen.xib */; };
+		21796F311B144BD0002F8DA1 /* HttpdnsTokenGenTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21796F301B144BD0002F8DA1 /* HttpdnsTokenGenTest.m */; };
+		21796F641B14666E002F8DA1 /* ALBBMAS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F5D1B14666E002F8DA1 /* ALBBMAS.framework */; };
+		21796F671B14666E002F8DA1 /* ALBBRpcSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F5E1B14666E002F8DA1 /* ALBBRpcSDK.framework */; };
+		21796F6A1B14666E002F8DA1 /* ALBBSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F5F1B14666E002F8DA1 /* ALBBSDK.framework */; };
+		21796F6D1B14666E002F8DA1 /* ALBBSessionSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F601B14666E002F8DA1 /* ALBBSessionSDK.framework */; };
+		21796F701B14666E002F8DA1 /* SecurityGuardSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F611B14666E002F8DA1 /* SecurityGuardSDK.framework */; };
+		21796F731B14666E002F8DA1 /* UTDID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F621B14666E002F8DA1 /* UTDID.framework */; };
+		21796F761B14666E002F8DA1 /* UTMini.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F631B14666E002F8DA1 /* UTMini.framework */; };
+		21796F7E1B1466B0002F8DA1 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F7D1B1466B0002F8DA1 /* CoreTelephony.framework */; };
+		21796F801B1466B6002F8DA1 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F7F1B1466B6002F8DA1 /* SystemConfiguration.framework */; };
+		21796F841B1466C2002F8DA1 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F831B1466C2002F8DA1 /* CoreLocation.framework */; };
+		21796F861B1466CA002F8DA1 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F851B1466CA002F8DA1 /* Security.framework */; };
+		21796F881B1466D1002F8DA1 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F871B1466D1002F8DA1 /* CFNetwork.framework */; };
+		21796F8B1B1466FD002F8DA1 /* ALBB.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 21796F891B1466FD002F8DA1 /* ALBB.bundle */; };
+		21796F8C1B1466FD002F8DA1 /* ALBB.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 21796F891B1466FD002F8DA1 /* ALBB.bundle */; };
+		21796F8D1B1466FD002F8DA1 /* ALBB.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 21796F891B1466FD002F8DA1 /* ALBB.bundle */; };
+		21796F8E1B1466FD002F8DA1 /* yw_1222.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 21796F8A1B1466FD002F8DA1 /* yw_1222.jpg */; };
+		21796F8F1B1466FD002F8DA1 /* yw_1222.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 21796F8A1B1466FD002F8DA1 /* yw_1222.jpg */; };
+		21796F901B1466FD002F8DA1 /* yw_1222.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 21796F8A1B1466FD002F8DA1 /* yw_1222.jpg */; };
+		21796F911B14679E002F8DA1 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F811B1466BC002F8DA1 /* libz.dylib */; };
+		21796F9C1B146DD2002F8DA1 /* libz.dylib in Sources */ = {isa = PBXBuildFile; fileRef = 21796F811B1466BC002F8DA1 /* libz.dylib */; };
+		21796FA11B146FD3002F8DA1 /* ALBBHttpdnsSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796E8A1B144208002F8DA1 /* ALBBHttpdnsSDK.framework */; };
+		21796FA21B14703A002F8DA1 /* ALBBHttpdnsSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796E8A1B144208002F8DA1 /* ALBBHttpdnsSDK.framework */; };
+		21796FA31B147294002F8DA1 /* ALBBMAS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F5D1B14666E002F8DA1 /* ALBBMAS.framework */; };
+		21796FA41B147294002F8DA1 /* ALBBRpcSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F5E1B14666E002F8DA1 /* ALBBRpcSDK.framework */; };
+		21796FA51B147294002F8DA1 /* ALBBSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F5F1B14666E002F8DA1 /* ALBBSDK.framework */; };
+		21796FA61B147294002F8DA1 /* ALBBSessionSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F601B14666E002F8DA1 /* ALBBSessionSDK.framework */; };
+		21796FA71B147294002F8DA1 /* SecurityGuardSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F611B14666E002F8DA1 /* SecurityGuardSDK.framework */; };
+		21796FA91B147294002F8DA1 /* UTDID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F621B14666E002F8DA1 /* UTDID.framework */; };
+		21796FAA1B147294002F8DA1 /* UTMini.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F631B14666E002F8DA1 /* UTMini.framework */; };
+		21796FAB1B14729C002F8DA1 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F7D1B1466B0002F8DA1 /* CoreTelephony.framework */; };
+		21796FAC1B1472A3002F8DA1 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F7F1B1466B6002F8DA1 /* SystemConfiguration.framework */; };
+		21796FAD1B1472AA002F8DA1 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F811B1466BC002F8DA1 /* libz.dylib */; };
+		21796FAE1B1472AF002F8DA1 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F831B1466C2002F8DA1 /* CoreLocation.framework */; };
+		21796FAF1B1472B5002F8DA1 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F851B1466CA002F8DA1 /* Security.framework */; };
+		21796FB01B1472BB002F8DA1 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F871B1466D1002F8DA1 /* CFNetwork.framework */; };
+		21796FB71B155684002F8DA1 /* TDS_IOS_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796FB61B155684002F8DA1 /* TDS_IOS_SDK.framework */; };
+		21796FB81B155684002F8DA1 /* TDS_IOS_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796FB61B155684002F8DA1 /* TDS_IOS_SDK.framework */; };
+		21AD7ECB1B15BC4D000312E5 /* HttpdnsSchedulerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21AD7ECA1B15BC4D000312E5 /* HttpdnsSchedulerTest.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,6 +83,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 21796E891B144208002F8DA1;
 			remoteInfo = ALBBHttpdnsSDK;
+		};
+		21796FB11B14740A002F8DA1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 21796E811B144208002F8DA1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 21796EDB1B1443CA002F8DA1;
+			remoteInfo = HttpdnsTestApp;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -70,6 +121,35 @@
 		21796ECC1B14422C002F8DA1 /* HttpdnsServiceTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsServiceTest.m; sourceTree = "<group>"; };
 		21796ECD1B14422C002F8DA1 /* HttpdnsUtilTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtilTest.m; sourceTree = "<group>"; };
 		21796ECE1B14422C002F8DA1 /* TestIncludeAllHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestIncludeAllHeader.h; sourceTree = "<group>"; };
+		21796EDC1B1443CA002F8DA1 /* HttpdnsTestApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HttpdnsTestApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		21796EDF1B1443CA002F8DA1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		21796EE01B1443CA002F8DA1 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		21796EE21B1443CA002F8DA1 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		21796EE31B1443CA002F8DA1 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		21796EE51B1443CA002F8DA1 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		21796EE61B1443CA002F8DA1 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		21796EE91B1443CA002F8DA1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		21796EEB1B1443CA002F8DA1 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		21796EEE1B1443CA002F8DA1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
+		21796F301B144BD0002F8DA1 /* HttpdnsTokenGenTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsTokenGenTest.m; sourceTree = "<group>"; };
+		21796F5D1B14666E002F8DA1 /* ALBBMAS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ALBBMAS.framework; sourceTree = "<group>"; };
+		21796F5E1B14666E002F8DA1 /* ALBBRpcSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ALBBRpcSDK.framework; sourceTree = "<group>"; };
+		21796F5F1B14666E002F8DA1 /* ALBBSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ALBBSDK.framework; sourceTree = "<group>"; };
+		21796F601B14666E002F8DA1 /* ALBBSessionSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ALBBSessionSDK.framework; sourceTree = "<group>"; };
+		21796F611B14666E002F8DA1 /* SecurityGuardSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SecurityGuardSDK.framework; sourceTree = "<group>"; };
+		21796F621B14666E002F8DA1 /* UTDID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = UTDID.framework; sourceTree = "<group>"; };
+		21796F631B14666E002F8DA1 /* UTMini.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = UTMini.framework; sourceTree = "<group>"; };
+		21796F7D1B1466B0002F8DA1 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
+		21796F7F1B1466B6002F8DA1 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		21796F811B1466BC002F8DA1 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		21796F831B1466C2002F8DA1 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		21796F851B1466CA002F8DA1 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		21796F871B1466D1002F8DA1 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
+		21796F891B1466FD002F8DA1 /* ALBB.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ALBB.bundle; sourceTree = "<group>"; };
+		21796F8A1B1466FD002F8DA1 /* yw_1222.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = yw_1222.jpg; sourceTree = "<group>"; };
+		21796FB31B147645002F8DA1 /* ImportAll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImportAll.h; sourceTree = "<group>"; };
+		21796FB61B155684002F8DA1 /* TDS_IOS_SDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = TDS_IOS_SDK.framework; sourceTree = "<group>"; };
+		21AD7ECA1B15BC4D000312E5 /* HttpdnsSchedulerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsSchedulerTest.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +157,20 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21796F911B14679E002F8DA1 /* libz.dylib in Frameworks */,
+				21796F881B1466D1002F8DA1 /* CFNetwork.framework in Frameworks */,
+				21796F861B1466CA002F8DA1 /* Security.framework in Frameworks */,
+				21796F841B1466C2002F8DA1 /* CoreLocation.framework in Frameworks */,
+				21796F801B1466B6002F8DA1 /* SystemConfiguration.framework in Frameworks */,
+				21796F7E1B1466B0002F8DA1 /* CoreTelephony.framework in Frameworks */,
+				21796F671B14666E002F8DA1 /* ALBBRpcSDK.framework in Frameworks */,
+				21796FB71B155684002F8DA1 /* TDS_IOS_SDK.framework in Frameworks */,
+				21796F641B14666E002F8DA1 /* ALBBMAS.framework in Frameworks */,
+				21796F761B14666E002F8DA1 /* UTMini.framework in Frameworks */,
+				21796F6A1B14666E002F8DA1 /* ALBBSDK.framework in Frameworks */,
+				21796F6D1B14666E002F8DA1 /* ALBBSessionSDK.framework in Frameworks */,
+				21796F701B14666E002F8DA1 /* SecurityGuardSDK.framework in Frameworks */,
+				21796F731B14666E002F8DA1 /* UTDID.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,7 +178,29 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				21796E961B144208002F8DA1 /* ALBBHttpdnsSDK.framework in Frameworks */,
+				21796FB01B1472BB002F8DA1 /* CFNetwork.framework in Frameworks */,
+				21796FAF1B1472B5002F8DA1 /* Security.framework in Frameworks */,
+				21796FAE1B1472AF002F8DA1 /* CoreLocation.framework in Frameworks */,
+				21796FAD1B1472AA002F8DA1 /* libz.dylib in Frameworks */,
+				21796FAC1B1472A3002F8DA1 /* SystemConfiguration.framework in Frameworks */,
+				21796FAB1B14729C002F8DA1 /* CoreTelephony.framework in Frameworks */,
+				21796FA31B147294002F8DA1 /* ALBBMAS.framework in Frameworks */,
+				21796FA41B147294002F8DA1 /* ALBBRpcSDK.framework in Frameworks */,
+				21796FA51B147294002F8DA1 /* ALBBSDK.framework in Frameworks */,
+				21796FA61B147294002F8DA1 /* ALBBSessionSDK.framework in Frameworks */,
+				21796FA71B147294002F8DA1 /* SecurityGuardSDK.framework in Frameworks */,
+				21796FA91B147294002F8DA1 /* UTDID.framework in Frameworks */,
+				21796FB81B155684002F8DA1 /* TDS_IOS_SDK.framework in Frameworks */,
+				21796FAA1B147294002F8DA1 /* UTMini.framework in Frameworks */,
+				21796FA11B146FD3002F8DA1 /* ALBBHttpdnsSDK.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21796ED91B1443CA002F8DA1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21796FA21B14703A002F8DA1 /* ALBBHttpdnsSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,8 +210,18 @@
 		21796E801B144208002F8DA1 = {
 			isa = PBXGroup;
 			children = (
+				21796F891B1466FD002F8DA1 /* ALBB.bundle */,
+				21796F8A1B1466FD002F8DA1 /* yw_1222.jpg */,
+				21796F871B1466D1002F8DA1 /* CFNetwork.framework */,
+				21796F851B1466CA002F8DA1 /* Security.framework */,
+				21796F831B1466C2002F8DA1 /* CoreLocation.framework */,
+				21796F811B1466BC002F8DA1 /* libz.dylib */,
+				21796F7F1B1466B6002F8DA1 /* SystemConfiguration.framework */,
+				21796F7D1B1466B0002F8DA1 /* CoreTelephony.framework */,
+				21796ED51B144387002F8DA1 /* ALBBOneSDK */,
 				21796E8C1B144208002F8DA1 /* ALBBHttpdnsSDK */,
 				21796E991B144208002F8DA1 /* ALBBHttpdnsSDKTests */,
+				21796EDD1B1443CA002F8DA1 /* ALBBHttpdnsTestApp */,
 				21796E8B1B144208002F8DA1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -105,6 +231,7 @@
 			children = (
 				21796E8A1B144208002F8DA1 /* ALBBHttpdnsSDK.framework */,
 				21796E951B144208002F8DA1 /* ALBBHttpdnsSDKTests.xctest */,
+				21796EDC1B1443CA002F8DA1 /* HttpdnsTestApp.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -147,9 +274,11 @@
 			isa = PBXGroup;
 			children = (
 				21796ECA1B14422C002F8DA1 /* HttpdnsLocalCacheTest.m */,
+				21AD7ECA1B15BC4D000312E5 /* HttpdnsSchedulerTest.m */,
 				21796ECB1B14422C002F8DA1 /* HttpdnsRequestTest.m */,
 				21796ECC1B14422C002F8DA1 /* HttpdnsServiceTest.m */,
 				21796ECD1B14422C002F8DA1 /* HttpdnsUtilTest.m */,
+				21796F301B144BD0002F8DA1 /* HttpdnsTokenGenTest.m */,
 				21796ECE1B14422C002F8DA1 /* TestIncludeAllHeader.h */,
 				21796E9A1B144208002F8DA1 /* Supporting Files */,
 			);
@@ -160,6 +289,47 @@
 			isa = PBXGroup;
 			children = (
 				21796E9B1B144208002F8DA1 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		21796ED51B144387002F8DA1 /* ALBBOneSDK */ = {
+			isa = PBXGroup;
+			children = (
+				21796FB61B155684002F8DA1 /* TDS_IOS_SDK.framework */,
+				21796F5D1B14666E002F8DA1 /* ALBBMAS.framework */,
+				21796F5E1B14666E002F8DA1 /* ALBBRpcSDK.framework */,
+				21796F5F1B14666E002F8DA1 /* ALBBSDK.framework */,
+				21796F601B14666E002F8DA1 /* ALBBSessionSDK.framework */,
+				21796F611B14666E002F8DA1 /* SecurityGuardSDK.framework */,
+				21796F621B14666E002F8DA1 /* UTDID.framework */,
+				21796F631B14666E002F8DA1 /* UTMini.framework */,
+			);
+			name = ALBBOneSDK;
+			sourceTree = "<group>";
+		};
+		21796EDD1B1443CA002F8DA1 /* ALBBHttpdnsTestApp */ = {
+			isa = PBXGroup;
+			children = (
+				21796FB31B147645002F8DA1 /* ImportAll.h */,
+				21796EE21B1443CA002F8DA1 /* AppDelegate.h */,
+				21796EE31B1443CA002F8DA1 /* AppDelegate.m */,
+				21796EE51B1443CA002F8DA1 /* ViewController.h */,
+				21796EE61B1443CA002F8DA1 /* ViewController.m */,
+				21796EE81B1443CA002F8DA1 /* Main.storyboard */,
+				21796EEB1B1443CA002F8DA1 /* Images.xcassets */,
+				21796EED1B1443CA002F8DA1 /* LaunchScreen.xib */,
+				21796EDE1B1443CA002F8DA1 /* Supporting Files */,
+			);
+			name = ALBBHttpdnsTestApp;
+			path = HttpdnsTestApp;
+			sourceTree = "<group>";
+		};
+		21796EDE1B1443CA002F8DA1 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				21796EDF1B1443CA002F8DA1 /* Info.plist */,
+				21796EE01B1443CA002F8DA1 /* main.m */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -216,11 +386,29 @@
 			);
 			dependencies = (
 				21796E981B144208002F8DA1 /* PBXTargetDependency */,
+				21796FB21B14740A002F8DA1 /* PBXTargetDependency */,
 			);
 			name = ALBBHttpdnsSDKTests;
 			productName = ALBBHttpdnsSDKTests;
 			productReference = 21796E951B144208002F8DA1 /* ALBBHttpdnsSDKTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		21796EDB1B1443CA002F8DA1 /* HttpdnsTestApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 21796EFC1B1443CB002F8DA1 /* Build configuration list for PBXNativeTarget "HttpdnsTestApp" */;
+			buildPhases = (
+				21796ED81B1443CA002F8DA1 /* Sources */,
+				21796ED91B1443CA002F8DA1 /* Frameworks */,
+				21796EDA1B1443CA002F8DA1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HttpdnsTestApp;
+			productName = HttpdnsTestApp;
+			productReference = 21796EDC1B1443CA002F8DA1 /* HttpdnsTestApp.app */;
+			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
@@ -236,6 +424,10 @@
 					};
 					21796E941B144208002F8DA1 = {
 						CreatedOnToolsVersion = 6.3.2;
+						TestTargetID = 21796EDB1B1443CA002F8DA1;
+					};
+					21796EDB1B1443CA002F8DA1 = {
+						CreatedOnToolsVersion = 6.3.2;
 					};
 				};
 			};
@@ -245,6 +437,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = 21796E801B144208002F8DA1;
 			productRefGroup = 21796E8B1B144208002F8DA1 /* Products */;
@@ -253,6 +446,7 @@
 			targets = (
 				21796E891B144208002F8DA1 /* ALBBHttpdnsSDK */,
 				21796E941B144208002F8DA1 /* ALBBHttpdnsSDKTests */,
+				21796EDB1B1443CA002F8DA1 /* HttpdnsTestApp */,
 			);
 		};
 /* End PBXProject section */
@@ -262,6 +456,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21796F8E1B1466FD002F8DA1 /* yw_1222.jpg in Resources */,
+				21796F8B1B1466FD002F8DA1 /* ALBB.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -269,6 +465,20 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21796F8F1B1466FD002F8DA1 /* yw_1222.jpg in Resources */,
+				21796F8C1B1466FD002F8DA1 /* ALBB.bundle in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21796EDA1B1443CA002F8DA1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21796F8D1B1466FD002F8DA1 /* ALBB.bundle in Resources */,
+				21796EEA1B1443CA002F8DA1 /* Main.storyboard in Resources */,
+				21796F901B1466FD002F8DA1 /* yw_1222.jpg in Resources */,
+				21796EEF1B1443CA002F8DA1 /* LaunchScreen.xib in Resources */,
+				21796EEC1B1443CA002F8DA1 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -298,7 +508,20 @@
 				21796ECF1B14422C002F8DA1 /* HttpdnsLocalCacheTest.m in Sources */,
 				21796ED11B14422C002F8DA1 /* HttpdnsServiceTest.m in Sources */,
 				21796ED01B14422C002F8DA1 /* HttpdnsRequestTest.m in Sources */,
+				21AD7ECB1B15BC4D000312E5 /* HttpdnsSchedulerTest.m in Sources */,
 				21796ED21B14422C002F8DA1 /* HttpdnsUtilTest.m in Sources */,
+				21796F311B144BD0002F8DA1 /* HttpdnsTokenGenTest.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		21796ED81B1443CA002F8DA1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21796F9C1B146DD2002F8DA1 /* libz.dylib in Sources */,
+				21796EE71B1443CA002F8DA1 /* ViewController.m in Sources */,
+				21796EE41B1443CA002F8DA1 /* AppDelegate.m in Sources */,
+				21796EE11B1443CA002F8DA1 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -310,7 +533,31 @@
 			target = 21796E891B144208002F8DA1 /* ALBBHttpdnsSDK */;
 			targetProxy = 21796E971B144208002F8DA1 /* PBXContainerItemProxy */;
 		};
+		21796FB21B14740A002F8DA1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 21796EDB1B1443CA002F8DA1 /* HttpdnsTestApp */;
+			targetProxy = 21796FB11B14740A002F8DA1 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		21796EE81B1443CA002F8DA1 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				21796EE91B1443CA002F8DA1 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		21796EED1B1443CA002F8DA1 /* LaunchScreen.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				21796EEE1B1443CA002F8DA1 /* Base */,
+			);
+			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		21796E9E1B144208002F8DA1 /* Debug */ = {
@@ -355,6 +602,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64 armv7 armv7s";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -393,9 +641,11 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
+				VALID_ARCHS = "arm64 armv7 armv7s";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -408,11 +658,18 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = ALBBHttpdnsSDK/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				VALID_ARCHS = "arm64 armv7 armv7s";
 			};
 			name = Debug;
 		};
@@ -423,20 +680,30 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = ALBBHttpdnsSDK/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				VALID_ARCHS = "arm64 armv7 armv7s";
 			};
 			name = Release;
 		};
 		21796EA41B144208002F8DA1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
+					"$(PROJECT_DIR)",
+					/Users/zhouzhuo/iOSPackage/onesdk,
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -444,19 +711,74 @@
 				);
 				INFOPLIST_FILE = ALBBHttpdnsSDKTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					XCTest,
+					"-ObjC",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HttpdnsTestApp.app/HttpdnsTestApp";
+				VALID_ARCHS = "arm64 armv7 armv7s";
 			};
 			name = Debug;
 		};
 		21796EA51B144208002F8DA1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
+					"$(PROJECT_DIR)",
+					/Users/zhouzhuo/iOSPackage/onesdk,
 				);
 				INFOPLIST_FILE = ALBBHttpdnsSDKTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					XCTest,
+					"-ObjC",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HttpdnsTestApp.app/HttpdnsTestApp";
+				VALID_ARCHS = "arm64 armv7 armv7s";
+			};
+			name = Release;
+		};
+		21796EFD1B1443CB002F8DA1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = HttpdnsTestApp/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		21796EFE1B1443CB002F8DA1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
+				INFOPLIST_FILE = HttpdnsTestApp/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -480,6 +802,7 @@
 				21796EA21B144208002F8DA1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		21796EA31B144208002F8DA1 /* Build configuration list for PBXNativeTarget "ALBBHttpdnsSDKTests" */ = {
 			isa = XCConfigurationList;
@@ -488,6 +811,16 @@
 				21796EA51B144208002F8DA1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		21796EFC1B1443CB002F8DA1 /* Build configuration list for PBXNativeTarget "HttpdnsTestApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21796EFD1B1443CB002F8DA1 /* Debug */,
+				21796EFE1B1443CB002F8DA1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
