@@ -170,10 +170,10 @@ static NSMutableDictionary *retryMap = nil;
     HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
     HttpdnsLogDebug(@"[immedatelyExecute] - Request start, request string: %@", hosts);
     NSMutableArray *result = [request lookupAllHostsFromServer:hosts error:&error];
+    __block NSString *hostRef = hosts;
+    __block NSNumber *retryCountRef = [NSNumber numberWithInt:[count intValue] + 1];
     dispatch_sync(_syncQueue, ^{
         if (error) {
-            __strong NSString *hostRef = hosts;
-            __strong NSNumber *retryCountRef = [NSNumber numberWithInt:[count intValue] + 1];
             if ([retryCountRef intValue] > 2) {
                 return;
             }
@@ -182,7 +182,7 @@ static NSMutableDictionary *retryMap = nil;
             NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
             [invocation setTarget: self];
             [invocation setSelector:mySelector];
-            [invocation setArgument:&hosts atIndex: 2];
+            [invocation setArgument:&hostRef atIndex: 2];
             [invocation setArgument:&retryCountRef atIndex: 3];
             NSInvocationOperation *operation = [[NSInvocationOperation alloc] initWithInvocation:invocation];
             [_asyncQueue addOperation:operation];
