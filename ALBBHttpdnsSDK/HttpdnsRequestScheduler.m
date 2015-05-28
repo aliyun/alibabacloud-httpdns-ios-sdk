@@ -29,10 +29,20 @@
             // 不是初始化状态，本地缓存读取到的数据不生效
             return;
         }
+        long long currentTime = [HttpdnsUtil currentEpochTimeInSecond];
         for (NSString *key in [hosts allKeys]) {
-            // 遍历本地缓存的host对象，如果state为QUERYING，调整为VALID或INITIALIZE
             HttpdnsHostObject *hostObject = [hosts objectForKey:key];
+            if ([_hostManagerDict count] > 100) {
+                // 如果全局字典中记录的host超过100个，不接受新域名
+                HttpdnsLogError(@"[readCacheHosts] - Cant handle more than %d hosts", 100);
+                break;
+            }
+            if (currentTime - [hostObject getLastLookupTime] > 7 * 24 * 60 * 60) {
+                // 如果这个域名离最后一次查询超过7天，舍弃这条缓存
+                continue;
+            }
             if ([hostObject getState] == QUERYING) {
+                //如果state为QUERYING，调整为VALID或INITIALIZE
                 if ([hostObject getIps] != nil) {
                     [hostObject setState:VALID];
                 } else {
@@ -47,6 +57,11 @@
 -(void)addPreResolveHosts:(NSArray *)hosts {
     dispatch_sync(_syncQueue, ^{
         for (NSString *hostName in hosts) {
+            if ([_hostManagerDict count] > 100) {
+                // 如果全局字典中记录的host超过100个，不接受新域名
+                HttpdnsLogError(@"[addPreResolveHosts] - Cant handle more than %d hosts", 100);
+                break;
+            }
             HttpdnsHostObject *hostObject = [_hostManagerDict objectForKey:hostName];
             // 如果已经存在，且未过期或已经出于查询状态，则不继续添加
             if (hostObject &&
@@ -74,6 +89,11 @@
         result = [_hostManagerDict objectForKey:host];
         if (!result) {
             HttpdnsLogDebug(@"[addSingleHostAndLookUp] - %@ haven't exist in cache yet", host);
+            if ([_hostManagerDict count] > 100) {
+                // 如果全局字典中记录的host超过100个，不接受新域名
+                HttpdnsLogError(@"[addSingleHostAndLookup] - Cant handle more than %d hosts", 100);
+                return;
+            }
             HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
             [hostObject setHostName:host];
             [_hostManagerDict setObject:hostObject forKey:host];
@@ -158,6 +178,7 @@
                 NSMutableArray *result = [request lookupAllHostsFromServer:requestHostStringParam error:&error];
                 if (error) {
                     // TODO 处理重试逻辑
+                    // 考虑阻塞其他请求的风险
                 }
                 dispatch_sync(_syncQueue, ^{
                     HttpdnsLogDebug(@"[immedatelyExecute] - Request finish, merge %lu data to Manager", [result count]);

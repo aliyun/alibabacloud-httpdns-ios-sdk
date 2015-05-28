@@ -38,6 +38,4 @@ extern BOOL HttpdnsLogIsEnable;
 + (void)disableLog;
 
 + (BOOL)isEnable;
-
-+ (void)LogW:(NSString *)format, ...;
 @end

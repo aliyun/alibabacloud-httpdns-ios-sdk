@@ -7,3 +7,7 @@
 //
 
 #import "HttpdnsConfig.h"
+
+const int MIN_HOST_NUM_PER_REQEUST = 5;
+
+const int MAX_WAIT_FOR_NEXT_QUERY_IN_MS = 100;
