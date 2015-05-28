@@ -68,7 +68,10 @@ NSString * const HTTPDNS_VERSION_NUM = @"1";
     HttpdnsLogDebug(@"[constructRequest] - ContentToSign: %@", contentToSign);
     HttpdnsLogDebug(@"[constructRequest] - Signature: %@", signature);
 
-    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[[NSURL alloc] initWithString:url]];
+    // 默认超时十秒
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:url]
+                                                      cachePolicy:NSURLRequestUseProtocolCachePolicy
+                                                  timeoutInterval:10];
     [request setHTTPMethod:@"GET"];
     [request setValue:signature forHTTPHeaderField:@"Authorization"];
     [request setValue:[token securityToken] forHTTPHeaderField:@"X-HTTPDNS-Security-Token"];
