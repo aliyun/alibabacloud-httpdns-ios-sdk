@@ -24,6 +24,7 @@
     [ALBBRpcSDK setEnvironment:ALBBRpcSDKEnvironmentDaily];
     [[ALBBSDK sharedInstance] asyncInit:^{
         HttpdnsLogDebug(@"init success!");
+        [TDSLog enableLog:YES];
         _tds = [TDSServiceProvider getService];
         [_tds distributeToken:HTTPDNS_TOKEN];
 

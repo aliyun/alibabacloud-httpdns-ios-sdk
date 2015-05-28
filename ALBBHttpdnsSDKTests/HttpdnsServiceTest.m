@@ -26,10 +26,10 @@
 }
 
 - (void)test_getIpByHost {
+    [HttpdnsLog enbaleLog];
     [[HttpdnsTokenGen sharedInstance] setUpEnvironment];
     sleep(2);
     // [HttpdnsLocalCache cleanLocalCache];
-    [HttpdnsLog enbaleLog];
     HttpDnsService *dns = [HttpDnsService sharedInstance];
     NSArray *hosts = [[NSArray alloc] initWithObjects:@"www.taobao.com", @"www.alipay.com", nil];
     [dns setPreResolveHosts:hosts];

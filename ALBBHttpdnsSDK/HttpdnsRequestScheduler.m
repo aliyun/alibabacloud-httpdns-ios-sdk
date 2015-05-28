@@ -71,9 +71,9 @@ static NSMutableDictionary *retryMap = nil;
             HttpdnsHostObject *hostObject = [_hostManagerDict objectForKey:hostName];
             // 如果已经存在，且未过期或已经出于查询状态，则不继续添加
             if (hostObject &&
-                (![hostObject isExpired] || [hostObject getState] != QUERYING)
+                (![hostObject isExpired] || [hostObject getState] == QUERYING)
                 ) {
-                HttpdnsLogDebug(@"[addPreResolveHosts] - %@ omit", hostName);
+                HttpdnsLogDebug(@"[addPreResolveHosts] - %@ omit, is Expired?: %d state: %ld", hostName, [hostObject isExpired], (long)[hostObject getState]);
                 continue;
             }
 
@@ -165,6 +165,34 @@ static NSMutableDictionary *retryMap = nil;
     [self immediatelyExecuteTheLookupAction];
 }
 
+-(void)executeALookupActionWithHosts:(NSString *)hosts retryCount:(NSNumber *)count {
+    NSError *error;
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
+    HttpdnsLogDebug(@"[immedatelyExecute] - Request start, request string: %@", hosts);
+    NSMutableArray *result = [request lookupAllHostsFromServer:hosts error:&error];
+    dispatch_sync(_syncQueue, ^{
+        if (error) {
+            __strong NSString *hostRef = hosts;
+            __strong NSNumber *retryCountRef = [NSNumber numberWithInt:[count intValue] + 1];
+            if ([retryCountRef intValue] > 2) {
+                return;
+            }
+            SEL mySelector = @selector(executeALookupActionWithHosts:retryCount:);
+            NSMethodSignature* signature = [self methodSignatureForSelector:mySelector];
+            NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+            [invocation setTarget: self];
+            [invocation setSelector:mySelector];
+            [invocation setArgument:&hosts atIndex: 2];
+            [invocation setArgument:&retryCountRef atIndex: 3];
+            NSInvocationOperation *operation = [[NSInvocationOperation alloc] initWithInvocation:invocation];
+            [_asyncQueue addOperation:operation];
+            return;
+        }
+        HttpdnsLogDebug(@"[immedatelyExecute] - Request finish, merge %lu data to Manager", [result count]);
+        [self mergeLookupResultToManager:result];
+    });
+}
+
 // 立即将等待查询对列里的域名组装，执行查询，需要运行在同步块中
 -(void)immediatelyExecuteTheLookupAction {
     HttpdnsLogDebug(@"[immedatelyExecute] - Total query cnt: %lu", [_lookupQueue count]);
@@ -175,42 +203,17 @@ static NSMutableDictionary *retryMap = nil;
             [_lookupQueue removeObjectAtIndex:0];
         }
         NSString *requestHostStringParam = [hostsToLookup componentsJoinedByString:@","];
-        NSString *retryOperationKey = [NSString stringWithFormat:@"%@%@", requestHostStringParam, [HttpdnsUtil currentEpochTimeInSecondString]];
-        NSString *retryCountKey = [NSString stringWithFormat:@"%@-count", retryOperationKey];
+        NSNumber *retryCount = [NSNumber numberWithInt:0];
         HttpdnsLogDebug(@"[immedatelyExecute] - Construct Operation, request string: %@", requestHostStringParam);
-        NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
-            @autoreleasepool {
-                NSError *error;
-                HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
-                HttpdnsLogDebug(@"[immedatelyExecute] - Request start, request string: %@", requestHostStringParam);
-                NSMutableArray *result = [request lookupAllHostsFromServer:requestHostStringParam error:&error];
-                dispatch_sync(_syncQueue, ^{
-                    if (error) {
-                        if ([retryMap objectForKey:retryOperationKey] == nil) {
-                            HttpdnsLogError(@"[immediatelyExecute] - Ought to retry, but can't find operation in retry map");
-                            return;
-                        }
-                        int retryCount = [[retryMap objectForKey:retryCountKey] intValue] + 1;
-                        if (retryCount > 2) {
-                            HttpdnsLogError(@"[immediatelyExecute] - Retry exceed 3 times, abort");
-                            [retryMap removeObjectForKey:retryCountKey];
-                            [retryMap removeObjectForKey:retryOperationKey];
-                        } else {
-                            HttpdnsLogError(@"[immediatelyExecute] - Retry %dth times", retryCount);
-                            [retryMap setObject:[NSNumber numberWithInt:retryCount] forKey:retryCountKey];
-                            [_asyncQueue addOperation:[retryMap objectForKey:retryOperationKey]];
-                        }
-                        return;
-                    }
-                    HttpdnsLogDebug(@"[immedatelyExecute] - Request finish, merge %lu data to Manager", [result count]);
-                    [self mergeLookupResultToManager:result];
-                });
-            }
-        }];
-        [retryMap setObject:operation forKey:retryOperationKey];
-        [retryMap setObject:[NSNumber numberWithInt:0] forKey:retryCountKey];
+        SEL mySelector = @selector(executeALookupActionWithHosts:retryCount:);
+        NSMethodSignature* signature = [self methodSignatureForSelector:mySelector];
+        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+        [invocation setTarget: self];
+        [invocation setSelector:mySelector];
+        [invocation setArgument:&requestHostStringParam atIndex: 2];
+        [invocation setArgument:&retryCount atIndex: 3];
+        NSInvocationOperation *operation = [[NSInvocationOperation alloc] initWithInvocation:invocation];
         [_asyncQueue addOperation:operation];
     }
 }
-
 @end
