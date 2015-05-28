@@ -68,10 +68,10 @@ NSString * const HTTPDNS_VERSION_NUM = @"1";
     HttpdnsLogDebug(@"[constructRequest] - ContentToSign: %@", contentToSign);
     HttpdnsLogDebug(@"[constructRequest] - Signature: %@", signature);
 
-    // 默认超时十秒
+    // 默认超时十五秒
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:url]
                                                       cachePolicy:NSURLRequestUseProtocolCachePolicy
-                                                  timeoutInterval:10];
+                                                  timeoutInterval:15];
     [request setHTTPMethod:@"GET"];
     [request setValue:signature forHTTPHeaderField:@"Authorization"];
     [request setValue:[token securityToken] forHTTPHeaderField:@"X-HTTPDNS-Security-Token"];
@@ -93,14 +93,14 @@ NSString * const HTTPDNS_VERSION_NUM = @"1";
 
     NSHTTPURLResponse *response;
     NSData *result = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:error];
+
+    // 异常交由上层处理
     if (*error) {
-        // TODO 处理网络异常
         HttpdnsLogError(@"[lookupAllHostFromServer] - Network error. error %@", *error);
         return nil;
     } else if ([response statusCode] != 200) {
-        // TODO 处理http异常
-        HttpdnsLogDebug(@"[lookupAllHostFromServer] - ReponseCode not 200, but %lu.", [response statusCode]);
-        HttpdnsLogDebug(@"[lookupAllHostFromServer] - ReponseContent: %@", [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding]);
+        HttpdnsLogError(@"[lookupAllHostFromServer] - ReponseCode not 200, but %lu.", [response statusCode]);
+        HttpdnsLogError(@"[lookupAllHostFromServer] - ReponseContent: %@", [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding]);
         return nil;
     }
 

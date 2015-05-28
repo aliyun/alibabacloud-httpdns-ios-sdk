@@ -12,12 +12,18 @@
 #import "HttpdnsLocalCache.h"
 #import "HttpdnsModel.h"
 
+static NSMutableDictionary *retryMap = nil;
+
 @implementation HttpdnsRequestScheduler
+
++(void)initialize {
+    retryMap = [[NSMutableDictionary alloc] init];
+}
 
 -(instancetype)init {
     _syncQueue = dispatch_queue_create("com.alibaba.sdk.httpdns", NULL);
     _asyncQueue = [[NSOperationQueue alloc] init];
-    [_asyncQueue setMaxConcurrentOperationCount:2];
+    [_asyncQueue setMaxConcurrentOperationCount:3];
     _lookupQueue = [[NSMutableArray alloc] init];
     _hostManagerDict = [[NSMutableDictionary alloc] init];
     return self;
@@ -169,6 +175,8 @@
             [_lookupQueue removeObjectAtIndex:0];
         }
         NSString *requestHostStringParam = [hostsToLookup componentsJoinedByString:@","];
+        NSString *retryOperationKey = [NSString stringWithFormat:@"%@%@", requestHostStringParam, [HttpdnsUtil currentEpochTimeInSecondString]];
+        NSString *retryCountKey = [NSString stringWithFormat:@"%@-count", retryOperationKey];
         HttpdnsLogDebug(@"[immedatelyExecute] - Construct Operation, request string: %@", requestHostStringParam);
         NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
             @autoreleasepool {
@@ -176,16 +184,31 @@
                 HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
                 HttpdnsLogDebug(@"[immedatelyExecute] - Request start, request string: %@", requestHostStringParam);
                 NSMutableArray *result = [request lookupAllHostsFromServer:requestHostStringParam error:&error];
-                if (error) {
-                    // TODO 处理重试逻辑
-                    // 考虑阻塞其他请求的风险
-                }
                 dispatch_sync(_syncQueue, ^{
+                    if (error) {
+                        if ([retryMap objectForKey:retryOperationKey] == nil) {
+                            HttpdnsLogError(@"[immediatelyExecute] - Ought to retry, but can't find operation in retry map");
+                            return;
+                        }
+                        int retryCount = [[retryMap objectForKey:retryCountKey] intValue] + 1;
+                        if (retryCount > 2) {
+                            HttpdnsLogError(@"[immediatelyExecute] - Retry exceed 3 times, abort");
+                            [retryMap removeObjectForKey:retryCountKey];
+                            [retryMap removeObjectForKey:retryOperationKey];
+                        } else {
+                            HttpdnsLogError(@"[immediatelyExecute] - Retry %dth times", retryCount);
+                            [retryMap setObject:[NSNumber numberWithInt:retryCount] forKey:retryCountKey];
+                            [_asyncQueue addOperation:[retryMap objectForKey:retryOperationKey]];
+                        }
+                        return;
+                    }
                     HttpdnsLogDebug(@"[immedatelyExecute] - Request finish, merge %lu data to Manager", [result count]);
                     [self mergeLookupResultToManager:result];
                 });
             }
         }];
+        [retryMap setObject:operation forKey:retryOperationKey];
+        [retryMap setObject:[NSNumber numberWithInt:0] forKey:retryCountKey];
         [_asyncQueue addOperation:operation];
     }
 }
