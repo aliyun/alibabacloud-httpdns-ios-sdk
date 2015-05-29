@@ -16,9 +16,18 @@ NSString * const HTTPDNS_SERVER_IP = @"10.125.65.207:8100";
 NSString * const HTTPDNS_SERVER_BACKUP_HOST = @"";
 NSString * const HTTPDNS_VERSION_NUM = @"1";
 
+static BOOL degradeToHost = NO;
+static NSLock *failedCntLock;
+static int accumulateFailedCount = 0;
+static long long headmostFailedTime = 0;
+
 @implementation HttpdnsRequest
 
 #pragma mark init
+
++(void)initialize {
+    failedCntLock = [[NSLock alloc] init];
+}
 
 -(instancetype)init {
     return self;
@@ -47,7 +56,7 @@ NSString * const HTTPDNS_VERSION_NUM = @"1";
         [hostObject setTTL:[[dict objectForKey:@"ttl"] longLongValue]];
         [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
         [hostObject setState:VALID];
-        HttpdnsLogDebug(@"[parseResponse] - host: %@ ips: %@", [hostObject getHostName], ipNums);
+        HttpdnsLogDebug(@"[parseResponse] - host: %@ ttl: %lld ips: %@", [hostObject getHostName], [hostObject getTTL], ipNums);
         [result addObject:hostObject];
     }
     return result;
@@ -55,16 +64,18 @@ NSString * const HTTPDNS_VERSION_NUM = @"1";
 
 // 构造httpdns解析请求头
 -(NSMutableURLRequest *)constructRequestWith:(NSString *)hostsString withToken:(HttpdnsToken *)token {
+    NSString *chooseEndpoint = degradeToHost ? HTTPDNS_SERVER_BACKUP_HOST : HTTPDNS_SERVER_IP;
     NSString *appId = [[HttpdnsTokenGen sharedInstance] appId];
     NSString *timestamp = [HttpdnsUtil currentEpochTimeInSecondString];
     NSString *url = [NSString stringWithFormat:@"http://%@/resolve?host=%@&version=%@&appid=%@&timestamp=%@",
-                     HTTPDNS_SERVER_IP, hostsString, HTTPDNS_VERSION_NUM, appId, timestamp];
+                     chooseEndpoint, hostsString, HTTPDNS_VERSION_NUM, appId, timestamp];
     NSString *contentToSign = [NSString stringWithFormat:@"%@%@%@%@%@",
                                HTTPDNS_VERSION_NUM, appId, timestamp, hostsString, [token securityToken]];
     NSString *signature = [NSString stringWithFormat:@"HTTPDNS %@:%@",
                            [token accessKeyId],
                            [HttpdnsUtil Base64HMACSha1Sign:[contentToSign dataUsingEncoding:NSUTF8StringEncoding] withKey:[token accessKeySecret]]];
 
+    HttpdnsLogDebug(@"[constructRequest] - Request URL: %@", url);
     HttpdnsLogDebug(@"[constructRequest] - ContentToSign: %@", contentToSign);
     HttpdnsLogDebug(@"[constructRequest] - Signature: %@", signature);
 
@@ -108,4 +119,25 @@ NSString * const HTTPDNS_VERSION_NUM = @"1";
     return [self parseHostInfoFromHttpResponse:result];
 }
 
++(void)notifyRequestFailed {
+    [failedCntLock lock];
+    if (degradeToHost) {
+        // 已经降级，暂时不再做处理
+        return;
+    }
+    long long currentTime = [HttpdnsUtil currentEpochTimeInSecond];
+    if (accumulateFailedCount == 0) {
+        headmostFailedTime = currentTime;
+    }
+    if (accumulateFailedCount > 4) {
+        if (currentTime - headmostFailedTime < 60) {
+            degradeToHost = YES;
+        } else {
+            headmostFailedTime = currentTime;
+        }
+        accumulateFailedCount = 0;
+    }
+    accumulateFailedCount++;
+    [failedCntLock unlock];
+}
 @end

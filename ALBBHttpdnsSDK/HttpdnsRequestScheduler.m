@@ -169,6 +169,8 @@ static NSMutableDictionary *retryMap = nil;
 -(void)executeALookupActionWithHosts:(NSString *)hosts retryCount:(int)count {
     if (count > MAX_REQUEST_RETRY_TIME) {
         HttpdnsLogError(@"[executeLookup] - Retry time exceed limit, abort!");
+        // 重试也没成功，记为一次请求失败
+        [HttpdnsRequest notifyRequestFailed];
         return;
     }
     NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
