@@ -23,7 +23,7 @@ static NSMutableDictionary *retryMap = nil;
 -(instancetype)init {
     _syncQueue = dispatch_queue_create("com.alibaba.sdk.httpdns", NULL);
     _asyncQueue = [[NSOperationQueue alloc] init];
-    [_asyncQueue setMaxConcurrentOperationCount:3];
+    [_asyncQueue setMaxConcurrentOperationCount:MAX_REQEUST_THREAD_NUM];
     _lookupQueue = [[NSMutableArray alloc] init];
     _hostManagerDict = [[NSMutableDictionary alloc] init];
     return self;
@@ -38,9 +38,9 @@ static NSMutableDictionary *retryMap = nil;
         long long currentTime = [HttpdnsUtil currentEpochTimeInSecond];
         for (NSString *key in [hosts allKeys]) {
             HttpdnsHostObject *hostObject = [hosts objectForKey:key];
-            if ([_hostManagerDict count] > 100) {
-                // 如果全局字典中记录的host超过100个，不接受新域名
-                HttpdnsLogError(@"[readCacheHosts] - Cant handle more than %d hosts", 100);
+            if ([_hostManagerDict count] > MAX_MANAGE_HOST_NUM) {
+                // 如果全局字典中记录的host超过限制，不接受新域名
+                HttpdnsLogError(@"[readCacheHosts] - Cant handle more than %d hosts", MAX_MANAGE_HOST_NUM);
                 break;
             }
             if (currentTime - [hostObject getLastLookupTime] > 7 * 24 * 60 * 60) {
@@ -63,9 +63,9 @@ static NSMutableDictionary *retryMap = nil;
 -(void)addPreResolveHosts:(NSArray *)hosts {
     dispatch_sync(_syncQueue, ^{
         for (NSString *hostName in hosts) {
-            if ([_hostManagerDict count] > 100) {
-                // 如果全局字典中记录的host超过100个，不接受新域名
-                HttpdnsLogError(@"[addPreResolveHosts] - Cant handle more than %d hosts", 100);
+            if ([_hostManagerDict count] > MAX_MANAGE_HOST_NUM) {
+                // 如果全局字典中记录的host超过限制，不接受新域名
+                HttpdnsLogError(@"[addPreResolveHosts] - Cant handle more than %d hosts", MAX_MANAGE_HOST_NUM);
                 break;
             }
             HttpdnsHostObject *hostObject = [_hostManagerDict objectForKey:hostName];
@@ -95,9 +95,9 @@ static NSMutableDictionary *retryMap = nil;
         result = [_hostManagerDict objectForKey:host];
         if (!result) {
             HttpdnsLogDebug(@"[addSingleHostAndLookUp] - %@ haven't exist in cache yet", host);
-            if ([_hostManagerDict count] > 100) {
-                // 如果全局字典中记录的host超过100个，不接受新域名
-                HttpdnsLogError(@"[addSingleHostAndLookup] - Cant handle more than %d hosts", 100);
+            if ([_hostManagerDict count] > MAX_MANAGE_HOST_NUM) {
+                // 如果全局字典中记录的host超过限制，不接受新域名
+                HttpdnsLogError(@"[addSingleHostAndLookup] - Cant handle more than %d hosts", MAX_MANAGE_HOST_NUM);
                 return;
             }
             HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
@@ -119,7 +119,7 @@ static NSMutableDictionary *retryMap = nil;
             HttpdnsLogDebug(@"[addSingleHostAndLookUp] - no query waiting, start timer and wait");
             [_lookupQueue addObject:host];
             [result setState:QUERYING];
-            _timer = [NSTimer scheduledTimerWithTimeInterval:5
+            _timer = [NSTimer scheduledTimerWithTimeInterval:FIRST_QEURY_WAIT_INTERVAL_IN_SEC
                                              target:self
                                            selector:@selector(arrivalTimeAndExecuteLookup)
                                            userInfo:nil
@@ -165,32 +165,27 @@ static NSMutableDictionary *retryMap = nil;
     [self immediatelyExecuteTheLookupAction];
 }
 
--(void)executeALookupActionWithHosts:(NSString *)hosts retryCount:(NSNumber *)count {
-    NSError *error;
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
-    HttpdnsLogDebug(@"[immedatelyExecute] - Request start, request string: %@", hosts);
-    NSMutableArray *result = [request lookupAllHostsFromServer:hosts error:&error];
-    __block NSString *hostRef = hosts;
-    __block NSNumber *retryCountRef = [NSNumber numberWithInt:[count intValue] + 1];
-    dispatch_sync(_syncQueue, ^{
-        if (error) {
-            if ([retryCountRef intValue] > 2) {
+// 执行请求，失败会在此重试
+-(void)executeALookupActionWithHosts:(NSString *)hosts retryCount:(int)count {
+    if (count > MAX_REQUEST_RETRY_TIME) {
+        HttpdnsLogError(@"[executeLookup] - Retry time exceed limit, abort!");
+        return;
+    }
+    NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+        NSError *error;
+        HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
+        HttpdnsLogDebug(@"[executeLookup] - Request start, request string: %@", hosts);
+        NSMutableArray *result = [request lookupAllHostsFromServer:hosts error:&error];
+        dispatch_sync(_syncQueue, ^{
+            if (error) {
+                [self executeALookupActionWithHosts:hosts retryCount:count + 1];
                 return;
             }
-            SEL mySelector = @selector(executeALookupActionWithHosts:retryCount:);
-            NSMethodSignature* signature = [self methodSignatureForSelector:mySelector];
-            NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-            [invocation setTarget: self];
-            [invocation setSelector:mySelector];
-            [invocation setArgument:&hostRef atIndex: 2];
-            [invocation setArgument:&retryCountRef atIndex: 3];
-            NSInvocationOperation *operation = [[NSInvocationOperation alloc] initWithInvocation:invocation];
-            [_asyncQueue addOperation:operation];
-            return;
-        }
-        HttpdnsLogDebug(@"[immedatelyExecute] - Request finish, merge %lu data to Manager", [result count]);
-        [self mergeLookupResultToManager:result];
-    });
+            HttpdnsLogDebug(@"[executeLookup] - Request finish, merge %lu data to Manager", [result count]);
+            [self mergeLookupResultToManager:result];
+        });
+    }];
+    [_asyncQueue addOperation:operation];
 }
 
 // 立即将等待查询对列里的域名组装，执行查询，需要运行在同步块中
@@ -203,17 +198,7 @@ static NSMutableDictionary *retryMap = nil;
             [_lookupQueue removeObjectAtIndex:0];
         }
         NSString *requestHostStringParam = [hostsToLookup componentsJoinedByString:@","];
-        NSNumber *retryCount = [NSNumber numberWithInt:0];
-        HttpdnsLogDebug(@"[immedatelyExecute] - Construct Operation, request string: %@", requestHostStringParam);
-        SEL mySelector = @selector(executeALookupActionWithHosts:retryCount:);
-        NSMethodSignature* signature = [self methodSignatureForSelector:mySelector];
-        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-        [invocation setTarget: self];
-        [invocation setSelector:mySelector];
-        [invocation setArgument:&requestHostStringParam atIndex: 2];
-        [invocation setArgument:&retryCount atIndex: 3];
-        NSInvocationOperation *operation = [[NSInvocationOperation alloc] initWithInvocation:invocation];
-        [_asyncQueue addOperation:operation];
+        [self executeALookupActionWithHosts:requestHostStringParam retryCount:0];
     }
 }
 @end

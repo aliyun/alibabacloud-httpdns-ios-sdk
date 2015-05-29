@@ -11,3 +11,11 @@
 extern const int MIN_HOST_NUM_PER_REQEUST;
 
 extern const int MAX_WAIT_FOR_NEXT_QUERY_IN_MS;
+
+extern const int MAX_REQUEST_RETRY_TIME;
+
+extern const int FIRST_QEURY_WAIT_INTERVAL_IN_SEC;
+
+extern const int MAX_MANAGE_HOST_NUM;
+
+extern const int MAX_REQEUST_THREAD_NUM;

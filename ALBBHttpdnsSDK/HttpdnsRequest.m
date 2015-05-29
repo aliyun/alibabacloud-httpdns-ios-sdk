@@ -83,7 +83,6 @@ NSString * const HTTPDNS_VERSION_NUM = @"1";
 -(NSMutableArray *)lookupAllHostsFromServer:(NSString *)hostsString error:(NSError **)error {
     HttpdnsLogDebug(@"[lookupAllHostFromServer] - ");
     HttpdnsToken *token = [[HttpdnsTokenGen sharedInstance] getToken];
-    token = nil;
     if (token == nil) {
         HttpdnsLogError(@"[lookupAllHostFromServer] - token is nil");
         NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:@"Token is null", @"ErrorMessage", nil];
