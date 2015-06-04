@@ -146,7 +146,7 @@ static NSMutableDictionary *retryMap = nil;
 -(void)arrivalTimeAndExecuteLookup {
     dispatch_sync(_syncQueue, ^{
         if ([_lookupQueue count] > 0) {
-            HttpdnsLogDebug(@"[arrivalTimeAndExecuteLookup] - %lu host to query", [_lookupQueue count]);
+            HttpdnsLogDebug(@"[arrivalTimeAndExecuteLookup] - %lu host to query", (unsigned long)[_lookupQueue count]);
             [self immediatelyExecuteTheLookupAction];
         }
     });
@@ -183,7 +183,7 @@ static NSMutableDictionary *retryMap = nil;
                 [self executeALookupActionWithHosts:hosts retryCount:count + 1];
                 return;
             }
-            HttpdnsLogDebug(@"[executeLookup] - Request finish, merge %lu data to Manager", [result count]);
+            HttpdnsLogDebug(@"[executeLookup] - Request finish, merge %lu data to Manager", (unsigned long)[result count]);
             [self mergeLookupResultToManager:result];
         });
     }];
@@ -192,7 +192,7 @@ static NSMutableDictionary *retryMap = nil;
 
 // 立即将等待查询对列里的域名组装，执行查询，需要运行在同步块中
 -(void)immediatelyExecuteTheLookupAction {
-    HttpdnsLogDebug(@"[immedatelyExecute] - Total query cnt: %lu", [_lookupQueue count]);
+    HttpdnsLogDebug(@"[immedatelyExecute] - Total query cnt: %lu", (unsigned long)[_lookupQueue count]);
     while ([_lookupQueue count] > 0) {
         NSMutableArray *hostsToLookup = [[NSMutableArray alloc] init];
         for (int i = 0; i < MIN_HOST_NUM_PER_REQEUST && [_lookupQueue count] > 0; i++) {

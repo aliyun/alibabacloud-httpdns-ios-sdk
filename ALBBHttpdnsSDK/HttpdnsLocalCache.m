@@ -27,14 +27,14 @@ static long long mimimalIntervalInSecond = 10;
     NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
     [userDefault setObject:buffer forKey:localCacheKey];
     [userDefault synchronize];
-    HttpdnsLogDebug(@"[writeToLocalCache] - write %lu to local file system", [allHostObjectInManagerDict count]);
+    HttpdnsLogDebug(@"[writeToLocalCache] - write %lu to local file system", (unsigned long)(unsigned long)[allHostObjectInManagerDict count]);
 }
 
 +(NSDictionary *)readFromLocalCache {
     NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
     NSData *buffer = [userDefault objectForKey:localCacheKey];
     NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:buffer];
-    HttpdnsLogDebug(@"[readFromLocalCache] - read %lu from local file system", [dict count]);
+    HttpdnsLogDebug(@"[readFromLocalCache] - read %lu from local file system", (unsigned long)[dict count]);
     return dict;
 }
 

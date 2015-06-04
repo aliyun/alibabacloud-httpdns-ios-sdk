@@ -57,7 +57,6 @@
 		21796F911B14679E002F8DA1 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F811B1466BC002F8DA1 /* libz.dylib */; };
 		21796F9C1B146DD2002F8DA1 /* libz.dylib in Sources */ = {isa = PBXBuildFile; fileRef = 21796F811B1466BC002F8DA1 /* libz.dylib */; };
 		21796FA11B146FD3002F8DA1 /* ALBBHttpdnsSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796E8A1B144208002F8DA1 /* ALBBHttpdnsSDK.framework */; };
-		21796FA21B14703A002F8DA1 /* ALBBHttpdnsSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796E8A1B144208002F8DA1 /* ALBBHttpdnsSDK.framework */; };
 		21796FA31B147294002F8DA1 /* ALBBMAS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F5D1B14666E002F8DA1 /* ALBBMAS.framework */; };
 		21796FA41B147294002F8DA1 /* ALBBRpcSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F5E1B14666E002F8DA1 /* ALBBRpcSDK.framework */; };
 		21796FA51B147294002F8DA1 /* ALBBSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F5F1B14666E002F8DA1 /* ALBBSDK.framework */; };
@@ -73,6 +72,7 @@
 		21796FB01B1472BB002F8DA1 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796F871B1466D1002F8DA1 /* CFNetwork.framework */; };
 		21796FB71B155684002F8DA1 /* TDS_IOS_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796FB61B155684002F8DA1 /* TDS_IOS_SDK.framework */; };
 		21796FB81B155684002F8DA1 /* TDS_IOS_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796FB61B155684002F8DA1 /* TDS_IOS_SDK.framework */; };
+		21A4F99C1B203EE500BD7CE5 /* ALBBHttpdnsSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21796E8A1B144208002F8DA1 /* ALBBHttpdnsSDK.framework */; };
 		21AD7ECB1B15BC4D000312E5 /* HttpdnsSchedulerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21AD7ECA1B15BC4D000312E5 /* HttpdnsSchedulerTest.m */; };
 /* End PBXBuildFile section */
 
@@ -200,7 +200,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				21796FA21B14703A002F8DA1 /* ALBBHttpdnsSDK.framework in Frameworks */,
+				21A4F99C1B203EE500BD7CE5 /* ALBBHttpdnsSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -665,6 +665,7 @@
 				INFOPLIST_FILE = ALBBHttpdnsSDK/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -687,6 +688,7 @@
 				INFOPLIST_FILE = ALBBHttpdnsSDK/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -763,6 +765,7 @@
 				);
 				INFOPLIST_FILE = HttpdnsTestApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -778,6 +781,7 @@
 				);
 				INFOPLIST_FILE = HttpdnsTestApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

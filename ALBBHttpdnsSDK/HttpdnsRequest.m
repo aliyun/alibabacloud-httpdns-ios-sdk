@@ -110,7 +110,7 @@ static long long headmostFailedTime = 0;
         HttpdnsLogError(@"[lookupAllHostFromServer] - Network error. error %@", *error);
         return nil;
     } else if ([response statusCode] != 200) {
-        HttpdnsLogError(@"[lookupAllHostFromServer] - ReponseCode not 200, but %lu.", [response statusCode]);
+        HttpdnsLogError(@"[lookupAllHostFromServer] - ReponseCode not 200, but %ld.", (long)[response statusCode]);
         HttpdnsLogError(@"[lookupAllHostFromServer] - ReponseContent: %@", [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding]);
         return nil;
     }
