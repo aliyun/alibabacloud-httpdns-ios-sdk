@@ -7,11 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <TDS_IOS_SDK/TDSService.h>
-#import <TDS_IOS_SDK/TDSServiceProvider.h>
-#import <TDS_IOS_SDK/FederationToken.h>
-#import <TDS_IOS_SDK/TDSArgs.h>
-#import <TDS_IOS_SDK/TDSLog.h>
+#import <ALBB_TDS_IOS_SDK/TDSService.h>
+#import <ALBB_TDS_IOS_SDK/TDSServiceProvider.h>
+#import <ALBB_TDS_IOS_SDK/FederationToken.h>
+#import <ALBB_TDS_IOS_SDK/TDSArgs.h>
+#import <ALBB_TDS_IOS_SDK/TDSLog.h>
 #import <ALBBRpcSDK/ALBBRpcSDK.h>
 #import <ALBBSDK/ALBBSDK.h>
 #import "HttpdnsModel.h"

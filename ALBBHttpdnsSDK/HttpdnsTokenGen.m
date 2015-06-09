@@ -20,27 +20,15 @@
 }
 
 -(void)setUpEnvironment {
-    [[ALBBSDK sharedInstance] setALBBSDKEnvironment:ALBBSDKEnvironmentDaily];
-    [ALBBRpcSDK setEnvironment:ALBBRpcSDKEnvironmentDaily];
+    [[ALBBSDK sharedInstance] setALBBSDKEnvironment:ALBBSDKEnvironmentRelease];
+    [ALBBRpcSDK setEnvironment:ALBBRpcSDKEnvironmentRelease];
     [[ALBBSDK sharedInstance] asyncInit:^{
         HttpdnsLogDebug(@"init success!");
         [TDSLog enableLog:YES];
         _tds = [TDSServiceProvider getService];
+        [_tds initWithAppid:@"2078322"];
         [_tds distributeToken:HTTPDNS_TOKEN];
 
-        OpenSecurityGuardManager *osgMgr = [OpenSecurityGuardManager getInstance];
-        if (osgMgr) {
-            id<IOpenStaticDataStoreComponent> component = [osgMgr getStaticDataStoreComp];
-            if (component) {
-                NSString *extraData = [component getExtraData: @"appId" authCode: @""];
-                if (extraData) {
-                    _appId = extraData;
-                    HttpdnsLogDebug(@"[setUpEnviroment] - APPID:%@", extraData);
-                } else {
-                    HttpdnsLogError(@"[setUpEnviroment] - Can not get APPID from SecurityGuardManager.");
-                }
-            }
-        }
     } failedCallback:^(NSError *error) {
         HttpdnsLogDebug(@"init failed! info: %@", error);
     }];

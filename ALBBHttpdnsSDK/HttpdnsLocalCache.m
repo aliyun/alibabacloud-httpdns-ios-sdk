@@ -12,13 +12,13 @@
 
 static NSString *localCacheKey = @"httpdns_hostManagerData";
 static long long lastWroteToCacheTime = 0;
-static long long mimimalIntervalInSecond = 10;
+static long long minimalIntervalInSecond = 10;
 @implementation HttpdnsLocalCache
 
 +(void)writeToLocalCache:(NSDictionary *)allHostObjectInManagerDict {
     long long currentTime = [HttpdnsUtil currentEpochTimeInSecond];
     // 如果离上次写缓存时间小于阈值，放弃此次写入
-    if (currentTime - lastWroteToCacheTime < mimimalIntervalInSecond) {
+    if (currentTime - lastWroteToCacheTime < minimalIntervalInSecond) {
         HttpdnsLogDebug(@"[writeToLocalCache] - Write too often, abort this writing");
         return;
     }

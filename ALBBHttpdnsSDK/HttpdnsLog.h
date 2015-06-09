@@ -38,4 +38,5 @@ extern BOOL HttpdnsLogIsEnable;
 + (void)disableLog;
 
 + (BOOL)isEnable;
+
 @end

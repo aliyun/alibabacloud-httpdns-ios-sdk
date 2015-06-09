@@ -7,6 +7,7 @@
 //
 
 #import "HttpdnsModel.h"
+#import "HttpdnsConfig.h"
 
 @implementation HttpdnsIpObject
 @synthesize ip;
@@ -56,13 +57,21 @@
 
 -(BOOL)isExpired {
     long long currentEpoch = (long long)[[[NSDate alloc] init] timeIntervalSince1970];
-    if (_lastLookupTime + _ttl > currentEpoch) {
-        return NO;
+    if (_lastLookupTime + _ttl < currentEpoch) {
+        _currentState = EXPIRED;
+        return YES;
     }
-    _currentState = EXPIRED;
-    return YES;
+    return NO;
 }
 
+-(BOOL)isInvalid {
+    long long currentEpoch = (long long)[[[NSDate alloc] init] timeIntervalSince1970];
+    if (_lastLookupTime + _ttl + MAX_EXPIRED_ENDURE_TIME_IN_SEC < currentEpoch) {
+        _currentState = INVALID;
+        return YES;
+    }
+    return NO;
+}
 @end
 
 @implementation HttpdnsToken : NSObject

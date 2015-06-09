@@ -18,4 +18,6 @@ extern const int FIRST_QEURY_WAIT_INTERVAL_IN_SEC;
 
 extern const int MAX_MANAGE_HOST_NUM;
 
-extern const int MAX_REQEUST_THREAD_NUM;
+extern const int MAX_REQUEST_THREAD_NUM;
+
+extern const int MAX_EXPIRED_ENDURE_TIME_IN_SEC;

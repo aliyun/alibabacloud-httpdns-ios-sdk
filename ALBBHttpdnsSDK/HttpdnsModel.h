@@ -20,8 +20,9 @@
 typedef NS_ENUM(NSInteger, HostState) {
     INITIALIZE,
     QUERYING,
+    VALID,
     EXPIRED,
-    VALID
+    INVALID
 };
 
 @interface HttpdnsHostObject : NSObject<NSCoding>
@@ -39,6 +40,8 @@ typedef NS_ENUM(NSInteger, HostState) {
 
 // 根据查询时间和TTL判断该域名的信息是否已经过期
 -(BOOL)isExpired;
+
+-(BOOL)isInvalid;
 @end
 
 

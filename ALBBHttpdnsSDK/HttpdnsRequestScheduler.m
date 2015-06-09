@@ -23,7 +23,7 @@ static NSMutableDictionary *retryMap = nil;
 -(instancetype)init {
     _syncQueue = dispatch_queue_create("com.alibaba.sdk.httpdns", NULL);
     _asyncQueue = [[NSOperationQueue alloc] init];
-    [_asyncQueue setMaxConcurrentOperationCount:MAX_REQEUST_THREAD_NUM];
+    [_asyncQueue setMaxConcurrentOperationCount:MAX_REQUEST_THREAD_NUM];
     _lookupQueue = [[NSMutableArray alloc] init];
     _hostManagerDict = [[NSMutableDictionary alloc] init];
     return self;
@@ -43,8 +43,8 @@ static NSMutableDictionary *retryMap = nil;
                 HttpdnsLogError(@"[readCacheHosts] - Cant handle more than %d hosts", MAX_MANAGE_HOST_NUM);
                 break;
             }
-            if (currentTime - [hostObject getLastLookupTime] > 7 * 24 * 60 * 60) {
-                // 如果这个域名离最后一次查询超过7天，舍弃这条缓存
+            if (currentTime - [hostObject getLastLookupTime] > 2 * 24 * 60 * 60 || [hostObject isInvalid]) {
+                // 如果这个域名离最后一次查询超过2天，或者已经不合法，舍弃这条缓存
                 continue;
             }
             if ([hostObject getState] == QUERYING) {
@@ -54,6 +54,12 @@ static NSMutableDictionary *retryMap = nil;
                 } else {
                     [hostObject setState:INITIALIZE];
                 }
+            }
+            long long originTTL = [hostObject getTTL];
+            long long timeElapsed = [HttpdnsUtil currentEpochTimeInSecond] - [hostObject getLastLookupTime];
+            if (timeElapsed - (MAX_EXPIRED_ENDURE_TIME_IN_SEC - 2 * 60) > originTTL) {
+                // 如果TTL已经过期太久，就改为最多两分钟后不合法
+                [hostObject setTTL:(timeElapsed - 2 * 60)];
             }
             [_hostManagerDict setObject:hostObject forKey:key];
         }
@@ -93,7 +99,7 @@ static NSMutableDictionary *retryMap = nil;
     dispatch_sync(_syncQueue, ^{
         BOOL needToQuery = NO;
         result = [_hostManagerDict objectForKey:host];
-        if (!result) {
+        if (result == nil) {
             HttpdnsLogDebug(@"[addSingleHostAndLookUp] - %@ haven't exist in cache yet", host);
             if ([_hostManagerDict count] > MAX_MANAGE_HOST_NUM) {
                 // 如果全局字典中记录的host超过限制，不接受新域名
@@ -108,6 +114,10 @@ static NSMutableDictionary *retryMap = nil;
         if ([result isExpired] && [result getState] != QUERYING) {
             HttpdnsLogDebug(@"[addSingleHostAndLookUp] - %@ is expired", host);
             needToQuery = YES;
+            if ([result isInvalid]) {
+                // 如果过期太久，就舍弃
+                result = nil;
+            }
         }
         if ([result getState] == INITIALIZE) {
             HttpdnsLogDebug(@"[addSingleHostAndLookUp] - %@ is initialize", host);

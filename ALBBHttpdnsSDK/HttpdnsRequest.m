@@ -21,12 +21,15 @@ static NSLock *failedCntLock;
 static int accumulateFailedCount = 0;
 static long long headmostFailedTime = 0;
 
+static long long relativeTimeVal = 0;
+static NSLock * rltTimeLock = nil;
 @implementation HttpdnsRequest
 
 #pragma mark init
 
 +(void)initialize {
     failedCntLock = [[NSLock alloc] init];
+    rltTimeLock = [[NSLock alloc] init];
 }
 
 -(instancetype)init {
@@ -66,7 +69,7 @@ static long long headmostFailedTime = 0;
 -(NSMutableURLRequest *)constructRequestWith:(NSString *)hostsString withToken:(HttpdnsToken *)token {
     NSString *chooseEndpoint = degradeToHost ? HTTPDNS_SERVER_BACKUP_HOST : HTTPDNS_SERVER_IP;
     NSString *appId = [[HttpdnsTokenGen sharedInstance] appId];
-    NSString *timestamp = [HttpdnsUtil currentEpochTimeInSecondString];
+    NSString *timestamp = [HttpdnsRequest getCurrentTimeString];
     NSString *url = [NSString stringWithFormat:@"http://%@/resolve?host=%@&version=%@&appid=%@&timestamp=%@",
                      chooseEndpoint, hostsString, HTTPDNS_VERSION_NUM, appId, timestamp];
     NSString *contentToSign = [NSString stringWithFormat:@"%@%@%@%@%@",
@@ -111,12 +114,36 @@ static long long headmostFailedTime = 0;
         return nil;
     } else if ([response statusCode] != 200) {
         HttpdnsLogError(@"[lookupAllHostFromServer] - ReponseCode not 200, but %ld.", (long)[response statusCode]);
-        HttpdnsLogError(@"[lookupAllHostFromServer] - ReponseContent: %@", [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding]);
+        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:result options:kNilOptions error:error];
+        if (*error) {
+            return nil;
+        }
+        NSString *errCode = [json objectForKey:@"code"];
+        if ([errCode caseInsensitiveCompare:@"RequestTimeTooSkewed"]) {
+            [HttpdnsRequest requestServerTimeStamp];
+        }
         return nil;
     }
 
     HttpdnsLogDebug(@"[lookupAllHostFromServer] - No network error occur.");
     return [self parseHostInfoFromHttpResponse:result];
+}
+
++(void)requestServerTimeStamp {
+    NSString *chooseEndpoint = degradeToHost ? HTTPDNS_SERVER_BACKUP_HOST : HTTPDNS_SERVER_IP;
+    NSString *timeUrl = [NSString stringWithFormat:@"http://%@/timestamp", chooseEndpoint];
+    // 默认超时十五秒
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:timeUrl]
+                                                      cachePolicy:NSURLRequestUseProtocolCachePolicy
+                                                  timeoutInterval:15];
+    NSHTTPURLResponse *response;
+    NSError *error;
+    NSData *result = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+    if (error || [response statusCode] != 200) {
+        return;
+    }
+    NSString *timestamp = [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding];
+    [HttpdnsRequest updateTimeRelativeValWithBase:[timestamp longLongValue]];
 }
 
 +(void)notifyRequestFailed {
@@ -139,5 +166,19 @@ static long long headmostFailedTime = 0;
     }
     accumulateFailedCount++;
     [failedCntLock unlock];
+}
+
++(void)updateTimeRelativeValWithBase:(long long)baseTime {
+    [rltTimeLock lock];
+    relativeTimeVal = baseTime - [HttpdnsUtil currentEpochTimeInSecond];
+    [rltTimeLock unlock];
+}
+
++(NSString *)getCurrentTimeString {
+    long long sysCurrent = [HttpdnsUtil currentEpochTimeInSecond];
+    [rltTimeLock lock];
+    long long realCurrent = sysCurrent + relativeTimeVal;
+    [rltTimeLock unlock];
+    return [NSString stringWithFormat:@"%lld", realCurrent];
 }
 @end
