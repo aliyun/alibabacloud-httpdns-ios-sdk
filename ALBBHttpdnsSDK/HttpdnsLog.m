@@ -18,7 +18,7 @@ BOOL HttpdnsLogIsEnable = NO;
 }
 
 + (void)disableLog {
-    HttpdnsLogIsEnable = YES;
+    HttpdnsLogIsEnable = NO;
 }
 
 + (BOOL)isEnable {

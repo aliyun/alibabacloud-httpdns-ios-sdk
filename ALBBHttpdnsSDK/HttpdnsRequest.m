@@ -16,6 +16,10 @@ NSString * const HTTPDNS_SERVER_IP = @"10.125.65.207:8100";
 NSString * const HTTPDNS_SERVER_BACKUP_HOST = @"";
 NSString * const HTTPDNS_VERSION_NUM = @"1";
 
+NSString * const TEST_AK = @"httpdnstest";
+NSString * const TEST_SK = @"hello";
+NSString * const TEST_APPID = @"123456";
+
 static BOOL degradeToHost = NO;
 static NSLock *failedCntLock;
 static int accumulateFailedCount = 0;
@@ -65,7 +69,7 @@ static NSLock * rltTimeLock = nil;
     return result;
 }
 
-// 构造httpdns解析请求头
+// STS鉴权方式下构造httpdns解析请求头
 -(NSMutableURLRequest *)constructRequestWith:(NSString *)hostsString withToken:(HttpdnsToken *)token {
     NSString *chooseEndpoint = degradeToHost ? HTTPDNS_SERVER_BACKUP_HOST : HTTPDNS_SERVER_IP;
     NSString *appId = [[HttpdnsTokenGen sharedInstance] appId];
@@ -89,6 +93,34 @@ static NSLock * rltTimeLock = nil;
     [request setHTTPMethod:@"GET"];
     [request setValue:signature forHTTPHeaderField:@"Authorization"];
     [request setValue:[token securityToken] forHTTPHeaderField:@"X-HTTPDNS-Security-Token"];
+
+    return request;
+}
+
+
+// AK鉴权方式下构造httpdns解析请求头
+-(NSMutableURLRequest *)constructRequestWith:(NSString *)hostsString {
+    NSString *chooseEndpoint = degradeToHost ? HTTPDNS_SERVER_BACKUP_HOST : HTTPDNS_SERVER_IP;
+    NSString *appId = TEST_APPID;
+    NSString *timestamp = [HttpdnsRequest getCurrentTimeString];
+    NSString *url = [NSString stringWithFormat:@"http://%@/resolve?host=%@&version=%@&appid=%@&timestamp=%@",
+                     chooseEndpoint, hostsString, HTTPDNS_VERSION_NUM, appId, timestamp];
+    NSString *contentToSign = [NSString stringWithFormat:@"%@%@%@%@",
+                               HTTPDNS_VERSION_NUM, appId, timestamp, hostsString];
+    NSString *signature = [NSString stringWithFormat:@"HTTPDNS %@:%@",
+                           TEST_AK,
+                           [HttpdnsUtil Base64HMACSha1Sign:[contentToSign dataUsingEncoding:NSUTF8StringEncoding] withKey:TEST_SK]];
+
+    HttpdnsLogDebug(@"[constructRequest] - Request URL: %@", url);
+    HttpdnsLogDebug(@"[constructRequest] - ContentToSign: %@", contentToSign);
+    HttpdnsLogDebug(@"[constructRequest] - Signature: %@", signature);
+
+    // 默认超时十五秒
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:url]
+                                                      cachePolicy:NSURLRequestUseProtocolCachePolicy
+                                                  timeoutInterval:15];
+    [request setHTTPMethod:@"GET"];
+    [request setValue:signature forHTTPHeaderField:@"Authorization"];
 
     return request;
 }

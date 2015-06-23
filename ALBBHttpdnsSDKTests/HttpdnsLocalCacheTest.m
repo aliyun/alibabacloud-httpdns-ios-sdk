@@ -32,7 +32,7 @@
     HttpdnsHostObject *host = [[HttpdnsHostObject alloc] init];
     [host setHostName:@"www.taobao.com"];
     NSMutableDictionary *testDict = [[NSMutableDictionary alloc] init];
-    [testDict setObject:host forKey:@"fdfds"];
+    [testDict setObject:host forKey:@"test-host"];
     [HttpdnsLocalCache writeToLocalCache:testDict];
     NSDictionary *dict = [HttpdnsLocalCache readFromLocalCache];
     XCTAssertEqual(1, [dict count], @"Failed");
