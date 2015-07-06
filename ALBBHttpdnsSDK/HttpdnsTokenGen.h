@@ -7,11 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ALBB_TDS_IOS_SDK/TDSService.h>
-#import <ALBB_TDS_IOS_SDK/TDSServiceProvider.h>
-#import <ALBB_TDS_IOS_SDK/FederationToken.h>
-#import <ALBB_TDS_IOS_SDK/TDSArgs.h>
-#import <ALBB_TDS_IOS_SDK/TDSLog.h>
+#import <ALBBTDS/TDSService.h>
+#import <ALBBTDS/TDSServiceProvider.h>
+#import <ALBBTDS/FederationToken.h>
+#import <ALBBTDS/TDSArgs.h>
+#import <ALBBTDS/TDSLog.h>
 #import <ALBBSDK/ALBBSDK.h>
 #import <ALBBRpcSDK/ALBBRpcSDK.h>
 #import "HttpdnsModel.h"
@@ -23,6 +23,6 @@
 @property(nonatomic, strong) NSString *appId;
 
 +(instancetype)sharedInstance;
--(void)setUpEnvironment;
+
 -(HttpdnsToken *)getToken;
 @end

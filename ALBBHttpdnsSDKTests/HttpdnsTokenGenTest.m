@@ -28,7 +28,6 @@
 
 - (void)testTokenEnvironmentInitialize {
     HttpdnsTokenGen *tokenGen = [HttpdnsTokenGen sharedInstance];
-    [tokenGen setUpEnvironment];
     sleep(3);
     HttpdnsToken *token = [[HttpdnsTokenGen sharedInstance] getToken];
     token = [[HttpdnsTokenGen sharedInstance] getToken];

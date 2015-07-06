@@ -27,7 +27,6 @@
 
 - (void)test_getIpByHost {
     [HttpdnsLog enbaleLog];
-    [[HttpdnsTokenGen sharedInstance] setUpEnvironment];
     sleep(2);
     // [HttpdnsLocalCache cleanLocalCache];
     HttpDnsService *dns = [HttpDnsService sharedInstance];

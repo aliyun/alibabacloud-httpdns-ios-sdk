@@ -27,7 +27,6 @@
 
 - (void)testMergeResult {
     HttpdnsRequestScheduler *scheduler = [[HttpdnsRequestScheduler alloc] init];
-    [scheduler mergeLookupResultToManager:nil];
 }
 
 @end

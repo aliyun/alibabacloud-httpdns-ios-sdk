@@ -19,21 +19,6 @@
     return _tokenGen;
 }
 
--(void)setUpEnvironment {
-    [[ALBBSDK sharedInstance] setALBBSDKEnvironment:ALBBSDKEnvironmentRelease];
-    [ALBBRpcSDK setEnvironment:ALBBRpcSDKEnvironmentRelease];
-    [[ALBBSDK sharedInstance] asyncInit:^{
-        HttpdnsLogDebug(@"init success!");
-        [TDSLog enableLog:YES];
-        _tds = [TDSServiceProvider getService];
-        [_tds initWithAppid:@"2078322"];
-        [_tds distributeToken:HTTPDNS_TOKEN];
-
-    } failedCallback:^(NSError *error) {
-        HttpdnsLogDebug(@"init failed! info: %@", error);
-    }];
-}
-
 -(HttpdnsToken *)getToken {
     _tds = [TDSServiceProvider getService];
     FederationToken *token = [_tds distributeToken:HTTPDNS_TOKEN];
@@ -42,8 +27,10 @@
         [httpDnsToken setAccessKeyId:[token accessKeyId]];
         [httpDnsToken setAccessKeySecret:[token accessKeySecret]];
         [httpDnsToken setSecurityToken:[token securityToken]];
+        [httpDnsToken setAppId:[_tds getAppid]];
         return httpDnsToken;
     }
     return nil;
 }
+
 @end

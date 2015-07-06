@@ -28,7 +28,6 @@
 }
 
 - (void)testRequestOneHost {
-    [[HttpdnsTokenGen sharedInstance] setUpEnvironment];
     sleep(1);
     NSString *hostName = @"www.taobao.com";
     HttpdnsRequest *request = [[HttpdnsRequest alloc] init];

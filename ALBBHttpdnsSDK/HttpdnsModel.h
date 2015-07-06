@@ -20,9 +20,7 @@
 typedef NS_ENUM(NSInteger, HostState) {
     INITIALIZE,
     QUERYING,
-    VALID,
-    EXPIRED,
-    INVALID
+    VALID
 };
 
 @interface HttpdnsHostObject : NSObject<NSCoding>
@@ -30,18 +28,17 @@ typedef NS_ENUM(NSInteger, HostState) {
 @property (nonatomic, strong, setter=setHostName:, getter=getHostName) NSString *hostName;
 @property (nonatomic, strong, setter=setIps:, getter=getIps) NSArray *ips;
 @property (nonatomic, setter=setTTL:, getter=getTTL) long long ttl;
-// 该域名的信息是在何时查询得到
 @property (nonatomic, getter=getLastLookupTime, setter=setLastLookupTime:) long long lastLookupTime;
-// 标记一个域名正处于什么状态(查询中、已过期、可用等)
 @property (atomic, setter=setState:, getter=getState) HostState currentState;
 
 
 -(instancetype)init;
 
-// 根据查询时间和TTL判断该域名的信息是否已经过期
 -(BOOL)isExpired;
 
--(BOOL)isInvalid;
+-(BOOL)isAlreadyUnawailable;
+
+-(NSString *)description;
 @end
 
 
@@ -51,6 +48,7 @@ typedef NS_ENUM(NSInteger, HostState) {
 @property (nonatomic, strong) NSString *accessKeyId;
 @property (nonatomic, strong) NSString *accessKeySecret;
 @property (nonatomic, strong) NSString *securityToken;
+@property (nonatomic, strong) NSString *appId;
 
 -(NSString *)description;
 @end

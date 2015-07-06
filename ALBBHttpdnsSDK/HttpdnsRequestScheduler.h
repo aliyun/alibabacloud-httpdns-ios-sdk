@@ -32,13 +32,19 @@
 // 每次启动，先从本地cache加载数据
 -(void)readCacheHosts:(NSDictionary *)hosts;
 
+-(void)arrivalTimeAndExecuteLookup;
+
 // 添加预解析域名，并立即启动查询
 -(void)addPreResolveHosts:(NSArray *)hosts;
 
 // 添加单个域名，返回当前拥有的该域名的信息，然后决定是否要查询
 -(HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host;
 
--(void)executeALookupActionWithHosts:(NSString *)hosts retryCount:(int)count;
+-(void)executeALookupActionWithHosts:(NSArray *)hosts retryCount:(int)count;
 
--(void)mergeLookupResultToManager:(NSMutableArray *)result;
+-(void)mergeLookupResultToManager:(NSArray *)result forHosts:(NSArray *)hosts;
+
+-(HttpdnsHostObject *)syncLookupHostsDev:(NSString *)host;
+
+-(void)resetAfterNetworkChanged;
 @end

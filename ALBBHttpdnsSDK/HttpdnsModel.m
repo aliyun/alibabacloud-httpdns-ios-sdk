@@ -58,20 +58,24 @@
 -(BOOL)isExpired {
     long long currentEpoch = (long long)[[[NSDate alloc] init] timeIntervalSince1970];
     if (_lastLookupTime + _ttl < currentEpoch) {
-        _currentState = EXPIRED;
         return YES;
     }
     return NO;
 }
 
--(BOOL)isInvalid {
+-(BOOL)isAlreadyUnawailable {
     long long currentEpoch = (long long)[[[NSDate alloc] init] timeIntervalSince1970];
     if (_lastLookupTime + _ttl + MAX_EXPIRED_ENDURE_TIME_IN_SEC < currentEpoch) {
-        _currentState = INVALID;
         return YES;
     }
     return NO;
 }
+
+-(NSString *)description {
+    return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld state = %ld",
+            _hostName, _ips, _lastLookupTime, _ttl, (long)_currentState];
+}
+
 @end
 
 @implementation HttpdnsToken : NSObject

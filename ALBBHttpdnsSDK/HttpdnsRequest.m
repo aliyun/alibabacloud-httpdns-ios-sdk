@@ -12,8 +12,8 @@
 #import "HttpdnsTokenGen.h"
 #import "HttpdnsModel.h"
 
-NSString * const HTTPDNS_SERVER_IP = @"10.125.65.207:8100";
-NSString * const HTTPDNS_SERVER_BACKUP_HOST = @"";
+NSString * const HTTPDNS_SERVER_IP = @"140.205.143.143";
+NSString * const HTTPDNS_SERVER_BACKUP_HOST = @"httpdns.aliyuncs.com";
 NSString * const HTTPDNS_VERSION_NUM = @"1";
 
 NSString * const TEST_AK = @"httpdnstest";
@@ -42,20 +42,27 @@ static NSLock * rltTimeLock = nil;
 
 #pragma mark LookupIpAction
 
-// 解析httpdns请求返回的结果
 -(NSMutableArray *)parseHostInfoFromHttpResponse:(NSData *)body {
     NSMutableArray *result = [[NSMutableArray alloc] init];
     NSError *error;
     NSDictionary *json = [NSJSONSerialization JSONObjectWithData:body options:kNilOptions error:&error];
-    if (!json) {
+    if (json == nil) {
         return nil;
     }
     NSArray *dnss = [json objectForKey:@"dns"];
+    if (dnss == nil) {
+        return nil;
+    }
     for (NSDictionary *dict in dnss) {
         NSArray *ips = [dict objectForKey:@"ips"];
+        if (ips == nil) {
+            continue;
+        }
         NSMutableArray *ipNums = [[NSMutableArray alloc] init];
         for (NSDictionary *ipDict in ips) {
-            [ipNums addObject:[ipDict objectForKey:@"ip"]];
+            HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
+            [ipObject setIp:[ipDict objectForKey:@"ip"]];
+            [ipNums addObject:ipObject];
         }
         HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
         [hostObject setHostName:[dict objectForKey:@"host"]];
@@ -72,7 +79,7 @@ static NSLock * rltTimeLock = nil;
 // STS鉴权方式下构造httpdns解析请求头
 -(NSMutableURLRequest *)constructRequestWith:(NSString *)hostsString withToken:(HttpdnsToken *)token {
     NSString *chooseEndpoint = degradeToHost ? HTTPDNS_SERVER_BACKUP_HOST : HTTPDNS_SERVER_IP;
-    NSString *appId = [[HttpdnsTokenGen sharedInstance] appId];
+    NSString *appId = [token appId];
     NSString *timestamp = [HttpdnsRequest getCurrentTimeString];
     NSString *url = [NSString stringWithFormat:@"http://%@/resolve?host=%@&version=%@&appid=%@&timestamp=%@",
                      chooseEndpoint, hostsString, HTTPDNS_VERSION_NUM, appId, timestamp];
@@ -86,7 +93,6 @@ static NSLock * rltTimeLock = nil;
     HttpdnsLogDebug(@"[constructRequest] - ContentToSign: %@", contentToSign);
     HttpdnsLogDebug(@"[constructRequest] - Signature: %@", signature);
 
-    // 默认超时十五秒
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:url]
                                                       cachePolicy:NSURLRequestUseProtocolCachePolicy
                                                   timeoutInterval:15];
@@ -115,7 +121,6 @@ static NSLock * rltTimeLock = nil;
     HttpdnsLogDebug(@"[constructRequest] - ContentToSign: %@", contentToSign);
     HttpdnsLogDebug(@"[constructRequest] - Signature: %@", signature);
 
-    // 默认超时十五秒
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:url]
                                                       cachePolicy:NSURLRequestUseProtocolCachePolicy
                                                   timeoutInterval:15];
@@ -125,7 +130,6 @@ static NSLock * rltTimeLock = nil;
     return request;
 }
 
-// 发起网络请求，解析域名，同步方法
 -(NSMutableArray *)lookupAllHostsFromServer:(NSString *)hostsString error:(NSError **)error {
     HttpdnsLogDebug(@"[lookupAllHostFromServer] - ");
     HttpdnsToken *token = [[HttpdnsTokenGen sharedInstance] getToken];
@@ -133,6 +137,7 @@ static NSLock * rltTimeLock = nil;
         HttpdnsLogError(@"[lookupAllHostFromServer] - token is nil");
         NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:@"Token is null", @"ErrorMessage", nil];
         *error = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10001 userInfo:dict];
+        sleep(2); // 如果拿不到token，很可能是因为刚启动，所以等待2秒钟以后再重试。
         return nil;
     }
     NSMutableURLRequest *request = [self constructRequestWith:hostsString withToken:token];
@@ -148,16 +153,23 @@ static NSLock * rltTimeLock = nil;
         HttpdnsLogError(@"[lookupAllHostFromServer] - ReponseCode not 200, but %ld.", (long)[response statusCode]);
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:result options:kNilOptions error:error];
         if (*error) {
+            NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                  @"Response code not 200, and parse response message error", @"ErrorMessage",
+                                  [NSString stringWithFormat:@"%d", (int) [response statusCode]], @"ResponseCode", nil];
+            *error = [[NSError alloc] initWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10002 userInfo:dict];
             return nil;
         }
         NSString *errCode = [json objectForKey:@"code"];
         if ([errCode caseInsensitiveCompare:@"RequestTimeTooSkewed"]) {
             [HttpdnsRequest requestServerTimeStamp];
         }
+        NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
+                              errCode, @"ErrorMessage", nil];
+        *error = [[NSError alloc] initWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10003 userInfo:dict];
         return nil;
     }
 
-    HttpdnsLogDebug(@"[lookupAllHostFromServer] - No network error occur.");
+    HttpdnsLogDebug(@"[lookupAllHostFromServer] - Response code 200.");
     return [self parseHostInfoFromHttpResponse:result];
 }
 

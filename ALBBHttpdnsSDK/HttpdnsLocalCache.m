@@ -34,7 +34,7 @@ static long long minimalIntervalInSecond = 10;
     NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
     NSData *buffer = [userDefault objectForKey:localCacheKey];
     NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:buffer];
-    HttpdnsLogDebug(@"[readFromLocalCache] - read %lu from local file system", (unsigned long)[dict count]);
+    HttpdnsLogDebug(@"[readFromLocalCache] - read %lu from local file system: %@", (unsigned long)[dict count], dict);
     return dict;
 }
 
