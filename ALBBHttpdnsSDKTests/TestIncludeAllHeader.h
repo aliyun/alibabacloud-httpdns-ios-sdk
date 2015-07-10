@@ -7,12 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "HttpdnsService.h"
+#import "ALBBHttpdnsServiceProtocol.h"
+#import "HttpdnsServiceProvider.h"
 #import "HttpdnsModel.h"
 #import "HttpdnsRequestScheduler.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsUtil.h"
-#import "HttpdnsLocalCache.h"
-#import "HttpdnsModel.h"
-#import "HttpdnsTokenGen.h"
 #import "HttpdnsLog.h"

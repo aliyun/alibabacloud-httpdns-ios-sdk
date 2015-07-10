@@ -15,4 +15,6 @@
 -(NSMutableArray *)lookupAllHostsFromServer:(NSString *)hostsString error:(NSError **)error;
 
 +(void)notifyRequestFailed;
+
++(void)requestServerTimeStamp;
 @end

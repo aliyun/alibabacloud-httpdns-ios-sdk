@@ -9,8 +9,6 @@
 #import "HttpdnsRequestScheduler.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsUtil.h"
-#import "HttpdnsLocalCache.h"
-#import "HttpdnsModel.h"
 
 static NSMutableDictionary *retryMap = nil;
 
@@ -153,7 +151,12 @@ static NSMutableDictionary *retryMap = nil;
     if (result) {
         for (HttpdnsHostObject *hostObject in result) {
             NSString *hostName = [hostObject getHostName];
-            [_hostManagerDict setObject:hostObject forKey:hostName];
+            HttpdnsHostObject * old = [_hostManagerDict objectForKey:hostName];
+            [old setTTL:[hostObject getTTL]];
+            [old setLastLookupTime:[hostObject getLastLookupTime]];
+            [old setIps:[hostObject getIps]];
+            [old setState:VALID];
+
             [noResolveResultHosts removeObject:hostName];
             HttpdnsLogDebug(@"[mergeLookupResult] - update %@", hostName);
         }
@@ -207,6 +210,7 @@ static NSMutableDictionary *retryMap = nil;
         NSMutableArray *result = [request lookupAllHostsFromServer:resolveHostString error:&error];
         dispatch_sync(_syncQueue, ^{
             if (error) {
+                HttpdnsLogError(@"[executeLookup] - error: %@", error);
                 [self executeALookupActionWithHosts:hosts retryCount:count + 1];
                 return;
             }
@@ -230,16 +234,16 @@ static NSMutableDictionary *retryMap = nil;
     }
 }
 
--(HttpdnsHostObject *)syncLookupHostsDev:(NSString *)host {
+-(HttpdnsHostObject *)addSingleHostAndLookupSync:(NSString *)host {
     __block BOOL needToQuery = false;
     __block HttpdnsHostObject * result = nil;
     dispatch_sync(_syncQueue, ^{
         result = [_hostManagerDict objectForKey:host];
         HttpdnsLogDebug(@"Get from cache: %@", result);
         if (result == nil) {
-            HttpdnsLogDebug(@"[addSingleHostAndLookUp] - %@ haven't exist in cache yet", host);
+            HttpdnsLogDebug(@"[addSingleHostAndLookUpSync] - %@ haven't exist in cache yet", host);
             if ([_hostManagerDict count] > MAX_MANAGE_HOST_NUM) {
-                HttpdnsLogError(@"[addSingleHostAndLookup] - Cant handle more than %d hosts", MAX_MANAGE_HOST_NUM);
+                HttpdnsLogError(@"[addSingleHostAndLookupSync] - Cant handle more than %d hosts", MAX_MANAGE_HOST_NUM);
                 return;
             }
             result = [[HttpdnsHostObject alloc] init];
@@ -248,12 +252,12 @@ static NSMutableDictionary *retryMap = nil;
             [_hostManagerDict setObject:result forKey:host];
             needToQuery = YES;
         } else if ([result isExpired]) {
-            HttpdnsLogDebug(@"[addSingleHostAndLookUp] - %@ is expired, currentState: %ld", host, (long)[result getState]);
+            HttpdnsLogDebug(@"[addSingleHostAndLookUpSync] - %@ is expired, currentState: %ld", host, (long)[result getState]);
             if ([result getState] != QUERYING) {
                 needToQuery = YES;
             }
         } else if ([result getState] == INITIALIZE) {
-            HttpdnsLogDebug(@"[addSingleHostAndLookUp] - %@ is initialize", host);
+            HttpdnsLogDebug(@"[addSingleHostAndLookUpSync] - %@ is initialize", host);
             needToQuery = YES;
         }
         if (needToQuery) {
@@ -261,12 +265,17 @@ static NSMutableDictionary *retryMap = nil;
         }
     });
     if (needToQuery) {
-        return [self syncRequestDev:host retryCount:0];
+        return [self syncRequest:host retryCount:0];
+    }
+    long long waitTotalInUS = 0;
+    while ([result getState] == QUERYING && waitTotalInUS < 10 * 1000 * 1000) {
+        usleep(50 * 1000);
+        waitTotalInUS += 50 * 1000;
     }
     return result;
 }
 
--(HttpdnsHostObject *)syncRequestDev:(NSString *)host retryCount:(int)hasRetryedCount {
+-(HttpdnsHostObject *)syncRequest:(NSString *)host retryCount:(int)hasRetryedCount {
     NSArray *hosts = [[NSArray alloc] initWithObjects:host, nil];
     if (hasRetryedCount > MAX_REQUEST_RETRY_TIME) {
         HttpdnsLogError(@"[executeLookup] - Retry time exceed limit, abort!");
@@ -286,7 +295,8 @@ static NSMutableDictionary *retryMap = nil;
         });
         return result && [result count] > 0 ? result[0] : nil;
     } else {
-        return [self syncRequestDev:host retryCount:hasRetryedCount + 1];
+        HttpdnsLogError(@"[syncRequest] - error: %@", error);
+        return [self syncRequest:host retryCount:hasRetryedCount + 1];
     }
 }
 

@@ -28,9 +28,9 @@
 
 - (void)testTokenEnvironmentInitialize {
     HttpdnsTokenGen *tokenGen = [HttpdnsTokenGen sharedInstance];
-    sleep(3);
-    HttpdnsToken *token = [[HttpdnsTokenGen sharedInstance] getToken];
-    token = [[HttpdnsTokenGen sharedInstance] getToken];
+    HttpdnsToken *token = [tokenGen getToken];
+    token = [tokenGen getToken];
+    sleep(5);
     NSLog(@"token: %@", token);
     XCTAssertNotNil(token, "Didn't get token");
 }

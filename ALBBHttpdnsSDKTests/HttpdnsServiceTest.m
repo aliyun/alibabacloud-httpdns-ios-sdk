@@ -29,11 +29,10 @@
     [HttpdnsLog enbaleLog];
     sleep(2);
     // [HttpdnsLocalCache cleanLocalCache];
-    HttpDnsService *dns = [HttpDnsService sharedInstance];
+    HttpDnsServiceProvider *dns = [HttpDnsServiceProvider getService];
     NSArray *hosts = [[NSArray alloc] initWithObjects:@"www.taobao.com", @"www.alipay.com", nil];
     [dns setPreResolveHosts:hosts];
-    // [dns getIpByHost:@"img01.taobaocdn.com"];
-    CFRunLoopRun();
+    [dns getIpByHost:@"img01.taobaocdn.com"];
 }
 
 @end

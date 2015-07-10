@@ -9,8 +9,6 @@
 #import "HttpdnsRequest.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
-#import "HttpdnsTokenGen.h"
-#import "HttpdnsModel.h"
 
 NSString * const HTTPDNS_SERVER_IP = @"140.205.143.143";
 NSString * const HTTPDNS_SERVER_BACKUP_HOST = @"httpdns.aliyuncs.com";
@@ -27,8 +25,8 @@ static long long headmostFailedTime = 0;
 
 static long long relativeTimeVal = 0;
 static NSLock * rltTimeLock = nil;
-@implementation HttpdnsRequest
 
+@implementation HttpdnsRequest
 #pragma mark init
 
 +(void)initialize {
@@ -94,7 +92,7 @@ static NSLock * rltTimeLock = nil;
     HttpdnsLogDebug(@"[constructRequest] - Signature: %@", signature);
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:url]
-                                                      cachePolicy:NSURLRequestUseProtocolCachePolicy
+                                                      cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                   timeoutInterval:15];
     [request setHTTPMethod:@"GET"];
     [request setValue:signature forHTTPHeaderField:@"Authorization"];
@@ -122,7 +120,7 @@ static NSLock * rltTimeLock = nil;
     HttpdnsLogDebug(@"[constructRequest] - Signature: %@", signature);
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:url]
-                                                      cachePolicy:NSURLRequestUseProtocolCachePolicy
+                                                      cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                   timeoutInterval:15];
     [request setHTTPMethod:@"GET"];
     [request setValue:signature forHTTPHeaderField:@"Authorization"];
@@ -178,7 +176,7 @@ static NSLock * rltTimeLock = nil;
     NSString *timeUrl = [NSString stringWithFormat:@"http://%@/timestamp", chooseEndpoint];
     // 默认超时十五秒
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:timeUrl]
-                                                      cachePolicy:NSURLRequestUseProtocolCachePolicy
+                                                      cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                   timeoutInterval:15];
     NSHTTPURLResponse *response;
     NSError *error;
@@ -191,11 +189,11 @@ static NSLock * rltTimeLock = nil;
 }
 
 +(void)notifyRequestFailed {
-    [failedCntLock lock];
     if (degradeToHost) {
         // 已经降级，暂时不再做处理
         return;
     }
+    [failedCntLock lock];
     long long currentTime = [HttpdnsUtil currentEpochTimeInSecond];
     if (accumulateFailedCount == 0) {
         headmostFailedTime = currentTime;
@@ -215,6 +213,7 @@ static NSLock * rltTimeLock = nil;
 +(void)updateTimeRelativeValWithBase:(long long)baseTime {
     [rltTimeLock lock];
     relativeTimeVal = baseTime - [HttpdnsUtil currentEpochTimeInSecond];
+    HttpdnsLogDebug(@"[updateTimeRelativeValWithBase] - reletiveTime: %lld, sysTime: %lld", relativeTimeVal, [HttpdnsUtil currentEpochTimeInSecond]);
     [rltTimeLock unlock];
 }
 

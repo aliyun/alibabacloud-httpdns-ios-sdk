@@ -11,13 +11,18 @@
 
 @interface HttpdnsSchedulerTest : XCTestCase
 
+@property (nonatomic, strong) id<ALBBHttpdnsServiceProtocol> httpdns;
+
 @end
 
+static NSString * aliyunHost = @"www.aliyun.com";
 @implementation HttpdnsSchedulerTest
 
 - (void)setUp {
     [super setUp];
     // Put setup code here. This method is called before the invocation of each test method in the class.
+    _httpdns = [HttpDnsServiceProvider getService];
+    [HttpdnsLog enbaleLog];
 }
 
 - (void)tearDown {
@@ -26,7 +31,21 @@
 }
 
 - (void)testMergeResult {
-    HttpdnsRequestScheduler *scheduler = [[HttpdnsRequestScheduler alloc] init];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @end

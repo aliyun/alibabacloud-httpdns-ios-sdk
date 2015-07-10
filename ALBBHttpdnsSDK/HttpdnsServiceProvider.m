@@ -6,23 +6,27 @@
 //  Copyright (c) 2015 zhouzhuo. All rights reserved.
 //
 
-#import "HttpdnsService.h"
-#import "HttpdnsLocalCache.h"
+#import "HttpdnsServiceProvider.h"
+#import "HttpdnsRequest.h"
 #import "HttpdnsModel.h"
 #import "HttpdnsUtil.h"
 #import "NetworkDetection.h"
 
-@implementation HttpDnsService
+@implementation HttpDnsServiceProvider
 
 NetworkDetection* reachability;
 
 +(instancetype)sharedInstance {
     static dispatch_once_t _pred = 0;
-    __strong static HttpDnsService * _httpDnsClient = nil;
+    __strong static HttpDnsServiceProvider * _httpDnsClient = nil;
     dispatch_once(&_pred, ^{
         _httpDnsClient = [[self alloc] init];
     });
     return _httpDnsClient;
+}
+
++(instancetype)getService {
+    return [HttpDnsServiceProvider sharedInstance];
 }
 
 #pragma mark init
@@ -38,6 +42,7 @@ NetworkDetection* reachability;
         reachability = [NetworkDetection reachabilityForInternetConnection];
         [reachability startNotifier];
     });
+    [HttpdnsRequest requestServerTimeStamp];
     return self;
 }
 
@@ -53,7 +58,7 @@ NetworkDetection* reachability;
         HttpdnsLogDebug(@"[getIpByHost] - directly return this ip");
         return host;
     }
-    HttpdnsHostObject *hostObject = [_requestScheduler syncLookupHostsDev:host];
+    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookupSync:host];
     if (hostObject) {
         NSArray * ips = [hostObject getIps];
         if (ips && [ips count] > 0) {

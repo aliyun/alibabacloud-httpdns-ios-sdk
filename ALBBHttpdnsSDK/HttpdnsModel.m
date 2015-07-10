@@ -84,3 +84,68 @@
     return [NSString stringWithFormat:@"Token: ak = %@ sk = %@ sToken = %@", _accessKeyId, _accessKeySecret, _securityToken];
 }
 @end
+
+
+@implementation HttpdnsTokenGen
+
++(instancetype)sharedInstance {
+    static dispatch_once_t _pred = 0;
+    __strong static HttpdnsTokenGen * _tokenGen = nil;
+    dispatch_once(&_pred, ^{
+        _tokenGen = [[self alloc] init];
+    });
+    return _tokenGen;
+}
+
+-(HttpdnsToken *)getToken {
+    _tds = [TDSServiceProvider getService];
+    FederationToken *token = [_tds distributeToken:HTTPDNS_TOKEN];
+    if (token) {
+        HttpdnsToken *httpDnsToken = [[HttpdnsToken alloc] init];
+        [httpDnsToken setAccessKeyId:[token accessKeyId]];
+        [httpDnsToken setAccessKeySecret:[token accessKeySecret]];
+        [httpDnsToken setSecurityToken:[token securityToken]];
+        [httpDnsToken setAppId:[_tds getAppid]];
+        return httpDnsToken;
+    }
+    return nil;
+}
+
+@end
+
+
+
+static NSString *localCacheKey = @"httpdns_hostManagerData";
+static long long lastWroteToCacheTime = 0;
+static long long minimalIntervalInSecond = 10;
+
+@implementation HttpdnsLocalCache
+
++(void)writeToLocalCache:(NSDictionary *)allHostObjectInManagerDict {
+    long long currentTime = [HttpdnsUtil currentEpochTimeInSecond];
+    // 如果离上次写缓存时间小于阈值，放弃此次写入
+    if (currentTime - lastWroteToCacheTime < minimalIntervalInSecond) {
+        HttpdnsLogDebug(@"[writeToLocalCache] - Write too often, abort this writing");
+        return;
+    }
+    lastWroteToCacheTime = currentTime;
+    NSData *buffer = [NSKeyedArchiver archivedDataWithRootObject:allHostObjectInManagerDict];
+    NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
+    [userDefault setObject:buffer forKey:localCacheKey];
+    [userDefault synchronize];
+    HttpdnsLogDebug(@"[writeToLocalCache] - write %lu to local file system", (unsigned long)(unsigned long)[allHostObjectInManagerDict count]);
+}
+
++(NSDictionary *)readFromLocalCache {
+    NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
+    NSData *buffer = [userDefault objectForKey:localCacheKey];
+    NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:buffer];
+    HttpdnsLogDebug(@"[readFromLocalCache] - read %lu from local file system: %@", (unsigned long)[dict count], dict);
+    return dict;
+}
+
++(void)cleanLocalCache {
+    NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
+    [userDefault removeObjectForKey:localCacheKey];
+}
+@end

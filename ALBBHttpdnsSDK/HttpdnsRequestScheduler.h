@@ -19,7 +19,7 @@
 @property (nonatomic, strong) NSMutableArray *lookupQueue;
 
 // 同步队列，对hostManagerDict和requestQueue的操作都要dispatch到这个队列执行
-@property dispatch_queue_t syncQueue;
+@property (nonatomic, assign) dispatch_queue_t syncQueue;
 
 // 异步队列，涉及网络操作的任务dispatch到这个队列执行
 @property (nonatomic, strong) NSOperationQueue *asyncQueue;
@@ -44,7 +44,7 @@
 
 -(void)mergeLookupResultToManager:(NSArray *)result forHosts:(NSArray *)hosts;
 
--(HttpdnsHostObject *)syncLookupHostsDev:(NSString *)host;
+-(HttpdnsHostObject *)addSingleHostAndLookupSync:(NSString *)host;
 
 -(void)resetAfterNetworkChanged;
 @end
