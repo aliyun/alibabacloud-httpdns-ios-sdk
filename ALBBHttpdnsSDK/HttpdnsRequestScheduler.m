@@ -199,7 +199,9 @@ static NSMutableDictionary *retryMap = nil;
     if (count > MAX_REQUEST_RETRY_TIME) {
         HttpdnsLogError(@"[executeLookup] - Retry time exceed limit, abort!");
         [HttpdnsRequest notifyRequestFailed];
-        [self mergeLookupResultToManager:nil forHosts:hosts];
+        dispatch_sync(_syncQueue, ^{
+            [self mergeLookupResultToManager:nil forHosts:hosts];
+        });
         return;
     }
     NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
