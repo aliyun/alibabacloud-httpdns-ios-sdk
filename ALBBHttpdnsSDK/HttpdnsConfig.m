@@ -21,3 +21,5 @@ const int MAX_MANAGE_HOST_NUM = 100;
 const int MAX_REQUEST_THREAD_NUM = 3;
 
 const int MAX_EXPIRED_ENDURE_TIME_IN_SEC = 2 * 60;
+
+NSString * const HTTPDNS_IOS_SDK_VERSION = @"1.1.0";

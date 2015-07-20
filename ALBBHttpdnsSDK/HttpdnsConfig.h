@@ -21,3 +21,5 @@ extern const int MAX_MANAGE_HOST_NUM;
 extern const int MAX_REQUEST_THREAD_NUM;
 
 extern const int MAX_EXPIRED_ENDURE_TIME_IN_SEC;
+
+extern NSString * const HTTPDNS_IOS_SDK_VERSION;

@@ -9,10 +9,18 @@
 #import "HttpdnsRequest.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
+#import "HttpdnsConfig.h"
+#import <UTMini/UTAnalytics.h>
+#import <UTMini/UTBaseRequestAuthentication.h>
+#import <UTMini/UTOirginalCustomHitBuilder.h>
 
 NSString * const HTTPDNS_SERVER_IP = @"140.205.143.143";
 NSString * const HTTPDNS_SERVER_BACKUP_HOST = @"httpdns.aliyuncs.com";
 NSString * const HTTPDNS_VERSION_NUM = @"1";
+
+static BOOL reported = false;
+static NSString *operationalDataEventID = @"66681";
+static NSString *SDKNAME = @"HTTPDNS-IOS";
 
 NSString * const TEST_AK = @"httpdnstest";
 NSString * const TEST_SK = @"hello";
@@ -137,6 +145,16 @@ static NSLock * rltTimeLock = nil;
         *error = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10001 userInfo:dict];
         sleep(2); // 如果拿不到token，很可能是因为刚启动，所以等待2秒钟以后再重试。
         return nil;
+    }
+    if (!reported) {
+        reported = YES;
+        UTOirginalCustomHitBuilder *customHitBuilder = [[UTOirginalCustomHitBuilder alloc] init];
+        [customHitBuilder setEventId:operationalDataEventID];
+        [customHitBuilder setArg1:SDKNAME];
+        [customHitBuilder setArg2:HTTPDNS_IOS_SDK_VERSION];
+        UTTracker *lTracker = [[UTAnalytics getInstance] getTracker:@"aliyun_dpa"];
+        NSDictionary *dic = [customHitBuilder build];
+        [lTracker send:dic];
     }
     NSMutableURLRequest *request = [self constructRequestWith:hostsString withToken:token];
 
