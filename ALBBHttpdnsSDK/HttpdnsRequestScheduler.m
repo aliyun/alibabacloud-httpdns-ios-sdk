@@ -210,15 +210,16 @@ static NSMutableDictionary *retryMap = nil;
         HttpdnsLogDebug(@"[executeLookup] - Request start, request string: %@", hosts);
         NSString * resolveHostString = [hosts componentsJoinedByString:@","];
         NSMutableArray *result = [request lookupAllHostsFromServer:resolveHostString error:&error];
-        dispatch_sync(_syncQueue, ^{
-            if (error) {
-                HttpdnsLogError(@"[executeLookup] - error: %@", error);
-                [self executeALookupActionWithHosts:hosts retryCount:count + 1];
-                return;
-            }
-            HttpdnsLogDebug(@"[executeLookup] - Request finish, merge %lu data to Manager", (unsigned long)[result count]);
-            [self mergeLookupResultToManager:result forHosts:hosts];
-        });
+        if (error) {
+            HttpdnsLogError(@"[executeLookup] - error: %@", error);
+            [self executeALookupActionWithHosts:hosts retryCount:count + 1];
+            return;
+        } else {
+            dispatch_sync(_syncQueue, ^{
+                HttpdnsLogDebug(@"[executeLookup] - Request finish, merge %lu data to Manager", (unsigned long)[result count]);
+                [self mergeLookupResultToManager:result forHosts:hosts];
+            });
+        }
     }];
     [_asyncQueue addOperation:operation];
 }
