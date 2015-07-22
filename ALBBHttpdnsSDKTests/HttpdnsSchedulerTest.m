@@ -33,19 +33,4 @@ static NSString * aliyunHost = @"www.aliyun.com";
 - (void)testMergeResult {
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @end
