@@ -18,6 +18,5 @@
 
 +(BOOL)checkIfIsAnIp:(NSString *)candidate;
 
-+(BOOL)checkIfIsAnHost:(NSString *)Host;
-
++(BOOL)checkIfIsAnHost:(NSString *)host;
 @end

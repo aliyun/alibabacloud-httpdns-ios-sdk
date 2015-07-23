@@ -146,4 +146,24 @@ NSString * test_ip2 = @"117.28.255.25";
     resolvedIp = [httpdns getIpByHostAsync:testIp];
     XCTAssertEqualObjects(testIp, resolvedIp, @"Not equal");
 }
+/**
+ * 测试目的：测试host合法判断功能
+ * 测试方法：给出用例，判断是否能正确测试出是否为host
+ */
+/**
+ * 测试目的：测试host合法判断功能
+ * 测试方法：给出用例，判断是否能正确测试出是否为host
+ */
+-(void)testHostLegalJudge{
+    NSString *host1 = @"nihao";
+    NSString *host2 = @"baidu.com";
+    NSString *host3 = @"https://www.baidu.com/";
+    NSString *host4 = @"zhihu.com";
+    NSString *host5 = @"123123/32,daf";
+    XCTAssertEqual([HttpdnsUtil checkIfIsAnHost:host1], YES, "Should be YES");
+    XCTAssertEqual([HttpdnsUtil checkIfIsAnHost:host2], YES, "Should be YES");
+    XCTAssertEqual([HttpdnsUtil checkIfIsAnHost:host3], NO, "Should be NO");
+    XCTAssertEqual([HttpdnsUtil checkIfIsAnHost:host4], YES, "Should be YES");
+    XCTAssertEqual([HttpdnsUtil checkIfIsAnHost:host5], NO, "Should be NO");
+}
 @end

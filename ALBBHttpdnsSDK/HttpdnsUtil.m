@@ -49,22 +49,21 @@
     }
     return (success == 1);
 }
-+(BOOL)checkIfIsAnHost:(NSString *)Host {
++(BOOL)checkIfIsAnHost:(NSString *)host {
     static NSRegularExpression *hostExpression = nil ;
     
     if (hostExpression == nil) {
         hostExpression = [[NSRegularExpression alloc] initWithPattern:@"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$" options:NSRegularExpressionCaseInsensitive error:nil];
     }
 
-    if (!Host.length) {
+    if (!host.length) {
         return NO;
     }
-    NSTextCheckingResult *checkResult = [hostExpression firstMatchInString:Host options:0 range:NSMakeRange(0, [Host length])];
-    if (checkResult.range.length == [Host length]) {
+    NSTextCheckingResult *checkResult = [hostExpression firstMatchInString:host options:0 range:NSMakeRange(0, [host length])];
+    if (checkResult.range.length == [host length]) {
         return YES;
     } else {
         return NO;
     }
-    
 }
 @end
