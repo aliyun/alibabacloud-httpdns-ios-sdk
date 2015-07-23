@@ -41,8 +41,9 @@ NSString * test_ip2 = @"117.28.255.25";
     [super tearDown];
 }
 
-/*!
- * 过期后先返回过期ip，然后SDK发请求更新ip
+/**
+ * 测试目的：测试Cache 自动更新功能。
+ * 测试方法：1.先设置一个马上就会过期的Cache；2.过期获取一个Cache应是过期IP; 3.再获取两次判断是否更新;
  */
 - (void)testTTL {
     HttpdnsHostObject * hostObject = [TestResouces buildAnHostObjectWithHostName:test_host1
@@ -60,14 +61,16 @@ NSString * test_ip2 = @"117.28.255.25";
     XCTAssertEqualObjects([httpdns getIpByHostAsync:test_host1], test_ip1, "Should update ip");
 }
 
-/*!
- * 高并发场景能正常解析
+/**
+ * 测试目的：高并发场景能正常解析
+ * 测试方法：
  */
 - (void)testHttpdnsLargeConcurent {
 }
 
-/*!
- * 开启若干个线程同时设置预解析域名，最后结果正常
+/**
+ * 测试目的：开启若干个线程同时设置预解析域名，最后结果正常
+ * 测试方法：1.同时异步10个线程预解析域名；2.过一段时间(3秒)以后获取看是否正常。
  */
 - (void)testConcurrentlySetPreResolve {
     for (int i = 0; i < 10; i++) {
@@ -83,8 +86,9 @@ NSString * test_ip2 = @"117.28.255.25";
     XCTAssertEqualObjects(resolvedIp2, test_ip2, @"Should be equal!");
 }
 
-/*!
- * 失败一定次数后降级到使用域名请求httpdns server
+/**
+ * 测试目的：失败一定次数后降级到使用域名请求httpdns server
+ * 测试方法：1.频繁发出失败消息使得降级；2.检测获取IP是否正常
  */
 - (void)testServerIpDegradeToHost {
     NSString * resolvedIp1 = [httpdns getIpByHost:test_host1];
@@ -96,8 +100,9 @@ NSString * test_ip2 = @"117.28.255.25";
     XCTAssertEqualObjects(resolvedIp2, test_ip2, @"Should be equal!");
 }
 
-/*!
- * 测试本地缓存读写
+/**
+ * 测试目的：测试本地缓存读写
+ * 测试方法：1.写入一个host到本地缓存；2.从本地缓存读取host缓存；3.验证缓存中的数据；
  */
 - (void)testLocalCacheReadWrite {
     HttpdnsHostObject * hostObject = [TestResouces buildAnHostObjectWithHostName:@"test.domain.com"
@@ -118,8 +123,9 @@ NSString * test_ip2 = @"117.28.255.25";
 - (void)testIsLogicHost {
 }
 
-/*!
- * 查询一个不存在的host，应该返回nil
+/**
+ * 测试目的：查询一个不存在的host，应该返回nil
+ * 测试方法：给出一个不存在的host进行查询，检查结果是否为nil
  */
 - (void)testNotExistHost {
     NSString * notExistHost = @"notexitsthostindnssystem.com";
@@ -129,8 +135,9 @@ NSString * test_ip2 = @"117.28.255.25";
     XCTAssertNil(resolvedIp, @"Should return nil when host not exist!");
 }
 
-/*!
- * 查询一个ip格式的host，应该返回ip本身
+/**
+ * 测试目的：查询一个ip格式的host，应该返回ip本身
+ * 测试方法：给出一个ip进行查询，检查获取的结果是否为它本身
  */
 - (void)testIsLogicIp {
     NSString * testIp = @"1.1.1.1";
