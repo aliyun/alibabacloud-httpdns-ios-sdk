@@ -146,10 +146,7 @@ NSString * test_ip2 = @"117.28.255.25";
     resolvedIp = [httpdns getIpByHostAsync:testIp];
     XCTAssertEqualObjects(testIp, resolvedIp, @"Not equal");
 }
-/**
- * 测试目的：测试host合法判断功能
- * 测试方法：给出用例，判断是否能正确测试出是否为host
- */
+
 /**
  * 测试目的：测试host合法判断功能
  * 测试方法：给出用例，判断是否能正确测试出是否为host
