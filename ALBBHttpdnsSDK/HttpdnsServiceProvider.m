@@ -58,6 +58,12 @@ NetworkDetection* reachability;
         HttpdnsLogDebug(@"[getIpByHost] - directly return this ip");
         return host;
     }
+    // 判断host是否合法
+    if (![HttpdnsUtil checkIfIsAnHost:host]) {
+        HttpdnsLogDebug(@"[getIpByHost] - the host is illegal ,directly return nil");
+        return nil;
+    }
+    
     HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookupSync:host];
     if (hostObject) {
         NSArray * ips = [hostObject getIps];
@@ -74,6 +80,12 @@ NetworkDetection* reachability;
         HttpdnsLogDebug(@"[getIpByHost] - directly return this ip");
         return host;
     }
+    // 判断host是否合法
+    if (![HttpdnsUtil checkIfIsAnHost:host]) {
+        HttpdnsLogDebug(@"[getIpByHost] - the host is illegal ,directly return nil");
+        return nil;
+    }
+    
     HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host];
     if (hostObject) {
         NSArray *ips = [hostObject getIps];

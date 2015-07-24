@@ -17,4 +17,6 @@
 +(NSString *)currentEpochTimeInSecondString;
 
 +(BOOL)checkIfIsAnIp:(NSString *)candidate;
+
++(BOOL)checkIfIsAnHost:(NSString *)host;
 @end
