@@ -93,7 +93,6 @@ NetworkDetection* reachability;
     HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host];
     if (hostObject) {
         NSArray *ips = [hostObject getIps];
-        HttpdnsLogDebug(@"ips : %@", ips);
         if (ips && [ips count] > 0) {
             return [[ips objectAtIndex:0] getIpString];
         }

@@ -51,11 +51,11 @@
     return (success == 1);
 }
 +(BOOL)checkIfIsAnHost:(NSString *)host {
-    static NSRegularExpression *hostExpression = nil ;
-    
-    if (hostExpression == nil) {
+    static dispatch_once_t once_token;
+    static NSRegularExpression *hostExpression = nil;
+    dispatch_once(&once_token, ^{
         hostExpression = [[NSRegularExpression alloc] initWithPattern:@"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$" options:NSRegularExpressionCaseInsensitive error:nil];
-    }
+    });
 
     if (!host.length) {
         return NO;

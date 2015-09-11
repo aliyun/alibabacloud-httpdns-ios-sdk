@@ -19,10 +19,13 @@
 @property (nonatomic, strong) NSMutableArray *lookupQueue;
 
 // 同步队列，对hostManagerDict和requestQueue的操作都要dispatch到这个队列执行
-@property (nonatomic, assign) dispatch_queue_t syncQueue;
+@property (nonatomic, assign) dispatch_queue_t syncDispatchQueue;
+
+// 异步队列
+@property (nonatomic, assign) dispatch_queue_t asyncDispatchQueue;
 
 // 异步队列，涉及网络操作的任务dispatch到这个队列执行
-@property (nonatomic, strong) NSOperationQueue *asyncQueue;
+@property (nonatomic, strong) NSOperationQueue *asyncOperationQueue;
 
 // 一个新的单个域名查询到来时，等待一秒钟看看随后有没有别的查询可以合并
 @property (nonatomic, strong) NSTimer *timer;
