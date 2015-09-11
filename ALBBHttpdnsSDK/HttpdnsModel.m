@@ -34,6 +34,10 @@
     [aCoder encodeObject:ip forKey:@"ip"];
 }
 
+-(NSString *)description {
+    return ip;
+}
+
 @end
 
 @implementation HttpdnsHostObject

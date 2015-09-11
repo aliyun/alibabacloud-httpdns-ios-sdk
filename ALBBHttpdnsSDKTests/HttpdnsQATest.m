@@ -18,20 +18,38 @@ static id<ALBBHttpdnsServiceProtocol> httpdns;
 static HttpdnsRequestScheduler * scheduler;
 static NSMutableDictionary * hostManager;
 
-NSString * test_host1 = @"www.xxyycc.com";
-NSString * test_ip1 = @"121.41.73.79";
-NSString * test_host2 = @"dns.com";
-NSString * test_ip2 = @"117.28.255.25";
+NSString * test_host1 = @"api.m.taobao.com";
+NSString * test_ip1 = @"140.205.160.4";
+NSString * test_host2 = @"m.taobao.com";
+NSString * test_ip2 = @"140.205.163.74";
 
 @implementation HttpdnsQATest
 
 - (void)setUp {
     [super setUp];
-    [HttpdnsLog enbaleLog];
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    [HttpdnsLocalCache cleanLocalCache];
-    httpdns = [HttpDnsServiceProvider getService];
     [HttpdnsLog enbaleLog];
+    [HttpdnsLocalCache cleanLocalCache];
+
+    static dispatch_once_t once_token;
+    dispatch_once(&once_token, ^{
+        NSString * testAk = @"nYZpG9vuGt9mdWEn";
+        NSString * testSk = @"iuAdZsr0Gfnpz5G5esRBnZy3WsF3N6";
+        NSString * testAppId = @"2165829";
+
+        id<HttpdnsCredentialProvider> credentialProvider = [[HttpdnsCustomSignerCredentialProvider alloc] initWithSignerBlock:^NSString *(NSString *stringToSign) {
+            NSString *signature = [NSString stringWithFormat:@"HTTPDNS %@:%@",
+                                   testAk,
+                                   [HttpdnsUtil Base64HMACSha1Sign:[stringToSign dataUsingEncoding:NSUTF8StringEncoding] withKey:testSk]];
+            HttpdnsLogDebug(@"signer sign: %@\nto%@", stringToSign, signature);
+            return signature;
+        }];
+        HttpDnsServiceProvider * provider = [HttpDnsServiceProvider sharedInstance];
+        [provider setCredentialProvider:credentialProvider];
+        [provider setAppId:testAppId];
+    });
+
+    httpdns = [HttpDnsServiceProvider getService];
     HttpDnsServiceProvider * instance = (HttpDnsServiceProvider *)httpdns;
     scheduler = [instance requestScheduler];
     hostManager = [scheduler hostManagerDict];
@@ -69,11 +87,11 @@ NSString * test_ip2 = @"117.28.255.25";
 - (void)testHttpdnsLargeConcurent {
     static NSLock * counter_lock;
     static int counter = 0;
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 70; i++) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             NSArray * hosts = [[NSArray alloc] initWithObjects:test_host1, test_host2, nil];
             [httpdns setPreResolveHosts:hosts];
-            for (int i = 0; i < 1000; i++) {
+            for (int i = 0; i < 100; i++) {
                 NSString * resolvedIp1 = [httpdns getIpByHost:test_host1];
                 NSString * resolvedIp2 = [httpdns getIpByHostAsync:test_host2];
                 XCTAssertEqualObjects(resolvedIp1, test_ip1, @"Should be equal!");
@@ -87,7 +105,7 @@ NSString * test_ip2 = @"117.28.255.25";
     }
     while (true) {
         [counter_lock lock];
-        if (counter == 100) break;
+        if (counter == 70) break;
         [counter_lock unlock];
         [NSThread sleepForTimeInterval:1];
     }
