@@ -6,9 +6,12 @@
 //  Copyright (c) 2015 zhouzhuo. All rights reserved.
 //
 
+#import "HttpdnsModel.h"
+#import "HttpdnsRequest.h"
 #import "HttpdnsRequestScheduler.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsUtil.h"
+#import "HttpdnsLog.h"
 
 static NSMutableDictionary *retryMap = nil;
 

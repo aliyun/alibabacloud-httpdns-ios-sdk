@@ -27,6 +27,7 @@ NSString * test_ip2 = @"117.28.255.25";
 
 - (void)setUp {
     [super setUp];
+    [HttpdnsLog enbaleLog];
     // Put setup code here. This method is called before the invocation of each test method in the class.
     [HttpdnsLocalCache cleanLocalCache];
     httpdns = [HttpDnsServiceProvider getService];
@@ -66,6 +67,30 @@ NSString * test_ip2 = @"117.28.255.25";
  * 测试方法：
  */
 - (void)testHttpdnsLargeConcurent {
+    static NSLock * counter_lock;
+    static int counter = 0;
+    for (int i = 0; i < 100; i++) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            NSArray * hosts = [[NSArray alloc] initWithObjects:test_host1, test_host2, nil];
+            [httpdns setPreResolveHosts:hosts];
+            for (int i = 0; i < 1000; i++) {
+                NSString * resolvedIp1 = [httpdns getIpByHost:test_host1];
+                NSString * resolvedIp2 = [httpdns getIpByHostAsync:test_host2];
+                XCTAssertEqualObjects(resolvedIp1, test_ip1, @"Should be equal!");
+                XCTAssertEqualObjects(resolvedIp2, test_ip2, @"Should be equal!");
+                [NSThread sleepForTimeInterval:1];
+            }
+            [counter_lock lock];
+            counter++;
+            [counter_lock unlock];
+        });
+    }
+    while (true) {
+        [counter_lock lock];
+        if (counter == 100) break;
+        [counter_lock unlock];
+        [NSThread sleepForTimeInterval:1];
+    }
 }
 
 /**

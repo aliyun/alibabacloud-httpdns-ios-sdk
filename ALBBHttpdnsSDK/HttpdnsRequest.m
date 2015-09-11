@@ -6,21 +6,27 @@
 //  Copyright (c) 2015 zhouzhuo. All rights reserved.
 //
 
+#import "HttpdnsServiceProvider.h"
+#import "HttpdnsModel.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
 #import "HttpdnsConfig.h"
+
+#ifdef IS_DPA_RELEASE
 #import <UTMini/UTAnalytics.h>
 #import <UTMini/UTBaseRequestAuthentication.h>
 #import <UTMini/UTOirginalCustomHitBuilder.h>
+
+static BOOL reported = false;
+#endif
 
 NSString * const HTTPDNS_SERVER_IP = @"140.205.143.143";
 NSString * const HTTPDNS_SERVER_BACKUP_HOST = @"httpdns.aliyuncs.com";
 NSString * const HTTPDNS_VERSION_NUM = @"1";
 
-static BOOL reported = false;
-static NSString *operationalDataEventID = @"66681";
 static NSString *SDKNAME = @"HTTPDNS-IOS";
+static NSString *operationalDataEventID = @"66681";
 
 NSString * const TEST_AK = @"httpdnstest";
 NSString * const TEST_SK = @"hello";
@@ -82,6 +88,7 @@ static NSLock * rltTimeLock = nil;
     return result;
 }
 
+#ifdef IS_DPA_RELEASE
 // STS鉴权方式下构造httpdns解析请求头
 -(NSMutableURLRequest *)constructRequestWith:(NSString *)hostsString withToken:(HttpdnsToken *)token {
     NSString *chooseEndpoint = degradeToHost ? HTTPDNS_SERVER_BACKUP_HOST : HTTPDNS_SERVER_IP;
@@ -91,6 +98,7 @@ static NSLock * rltTimeLock = nil;
                      chooseEndpoint, hostsString, HTTPDNS_VERSION_NUM, appId, timestamp];
     NSString *contentToSign = [NSString stringWithFormat:@"%@%@%@%@%@",
                                HTTPDNS_VERSION_NUM, appId, timestamp, hostsString, [token securityToken]];
+
     NSString *signature = [NSString stringWithFormat:@"HTTPDNS %@:%@",
                            [token accessKeyId],
                            [HttpdnsUtil Base64HMACSha1Sign:[contentToSign dataUsingEncoding:NSUTF8StringEncoding] withKey:[token accessKeySecret]]];
@@ -108,24 +116,27 @@ static NSLock * rltTimeLock = nil;
 
     return request;
 }
+#endif
 
 
 // AK鉴权方式下构造httpdns解析请求头
 -(NSMutableURLRequest *)constructRequestWith:(NSString *)hostsString {
+    HttpDnsServiceProvider * sharedService = [HttpDnsServiceProvider sharedInstance];
+
     NSString *chooseEndpoint = degradeToHost ? HTTPDNS_SERVER_BACKUP_HOST : HTTPDNS_SERVER_IP;
-    NSString *appId = TEST_APPID;
+    NSString *appId = sharedService.appId;
     NSString *timestamp = [HttpdnsRequest getCurrentTimeString];
     NSString *url = [NSString stringWithFormat:@"http://%@/resolve?host=%@&version=%@&appid=%@&timestamp=%@",
                      chooseEndpoint, hostsString, HTTPDNS_VERSION_NUM, appId, timestamp];
     NSString *contentToSign = [NSString stringWithFormat:@"%@%@%@%@",
                                HTTPDNS_VERSION_NUM, appId, timestamp, hostsString];
-    NSString *signature = [NSString stringWithFormat:@"HTTPDNS %@:%@",
-                           TEST_AK,
-                           [HttpdnsUtil Base64HMACSha1Sign:[contentToSign dataUsingEncoding:NSUTF8StringEncoding] withKey:TEST_SK]];
 
-    HttpdnsLogDebug(@"[constructRequest] - Request URL: %@", url);
-    HttpdnsLogDebug(@"[constructRequest] - ContentToSign: %@", contentToSign);
-    HttpdnsLogDebug(@"[constructRequest] - Signature: %@", signature);
+    id<HttpdnsCredentialProvider> credentialProvider = sharedService.credentialProvider;
+    NSString *signature = [credentialProvider sign:contentToSign];
+
+    HttpdnsLogDebug(@"[constructRequest] - 1. Request URL: %@", url);
+    HttpdnsLogDebug(@"[constructRequest] - 2. ContentToSign: %@", contentToSign);
+    HttpdnsLogDebug(@"[constructRequest] - 3. Signature: %@", signature);
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:url]
                                                       cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
@@ -138,6 +149,8 @@ static NSLock * rltTimeLock = nil;
 
 -(NSMutableArray *)lookupAllHostsFromServer:(NSString *)hostsString error:(NSError **)error {
     HttpdnsLogDebug(@"[lookupAllHostFromServer] - ");
+
+#ifdef IS_DPA_RELEASE
     HttpdnsToken *token = [[HttpdnsTokenGen sharedInstance] getToken];
     if (token == nil) {
         HttpdnsLogError(@"[lookupAllHostFromServer] - token is nil");
@@ -157,6 +170,9 @@ static NSLock * rltTimeLock = nil;
         [lTracker send:dic];
     }
     NSMutableURLRequest *request = [self constructRequestWith:hostsString withToken:token];
+#else
+    NSMutableURLRequest *request = [self constructRequestWith:hostsString];
+#endif
 
     NSHTTPURLResponse *response;
     NSData *result = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:error];

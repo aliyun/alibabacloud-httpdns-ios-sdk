@@ -8,6 +8,17 @@
 
 #import "HttpdnsModel.h"
 #import "HttpdnsConfig.h"
+#import "HttpdnsUtil.h"
+#import "HttpdnsLog.h"
+
+#ifdef IS_DPA_RELEASE
+#import <ALBBTDSSDK/TDSServiceProvider.h>
+#import <ALBBTDSSDK/FederationToken.h>
+#import <ALBBTDSSDK/TDSArgs.h>
+#import <ALBBTDSSDK/TDSLog.h>
+#import <ALBBSDK/ALBBSDK.h>
+#import <ALBBRpcSDK/ALBBRpcSDK.h>
+#endif
 
 @implementation HttpdnsIpObject
 @synthesize ip;
@@ -86,7 +97,25 @@
 @end
 
 
-@implementation HttpdnsTokenGen
+@implementation HttpdnsCustomSignerCredentialProvider
+
+-(instancetype)initWithSignerBlock:(NSString *(^)(NSString *))signerBlock {
+    if (self = [super init]) {
+        self.signerBlock = signerBlock;
+    }
+    return self;
+}
+
+-(NSString *)sign:(NSString *)stringToSign {
+    return self.signerBlock(stringToSign);
+}
+
+@end
+
+#ifdef IS_DPA_RELEASE
+@implementation HttpdnsTokenGen {
+    id<TDSService> _tds;
+}
 
 +(instancetype)sharedInstance {
     static dispatch_once_t _pred = 0;
@@ -112,6 +141,7 @@
 }
 
 @end
+#endif
 
 
 
@@ -145,6 +175,7 @@ static long long minimalIntervalInSecond = 10;
 }
 
 +(void)cleanLocalCache {
+    HttpdnsLogDebug(@"[cleanLocalCache] - clean cache");
     NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
     [userDefault removeObjectForKey:localCacheKey];
 }

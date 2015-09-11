@@ -7,8 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "HttpdnsModel.h"
-#import "HttpdnsRequest.h"
+
+@class HttpdnsHostObject;
 
 @interface HttpdnsRequestScheduler : NSObject
 

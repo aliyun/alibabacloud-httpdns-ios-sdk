@@ -6,20 +6,22 @@
 //  Copyright (c) 2015 zhouzhuo. All rights reserved.
 //
 
+#import "HttpdnsRequestScheduler.h"
 #import "HttpdnsServiceProvider.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsModel.h"
 #import "HttpdnsUtil.h"
 #import "NetworkDetection.h"
+#import "HttpdnsLog.h"
 
 @implementation HttpDnsServiceProvider
 
 NetworkDetection* reachability;
 
 +(instancetype)sharedInstance {
-    static dispatch_once_t _pred = 0;
-    __strong static HttpDnsServiceProvider * _httpDnsClient = nil;
-    dispatch_once(&_pred, ^{
+    static dispatch_once_t once;
+    static HttpDnsServiceProvider * _httpDnsClient = nil;
+    dispatch_once(&once, ^{
         _httpDnsClient = [[self alloc] init];
     });
     return _httpDnsClient;
@@ -42,7 +44,9 @@ NetworkDetection* reachability;
         reachability = [NetworkDetection reachabilityForInternetConnection];
         [reachability startNotifier];
     });
-    [HttpdnsRequest requestServerTimeStamp];
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [HttpdnsRequest requestServerTimeStamp];
+    });
     return self;
 }
 

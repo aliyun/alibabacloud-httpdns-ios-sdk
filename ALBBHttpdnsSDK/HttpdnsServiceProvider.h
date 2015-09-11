@@ -7,12 +7,16 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "HttpdnsRequestScheduler.h"
+#import "HttpdnsModel.h"
 #import "ALBBHttpdnsServiceProtocol.h"
+
+@class HttpdnsRequestScheduler;
 
 @interface HttpDnsServiceProvider: NSObject<ALBBHttpdnsServiceProtocol>
 
 @property (nonatomic, strong) HttpdnsRequestScheduler *requestScheduler;
+@property (nonatomic, strong, setter=setAppId:) NSString * appId;
+@property (nonatomic, strong, setter=setCredentialProvider:) id<HttpdnsCredentialProvider> credentialProvider;
 
 +(instancetype)getService;
 

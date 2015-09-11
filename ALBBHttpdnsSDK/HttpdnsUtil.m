@@ -7,6 +7,7 @@
 //
 
 #import "HttpdnsUtil.h"
+#import "HttpdnsLog.h"
 #import "CommonCrypto/CommonCrypto.h"
 #import "arpa/inet.h"
 

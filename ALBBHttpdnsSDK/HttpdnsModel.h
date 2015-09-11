@@ -7,14 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ALBBTDSSDK/TDSServiceProvider.h>
-#import <ALBBTDSSDK/FederationToken.h>
-#import <ALBBTDSSDK/TDSArgs.h>
-#import <ALBBTDSSDK/TDSLog.h>
-#import <ALBBSDK/ALBBSDK.h>
-#import <ALBBRpcSDK/ALBBRpcSDK.h>
-#import "HttpdnsLog.h"
-#import "HttpdnsUtil.h"
 
 @interface HttpdnsIpObject: NSObject<NSCoding> {
     NSString *ip;
@@ -63,10 +55,25 @@ typedef NS_ENUM(NSInteger, HostState) {
 @end
 
 
+@protocol HttpdnsCredentialProvider <NSObject>
 
+-(NSString *)sign:(NSString *)stringToSign;
+
+@end
+
+
+@interface HttpdnsCustomSignerCredentialProvider : NSObject<HttpdnsCredentialProvider>
+
+@property(nonatomic, copy) NSString *(^signerBlock)(NSString *);
+
+-(instancetype)initWithSignerBlock:(NSString *(^)(NSString * stringToSign))signerBlock;
+
+@end
+
+
+#ifdef IS_DPA_RELEASE
 @interface HttpdnsTokenGen : NSObject
 
-@property(nonatomic, strong) id<TDSService> tds;
 @property(nonatomic, strong) NSString *appId;
 
 +(instancetype)sharedInstance;
@@ -74,6 +81,7 @@ typedef NS_ENUM(NSInteger, HostState) {
 -(HttpdnsToken *)getToken;
 
 @end
+#endif
 
 
 

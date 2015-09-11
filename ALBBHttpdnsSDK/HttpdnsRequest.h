@@ -7,8 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "HttpdnsModel.h"
-#import "HttpdnsLog.h"
 
 @interface HttpdnsRequest : NSObject<NSURLConnectionDataDelegate>
 

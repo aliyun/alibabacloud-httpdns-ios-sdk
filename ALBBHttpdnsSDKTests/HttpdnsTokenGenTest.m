@@ -26,6 +26,7 @@
     [super tearDown];
 }
 
+#ifdef IS_DPA_RELEASE
 - (void)testTokenEnvironmentInitialize {
     HttpdnsTokenGen *tokenGen = [HttpdnsTokenGen sharedInstance];
     HttpdnsToken *token = [tokenGen getToken];
@@ -34,4 +35,5 @@
     NSLog(@"token: %@", token);
     XCTAssertNotNil(token, "Didn't get token");
 }
+#endif
 @end

@@ -10,8 +10,6 @@
 
 @protocol ALBBHttpdnsServiceProtocol <NSObject>
 
-+(instancetype)sharedInstance;
-
 // 添加预解析域名
 -(void)setPreResolveHosts:(NSArray *)hosts;
 
