@@ -18,10 +18,10 @@ static id<ALBBHttpdnsServiceProtocol> httpdns;
 static HttpdnsRequestScheduler * scheduler;
 static NSMutableDictionary * hostManager;
 
-NSString * test_host1 = @"api.m.taobao.com";
-NSString * test_ip1 = @"140.205.160.4";
-NSString * test_host2 = @"m.taobao.com";
-NSString * test_ip2 = @"140.205.163.74";
+NSString * test_host1 = @"cas.xxyycc.com";
+NSString * test_ip1 = @"110.75.82.106";
+NSString * test_host2 = @"www.xxyycc.com";
+NSString * test_ip2 = @"121.41.73.79";
 
 @implementation HttpdnsQATest
 
@@ -85,10 +85,13 @@ NSString * test_ip2 = @"140.205.163.74";
  * 测试方法：
  */
 - (void)testHttpdnsLargeConcurent {
-    static NSLock * counter_lock;
-    static int counter = 0;
-    for (int i = 0; i < 70; i++) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    NSLock * counter_lock = [NSLock new];
+    __block int counter = 0;
+    dispatch_queue_t testQueue = dispatch_queue_create("com.aliyun.httpdns.xctest", DISPATCH_QUEUE_CONCURRENT);
+    [httpdns getIpByHost:test_host1];
+    [httpdns getIpByHost:test_host2];
+    for (int i = 0; i < 2; i++) {
+        dispatch_async(testQueue, ^{
             NSArray * hosts = [[NSArray alloc] initWithObjects:test_host1, test_host2, nil];
             [httpdns setPreResolveHosts:hosts];
             for (int i = 0; i < 100; i++) {
@@ -105,7 +108,8 @@ NSString * test_ip2 = @"140.205.163.74";
     }
     while (true) {
         [counter_lock lock];
-        if (counter == 70) break;
+        if (counter == 50) break;
+        NSLog(@"%d", counter);
         [counter_lock unlock];
         [NSThread sleepForTimeInterval:1];
     }

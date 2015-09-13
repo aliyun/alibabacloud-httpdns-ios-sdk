@@ -110,6 +110,8 @@ NetworkDetection* reachability;
         HttpdnsLogDebug("[handleNetworkChange] - wifi");
     } else if (remoteHostStatus == ReachableViaWWAN) {
         HttpdnsLogDebug("[handleNetworkChange] - cell");
+    } else {
+        HttpdnsLogError("[handleNetworkChange] - unknown type: %d", (int)remoteHostStatus);
     }
 }
 @end
