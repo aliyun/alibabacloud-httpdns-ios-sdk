@@ -233,10 +233,6 @@ static NSMutableDictionary *retryMap = nil;
         HttpdnsLogDebug(@"[tryToExecute] - waiting count not exceed %d", MIN_HOST_NUM_PER_REQEUST);
         return;
     }
-    if (_timer && [_timer isValid]) {
-        HttpdnsLogDebug(@"[tryToExecute] - waiting count exceed %d, start to query and cancel timer", MIN_HOST_NUM_PER_REQEUST);
-        [_timer invalidate];
-    }
     [self immediatelyExecuteTheLookupAction];
 }
 

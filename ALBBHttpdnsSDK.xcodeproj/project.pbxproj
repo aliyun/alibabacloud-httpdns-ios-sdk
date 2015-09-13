@@ -72,7 +72,7 @@
 		218B1E871B4E5226007FDB2F /* UTDID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 216323051B4CC4010004C51C /* UTDID.framework */; };
 		218B1E881B4E5226007FDB2F /* UTMini.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 216323061B4CC4010004C51C /* UTMini.framework */; };
 		21AD7ECB1B15BC4D000312E5 /* HttpdnsSchedulerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 21AD7ECA1B15BC4D000312E5 /* HttpdnsSchedulerTest.m */; };
-		21CF67AA1BA283520064DCF7 /* ALBBHttpdnsSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 215C59A21B2189FC00148D49 /* ALBBHttpdnsSDK.framework */; };
+		21C4B5FB1BA572700050BA9F /* ALBBHttpdnsSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21C4B5F81BA571AB0050BA9F /* ALBBHttpdnsSDK.framework */; };
 		21DC732F1B4F66DA0046E6B8 /* TestResouces.m in Sources */ = {isa = PBXBuildFile; fileRef = 21DC732E1B4F66DA0046E6B8 /* TestResouces.m */; };
 		21E292321B5E788A0071C5DE /* ALBBTDSSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21E292301B5E788A0071C5DE /* ALBBTDSSDK.framework */; };
 /* End PBXBuildFile section */
@@ -94,6 +94,19 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		21C4B5F71BA571430050BA9F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		210F8E581B4BA76A00DD1C25 /* ALBBHttpdnsServiceProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ALBBHttpdnsServiceProtocol.h; sourceTree = "<group>"; };
 		210F8E591B4BA97400DD1C25 /* HttpdnsServiceProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsServiceProvider.h; sourceTree = "<group>"; };
@@ -110,7 +123,6 @@
 		212490501B4A2BBF001887A6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		212490521B4A2BBF001887A6 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		212490551B4A2BBF001887A6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
-		215C59A21B2189FC00148D49 /* ALBBHttpdnsSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ALBBHttpdnsSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		216322FE1B4CC4010004C51C /* ALBB.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ALBB.bundle; sourceTree = "<group>"; };
 		216323001B4CC4010004C51C /* ALBBRpcSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ALBBRpcSDK.framework; sourceTree = "<group>"; };
 		216323011B4CC4010004C51C /* ALBBSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ALBBSDK.framework; sourceTree = "<group>"; };
@@ -146,10 +158,10 @@
 		21796ECE1B14422C002F8DA1 /* TestIncludeAllHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestIncludeAllHeader.h; sourceTree = "<group>"; };
 		21796F301B144BD0002F8DA1 /* HttpdnsTokenGenTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsTokenGenTest.m; sourceTree = "<group>"; };
 		21AD7ECA1B15BC4D000312E5 /* HttpdnsSchedulerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsSchedulerTest.m; sourceTree = "<group>"; };
+		21C4B5F81BA571AB0050BA9F /* ALBBHttpdnsSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ALBBHttpdnsSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		21D46FB91B3A8025009A687F /* ALBBHttpdnsSDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ALBBHttpdnsSDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		21DC732D1B4F66DA0046E6B8 /* TestResouces.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestResouces.h; sourceTree = "<group>"; };
 		21DC732E1B4F66DA0046E6B8 /* TestResouces.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestResouces.m; sourceTree = "<group>"; };
-		21E2922F1B5E788A0071C5DE /* ALBBHTTPDNS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ALBBHTTPDNS.framework; sourceTree = "<group>"; };
 		21E292301B5E788A0071C5DE /* ALBBTDSSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ALBBTDSSDK.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -158,7 +170,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				21CF67AA1BA283520064DCF7 /* ALBBHttpdnsSDK.framework in Frameworks */,
+				21C4B5FB1BA572700050BA9F /* ALBBHttpdnsSDK.framework in Frameworks */,
 				216323091B4CC4010004C51C /* ALBBRpcSDK.framework in Frameworks */,
 				2163230F1B4CC4010004C51C /* UTMini.framework in Frameworks */,
 				212490ED1B4AA67F001887A6 /* Security.framework in Frameworks */,
@@ -242,7 +254,6 @@
 		21796E801B144208002F8DA1 = {
 			isa = PBXGroup;
 			children = (
-				21E2922F1B5E788A0071C5DE /* ALBBHTTPDNS.framework */,
 				21E292301B5E788A0071C5DE /* ALBBTDSSDK.framework */,
 				216322FE1B4CC4010004C51C /* ALBB.bundle */,
 				216323001B4CC4010004C51C /* ALBBRpcSDK.framework */,
@@ -259,8 +270,8 @@
 				216800FA1B254A7A00274819 /* CoreTelephony.framework */,
 				21796E8C1B144208002F8DA1 /* ALBBHttpdnsSDK */,
 				21796E991B144208002F8DA1 /* ALBBHttpdnsSDKTests */,
-				215C59A21B2189FC00148D49 /* ALBBHttpdnsSDK.framework */,
 				21D46FB91B3A8025009A687F /* ALBBHttpdnsSDKTests.xctest */,
+				21C4B5F81BA571AB0050BA9F /* ALBBHttpdnsSDK.framework */,
 				212490431B4A2BBF001887A6 /* HttpdnsTestApp.app */,
 				212490441B4A2BBF001887A6 /* HttpdnsTestApp */,
 			);
@@ -361,6 +372,7 @@
 				2124903F1B4A2BBF001887A6 /* Sources */,
 				212490401B4A2BBF001887A6 /* Frameworks */,
 				212490411B4A2BBF001887A6 /* Resources */,
+				21C4B5F71BA571430050BA9F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -386,7 +398,7 @@
 			);
 			name = ALBBHttpdnsSDK;
 			productName = ALBBHttpdnsSDK;
-			productReference = 215C59A21B2189FC00148D49 /* ALBBHttpdnsSDK.framework */;
+			productReference = 21C4B5F81BA571AB0050BA9F /* ALBBHttpdnsSDK.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		21796E941B144208002F8DA1 /* ALBBHttpdnsSDKTests */ = {
