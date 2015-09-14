@@ -80,10 +80,9 @@ NSArray * test_other_hosts;
                                                                   withLookupTime:[HttpdnsUtil currentEpochTimeInSecond]
                                                                        withState:HttpdnsHostStateVALID];
     [hostManager setObject:hostObject forKey:test_host1];
+    XCTAssertEqualObjects([httpdns getIpByHostAsync:test_host1], @"1.1.1.1", "Should return old ip");
     sleep(2);
-    XCTAssertEqual([httpdns getIpByHostAsync:test_host1], @"1.1.1.1", "Should return old ip");
     NSLog(@"return ip: %@", [httpdns getIpByHost:test_host1]);
-    // XCTAssertEqual([httpdns getIpByHost:test_host1], test_ip1, "Should update ip");
     XCTAssertEqualObjects([httpdns getIpByHost:test_host1], test_ip1, "Should update ip");
     HttpdnsLogDebug(@"[testTTL] - %@", [httpdns getIpByHost:test_host1]);
     XCTAssertEqualObjects([httpdns getIpByHostAsync:test_host1], test_ip1, "Should update ip");
