@@ -106,7 +106,6 @@
 		21796ECB1B14422C002F8DA1 /* HttpdnsRequestTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsRequestTest.m; sourceTree = "<group>"; };
 		21796ECC1B14422C002F8DA1 /* HttpdnsServiceTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsServiceTest.m; sourceTree = "<group>"; };
 		21796ECD1B14422C002F8DA1 /* HttpdnsUtilTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtilTest.m; sourceTree = "<group>"; };
-		21796ECE1B14422C002F8DA1 /* TestIncludeAllHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestIncludeAllHeader.h; sourceTree = "<group>"; };
 		21796F301B144BD0002F8DA1 /* HttpdnsTokenGenTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsTokenGenTest.m; sourceTree = "<group>"; };
 		21AD7ECA1B15BC4D000312E5 /* HttpdnsSchedulerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsSchedulerTest.m; sourceTree = "<group>"; };
 		21C4B5F81BA571AB0050BA9F /* ALBBHttpdnsSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ALBBHttpdnsSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -241,7 +240,6 @@
 				21796ECC1B14422C002F8DA1 /* HttpdnsServiceTest.m */,
 				21796ECD1B14422C002F8DA1 /* HttpdnsUtilTest.m */,
 				21796F301B144BD0002F8DA1 /* HttpdnsTokenGenTest.m */,
-				21796ECE1B14422C002F8DA1 /* TestIncludeAllHeader.h */,
 			);
 			name = WhiteBoxTests;
 			sourceTree = "<group>";

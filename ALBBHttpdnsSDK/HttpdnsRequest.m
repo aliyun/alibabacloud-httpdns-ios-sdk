@@ -121,7 +121,7 @@ static NSLock * rltTimeLock = nil;
 
 // AK鉴权方式下构造httpdns解析请求头
 -(NSMutableURLRequest *)constructRequestWith:(NSString *)hostsString {
-    HttpDnsServiceProvider * sharedService = [HttpDnsServiceProvider sharedInstance];
+    HttpDnsServiceProvider * sharedService = [HttpDnsServiceProvider getService];
 
     NSString *chooseEndpoint = degradeToHost ? HTTPDNS_SERVER_BACKUP_HOST : HTTPDNS_SERVER_IP;
     NSString *appId = sharedService.appId;

@@ -7,8 +7,9 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "TestIncludeAllHeader.h"
 #import "TestResouces.h"
+#import "HttpdnsRequestScheduler.h"
+#import "HttpdnsRequest.h"
 
 @interface HttpdnsQATest : XCTestCase
 @end
@@ -53,9 +54,9 @@ NSArray * test_other_hosts;
             HttpdnsLogDebug(@"signer sign: %@\nto%@", stringToSign, signature);
             return signature;
         }];
-        HttpDnsServiceProvider * provider = [HttpDnsServiceProvider sharedInstance];
-        [provider setCredentialProvider:credentialProvider];
-        [provider setAppId:testAppId];
+        id<ALBBHttpdnsServiceProtocol> httpdns = [HttpDnsServiceProvider getService];
+        [httpdns setCredentialProvider:credentialProvider];
+        [httpdns setAppId:testAppId];
     });
 
     httpdns = [HttpDnsServiceProvider getService];

@@ -10,7 +10,7 @@
 #define TEST_RESOURCES_H
 
 #import <Foundation/Foundation.h>
-#import "TestIncludeAllHeader.h"
+#import "Httpdns.h"
 
 @interface TestResouces : NSObject
 

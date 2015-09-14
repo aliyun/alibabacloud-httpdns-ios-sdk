@@ -7,7 +7,8 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "TestIncludeAllHeader.h"
+#import "Httpdns.h"
+#import "HttpdnsRequestScheduler.h"
 
 @interface HttpdnsSchedulerTest : XCTestCase
 
