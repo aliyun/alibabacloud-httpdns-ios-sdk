@@ -22,6 +22,12 @@ NSString * test_host1 = @"cas.xxyycc.com";
 NSString * test_ip1 = @"110.75.82.106";
 NSString * test_host2 = @"www.xxyycc.com";
 NSString * test_ip2 = @"121.41.73.79";
+NSString * test_host3 = @"dns.com";
+NSString * test_ip3 = @"117.28.255.25";
+NSString * test_host4 = @"us.com";
+NSString * test_ip4 = @"83.222.226.95";
+NSArray * test_other_hosts;
+
 
 @implementation HttpdnsQATest
 
@@ -36,6 +42,9 @@ NSString * test_ip2 = @"121.41.73.79";
         NSString * testAk = @"nYZpG9vuGt9mdWEn";
         NSString * testSk = @"iuAdZsr0Gfnpz5G5esRBnZy3WsF3N6";
         NSString * testAppId = @"2165829";
+        test_other_hosts = @[@"youku.com", @"tudou.com", @"baidu.com", @"google.com", @"aliyun.com", @"taobao.com",
+                               @"douban.com", @"douyu.tv", @"tencent.com", @"dig.com", @"null.com", @"noexist.com",
+                               @"dfsfdsdjlfdjsf.com", @"fds23432dfsfd.com"];
 
         id<HttpdnsCredentialProvider> credentialProvider = [[HttpdnsCustomSignerCredentialProvider alloc] initWithSignerBlock:^NSString *(NSString *stringToSign) {
             NSString *signature = [NSString stringWithFormat:@"HTTPDNS %@:%@",
@@ -69,7 +78,7 @@ NSString * test_ip2 = @"121.41.73.79";
                                                                          withTTL:1
                                                                           withIp:@"1.1.1.1"
                                                                   withLookupTime:[HttpdnsUtil currentEpochTimeInSecond]
-                                                                       withState:VALID];
+                                                                       withState:HttpdnsHostStateVALID];
     [hostManager setObject:hostObject forKey:test_host1];
     sleep(2);
     XCTAssertEqual([httpdns getIpByHostAsync:test_host1], @"1.1.1.1", "Should return old ip");
@@ -87,18 +96,33 @@ NSString * test_ip2 = @"121.41.73.79";
 - (void)testHttpdnsLargeConcurent {
     NSLock * counter_lock = [NSLock new];
     __block int counter = 0;
+    int concurrentNum = 10;
     dispatch_queue_t testQueue = dispatch_queue_create("com.aliyun.httpdns.xctest", DISPATCH_QUEUE_CONCURRENT);
     [httpdns getIpByHost:test_host1];
     [httpdns getIpByHost:test_host2];
-    for (int i = 0; i < 2; i++) {
+    [httpdns getIpByHost:test_host3];
+    [httpdns getIpByHost:test_host4];
+    for (int i = 0; i < concurrentNum; i++) {
         dispatch_async(testQueue, ^{
             NSArray * hosts = [[NSArray alloc] initWithObjects:test_host1, test_host2, nil];
             [httpdns setPreResolveHosts:hosts];
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 30; i++) {
                 NSString * resolvedIp1 = [httpdns getIpByHost:test_host1];
                 NSString * resolvedIp2 = [httpdns getIpByHostAsync:test_host2];
+                NSString * resolvedIp3 = [httpdns getIpByHost:test_host3];
+                NSString * resolvedIp4 = [httpdns getIpByHost:test_host4];
                 XCTAssertEqualObjects(resolvedIp1, test_ip1, @"Should be equal!");
                 XCTAssertEqualObjects(resolvedIp2, test_ip2, @"Should be equal!");
+                XCTAssertEqualObjects(resolvedIp3, test_ip3, @"Should be equal!");
+                XCTAssertEqualObjects(resolvedIp4, test_ip4, @"Should be equal!");
+                [test_other_hosts enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                    NSString * host = obj;
+                    if (idx % 2) {
+                        [httpdns getIpByHost:host];
+                    } else {
+                        [httpdns getIpByHostAsync:host];
+                    }
+                }];
                 [NSThread sleepForTimeInterval:1];
             }
             [counter_lock lock];
@@ -108,7 +132,11 @@ NSString * test_ip2 = @"121.41.73.79";
     }
     while (true) {
         [counter_lock lock];
-        if (counter == 50) break;
+        if (counter == concurrentNum) {
+            NSLog(@"%d", counter);
+            [counter_lock unlock];
+            break;
+        }
         NSLog(@"%d", counter);
         [counter_lock unlock];
         [NSThread sleepForTimeInterval:1];
@@ -156,7 +184,7 @@ NSString * test_ip2 = @"121.41.73.79";
                                                                          withTTL:30
                                                                           withIp:@"1.1.1.1"
                                                                   withLookupTime:[HttpdnsUtil currentEpochTimeInSecond]
-                                                                       withState:VALID];
+                                                                       withState:HttpdnsHostStateVALID];
     [hostManager setObject:hostObject forKey:@"test.domain.com"];
     [HttpdnsLocalCache writeToLocalCache:hostManager];
     NSDictionary * cacheHosts = [HttpdnsLocalCache readFromLocalCache];

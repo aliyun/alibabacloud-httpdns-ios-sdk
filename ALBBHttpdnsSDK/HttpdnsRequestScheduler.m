@@ -51,12 +51,12 @@ static NSMutableDictionary *retryMap = nil;
             if (currentTime - [hostObject getLastLookupTime] > 2 * 24 * 60 * 60) {
                 continue;
             }
-            if ([hostObject getState] == QUERYING) {
+            if ([hostObject getState] == HttpdnsHostStateQUERYING) {
                 //如果state为QUERYING，调整为VALID或INITIALIZE
                 if ([hostObject getIps] != nil) {
-                    [hostObject setState:VALID];
+                    [hostObject setState:HttpdnsHostStateVALID];
                 } else {
-                    [hostObject setState:INITIALIZE];
+                    [hostObject setState:HttpdnsHostStateINITIALIZE];
                 }
             }
             long long originTTL = [hostObject getTTL];
@@ -80,7 +80,7 @@ static NSMutableDictionary *retryMap = nil;
             }
             HttpdnsHostObject *hostObject = [_hostManagerDict objectForKey:hostName];
             if (hostObject &&
-                (![hostObject isExpired] || [hostObject getState] == QUERYING)
+                (![hostObject isExpired] || [hostObject getState] == HttpdnsHostStateQUERYING)
                 ) {
                 HttpdnsLogDebug(@"[addPreResolveHosts] - %@ omit, is Expired?: %d state: %ld", hostName, [hostObject isExpired], (long)[hostObject getState]);
                 continue;
@@ -88,7 +88,7 @@ static NSMutableDictionary *retryMap = nil;
 
             hostObject = [[HttpdnsHostObject alloc] init];
             [hostObject setHostName:hostName];
-            [hostObject setState:QUERYING];
+            [hostObject setState:HttpdnsHostStateQUERYING];
             [_hostManagerDict setObject:hostObject forKey:hostName];
             [_lookupQueue addObject:hostName];
             HttpdnsLogDebug(@"ManagerDict and lookupQueue add host %@", hostName);
@@ -113,20 +113,20 @@ static NSMutableDictionary *retryMap = nil;
             }
             result = [[HttpdnsHostObject alloc] init];
             [result setHostName:host];
-            [result setState:INITIALIZE];
+            [result setState:HttpdnsHostStateINITIALIZE];
             [_hostManagerDict setObject:result forKey:host];
             needToQuery = YES;
         }
         else if ([result isExpired]) {
             HttpdnsLogDebug(@"[addSingleHostAndLookUp] - %@ is expired, currentState: %ld", host, (long)[result getState]);
-            if ([result getState] != QUERYING) {
+            if ([result getState] != HttpdnsHostStateQUERYING) {
                 needToQuery = YES;
             }
             if ([result isAlreadyUnawailable]) {
                 directlyReturn = NO;
             }
         }
-        else if ([result getState] == INITIALIZE) {
+        else if ([result getState] == HttpdnsHostStateINITIALIZE) {
             HttpdnsLogDebug(@"[addSingleHostAndLookUp] - %@ is initialize", host);
             needToQuery = YES;
             directlyReturn = NO;
@@ -136,7 +136,7 @@ static NSMutableDictionary *retryMap = nil;
             // 一个域名单独被添加时，等待一段时间看看随后有没有别的域名要查询，合并为一个查询
             // 这期间如果添加的域名超过五个，会立即开始查询
             [_lookupQueue addObject:host];
-            [result setState:QUERYING];
+            [result setState:HttpdnsHostStateQUERYING];
             if ([_lookupQueue count] == 1) {
                 dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(FIRST_QEURY_WAIT_INTERVAL_IN_SEC * NSEC_PER_SEC));
                 dispatch_after(popTime, _asyncDispatchQueue, ^(void){
@@ -164,31 +164,31 @@ static NSMutableDictionary *retryMap = nil;
             }
             result = [[HttpdnsHostObject alloc] init];
             [result setHostName:host];
-            [result setState:INITIALIZE];
+            [result setState:HttpdnsHostStateINITIALIZE];
             [_hostManagerDict setObject:result forKey:host];
             needToQuery = YES;
         } else if ([result isExpired]) {
             HttpdnsLogDebug(@"[addSingleHostAndLookUpSync] - %@ is expired, currentState: %ld", host, (long)[result getState]);
-            if ([result getState] != QUERYING) {
+            if ([result getState] != HttpdnsHostStateQUERYING) {
                 needToQuery = YES;
             }
-        } else if ([result getState] == INITIALIZE) {
+        } else if ([result getState] == HttpdnsHostStateINITIALIZE) {
             HttpdnsLogDebug(@"[addSingleHostAndLookUpSync] - %@ is initialize", host);
             needToQuery = YES;
         }
         if (needToQuery) {
-            [result setState: QUERYING];
+            [result setState: HttpdnsHostStateQUERYING];
         }
     });
     if (needToQuery) {
         return [self syncRequest:host retryCount:0];
     }
     long long waitTotalInUS = 0;
-    while ([result getState] == QUERYING && waitTotalInUS < 10 * 1000 * 1000) {
+    while ([result getState] == HttpdnsHostStateQUERYING && waitTotalInUS < 10 * 1000 * 1000) {
         usleep(50 * 1000);
         waitTotalInUS += 50 * 1000;
     }
-    return result;
+    return [result getState] == HttpdnsHostStateVALID ? result : nil;
 }
 
 // 用查询得到的结果更新Manager中管理着的域名，需要在同步队列中执行
@@ -201,7 +201,7 @@ static NSMutableDictionary *retryMap = nil;
             [old setTTL:[hostObject getTTL]];
             [old setLastLookupTime:[hostObject getLastLookupTime]];
             [old setIps:[hostObject getIps]];
-            [old setState:VALID];
+            [old setState:HttpdnsHostStateVALID];
 
             [noResolveResultHosts removeObject:hostName];
             HttpdnsLogDebug(@"[mergeLookupResult] - update %@", hostName);
@@ -212,7 +212,7 @@ static NSMutableDictionary *retryMap = nil;
         [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
         [hostObject setTTL:30];
         [hostObject setIps:nil];
-        [hostObject setState:VALID];
+        [hostObject setState:HttpdnsHostStateVALID];
         HttpdnsLogDebug(@"[mergeLookupResult] - can't resolve %@", host);
     }
     [HttpdnsLocalCache writeToLocalCache:_hostManagerDict];
@@ -308,7 +308,7 @@ static NSMutableDictionary *retryMap = nil;
     dispatch_sync(_syncDispatchQueue, ^{
         for (NSString * key in [_hostManagerDict allKeys]) {
             HttpdnsHostObject * hostObject = [_hostManagerDict objectForKey:key];
-            [hostObject setState: INITIALIZE];
+            [hostObject setState: HttpdnsHostStateINITIALIZE];
         }
     });
 }
