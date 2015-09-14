@@ -57,6 +57,11 @@ NetworkDetection* reachability;
 }
 
 -(NSString *)getIpByHost:(NSString *)host {
+
+    if (!host) {
+        return host;
+    }
+
     // 如果是ip，直接返回
     if ([HttpdnsUtil checkIfIsAnIp:host]) {
         HttpdnsLogDebug(@"[getIpByHost] - directly return this ip");
@@ -79,6 +84,11 @@ NetworkDetection* reachability;
 }
 
 -(NSString *)getIpByHostAsync:(NSString *)host {
+
+    if (!host) {
+        return host;
+    }
+
     // 如果是ip，直接返回
     if ([HttpdnsUtil checkIfIsAnIp:host]) {
         HttpdnsLogDebug(@"[getIpByHost] - directly return this ip");

@@ -10,6 +10,10 @@
 
 @protocol ALBBHttpdnsServiceProtocol <NSObject>
 
+-(void)setAppId:(NSString *)appId;
+
+-(void)setCredentialProvider:(id)credential;
+
 // 添加预解析域名
 -(void)setPreResolveHosts:(NSArray *)hosts;
 

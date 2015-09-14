@@ -7,8 +7,8 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "TestIncludeAllHeader.h"
-#import "HttpdnsLog.h"
+#import "Httpdns.h"
+#import "HttpdnsRequest.h"
 
 @interface HttpdnsRequestTest : XCTestCase
 

@@ -7,7 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "HttpdnsUtil.h"
+#import "Httpdns.h"
 
 @interface HttpdnsUtilTest : XCTestCase
 
