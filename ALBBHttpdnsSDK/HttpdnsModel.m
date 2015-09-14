@@ -44,7 +44,7 @@
 
 -(instancetype)init {
     _hostName = nil;
-    _currentState = INITIALIZE;
+    _currentState = HttpdnsHostStateINITIALIZE;
     _lastLookupTime = 0;
     _ttl = -1;
     _ips = nil;

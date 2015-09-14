@@ -81,7 +81,7 @@ static NSLock * rltTimeLock = nil;
         [hostObject setIps:ipNums];
         [hostObject setTTL:[[dict objectForKey:@"ttl"] longLongValue]];
         [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
-        [hostObject setState:VALID];
+        [hostObject setState:HttpdnsHostStateVALID];
         HttpdnsLogDebug(@"[parseResponse] - host: %@ ttl: %lld ips: %@", [hostObject getHostName], [hostObject getTTL], ipNums);
         [result addObject:hostObject];
     }

@@ -18,9 +18,9 @@
 
 
 typedef NS_ENUM(NSInteger, HostState) {
-    INITIALIZE,
-    QUERYING,
-    VALID
+    HttpdnsHostStateINITIALIZE,
+    HttpdnsHostStateQUERYING,
+    HttpdnsHostStateVALID
 };
 
 
