@@ -25,7 +25,7 @@ xcuserdata
 # Built assets #
 ######################
 build
-AWS*.framework
+Products/
 
 # Stuff that can't be committed #
 ######################
@@ -37,10 +37,3 @@ Scripts/build.sh
 Scripts/gcovr
 Scripts/jenkins.py
 Scripts/ocunit2junit
-
-# import framework
-###################
-*.framework/
-ALBB.bundle/
-yw_1222.jpg
-HttpdnsTestApp/
