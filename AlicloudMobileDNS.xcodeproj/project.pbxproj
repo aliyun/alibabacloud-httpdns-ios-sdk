@@ -39,21 +39,21 @@
 		2197CAAB1BC7AC2400BDB65B /* UTDID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2197CA841BC79AB700BDB65B /* UTDID.framework */; };
 		2197CAAC1BC7AC2400BDB65B /* UTMini.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2197CA851BC79AB700BDB65B /* UTMini.framework */; };
 		2197CAAD1BC7ADE600BDB65B /* AlicloudMobileDNS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2197CA371BC79A4500BDB65B /* AlicloudMobileDNS.framework */; };
-		2197CAC21BC7B3D400BDB65B /* ALBBHttpdnsServiceProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB01BC7B3D400BDB65B /* ALBBHttpdnsServiceProtocol.h */; settings = {ASSET_TAGS = (); }; };
-		2197CAC31BC7B3D400BDB65B /* Httpdns.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB11BC7B3D400BDB65B /* Httpdns.h */; settings = {ASSET_TAGS = (); }; };
-		2197CAC41BC7B3D400BDB65B /* HttpdnsConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB21BC7B3D400BDB65B /* HttpdnsConfig.h */; settings = {ASSET_TAGS = (); }; };
+		2197CAC21BC7B3D400BDB65B /* ALBBHttpdnsServiceProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB01BC7B3D400BDB65B /* ALBBHttpdnsServiceProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2197CAC31BC7B3D400BDB65B /* Httpdns.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB11BC7B3D400BDB65B /* Httpdns.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2197CAC41BC7B3D400BDB65B /* HttpdnsConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB21BC7B3D400BDB65B /* HttpdnsConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2197CAC51BC7B3D400BDB65B /* HttpdnsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */; settings = {ASSET_TAGS = (); }; };
-		2197CAC61BC7B3D400BDB65B /* HttpdnsLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB41BC7B3D400BDB65B /* HttpdnsLog.h */; settings = {ASSET_TAGS = (); }; };
+		2197CAC61BC7B3D400BDB65B /* HttpdnsLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB41BC7B3D400BDB65B /* HttpdnsLog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2197CAC71BC7B3D400BDB65B /* HttpdnsLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB51BC7B3D400BDB65B /* HttpdnsLog.m */; settings = {ASSET_TAGS = (); }; };
-		2197CAC81BC7B3D400BDB65B /* HttpdnsModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB61BC7B3D400BDB65B /* HttpdnsModel.h */; settings = {ASSET_TAGS = (); }; };
+		2197CAC81BC7B3D400BDB65B /* HttpdnsModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB61BC7B3D400BDB65B /* HttpdnsModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2197CAC91BC7B3D400BDB65B /* HttpdnsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB71BC7B3D400BDB65B /* HttpdnsModel.m */; settings = {ASSET_TAGS = (); }; };
-		2197CACA1BC7B3D400BDB65B /* HttpdnsRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB81BC7B3D400BDB65B /* HttpdnsRequest.h */; settings = {ASSET_TAGS = (); }; };
+		2197CACA1BC7B3D400BDB65B /* HttpdnsRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB81BC7B3D400BDB65B /* HttpdnsRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2197CACB1BC7B3D400BDB65B /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB91BC7B3D400BDB65B /* HttpdnsRequest.m */; settings = {ASSET_TAGS = (); }; };
 		2197CACC1BC7B3D400BDB65B /* HttpdnsRequestScheduler.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CABA1BC7B3D400BDB65B /* HttpdnsRequestScheduler.h */; settings = {ASSET_TAGS = (); }; };
 		2197CACD1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABB1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m */; settings = {ASSET_TAGS = (); }; };
-		2197CACE1BC7B3D400BDB65B /* HttpdnsServiceProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CABC1BC7B3D400BDB65B /* HttpdnsServiceProvider.h */; settings = {ASSET_TAGS = (); }; };
+		2197CACE1BC7B3D400BDB65B /* HttpdnsServiceProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CABC1BC7B3D400BDB65B /* HttpdnsServiceProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2197CACF1BC7B3D400BDB65B /* HttpdnsServiceProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */; settings = {ASSET_TAGS = (); }; };
-		2197CAD01BC7B3D400BDB65B /* HttpdnsUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CABE1BC7B3D400BDB65B /* HttpdnsUtil.h */; settings = {ASSET_TAGS = (); }; };
+		2197CAD01BC7B3D400BDB65B /* HttpdnsUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CABE1BC7B3D400BDB65B /* HttpdnsUtil.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2197CAD11BC7B3D400BDB65B /* HttpdnsUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */; settings = {ASSET_TAGS = (); }; };
 		2197CAD21BC7B3D400BDB65B /* NetworkDetection.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAC01BC7B3D400BDB65B /* NetworkDetection.h */; settings = {ASSET_TAGS = (); }; };
 		2197CAD31BC7B3D400BDB65B /* NetworkDetection.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAC11BC7B3D400BDB65B /* NetworkDetection.m */; settings = {ASSET_TAGS = (); }; };
@@ -244,14 +244,14 @@
 			files = (
 				2197CACA1BC7B3D400BDB65B /* HttpdnsRequest.h in Headers */,
 				2197CAC31BC7B3D400BDB65B /* Httpdns.h in Headers */,
-				2197CACC1BC7B3D400BDB65B /* HttpdnsRequestScheduler.h in Headers */,
 				2197CAD01BC7B3D400BDB65B /* HttpdnsUtil.h in Headers */,
 				2197CAC61BC7B3D400BDB65B /* HttpdnsLog.h in Headers */,
 				2197CAC41BC7B3D400BDB65B /* HttpdnsConfig.h in Headers */,
 				2197CAC21BC7B3D400BDB65B /* ALBBHttpdnsServiceProtocol.h in Headers */,
-				2197CAD21BC7B3D400BDB65B /* NetworkDetection.h in Headers */,
 				2197CAC81BC7B3D400BDB65B /* HttpdnsModel.h in Headers */,
 				2197CACE1BC7B3D400BDB65B /* HttpdnsServiceProvider.h in Headers */,
+				2197CAD21BC7B3D400BDB65B /* NetworkDetection.h in Headers */,
+				2197CACC1BC7B3D400BDB65B /* HttpdnsRequestScheduler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
