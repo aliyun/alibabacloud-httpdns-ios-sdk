@@ -28,7 +28,7 @@
 - (void)test_getIpByHost {
     [HttpdnsLog enbaleLog];
     sleep(2);
-    // [HttpdnsLocalCache cleanLocalCache];
+    [HttpdnsLocalCache cleanLocalCache];
     HttpDnsServiceProvider *dns = [HttpDnsServiceProvider getService];
     NSArray *hosts = [[NSArray alloc] initWithObjects:@"www.taobao.com", @"www.alipay.com", nil];
     [dns setPreResolveHosts:hosts];

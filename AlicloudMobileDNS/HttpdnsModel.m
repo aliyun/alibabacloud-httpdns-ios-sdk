@@ -12,10 +12,10 @@
 #import "HttpdnsLog.h"
 
 #ifdef IS_DPA_RELEASE
-#import <ALBBTDSSDK/TDSServiceProvider.h>
-#import <ALBBTDSSDK/FederationToken.h>
-#import <ALBBTDSSDK/TDSArgs.h>
-#import <ALBBTDSSDK/TDSLog.h>
+#import <AlicloudMobileTokenDistribution/TDSServiceProvider.h>
+#import <AlicloudMobileTokenDistribution/FederationToken.h>
+#import <AlicloudMobileTokenDistribution/TDSArgs.h>
+#import <AlicloudMobileTokenDistribution/TDSLog.h>
 #import <ALBBSDK/ALBBSDK.h>
 #import <ALBBRpcSDK/ALBBRpcSDK.h>
 #endif
