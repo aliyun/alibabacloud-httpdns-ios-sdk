@@ -41,7 +41,7 @@ NSString *const kReachabilityChangedNotification = @"kReachabilityChangedNotific
 @interface NetworkDetection ()
 
 @property (nonatomic, assign) SCNetworkReachabilityRef  reachabilityRef;
-@property (nonatomic, assign) dispatch_queue_t          reachabilitySerialQueue;
+@property (nonatomic, strong) dispatch_queue_t          reachabilitySerialQueue;
 @property (nonatomic, strong) id                        reachabilityObject;
 
 -(void)reachabilityChanged:(SCNetworkReachabilityFlags)flags;
