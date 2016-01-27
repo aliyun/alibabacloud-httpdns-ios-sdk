@@ -1,10 +1,21 @@
-//
-//  HttpdnsUtil.m
-//  Dpa-Httpdns-iOS
-//
-//  Created by zhouzhuo on 5/1/15.
-//  Copyright (c) 2015 zhouzhuo. All rights reserved.
-//
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
@@ -12,22 +23,6 @@
 #import "arpa/inet.h"
 
 @implementation HttpdnsUtil
-
-+(NSString *)Base64HMACSha1Sign:(NSData *)data withKey:(NSString *)key {
-    CCHmacContext context;
-    const char    *keyCString = [key cStringUsingEncoding:NSASCIIStringEncoding];
-
-    CCHmacInit(&context, kCCHmacAlgSHA1, keyCString, strlen(keyCString));
-    CCHmacUpdate(&context, [data bytes], [data length]);
-
-    unsigned char digestRaw[CC_SHA256_DIGEST_LENGTH];
-    NSInteger digestLength = CC_SHA1_DIGEST_LENGTH;
-
-    CCHmacFinal(&context, digestRaw);
-    NSData *digestData = [NSData dataWithBytes:digestRaw length:digestLength];
-
-    return [digestData base64EncodedStringWithOptions:kNilOptions];
-}
 
 +(long long)currentEpochTimeInSecond {
     return (long long)[[[NSDate alloc] init] timeIntervalSince1970];
@@ -37,7 +32,7 @@
     return [NSString stringWithFormat:@"%lld", [HttpdnsUtil currentEpochTimeInSecond]];
 }
 
-+(BOOL)checkIfIsAnIp:(NSString *)candidate {
++(BOOL)isAnIP:(NSString *)candidate {
     const char *utf8 = [candidate UTF8String];
 
     // Check valid IPv4.
@@ -50,7 +45,7 @@
     }
     return (success == 1);
 }
-+(BOOL)checkIfIsAnHost:(NSString *)host {
++(BOOL)isAHost:(NSString *)host {
     static dispatch_once_t once_token;
     static NSRegularExpression *hostExpression = nil;
     dispatch_once(&once_token, ^{
