@@ -1,41 +1,43 @@
-//
-//  HttpdnsModel.m
-//  Dpa-Httpdns-iOS
-//
-//  Created by zhouzhuo on 5/1/15.
-//  Copyright (c) 2015 zhouzhuo. All rights reserved.
-//
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #import "HttpdnsModel.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
 
-#ifdef IS_DPA_RELEASE
-#import <AlicloudMobileTokenDistribution/TDSServiceProvider.h>
-#import <AlicloudMobileTokenDistribution/FederationToken.h>
-#import <AlicloudMobileTokenDistribution/TDSArgs.h>
-#import <AlicloudMobileTokenDistribution/TDSLog.h>
-#import <ALBBSDK/ALBBSDK.h>
-#import <ALBBRpcSDK/ALBBRpcSDK.h>
-#endif
 
 @implementation HttpdnsIpObject
-@synthesize ip;
 
 -(id)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super init]) {
-        ip = [aDecoder decodeObjectForKey:@"ip"];
+        self.ip = [aDecoder decodeObjectForKey:@"ip"];
     }
     return self;
 }
 
 -(void)encodeWithCoder:(NSCoder *)aCoder {
-    [aCoder encodeObject:ip forKey:@"ip"];
+    [aCoder encodeObject:self.ip forKey:@"ip"];
 }
 
 -(NSString *)description {
-    return ip;
+    return self.ip;
 }
 
 @end
@@ -44,7 +46,7 @@
 
 -(instancetype)init {
     _hostName = nil;
-    _currentState = HttpdnsHostStateINITIALIZE;
+    _currentState = HttpdnsHostStateInitialized;
     _lastLookupTime = 0;
     _ttl = -1;
     _ips = nil;
@@ -78,14 +80,6 @@
     return NO;
 }
 
--(BOOL)isAlreadyUnawailable {
-    long long currentEpoch = (long long)[[[NSDate alloc] init] timeIntervalSince1970];
-    if (_lastLookupTime + _ttl + MAX_EXPIRED_ENDURE_TIME_IN_SEC < currentEpoch) {
-        return YES;
-    }
-    return NO;
-}
-
 -(NSString *)description {
     return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld state = %ld",
             _hostName, _ips, _lastLookupTime, _ttl, (long)_currentState];
@@ -93,94 +87,44 @@
 
 @end
 
-@implementation HttpdnsToken : NSObject
-
--(NSString *)description {
-    return [NSString stringWithFormat:@"Token: ak = %@ sk = %@ sToken = %@", _accessKeyId, _accessKeySecret, _securityToken];
-}
-@end
-
-
-@implementation HttpdnsCustomSignerCredentialProvider
-
--(instancetype)initWithSignerBlock:(NSString *(^)(NSString *))signerBlock {
-    if (self = [super init]) {
-        self.signerBlock = signerBlock;
-    }
-    return self;
-}
-
--(NSString *)sign:(NSString *)stringToSign {
-    return self.signerBlock(stringToSign);
-}
-
-@end
-
-#ifdef IS_DPA_RELEASE
-@implementation HttpdnsTokenGen {
-    id<TDSService> _tds;
-}
-
-+(instancetype)sharedInstance {
-    static dispatch_once_t _pred = 0;
-    __strong static HttpdnsTokenGen * _tokenGen = nil;
-    dispatch_once(&_pred, ^{
-        _tokenGen = [[self alloc] init];
-    });
-    return _tokenGen;
-}
-
--(HttpdnsToken *)getToken {
-    _tds = [TDSServiceProvider getService];
-    FederationToken *token = [_tds distributeToken:HTTPDNS_TOKEN];
-    if (token) {
-        HttpdnsToken *httpDnsToken = [[HttpdnsToken alloc] init];
-        [httpDnsToken setAccessKeyId:[token accessKeyId]];
-        [httpDnsToken setAccessKeySecret:[token accessKeySecret]];
-        [httpDnsToken setSecurityToken:[token securityToken]];
-        [httpDnsToken setAppId:[_tds getAppid]];
-        return httpDnsToken;
-    }
-    return nil;
-}
-
-@end
-#endif
-
-
-
 static NSString *localCacheKey = @"httpdns_hostManagerData";
 static long long lastWroteToCacheTime = 0;
-static long long minimalIntervalInSecond = 10;
+static long long minimalIntervalInSecond = 60;
 
 @implementation HttpdnsLocalCache
 
-+(void)writeToLocalCache:(NSDictionary *)allHostObjectInManagerDict {
++(void)writeToLocalCache:(NSDictionary *)allHostObjectsInManagerDict {
     long long currentTime = [HttpdnsUtil currentEpochTimeInSecond];
-    // 如果离上次写缓存时间小于阈值，放弃此次写入
     if (currentTime - lastWroteToCacheTime < minimalIntervalInSecond) {
-        HttpdnsLogDebug(@"[writeToLocalCache] - Write too often, abort this writing");
+        HttpdnsLogDebug("Write too often, abort this writing.");
         return;
     }
     lastWroteToCacheTime = currentTime;
-    NSData *buffer = [NSKeyedArchiver archivedDataWithRootObject:allHostObjectInManagerDict];
+    NSData *buffer = [NSKeyedArchiver archivedDataWithRootObject:allHostObjectsInManagerDict];
+    NSData *encodedBuffer = [buffer base64EncodedDataWithOptions:kNilOptions];
     NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
-    [userDefault setObject:buffer forKey:localCacheKey];
+    [userDefault setObject:encodedBuffer forKey:localCacheKey];
     [userDefault synchronize];
-    HttpdnsLogDebug(@"[writeToLocalCache] - write %lu to local file system", (unsigned long)(unsigned long)[allHostObjectInManagerDict count]);
+    HttpdnsLogDebug("Write %lu to local file system.", (unsigned long)(unsigned long)[allHostObjectsInManagerDict count]);
 }
 
 +(NSDictionary *)readFromLocalCache {
     NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
     NSData *buffer = [userDefault objectForKey:localCacheKey];
-    NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:buffer];
-    HttpdnsLogDebug(@"[readFromLocalCache] - read %lu from local file system: %@", (unsigned long)[dict count], dict);
-    return dict;
+    if (buffer) {
+        NSData *decodedBuffer = [[NSData alloc] initWithBase64EncodedData:buffer options:kNilOptions];
+        NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:decodedBuffer];
+        HttpdnsLogDebug("Read %lu from local file system: %@.", (unsigned long)[dict count], dict);
+        return dict;
+    } else {
+        return nil;
+    }
 }
 
 +(void)cleanLocalCache {
-    HttpdnsLogDebug(@"[cleanLocalCache] - clean cache");
+    HttpdnsLogDebug("Clean cache.");
     NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
     [userDefault removeObjectForKey:localCacheKey];
+    [userDefault synchronize];
 }
 @end

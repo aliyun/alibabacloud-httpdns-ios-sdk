@@ -1,52 +1,60 @@
-//
-//  Dpa_Httpdns_iOS.m
-//  Dpa-Httpdns-iOS
-//
-//  Created by zhouzhuo on 5/1/15.
-//  Copyright (c) 2015 zhouzhuo. All rights reserved.
-//
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #import "HttpdnsRequestScheduler.h"
 #import "HttpdnsServiceProvider.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsModel.h"
 #import "HttpdnsUtil.h"
-#import "NetworkDetection.h"
 #import "HttpdnsLog.h"
 
-@implementation HttpDnsServiceProvider
+@implementation HttpDnsService {
+    HttpdnsRequestScheduler *_requestScheduler;
+}
 
-NetworkDetection* reachability;
+#pragma mark singleton
 
 +(instancetype)sharedInstance {
-    static dispatch_once_t once;
-    static HttpDnsServiceProvider * _httpDnsClient = nil;
-    dispatch_once(&once, ^{
-        _httpDnsClient = [[self alloc] init];
+    static dispatch_once_t onceToken;
+    static HttpDnsService * _httpDnsClient = nil;
+    dispatch_once(&onceToken, ^{
+        _httpDnsClient = [[super allocWithZone:NULL] init];
     });
     return _httpDnsClient;
 }
 
-+(instancetype)getService {
-    return [HttpDnsServiceProvider sharedInstance];
++ (id)allocWithZone:(NSZone *)zone {
+    return [self sharedInstance];
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+    return self;
 }
 
 #pragma mark init
 
 -(instancetype)init {
-    NSDictionary *cacheHosts = [HttpdnsLocalCache readFromLocalCache];
-    _requestScheduler = [[HttpdnsRequestScheduler alloc] init];
-    [_requestScheduler readCacheHosts:cacheHosts];
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        HttpdnsLogDebug("[dispatch_async] - Current thread: %@", [NSThread currentThread]);
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleNetworkChange:) name:kReachabilityChangedNotification object:nil];
-        reachability = [NetworkDetection reachabilityForInternetConnection];
-        [reachability startNotifier];
-    });
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [HttpdnsRequest requestServerTimeStamp];
-    });
+    if (self = [super init]) {
+        NSDictionary *cachedHosts = [HttpdnsLocalCache readFromLocalCache];
+        _requestScheduler = [[HttpdnsRequestScheduler alloc] init];
+        [_requestScheduler readCachedHosts:cachedHosts];
+    }
     return self;
 }
 
@@ -57,23 +65,26 @@ NetworkDetection* reachability;
 }
 
 -(NSString *)getIpByHost:(NSString *)host {
+    
+    if ([self.delegate shouldDegradeHTTPDNS:host]) {
+        return nil;
+    }
 
     if (!host) {
         return host;
     }
 
-    // 如果是ip，直接返回
-    if ([HttpdnsUtil checkIfIsAnIp:host]) {
-        HttpdnsLogDebug(@"[getIpByHost] - directly return this ip");
+    if ([HttpdnsUtil isAnIP:host]) {
+        HttpdnsLogDebug("The host is just an IP.");
         return host;
     }
-    // 判断host是否合法
-    if (![HttpdnsUtil checkIfIsAnHost:host]) {
-        HttpdnsLogDebug(@"[getIpByHost] - the host is illegal ,directly return nil");
+
+    if (![HttpdnsUtil isAHost:host]) {
+        HttpdnsLogDebug("The host is illegal.");
         return nil;
     }
     
-    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookupSync:host];
+    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:YES];
     if (hostObject) {
         NSArray * ips = [hostObject getIps];
         if (ips && [ips count] > 0) {
@@ -84,44 +95,38 @@ NetworkDetection* reachability;
 }
 
 -(NSString *)getIpByHostAsync:(NSString *)host {
+    
+    if ([self.delegate shouldDegradeHTTPDNS:host]) {
+        return nil;
+    }
 
     if (!host) {
         return host;
     }
 
-    // 如果是ip，直接返回
-    if ([HttpdnsUtil checkIfIsAnIp:host]) {
-        HttpdnsLogDebug(@"[getIpByHost] - directly return this ip");
+    if ([HttpdnsUtil isAnIP:host]) {
+        HttpdnsLogDebug("The host is just an IP.");
         return host;
     }
-    // 判断host是否合法
-    if (![HttpdnsUtil checkIfIsAnHost:host]) {
-        HttpdnsLogDebug(@"[getIpByHost] - the host is illegal ,directly return nil");
+
+    if (![HttpdnsUtil isAHost:host]) {
+        HttpdnsLogDebug("The host is illegal.");
         return nil;
     }
     
-    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host];
+    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO];
     if (hostObject) {
         NSArray *ips = [hostObject getIps];
         if (ips && [ips count] > 0) {
             return [[ips objectAtIndex:0] getIpString];
         }
     }
-    HttpdnsLogDebug(@"[getIpByHost] - this host haven't exist in cache yet");
+    HttpdnsLogDebug("No available IP cached for %@", host);
     return nil;
 }
 
-- (void)handleNetworkChange:(NSNotification *)notice {
-    NetworkStatus remoteHostStatus = [reachability currentReachabilityStatus];
-    [_requestScheduler resetAfterNetworkChanged];
-    if (remoteHostStatus == NotReachable) {
-        HttpdnsLogDebug("[handleNetworkChange] - no networking");
-    } else if (remoteHostStatus == ReachableViaWiFi) {
-        HttpdnsLogDebug("[handleNetworkChange] - wifi");
-    } else if (remoteHostStatus == ReachableViaWWAN) {
-        HttpdnsLogDebug("[handleNetworkChange] - cell");
-    } else {
-        HttpdnsLogError("[handleNetworkChange] - unknown type: %d", (int)remoteHostStatus);
-    }
+-(void)setExpiredIPEnabled:(BOOL)enable {
+    [_requestScheduler setExpiredIPEnabled:enable];
 }
+
 @end

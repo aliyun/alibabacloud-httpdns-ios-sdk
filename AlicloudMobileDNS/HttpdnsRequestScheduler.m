@@ -1,10 +1,21 @@
-//
-//  HttpdnsRequestScheduler.m
-//  Dpa-Httpdns-iOS
-//
-//  Created by zhouzhuo on 5/1/15.
-//  Copyright (c) 2015 zhouzhuo. All rights reserved.
-//
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #import "HttpdnsModel.h"
 #import "HttpdnsRequest.h"
@@ -13,303 +24,190 @@
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
 
-static NSMutableDictionary *retryMap = nil;
-
-@implementation HttpdnsRequestScheduler
-
-+(void)initialize {
-    retryMap = [[NSMutableDictionary alloc] init];
+@implementation HttpdnsRequestScheduler {
+    BOOL _isExpiredIPEnabled;
+    NSMutableDictionary *_hostManagerDict;
+    dispatch_queue_t _syncDispatchQueue;
+    NSOperationQueue *_asyncOperationQueue;
 }
 
 -(instancetype)init {
-    _syncDispatchQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.sync", NULL);
-    _asyncDispatchQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.async", DISPATCH_QUEUE_CONCURRENT);
-
-    _asyncOperationQueue = [[NSOperationQueue alloc] init];
-    [_asyncOperationQueue setMaxConcurrentOperationCount:MAX_REQUEST_THREAD_NUM];
-    _lookupQueue = [[NSMutableArray alloc] init];
-    _hostManagerDict = [[NSMutableDictionary alloc] init];
+    if (self = [super init]) {
+        _isExpiredIPEnabled = NO;
+        _syncDispatchQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.sync", NULL);
+        _asyncOperationQueue = [[NSOperationQueue alloc] init];
+        [_asyncOperationQueue setMaxConcurrentOperationCount:MAX_REQUEST_THREAD_NUM];
+        _hostManagerDict = [[NSMutableDictionary alloc] init];
+    }
     return self;
 }
 
--(void)readCacheHosts:(NSDictionary *)hosts {
-    dispatch_sync(_syncDispatchQueue, ^{
-        if ([_hostManagerDict count] != 0) {
-            // 不是初始化状态，本地缓存读取到的数据不生效
-            return;
-        }
-        long long currentTime = [HttpdnsUtil currentEpochTimeInSecond];
-        for (NSString *key in [hosts allKeys]) {
-            HttpdnsHostObject *hostObject = [hosts objectForKey:key];
-            if ([_hostManagerDict count] > MAX_MANAGE_HOST_NUM) {
-                HttpdnsLogError(@"[readCacheHosts] - Cant handle more than %d hosts", MAX_MANAGE_HOST_NUM);
-                break;
+-(void)readCachedHosts:(NSDictionary *)hosts {
+    if (hosts) {
+        dispatch_async(_syncDispatchQueue, ^{
+            if ([_hostManagerDict count] != 0) {
+                HttpdnsLogDebug(@"hostManager is not empty when reading cache from disk.");
+                return;
             }
-            if ([hostObject getIps] == nil || [[hostObject getIps] count] == 0) {
-                continue;
-            }
-            if (currentTime - [hostObject getLastLookupTime] > 2 * 24 * 60 * 60) {
-                continue;
-            }
-            if ([hostObject getState] == HttpdnsHostStateQUERYING) {
-                //如果state为QUERYING，调整为VALID或INITIALIZE
-                if ([hostObject getIps] != nil) {
-                    [hostObject setState:HttpdnsHostStateVALID];
-                } else {
-                    [hostObject setState:HttpdnsHostStateINITIALIZE];
+            long long currentTime = [HttpdnsUtil currentEpochTimeInSecond];
+            for (NSString *key in [hosts allKeys]) {
+                HttpdnsHostObject *hostObject = [hosts objectForKey:key];
+                if ([_hostManagerDict count] > MAX_MANAGE_HOST_NUM) {
+                    HttpdnsLogDebug(@"Can't handle more than %d hosts due to the software configuration.", MAX_MANAGE_HOST_NUM);
+                    break;
                 }
+                if ([hostObject getIps] == nil || [[hostObject getIps] count] == 0) {
+                    continue;
+                }
+                if (currentTime - [hostObject getLastLookupTime] > MAX_KEEPALIVE_PERIOD_FOR_CACHED_HOST && [hostObject getLastLookupTime] + [hostObject getTTL] > currentTime) {
+                    continue;
+                }
+                if ([hostObject getState] == HttpdnsHostStateQuerying) {
+                    [hostObject setState:HttpdnsHostStateValid];
+                }
+                [_hostManagerDict setObject:hostObject forKey:key];
+                HttpdnsLogDebug(@"Set %@ for %@", hostObject, key);
             }
-            long long originTTL = [hostObject getTTL];
-            long long timeElapsed = [HttpdnsUtil currentEpochTimeInSecond] - [hostObject getLastLookupTime];
-            if (timeElapsed > originTTL + MAX_EXPIRED_ENDURE_TIME_IN_SEC) {
-                // 如果TTL已经过期太久，就改为最多一分钟后不合法
-                [hostObject setTTL:(timeElapsed - (MAX_EXPIRED_ENDURE_TIME_IN_SEC - 1 * 60))];
-            }
-            [_hostManagerDict setObject:hostObject forKey:key];
-            HttpdnsLogDebug(@"[readCacheHosts] - Set %@ for %@", hostObject, key);
-        }
-    });
+        });
+    }
 }
 
 -(void)addPreResolveHosts:(NSArray *)hosts {
-    dispatch_sync(_syncDispatchQueue, ^{
+    dispatch_async(_syncDispatchQueue, ^{
         for (NSString *hostName in hosts) {
             if ([_hostManagerDict count] > MAX_MANAGE_HOST_NUM) {
-                HttpdnsLogError(@"[addPreResolveHosts] - Cant handle more than %d hosts", MAX_MANAGE_HOST_NUM);
+                HttpdnsLogDebug(@"Can't handle more than %d hosts due to the software configuration.", MAX_MANAGE_HOST_NUM);
                 break;
             }
             HttpdnsHostObject *hostObject = [_hostManagerDict objectForKey:hostName];
             if (hostObject &&
-                (![hostObject isExpired] || [hostObject getState] == HttpdnsHostStateQUERYING)
+                (![hostObject isExpired] || [hostObject getState] == HttpdnsHostStateQuerying)
                 ) {
-                HttpdnsLogDebug(@"[addPreResolveHosts] - %@ omit, is Expired?: %d state: %ld", hostName, [hostObject isExpired], (long)[hostObject getState]);
+                HttpdnsLogDebug(@"%@ is omitted, expired: %d state: %ld", hostName, [hostObject isExpired], (long)[hostObject getState]);
                 continue;
             }
-
             hostObject = [[HttpdnsHostObject alloc] init];
             [hostObject setHostName:hostName];
-            [hostObject setState:HttpdnsHostStateQUERYING];
+            [hostObject setState:HttpdnsHostStateQuerying];
             [_hostManagerDict setObject:hostObject forKey:hostName];
-            [_lookupQueue addObject:hostName];
-            HttpdnsLogDebug(@"ManagerDict and lookupQueue add host %@", hostName);
+            [self executeRequest:hostName synchronously:NO retryCount:0];
+            HttpdnsLogDebug("Add host %@ and do async lookup.", hostName);
         }
-        [self immediatelyExecuteTheLookupAction];
     });
 }
 
--(HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host {
+-(HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync {
     __block HttpdnsHostObject *result = nil;
-    __block BOOL directlyReturn = YES;
-    dispatch_sync(_syncDispatchQueue, ^{
-        BOOL needToQuery = NO;
-        result = [_hostManagerDict objectForKey:host];
-        HttpdnsLogDebug(@"Get from cache: %@", result);
-        if (result == nil) {
-            directlyReturn = NO;
-            HttpdnsLogDebug(@"[addSingleHostAndLookUp] - %@ haven't exist in cache yet", host);
-            if ([_hostManagerDict count] > MAX_MANAGE_HOST_NUM) {
-                HttpdnsLogError(@"[addSingleHostAndLookup] - Cant handle more than %d hosts", MAX_MANAGE_HOST_NUM);
-                return;
-            }
-            result = [[HttpdnsHostObject alloc] init];
-            [result setHostName:host];
-            [result setState:HttpdnsHostStateINITIALIZE];
-            [_hostManagerDict setObject:result forKey:host];
-            needToQuery = YES;
-        }
-        else if ([result isExpired]) {
-            HttpdnsLogDebug(@"[addSingleHostAndLookUp] - %@ is expired, currentState: %ld", host, (long)[result getState]);
-            if ([result getState] != HttpdnsHostStateQUERYING) {
-                needToQuery = YES;
-            }
-            if ([result isAlreadyUnawailable]) {
-                directlyReturn = NO;
-            }
-        }
-        else if ([result getState] == HttpdnsHostStateINITIALIZE) {
-            HttpdnsLogDebug(@"[addSingleHostAndLookUp] - %@ is initialize", host);
-            needToQuery = YES;
-            directlyReturn = NO;
-        }
-
-        if (needToQuery) {
-            // 一个域名单独被添加时，等待一段时间看看随后有没有别的域名要查询，合并为一个查询
-            // 这期间如果添加的域名超过五个，会立即开始查询
-            [_lookupQueue addObject:host];
-            [result setState:HttpdnsHostStateQUERYING];
-            if ([_lookupQueue count] == 1) {
-                dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(FIRST_QEURY_WAIT_INTERVAL_IN_SEC * NSEC_PER_SEC));
-                dispatch_after(popTime, _asyncDispatchQueue, ^(void){
-                    [self arrivalTimeAndExecuteLookup];
-                });
-            }
-            HttpdnsLogDebug(@"[addSingleHostAndLookUp] - no other querys waiting, start timer and wait");
-            [self tryToExecuteTheLookupAction];
-        }
-    });
-    return directlyReturn == YES ? result : nil;
-}
-
--(HttpdnsHostObject *)addSingleHostAndLookupSync:(NSString *)host {
-    __block BOOL needToQuery = false;
-    __block HttpdnsHostObject * result = nil;
+    __block BOOL needToQuery = NO;
     dispatch_sync(_syncDispatchQueue, ^{
         result = [_hostManagerDict objectForKey:host];
         HttpdnsLogDebug(@"Get from cache: %@", result);
         if (result == nil) {
-            HttpdnsLogDebug(@"[addSingleHostAndLookUpSync] - %@ haven't exist in cache yet", host);
+            HttpdnsLogDebug("No available cache for %@ yet.", host);
             if ([_hostManagerDict count] > MAX_MANAGE_HOST_NUM) {
-                HttpdnsLogError(@"[addSingleHostAndLookupSync] - Cant handle more than %d hosts", MAX_MANAGE_HOST_NUM);
+                HttpdnsLogDebug(@"Can't handle more than %d hosts due to the software configuration.", MAX_MANAGE_HOST_NUM);
                 return;
             }
             result = [[HttpdnsHostObject alloc] init];
             [result setHostName:host];
-            [result setState:HttpdnsHostStateINITIALIZE];
+            [result setState:HttpdnsHostStateInitialized];
             [_hostManagerDict setObject:result forKey:host];
+            needToQuery = YES;
+        } else if ([result getState] == HttpdnsHostStateInitialized) {
+            HttpdnsLogDebug("%@ is just initialized", host);
             needToQuery = YES;
         } else if ([result isExpired]) {
-            HttpdnsLogDebug(@"[addSingleHostAndLookUpSync] - %@ is expired, currentState: %ld", host, (long)[result getState]);
-            if ([result getState] != HttpdnsHostStateQUERYING) {
+            HttpdnsLogDebug("%@ record is expired, currentState: %ld", host, (long)[result getState]);
+            if (_isExpiredIPEnabled) {
+                needToQuery = NO;
+                if ([result getState] != HttpdnsHostStateQuerying) {
+                    [result setState:HttpdnsHostStateQuerying];
+                    [self executeRequest:host synchronously:NO retryCount:0];
+                }
+            } else {
+                // We still send a synchronous request even it is in QUERYING state in order to avoid HOL blocking.
                 needToQuery = YES;
+                result = nil;
             }
-        } else if ([result getState] == HttpdnsHostStateINITIALIZE) {
-            HttpdnsLogDebug(@"[addSingleHostAndLookUpSync] - %@ is initialize", host);
-            needToQuery = YES;
         }
         if (needToQuery) {
-            [result setState: HttpdnsHostStateQUERYING];
+            [result setState:HttpdnsHostStateQuerying];
         }
     });
     if (needToQuery) {
-        return [self syncRequest:host retryCount:0];
+        if (sync) return [self executeRequest:host synchronously:YES retryCount:0];
+        else [self executeRequest:host synchronously:NO retryCount:0];
     }
-    long long waitTotalInUS = 0;
-    while ([result getState] == HttpdnsHostStateQUERYING && waitTotalInUS < 10 * 1000 * 1000) {
-        usleep(50 * 1000);
-        waitTotalInUS += 50 * 1000;
-    }
-    return [result getState] == HttpdnsHostStateVALID ? result : nil;
+    return [result getState] != HttpdnsHostStateInitialized ? result : nil;
 }
 
-// 用查询得到的结果更新Manager中管理着的域名，需要在同步队列中执行
--(void)mergeLookupResultToManager:(NSArray *)result forHosts:(NSArray *)hosts {
-    NSMutableArray * noResolveResultHosts = [[NSMutableArray alloc] initWithArray:hosts];
-    if (result) {
-        for (HttpdnsHostObject *hostObject in result) {
-            NSString *hostName = [hostObject getHostName];
-            HttpdnsHostObject * old = [_hostManagerDict objectForKey:hostName];
-            [old setTTL:[hostObject getTTL]];
-            [old setLastLookupTime:[hostObject getLastLookupTime]];
-            [old setIps:[hostObject getIps]];
-            [old setState:HttpdnsHostStateVALID];
 
-            [noResolveResultHosts removeObject:hostName];
-            HttpdnsLogDebug(@"[mergeLookupResult] - update %@", hostName);
-        }
-    }
-    for (NSString * host in noResolveResultHosts) {
+-(void)mergeLookupResultToManager:(HttpdnsHostObject *)result forHost:(NSString *)host {
+    if (result) {
+        NSString *hostName = [result getHostName];
+        HttpdnsHostObject * old = [_hostManagerDict objectForKey:hostName];
+        [old setTTL:[result getTTL]];
+        [old setLastLookupTime:[result getLastLookupTime]];
+        [old setIps:[result getIps]];
+        [old setState:HttpdnsHostStateValid];
+        HttpdnsLogDebug("update %@: %@", hostName, result);
+    } else {
         HttpdnsHostObject * hostObject = [_hostManagerDict objectForKey:host];
         [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
         [hostObject setTTL:30];
         [hostObject setIps:nil];
-        [hostObject setState:HttpdnsHostStateVALID];
-        HttpdnsLogDebug(@"[mergeLookupResult] - can't resolve %@", host);
+        [hostObject setState:HttpdnsHostStateValid];
+        HttpdnsLogDebug("Can't resolve %@", host);
     }
     [HttpdnsLocalCache writeToLocalCache:_hostManagerDict];
 }
 
--(void)arrivalTimeAndExecuteLookup {
-    dispatch_sync(_syncDispatchQueue, ^{
-        if ([_lookupQueue count] > 0) {
-            HttpdnsLogDebug(@"[arrivalTimeAndExecuteLookup] - %lu host to query", (unsigned long)[_lookupQueue count]);
-            [self immediatelyExecuteTheLookupAction];
-        }
-    });
-}
-
-// 尝试执行域名查询，如果正在等待查询的域名超过阈值，则启动查询，需要在同步队列中执行
--(void)tryToExecuteTheLookupAction {
-    if ([_lookupQueue count] < MIN_HOST_NUM_PER_REQEUST) {
-        HttpdnsLogDebug(@"[tryToExecute] - waiting count not exceed %d", MIN_HOST_NUM_PER_REQEUST);
-        return;
-    }
-    [self immediatelyExecuteTheLookupAction];
-}
-
-// 执行请求，失败会在此重试
--(void)executeALookupActionWithHosts:(NSArray *)hosts retryCount:(int)count {
-    if (count > MAX_REQUEST_RETRY_TIME) {
-        HttpdnsLogError(@"[executeLookup] - Retry time exceed limit, abort!");
-        [HttpdnsRequest notifyRequestFailed];
-        dispatch_sync(_syncDispatchQueue, ^{
-            [self mergeLookupResultToManager:nil forHosts:hosts];
-        });
-        return;
-    }
-    NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
-        NSError *error;
-        HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
-        HttpdnsLogDebug(@"[executeLookup] - Request start, request string: %@", hosts);
-        NSString * resolveHostString = [hosts componentsJoinedByString:@","];
-        NSMutableArray *result = [request lookupAllHostsFromServer:resolveHostString error:&error];
-        if (error) {
-            HttpdnsLogError(@"[executeLookup] - error: %@", error);
-            [self executeALookupActionWithHosts:hosts retryCount:count + 1];
-            return;
-        } else {
-            dispatch_sync(_syncDispatchQueue, ^{
-                HttpdnsLogDebug(@"[executeLookup] - Request finish, merge %lu data to Manager", (unsigned long)[result count]);
-                [self mergeLookupResultToManager:result forHosts:hosts];
-            });
-        }
-    }];
-    [_asyncOperationQueue addOperation:operation];
-}
-
-// 立即将等待查询对列里的域名组装，执行查询，需要在同步队列中执行
--(void)immediatelyExecuteTheLookupAction {
-    HttpdnsLogDebug(@"[immedatelyExecute] - Total query cnt: %lu", (unsigned long)[_lookupQueue count]);
-    while ([_lookupQueue count] > 0) {
-        NSMutableArray *hostsToLookup = [[NSMutableArray alloc] init];
-        for (int i = 0; i < MIN_HOST_NUM_PER_REQEUST && [_lookupQueue count] > 0; i++) {
-            [hostsToLookup addObject:[_lookupQueue firstObject]];
-            [_lookupQueue removeObjectAtIndex:0];
-        }
-        [self executeALookupActionWithHosts:hostsToLookup retryCount:0];
-    }
-}
-
--(HttpdnsHostObject *)syncRequest:(NSString *)host retryCount:(int)hasRetryedCount {
-    NSArray *hosts = [[NSArray alloc] initWithObjects:host, nil];
+-(HttpdnsHostObject *)executeRequest:(NSString *)host synchronously:(BOOL)sync retryCount:(int)hasRetryedCount {
     if (hasRetryedCount > MAX_REQUEST_RETRY_TIME) {
-        HttpdnsLogError(@"[executeLookup] - Retry time exceed limit, abort!");
-        [HttpdnsRequest notifyRequestFailed];
-        [self mergeLookupResultToManager:nil forHosts:hosts];
+        HttpdnsLogDebug("Retry count exceed limit, abort!");
+        dispatch_async(_syncDispatchQueue, ^{
+            [self mergeLookupResultToManager:nil forHost:host];
+        });
         return nil;
     }
-    NSError *error;
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
-    HttpdnsLogDebug(@"[executeLookup] - Request start, request string: %@", hosts);
-    NSString * resolveHostString = [hosts componentsJoinedByString:@","];
-    NSMutableArray *result = [request lookupAllHostsFromServer:resolveHostString error:&error];
-    if (error == nil) {
-        dispatch_sync(_syncDispatchQueue, ^{
-            HttpdnsLogDebug(@"[executeLookup] - Request finish, merge %lu data to Manager", (unsigned long)[result count]);
-            [self mergeLookupResultToManager:result forHosts:hosts];
-        });
-        return result && [result count] > 0 ? result[0] : nil;
+    if (sync) {
+        HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
+        NSError *error;
+        HttpdnsLogDebug("Sync request for %@ starts.", host);
+        HttpdnsHostObject *result = [request lookupHostFromServer:host error:&error];
+        if (error) {
+            HttpdnsLogDebug("Sync request for %@ error: %@", host, error);
+            return [self executeRequest:host synchronously:YES retryCount:hasRetryedCount + 1];
+        } else {
+            dispatch_async(_syncDispatchQueue, ^{
+                HttpdnsLogDebug("Sync request for %@ finishes.", host);
+                [self mergeLookupResultToManager:result forHost:host];
+            });
+            return result;
+        }
     } else {
-        HttpdnsLogError(@"[syncRequest] - error: %@", error);
-        return [self syncRequest:host retryCount:hasRetryedCount + 1];
+        NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+            HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
+            NSError *error;
+            HttpdnsLogDebug("Async request for %@ starts...", host);
+            HttpdnsHostObject *result = [request lookupHostFromServer:host error:&error];
+            if (error) {
+                HttpdnsLogDebug("Async request for %@ error: %@", host, error);
+                [self executeRequest:host synchronously:NO retryCount:hasRetryedCount + 1];
+            } else {
+                dispatch_sync(_syncDispatchQueue, ^{
+                    HttpdnsLogDebug("Async request for %@ finishes.", host);
+                    [self mergeLookupResultToManager:result forHost:host];
+                });
+            }
+        }];
+        [_asyncOperationQueue addOperation:operation];
+        return nil;
     }
 }
 
--(void)resetAfterNetworkChanged {
-    dispatch_sync(_syncDispatchQueue, ^{
-        for (NSString * key in [_hostManagerDict allKeys]) {
-            HttpdnsHostObject * hostObject = [_hostManagerDict objectForKey:key];
-            [hostObject setState: HttpdnsHostStateINITIALIZE];
-        }
-    });
+
+-(void)setExpiredIPEnabled:(BOOL)enable {
+    _isExpiredIPEnabled = enable;
 }
 @end
