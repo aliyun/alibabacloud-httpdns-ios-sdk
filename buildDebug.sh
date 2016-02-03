@@ -14,13 +14,13 @@ INSTALL_DIR=${SRCROOT}/Products/${PROJECT_NAME}.framework
 
 # Working dir will be deleted after the framework creation.
 WRK_DIR=build
-DEVICE_DIR=${WRK_DIR}/Release-iphoneos/${FMK_NAME}.framework
-SIMULATOR_DIR=${WRK_DIR}/Release-iphonesimulator/${FMK_NAME}.framework
+DEVICE_DIR=${WRK_DIR}/Debug-iphoneos/${FMK_NAME}.framework
+SIMULATOR_DIR=${WRK_DIR}/Debug-iphonesimulator/${FMK_NAME}.framework
 
 # -configuration ${CONFIGURATION}
 # Clean and Building both architectures.
-xcodebuild -configuration "Release" -target "${FMK_NAME}" -sdk iphoneos clean build
-xcodebuild -configuration "Release" -target "${FMK_NAME}" -sdk iphonesimulator clean build
+xcodebuild -configuration "Debug" -target "${FMK_NAME}" -sdk iphoneos clean build
+xcodebuild -configuration "Debug" -target "${FMK_NAME}" -sdk iphonesimulator clean build
 
 # Cleaning the oldest.
 if [ -d "${INSTALL_DIR}" ]

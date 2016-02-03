@@ -1,25 +1,30 @@
-//
-//  HttpdnsConfig.h
-//  Dpa-Httpdns-iOS
-//
-//  Created by zhouzhuo on 5/2/15.
-//  Copyright (c) 2015 zhouzhuo. All rights reserved.
-//
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #import <Foundation/Foundation.h>
 
-extern const int MIN_HOST_NUM_PER_REQEUST;
-
-extern const int MAX_WAIT_FOR_NEXT_QUERY_IN_MS;
-
 extern const int MAX_REQUEST_RETRY_TIME;
-
-extern const int FIRST_QEURY_WAIT_INTERVAL_IN_SEC;
 
 extern const int MAX_MANAGE_HOST_NUM;
 
 extern const int MAX_REQUEST_THREAD_NUM;
 
-extern const int MAX_EXPIRED_ENDURE_TIME_IN_SEC;
+extern const int MAX_KEEPALIVE_PERIOD_FOR_CACHED_HOST;
 
-extern NSString * const HTTPDNS_IOS_SDK_VERSION;
+extern const int REQUEST_TIMEOUT_INTERVAL;

@@ -17,19 +17,13 @@
  * under the License.
  */
 
-#import <Foundation/Foundation.h>
+#ifndef HttpdnsDegradationDelegate_h
+#define HttpdnsDegradationDelegate_h
 
-#define HttpdnsLogDebug(frmt, ...)\
-if ([HttpdnsLog isEnabled]) {\
-    NSLog((@"%s [Line %d] " frmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);\
-}
+@protocol HttpDNSDegradationDelegate <NSObject>
 
-@interface HttpdnsLog : NSObject
-
-+ (void)enableLog;
-
-+ (void)disableLog;
-
-+ (BOOL)isEnabled;
+- (BOOL)shouldDegradeHTTPDNS:(NSString *)hostName;
 
 @end
+
+#endif /* HttpdnsDegradationDelegate_h */

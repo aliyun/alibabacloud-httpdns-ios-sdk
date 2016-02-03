@@ -1,23 +1,39 @@
-//
-//  Dpa_Httpdns_iOS.h
-//  Dpa-Httpdns-iOS
-//
-//  Created by zhouzhuo on 5/1/15.
-//  Copyright (c) 2015 zhouzhuo. All rights reserved.
-//
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #import <Foundation/Foundation.h>
-#import "HttpdnsModel.h"
-#import "ALBBHttpdnsServiceProtocol.h"
+#import "HttpdnsDegradationDelegate.h"
 
-@class HttpdnsRequestScheduler;
+@interface HttpDnsService: NSObject
 
-@interface HttpDnsServiceProvider: NSObject<ALBBHttpdnsServiceProtocol>
+@property (nonatomic, assign) int accountID;
 
-@property (nonatomic, strong) HttpdnsRequestScheduler *requestScheduler;
-@property (nonatomic, strong, setter=setAppId:) NSString * appId;
-@property (nonatomic, strong, setter=setCredentialProvider:) id<HttpdnsCredentialProvider> credentialProvider;
+@property (nonatomic, weak, setter=setDelegateForDegradationFilter:) id<HttpDNSDegradationDelegate> delegate;
 
-+(instancetype)getService;
++ (instancetype)sharedInstance;
+
+- (void)setPreResolveHosts:(NSArray *)hosts;
+
+- (NSString *)getIpByHost:(NSString *)host;
+
+- (NSString *)getIpByHostAsync:(NSString *)host;
+
+- (void)setExpiredIPEnabled:(BOOL)enable;
 
 @end
