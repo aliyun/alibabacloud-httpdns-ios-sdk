@@ -19,5 +19,4 @@
 
 #import <Foundation/Foundation.h>
 #import "HttpdnsServiceProvider.h"
-#import "HttpdnsLog.h"
 #import "HttpdnsDegradationDelegate.h"
