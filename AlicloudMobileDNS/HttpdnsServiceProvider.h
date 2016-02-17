@@ -36,4 +36,6 @@
 
 - (void)setExpiredIPEnabled:(BOOL)enable;
 
+- (void)setLogEnabled:(BOOL)enable;
+
 @end

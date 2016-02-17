@@ -27,11 +27,15 @@
 
 @implementation HttpdnsRequestTest
 
++ (void)initialize {
+    HttpDnsService *httpdns = [HttpDnsService sharedInstance];
+    [httpdns setLogEnabled:YES];
+    [httpdns setAccountID:100000];
+}
+
 - (void)setUp {
     [super setUp];
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    [HttpdnsLog enableLog];
-    [[HttpDnsService sharedInstance] setAccountID:100000];
 }
 
 - (void)tearDown {

@@ -129,4 +129,12 @@
     [_requestScheduler setExpiredIPEnabled:enable];
 }
 
+- (void)setLogEnabled:(BOOL)enable {
+    if (enable) {
+        [HttpdnsLog enableLog];
+    } else {
+        [HttpdnsLog disableLog];
+    }
+}
+
 @end
