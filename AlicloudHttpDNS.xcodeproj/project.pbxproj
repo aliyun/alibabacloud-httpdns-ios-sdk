@@ -194,7 +194,6 @@
 				TargetAttributes = {
 					2197CA361BC79A4500BDB65B = {
 						CreatedOnToolsVersion = 7.0.1;
-						DevelopmentTeam = SFLQ3557MD;
 					};
 					2197CA401BC79A4500BDB65B = {
 						CreatedOnToolsVersion = 7.0.1;
@@ -366,8 +365,8 @@
 		2197CA4C1BC79A4500BDB65B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: ChangQing Liu (TH39DEY647)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -390,8 +389,8 @@
 		2197CA4D1BC79A4500BDB65B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: ChangQing Liu (TH39DEY647)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
