@@ -29,7 +29,7 @@
 			containerPortal = 2197CA2E1BC79A4500BDB65B /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 2197CA361BC79A4500BDB65B;
-			remoteInfo = AlicloudMobileDNS;
+			remoteInfo = AlicloudHttpDNS;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -161,7 +161,7 @@
 			dependencies = (
 			);
 			name = AlicloudHttpDNS;
-			productName = AlicloudMobileDNS;
+			productName = AlicloudHttpDNS;
 			productReference = 2197CA371BC79A4500BDB65B /* AlicloudHttpDNS.framework */;
 			productType = "com.apple.product-type.framework";
 		};
@@ -179,7 +179,7 @@
 				2197CAAF1BC7B05B00BDB65B /* PBXTargetDependency */,
 			);
 			name = AlicloudHttpDNSTests;
-			productName = AlicloudMobileDNSTests;
+			productName = AlicloudHttpDNSTests;
 			productReference = 2197CA411BC79A4500BDB65B /* AlicloudHttpDNS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
@@ -380,7 +380,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = staticlib;
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = com.alibaba.sdk.ios.AlicloudMobileDNS;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alibaba.sdk.ios.AlicloudHttpDNS;
 				PRODUCT_NAME = AlicloudHttpDNS;
 				SKIP_INSTALL = YES;
 			};
@@ -403,7 +403,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = staticlib;
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = com.alibaba.sdk.ios.AlicloudMobileDNS;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alibaba.sdk.ios.AlicloudHttpDNS;
 				PRODUCT_NAME = AlicloudHttpDNS;
 				SKIP_INSTALL = YES;
 			};
@@ -417,10 +417,10 @@
 					"$(PROJECT_DIR)/dependency",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
-				INFOPLIST_FILE = AlicloudMobileDNSTests/Info.plist;
+				INFOPLIST_FILE = AlicloudHttpDNSTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = com.alibaba.sdk.ios.AlicloudMobileDNSTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alibaba.sdk.ios.AlicloudHttpDNSTests;
 				PRODUCT_NAME = AlicloudHttpDNS;
 			};
 			name = Debug;
@@ -433,10 +433,10 @@
 					"$(PROJECT_DIR)/dependency",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
-				INFOPLIST_FILE = AlicloudMobileDNSTests/Info.plist;
+				INFOPLIST_FILE = AlicloudHttpDNSTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = com.alibaba.sdk.ios.AlicloudMobileDNSTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alibaba.sdk.ios.AlicloudHttpDNSTests;
 				PRODUCT_NAME = AlicloudHttpDNS;
 			};
 			name = Release;
