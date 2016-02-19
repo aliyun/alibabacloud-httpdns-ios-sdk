@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:AlicloudMobileDNS.xcodeproj">
+      location = "self:/Users/ryan/IOS/alicloud-ios-sdk-httpdns/AlicloudHttpDNS.xcodeproj">
    </FileRef>
 </Workspace>
