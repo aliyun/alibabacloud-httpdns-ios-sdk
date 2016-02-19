@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PROJECT_NAME='AlicloudMobileDNS'
+PROJECT_NAME='AlicloudHttpDNS'
 SRCROOT='.'
 
 # Sets the target folders and the final framework product.
