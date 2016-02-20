@@ -25,21 +25,13 @@
 
 @end
 
-
-typedef NS_ENUM(NSInteger, HostState) {
-    HttpdnsHostStateInitialized,
-    HttpdnsHostStateQuerying,
-    HttpdnsHostStateValid
-};
-
-
 @interface HttpdnsHostObject : NSObject<NSCoding>
 
 @property (nonatomic, strong, setter=setHostName:, getter=getHostName) NSString *hostName;
 @property (nonatomic, strong, setter=setIps:, getter=getIps) NSArray *ips;
 @property (nonatomic, setter=setTTL:, getter=getTTL) long long ttl;
 @property (nonatomic, getter=getLastLookupTime, setter=setLastLookupTime:) long long lastLookupTime;
-@property (atomic, setter=setState:, getter=getState) HostState currentState;
+@property (atomic, setter=setQueryingState:, getter=isQuerying) BOOL queryingState;
 
 -(instancetype)init;
 
