@@ -48,7 +48,7 @@ NSString * const HTTPDNS_SERVER_PORT = @"8100";
     }
     NSString *hostName = [json objectForKey:@"host"];
     NSArray *ips = [json objectForKey:@"ips"];
-    if (ips == nil) {
+    if (ips == nil || [ips count] == 0) {
         HttpdnsLogDebug("IP list is empty for host %@", hostName);
         return nil;
     }
@@ -63,7 +63,7 @@ NSString * const HTTPDNS_SERVER_PORT = @"8100";
     [hostObject setIps:ipArray];
     [hostObject setTTL:[[json objectForKey:@"ttl"] longLongValue]];
     [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
-    [hostObject setState:HttpdnsHostStateValid];
+    [hostObject setQueryingState:NO];
     HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@", [hostObject getHostName], [hostObject getTTL], ipArray);
     return hostObject;
 }

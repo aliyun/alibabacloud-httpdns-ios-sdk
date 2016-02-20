@@ -86,7 +86,6 @@
     XCTAssertEqualObjects(@"223.5.5.5", [[[hostObject getIps] objectAtIndex:0] getIpString]);
     XCTAssertEqualObjects(@"www.taobao.com", [hostObject getHostName]);
     [HttpdnsLocalCache cleanLocalCache];
-    sleep(30);
     dict = [HttpdnsLocalCache readFromLocalCache];
     XCTAssertEqualObjects(nil, dict);
 }
