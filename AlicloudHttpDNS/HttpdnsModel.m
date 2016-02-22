@@ -46,10 +46,10 @@
 
 -(instancetype)init {
     _hostName = nil;
-    _currentState = HttpdnsHostStateInitialized;
     _lastLookupTime = 0;
     _ttl = -1;
     _ips = nil;
+    _queryingState = NO;
     return self;
 }
 
@@ -59,7 +59,7 @@
         _lastLookupTime = [aDecoder decodeInt64ForKey:@"lastLookupTime"];
         _ttl = [aDecoder decodeInt64ForKey:@"ttl"];
         _ips = [aDecoder decodeObjectForKey:@"ips"];
-        _currentState = [aDecoder decodeIntegerForKey:@"currentState"];
+        _queryingState = [aDecoder decodeBoolForKey:@"queryingState"];
     }
     return self;
 }
@@ -69,10 +69,14 @@
     [aCoder encodeInt64:_lastLookupTime forKey:@"lastLookupTime"];
     [aCoder encodeInt64:_ttl forKey:@"ttl"];
     [aCoder encodeObject:_ips forKey:@"ips"];
-    [aCoder encodeInteger:_currentState forKey:@"currentState"];
+    [aCoder encodeBool:_queryingState forKey:@"queryingState"];
 }
 
 -(BOOL)isExpired {
+    if (_ttl == -1) {
+        HttpdnsLogDebug("This should never happen!!!");
+        return NO;
+    }
     long long currentEpoch = (long long)[[[NSDate alloc] init] timeIntervalSince1970];
     if (_lastLookupTime + _ttl < currentEpoch) {
         return YES;
@@ -81,8 +85,8 @@
 }
 
 -(NSString *)description {
-    return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld state = %ld",
-            _hostName, _ips, _lastLookupTime, _ttl, (long)_currentState];
+    return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld queryingState = %@",
+            _hostName, _ips, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO"];
 }
 
 @end
