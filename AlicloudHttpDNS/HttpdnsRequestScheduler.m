@@ -46,14 +46,13 @@
     if (hosts) {
         dispatch_async(_syncDispatchQueue, ^{
             if ([_hostManagerDict count] != 0) {
-                HttpdnsLogDebug(@"hostManager is not empty when reading cache from disk.");
+                HttpdnsLogDebug(@"hostManager is not empty when reading cache from disk. This should never happen!!!");
                 return;
             }
             long long currentTime = [HttpdnsUtil currentEpochTimeInSecond];
             for (NSString *key in [hosts allKeys]) {
                 HttpdnsHostObject *hostObject = [hosts objectForKey:key];
-                if ([_hostManagerDict count] > MAX_MANAGE_HOST_NUM) {
-                    HttpdnsLogDebug(@"Can't handle more than %d hosts due to the software configuration.", MAX_MANAGE_HOST_NUM);
+                if ([self isHostsNumberLimitReached]) {
                     break;
                 }
                 if ([hostObject getIps] == nil || [[hostObject getIps] count] == 0) {
@@ -62,11 +61,9 @@
                 if (currentTime - [hostObject getLastLookupTime] > MAX_KEEPALIVE_PERIOD_FOR_CACHED_HOST && [hostObject getLastLookupTime] + [hostObject getTTL] > currentTime) {
                     continue;
                 }
-                if ([hostObject getState] == HttpdnsHostStateQuerying) {
-                    [hostObject setState:HttpdnsHostStateValid];
-                }
-                [_hostManagerDict setObject:hostObject forKey:key];
+                [hostObject setQueryingState:NO];
                 HttpdnsLogDebug(@"Set %@ for %@", hostObject, key);
+                [_hostManagerDict setObject:hostObject forKey:key];
             }
         });
     }
@@ -75,23 +72,22 @@
 -(void)addPreResolveHosts:(NSArray *)hosts {
     dispatch_async(_syncDispatchQueue, ^{
         for (NSString *hostName in hosts) {
-            if ([_hostManagerDict count] > MAX_MANAGE_HOST_NUM) {
-                HttpdnsLogDebug(@"Can't handle more than %d hosts due to the software configuration.", MAX_MANAGE_HOST_NUM);
+            if ([self isHostsNumberLimitReached]) {
                 break;
             }
             HttpdnsHostObject *hostObject = [_hostManagerDict objectForKey:hostName];
-            if (hostObject &&
-                (![hostObject isExpired] || [hostObject getState] == HttpdnsHostStateQuerying)
-                ) {
-                HttpdnsLogDebug(@"%@ is omitted, expired: %d state: %ld", hostName, [hostObject isExpired], (long)[hostObject getState]);
-                continue;
+            if (hostObject) {
+                if ([hostObject isExpired] && ![hostObject isQuerying]) {
+                    HttpdnsLogDebug("%@ is expired, pre fetch again.", hostName);
+                    [self executeRequest:hostName synchronously:NO retryCount:0];
+                } else {
+                    HttpdnsLogDebug(@"%@ is omitted, expired: %d querying: %d", hostName, [hostObject isExpired], [hostObject isQuerying]);
+                    continue;
+                }
+            } else {
+                [self executeRequest:hostName synchronously:NO retryCount:0];
+                HttpdnsLogDebug("Add host %@ and do async lookup.", hostName);
             }
-            hostObject = [[HttpdnsHostObject alloc] init];
-            [hostObject setHostName:hostName];
-            [hostObject setState:HttpdnsHostStateQuerying];
-            [_hostManagerDict setObject:hostObject forKey:hostName];
-            [self executeRequest:hostName synchronously:NO retryCount:0];
-            HttpdnsLogDebug("Add host %@ and do async lookup.", hostName);
         }
     });
 }
@@ -104,41 +100,34 @@
         HttpdnsLogDebug(@"Get from cache: %@", result);
         if (result == nil) {
             HttpdnsLogDebug("No available cache for %@ yet.", host);
-            if ([_hostManagerDict count] > MAX_MANAGE_HOST_NUM) {
-                HttpdnsLogDebug(@"Can't handle more than %d hosts due to the software configuration.", MAX_MANAGE_HOST_NUM);
+            if ([self isHostsNumberLimitReached]) {
                 return;
             }
-            result = [[HttpdnsHostObject alloc] init];
-            [result setHostName:host];
-            [result setState:HttpdnsHostStateInitialized];
-            [_hostManagerDict setObject:result forKey:host];
-            needToQuery = YES;
-        } else if ([result getState] == HttpdnsHostStateInitialized) {
-            HttpdnsLogDebug("%@ is just initialized", host);
             needToQuery = YES;
         } else if ([result isExpired]) {
-            HttpdnsLogDebug("%@ record is expired, currentState: %ld", host, (long)[result getState]);
+            HttpdnsLogDebug("%@ is expired, queryingState: %d", host, [result isQuerying]);
             if (_isExpiredIPEnabled) {
                 needToQuery = NO;
-                if ([result getState] != HttpdnsHostStateQuerying) {
-                    [result setState:HttpdnsHostStateQuerying];
+                if (![result isQuerying]) {
+                    [result setQueryingState:YES];
                     [self executeRequest:host synchronously:NO retryCount:0];
                 }
             } else {
-                // We still send a synchronous request even it is in QUERYING state in order to avoid HOL blocking.
+                HttpdnsLogDebug("Expired IP is not accepted.");
+                // For sync mode, We still send a synchronous request even it is in QUERYING state in order to avoid HOL blocking.
                 needToQuery = YES;
                 result = nil;
             }
         }
         if (needToQuery) {
-            [result setState:HttpdnsHostStateQuerying];
+            [result setQueryingState:YES];
         }
     });
     if (needToQuery) {
         if (sync) return [self executeRequest:host synchronously:YES retryCount:0];
         else [self executeRequest:host synchronously:NO retryCount:0];
     }
-    return [result getState] != HttpdnsHostStateInitialized ? result : nil;
+    return result;
 }
 
 
@@ -146,17 +135,23 @@
     if (result) {
         NSString *hostName = [result getHostName];
         HttpdnsHostObject * old = [_hostManagerDict objectForKey:hostName];
-        [old setTTL:[result getTTL]];
-        [old setLastLookupTime:[result getLastLookupTime]];
-        [old setIps:[result getIps]];
-        [old setState:HttpdnsHostStateValid];
-        HttpdnsLogDebug("update %@: %@", hostName, result);
+        if (old) {
+            [old setTTL:[result getTTL]];
+            [old setLastLookupTime:[result getLastLookupTime]];
+            [old setIps:[result getIps]];
+            [old setQueryingState:NO];
+            HttpdnsLogDebug("Update %@: %@", hostName, result);
+        } else {
+            HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
+            [hostObject setHostName:host];
+            [hostObject setLastLookupTime:[result getLastLookupTime]];
+            [hostObject setTTL:[result getTTL]];
+            [hostObject setIps:[result getIps]];
+            [hostObject setQueryingState:NO];
+            HttpdnsLogDebug("New resolved item: %@: %@", host, result);
+            [_hostManagerDict setObject:hostObject forKey:host];
+        }
     } else {
-        HttpdnsHostObject * hostObject = [_hostManagerDict objectForKey:host];
-        [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
-        [hostObject setTTL:30];
-        [hostObject setIps:nil];
-        [hostObject setState:HttpdnsHostStateValid];
         HttpdnsLogDebug("Can't resolve %@", host);
     }
     [HttpdnsLocalCache writeToLocalCache:_hostManagerDict];
@@ -206,6 +201,13 @@
     }
 }
 
+-(BOOL)isHostsNumberLimitReached {
+    if ([_hostManagerDict count] >= MAX_MANAGE_HOST_NUM) {
+        HttpdnsLogDebug(@"Can't handle more than %d hosts due to the software configuration.", MAX_MANAGE_HOST_NUM);
+        return YES;
+    }
+    return NO;
+}
 
 -(void)setExpiredIPEnabled:(BOOL)enable {
     _isExpiredIPEnabled = enable;
