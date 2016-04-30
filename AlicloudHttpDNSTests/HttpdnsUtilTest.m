@@ -27,6 +27,12 @@
 
 @implementation HttpdnsUtilTest
 
++ (void)initialize {
+    HttpDnsService *httpdns = [HttpDnsService sharedInstance];
+    [httpdns setLogEnabled:YES];
+    [httpdns setAccountID:100000];
+}
+
 - (void)setUp {
     [super setUp];
     // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -36,6 +42,17 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
+
+/**
+ * 测试目的：测试上报逻辑；[M]
+ * 测试方法：初始化看是否上报，后发起请求看是否重复上报；
+ */
+- (void)testStat {
+    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:5.0]];
+    NSString *hostName = @"www.taobao.com";
+    [[HttpDnsService sharedInstance] getIpByHost:hostName];
+}
+
 
 /**
  * 测试目的：测试IP判断接口功能；
