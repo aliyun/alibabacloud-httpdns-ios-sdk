@@ -21,6 +21,9 @@
 		942376DD1C5764C700736E50 /* HttpdnsServiceProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CABC1BC7B3D400BDB65B /* HttpdnsServiceProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		942376DE1C5764CF00736E50 /* HttpdnsDegradationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		946229911C5509D800B7C13E /* HttpdnsServiceProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */; };
+		9479DFDE1CD360CB00C49B32 /* HttpdnsReport.m in Sources */ = {isa = PBXBuildFile; fileRef = 9479DFDD1CD360CB00C49B32 /* HttpdnsReport.m */; };
+		9479DFE21CD361EE00C49B32 /* UTDID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9479DFE11CD361EE00C49B32 /* UTDID.framework */; };
+		9479DFE31CD361FD00C49B32 /* UTDID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9479DFE11CD361EE00C49B32 /* UTDID.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +60,9 @@
 		2197CABE1BC7B3D400BDB65B /* HttpdnsUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsUtil.h; sourceTree = "<group>"; };
 		2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtil.m; sourceTree = "<group>"; };
 		942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsDegradationDelegate.h; sourceTree = "<group>"; };
+		9479DFDD1CD360CB00C49B32 /* HttpdnsReport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsReport.m; sourceTree = "<group>"; };
+		9479DFE01CD3611400C49B32 /* HttpdnsReport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsReport.h; sourceTree = "<group>"; };
+		9479DFE11CD361EE00C49B32 /* UTDID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = UTDID.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9479DFE21CD361EE00C49B32 /* UTDID.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,6 +78,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9479DFE31CD361FD00C49B32 /* UTDID.framework in Frameworks */,
 				2197CAAD1BC7ADE600BDB65B /* AlicloudHttpDNS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -81,6 +89,7 @@
 		2197CA2D1BC79A4500BDB65B = {
 			isa = PBXGroup;
 			children = (
+				9479DFE11CD361EE00C49B32 /* UTDID.framework */,
 				2197CA391BC79A4500BDB65B /* AlicloudHttpDNS */,
 				2197CA451BC79A4500BDB65B /* AlicloudHttpDNSTests */,
 				2197CA381BC79A4500BDB65B /* Products */,
@@ -116,6 +125,8 @@
 				2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */,
 				2197CA3C1BC79A4500BDB65B /* Info.plist */,
 				942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */,
+				9479DFDD1CD360CB00C49B32 /* HttpdnsReport.m */,
+				9479DFE01CD3611400C49B32 /* HttpdnsReport.h */,
 			);
 			path = AlicloudHttpDNS;
 			sourceTree = "<group>";
@@ -244,6 +255,7 @@
 				946229911C5509D800B7C13E /* HttpdnsServiceProvider.m in Sources */,
 				2197CAC91BC7B3D400BDB65B /* HttpdnsModel.m in Sources */,
 				2197CAD11BC7B3D400BDB65B /* HttpdnsUtil.m in Sources */,
+				9479DFDE1CD360CB00C49B32 /* HttpdnsReport.m in Sources */,
 				2197CACD1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m in Sources */,
 				2197CACB1BC7B3D400BDB65B /* HttpdnsRequest.m in Sources */,
 				2197CAC71BC7B3D400BDB65B /* HttpdnsLog.m in Sources */,
@@ -372,7 +384,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = "";
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = DEBUG;
 				INFOPLIST_FILE = "$(SRCROOT)/AlicloudHttpDNS/Info.plist";
@@ -396,7 +408,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = "";
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				INFOPLIST_FILE = "$(SRCROOT)/AlicloudHttpDNS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -415,6 +427,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/dependency",
+					"$(PROJECT_DIR)",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				INFOPLIST_FILE = AlicloudHttpDNSTests/Info.plist;
@@ -431,6 +444,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/dependency",
+					"$(PROJECT_DIR)",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				INFOPLIST_FILE = AlicloudHttpDNSTests/Info.plist;
