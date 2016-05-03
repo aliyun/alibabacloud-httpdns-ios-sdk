@@ -23,6 +23,7 @@
 #import "HttpdnsConfig.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
+#import "HttpdnsReport.h"
 
 @implementation HttpdnsRequestScheduler {
     BOOL _isExpiredIPEnabled;
@@ -164,6 +165,9 @@
             [self mergeLookupResultToManager:nil forHost:host];
         });
         return nil;
+    }
+    if (![HttpdnsReport isDeviceReported]) {
+        [HttpdnsReport statAsync];
     }
     if (sync) {
         HttpdnsRequest *request = [[HttpdnsRequest alloc] init];

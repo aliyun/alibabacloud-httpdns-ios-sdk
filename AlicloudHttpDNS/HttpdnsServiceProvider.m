@@ -23,6 +23,7 @@
 #import "HttpdnsModel.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
+#import "HttpdnsReport.h"
 
 @implementation HttpDnsService {
     HttpdnsRequestScheduler *_requestScheduler;
@@ -35,6 +36,7 @@
     static HttpDnsService * _httpDnsClient = nil;
     dispatch_once(&onceToken, ^{
         _httpDnsClient = [[super allocWithZone:NULL] init];
+        [HttpdnsReport statAsync];
     });
     return _httpDnsClient;
 }
