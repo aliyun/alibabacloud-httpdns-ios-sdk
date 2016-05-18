@@ -24,6 +24,8 @@
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
 #import "HttpdnsReport.h"
+#import "AlicloudUtils/AlicloudUtils.h"
+#import "AlicloudUtils/AlicloudReachabilityManager.h"
 
 @implementation HttpdnsRequestScheduler {
     BOOL _isExpiredIPEnabled;
@@ -39,35 +41,14 @@
         _asyncOperationQueue = [[NSOperationQueue alloc] init];
         [_asyncOperationQueue setMaxConcurrentOperationCount:MAX_REQUEST_THREAD_NUM];
         _hostManagerDict = [[NSMutableDictionary alloc] init];
+        [AlicloudIPv6Adapter getInstance];
+        [AlicloudReachabilityManager shareInstance];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(networkChanged:)
+                                                     name:ALICLOUD_NETWOEK_STATUS_NOTIFY
+                                                   object:nil];
     }
     return self;
-}
-
--(void)readCachedHosts:(NSDictionary *)hosts {
-    if (hosts) {
-        dispatch_async(_syncDispatchQueue, ^{
-            if ([_hostManagerDict count] != 0) {
-                HttpdnsLogDebug(@"hostManager is not empty when reading cache from disk. This should never happen!!!");
-                return;
-            }
-            long long currentTime = [HttpdnsUtil currentEpochTimeInSecond];
-            for (NSString *key in [hosts allKeys]) {
-                HttpdnsHostObject *hostObject = [hosts objectForKey:key];
-                if ([self isHostsNumberLimitReached]) {
-                    break;
-                }
-                if ([hostObject getIps] == nil || [[hostObject getIps] count] == 0) {
-                    continue;
-                }
-                if (currentTime - [hostObject getLastLookupTime] > MAX_KEEPALIVE_PERIOD_FOR_CACHED_HOST && [hostObject getLastLookupTime] + [hostObject getTTL] > currentTime) {
-                    continue;
-                }
-                [hostObject setQueryingState:NO];
-                HttpdnsLogDebug(@"Set %@ for %@", hostObject, key);
-                [_hostManagerDict setObject:hostObject forKey:key];
-            }
-        });
-    }
 }
 
 -(void)addPreResolveHosts:(NSArray *)hosts {
@@ -155,7 +136,6 @@
     } else {
         HttpdnsLogDebug("Can't resolve %@", host);
     }
-    [HttpdnsLocalCache writeToLocalCache:_hostManagerDict];
 }
 
 -(HttpdnsHostObject *)executeRequest:(NSString *)host synchronously:(BOOL)sync retryCount:(int)hasRetryedCount {
@@ -216,4 +196,28 @@
 -(void)setExpiredIPEnabled:(BOOL)enable {
     _isExpiredIPEnabled = enable;
 }
+
+- (void)networkChanged:(NSNotification *)notification {
+    NSNumber *networkStatus = [notification object];
+    NSString *statusString;
+    switch ([networkStatus longValue]) {
+        case 0:
+            statusString = @"None";
+            break;
+        case 1:
+            statusString = @"Wifi";
+            break;
+        case 3:
+            statusString = @"3G";
+            break;
+        default:
+            statusString = @"Unknown";
+            break;
+    }
+    HttpdnsLogDebug(@"Network changed, status: %@", statusString);
+    dispatch_async(_syncDispatchQueue, ^{
+        [_hostManagerDict removeAllObjects];
+    });
+}
+
 @end

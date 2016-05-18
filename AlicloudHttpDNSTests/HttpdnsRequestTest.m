@@ -59,7 +59,7 @@
 
 /**
  * 测试目的：测试查询超时；[M]
- * 测试方法：1. 更改HTTPDNS IP地址为无效地址；2. 查询真实域名并判断是否超时返回；
+ * 测试方法：1. 更改HTTPDNS IP地址为无效地址(192.192.192.192)；2. 查询真实域名并判断是否超时返回；
  */
 //- (void)testRequestTimeout {
 //    NSString *hostName = @"www.baidu.com";

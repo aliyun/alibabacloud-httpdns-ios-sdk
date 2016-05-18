@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "3C95EA442DA69785436EB73F162AED57D6C0E9CF",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "3C95EA442DA69785436EB73F162AED57D6C0E9CF" : 0,
+    "C28AE7F8203B439B1E3DD652FD1A6B4389444B13" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "9EA72B3C-16A3-45C7-91D8-C567CBC17C01",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "3C95EA442DA69785436EB73F162AED57D6C0E9CF" : "alicloud-ios-sdk-httpdns\/",
+    "C28AE7F8203B439B1E3DD652FD1A6B4389444B13" : "alicloud-ios-sdk-util\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "AlicloudHttpDNS",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "AlicloudHttpDNS.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "gitlab.alibaba-inc.com:alicloud-ams\/alicloud-ios-sdk-httpdns.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "3C95EA442DA69785436EB73F162AED57D6C0E9CF"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "gitlab.alibaba-inc.com:alicloud-ams\/alicloud-ios-sdk-util.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "C28AE7F8203B439B1E3DD652FD1A6B4389444B13"
+    }
+  ]
+}
