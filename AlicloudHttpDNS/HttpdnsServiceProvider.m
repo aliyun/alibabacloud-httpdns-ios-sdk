@@ -24,6 +24,7 @@
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
 #import "HttpdnsReport.h"
+#import <AlicloudUtils/AlicloudUtils.h>
 
 @implementation HttpDnsService {
     HttpdnsRequestScheduler *_requestScheduler;
@@ -53,9 +54,7 @@
 
 -(instancetype)init {
     if (self = [super init]) {
-        NSDictionary *cachedHosts = [HttpdnsLocalCache readFromLocalCache];
         _requestScheduler = [[HttpdnsRequestScheduler alloc] init];
-        [_requestScheduler readCachedHosts:cachedHosts];
     }
     return self;
 }
@@ -96,6 +95,14 @@
     return nil;
 }
 
+- (NSString *)getIpByHostInURLFormat:(NSString *)host {
+    NSString *IP = [self getIpByHost:host];
+    if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:IP]) {
+        return [NSString stringWithFormat:@"[%@]", IP];
+    }
+    return IP;
+}
+
 -(NSString *)getIpByHostAsync:(NSString *)host {
     
     if ([self.delegate shouldDegradeHTTPDNS:host]) {
@@ -125,6 +132,14 @@
     }
     HttpdnsLogDebug("No available IP cached for %@", host);
     return nil;
+}
+
+- (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host {
+    NSString *IP = [self getIpByHostAsync:host];
+    if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:IP]) {
+        return [NSString stringWithFormat:@"[%@]", IP];
+    }
+    return IP;
 }
 
 -(void)setExpiredIPEnabled:(BOOL)enable {

@@ -40,14 +40,3 @@
 -(NSString *)description;
 
 @end
-
-
-@interface HttpdnsLocalCache : NSObject
-
-+(void)writeToLocalCache:(NSDictionary *)allHostObjectsInManagerDict;
-
-+(NSDictionary *)readFromLocalCache;
-
-+(void)cleanLocalCache;
-
-@end
