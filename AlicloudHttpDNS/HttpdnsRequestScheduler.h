@@ -23,8 +23,6 @@
 
 @interface HttpdnsRequestScheduler : NSObject
 
--(void)readCachedHosts:(NSDictionary *)hosts;
-
 -(void)addPreResolveHosts:(NSArray *)hosts;
 
 -(HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync;
