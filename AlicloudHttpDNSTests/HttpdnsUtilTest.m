@@ -18,7 +18,7 @@
  */
 
 #import <XCTest/XCTest.h>
-#import "Httpdns.h"
+#import "AlicloudHttpDNS.h"
 #import "HttpdnsUtil.h"
 
 @interface HttpdnsUtilTest : XCTestCase
@@ -45,11 +45,11 @@
 
 /**
  * 测试目的：测试上报逻辑；[M]
- * 测试方法：初始化看是否上报，后发起请求看是否重复上报；
+ * 测试方法：初始化看是否上报，后发起请求不上报；
  */
 - (void)testStat {
-    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:5.0]];
     NSString *hostName = @"www.taobao.com";
+    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:5.0]];
     [[HttpDnsService sharedInstance] getIpByHost:hostName];
 }
 
