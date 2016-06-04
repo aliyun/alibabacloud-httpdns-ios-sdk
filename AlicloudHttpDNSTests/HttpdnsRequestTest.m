@@ -18,7 +18,7 @@
  */
 
 #import <XCTest/XCTest.h>
-#import "Httpdns.h"
+#import "AlicloudHttpDNS.h"
 #import "HttpdnsRequest.h"
 
 @interface HttpdnsRequestTest : XCTestCase
