@@ -23,7 +23,6 @@
 #import "HttpdnsModel.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
-#import "HttpdnsReport.h"
 #import <AlicloudUtils/AlicloudUtils.h>
 
 @implementation HttpDnsService {
@@ -37,7 +36,7 @@
     static HttpDnsService * _httpDnsClient = nil;
     dispatch_once(&onceToken, ^{
         _httpDnsClient = [[super allocWithZone:NULL] init];
-        [HttpdnsReport statAsync];
+        [AlicloudReport statAsync:AMSHTTPDNS];
     });
     return _httpDnsClient;
 }
