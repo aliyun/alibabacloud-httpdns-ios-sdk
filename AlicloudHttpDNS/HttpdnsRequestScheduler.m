@@ -23,9 +23,7 @@
 #import "HttpdnsConfig.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
-#import "HttpdnsReport.h"
 #import "AlicloudUtils/AlicloudUtils.h"
-#import "AlicloudUtils/AlicloudReachabilityManager.h"
 
 @implementation HttpdnsRequestScheduler {
     BOOL _isExpiredIPEnabled;
@@ -146,8 +144,8 @@
         });
         return nil;
     }
-    if (![HttpdnsReport isDeviceReported]) {
-        [HttpdnsReport statAsync];
+    if (![AlicloudReport isDeviceReported:AMSHTTPDNS]) {
+        [AlicloudReport statAsync:AMSHTTPDNS];
     }
     if (sync) {
         HttpdnsRequest *request = [[HttpdnsRequest alloc] init];

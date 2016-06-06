@@ -10,7 +10,7 @@
 		2197CA9B1BC7AB9B00BDB65B /* HttpdnsRequestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CA931BC7AB9B00BDB65B /* HttpdnsRequestTest.m */; };
 		2197CA9E1BC7AB9B00BDB65B /* HttpdnsUtilTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CA961BC7AB9B00BDB65B /* HttpdnsUtilTest.m */; };
 		2197CAAD1BC7ADE600BDB65B /* AlicloudHttpDNS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2197CA371BC79A4500BDB65B /* AlicloudHttpDNS.framework */; };
-		2197CAC31BC7B3D400BDB65B /* Httpdns.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB11BC7B3D400BDB65B /* Httpdns.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2197CAC31BC7B3D400BDB65B /* AlicloudHttpDNS.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB11BC7B3D400BDB65B /* AlicloudHttpDNS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2197CAC51BC7B3D400BDB65B /* HttpdnsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */; };
 		2197CAC71BC7B3D400BDB65B /* HttpdnsLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB51BC7B3D400BDB65B /* HttpdnsLog.m */; };
 		2197CAC91BC7B3D400BDB65B /* HttpdnsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB71BC7B3D400BDB65B /* HttpdnsModel.m */; };
@@ -25,7 +25,6 @@
 		945914121CEB5D9C00D95CF7 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 945914111CEB5D9C00D95CF7 /* libresolv.tbd */; };
 		946229911C5509D800B7C13E /* HttpdnsServiceProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */; };
 		946BBE681CEC0ABA006E5477 /* AlicloudUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9459140B1CEB5D8300D95CF7 /* AlicloudUtils.framework */; };
-		9479DFDE1CD360CB00C49B32 /* HttpdnsReport.m in Sources */ = {isa = PBXBuildFile; fileRef = 9479DFDD1CD360CB00C49B32 /* HttpdnsReport.m */; };
 		9479DFE21CD361EE00C49B32 /* UTDID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9479DFE11CD361EE00C49B32 /* UTDID.framework */; };
 		9479DFE31CD361FD00C49B32 /* UTDID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9479DFE11CD361EE00C49B32 /* UTDID.framework */; };
 /* End PBXBuildFile section */
@@ -47,7 +46,7 @@
 		2197CA481BC79A4500BDB65B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2197CA931BC7AB9B00BDB65B /* HttpdnsRequestTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsRequestTest.m; sourceTree = "<group>"; };
 		2197CA961BC7AB9B00BDB65B /* HttpdnsUtilTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtilTest.m; sourceTree = "<group>"; };
-		2197CAB11BC7B3D400BDB65B /* Httpdns.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Httpdns.h; sourceTree = "<group>"; };
+		2197CAB11BC7B3D400BDB65B /* AlicloudHttpDNS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AlicloudHttpDNS.h; sourceTree = "<group>"; };
 		2197CAB21BC7B3D400BDB65B /* HttpdnsConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsConfig.h; sourceTree = "<group>"; };
 		2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsConfig.m; sourceTree = "<group>"; };
 		2197CAB41BC7B3D400BDB65B /* HttpdnsLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsLog.h; sourceTree = "<group>"; };
@@ -67,8 +66,6 @@
 		9459140D1CEB5D8C00D95CF7 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		9459140F1CEB5D9400D95CF7 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
 		945914111CEB5D9C00D95CF7 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
-		9479DFDD1CD360CB00C49B32 /* HttpdnsReport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsReport.m; sourceTree = "<group>"; };
-		9479DFE01CD3611400C49B32 /* HttpdnsReport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsReport.h; sourceTree = "<group>"; };
 		9479DFE11CD361EE00C49B32 /* UTDID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = UTDID.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -124,7 +121,7 @@
 		2197CA391BC79A4500BDB65B /* AlicloudHttpDNS */ = {
 			isa = PBXGroup;
 			children = (
-				2197CAB11BC7B3D400BDB65B /* Httpdns.h */,
+				2197CAB11BC7B3D400BDB65B /* AlicloudHttpDNS.h */,
 				2197CAB21BC7B3D400BDB65B /* HttpdnsConfig.h */,
 				2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */,
 				2197CAB41BC7B3D400BDB65B /* HttpdnsLog.h */,
@@ -141,8 +138,6 @@
 				2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */,
 				2197CA3C1BC79A4500BDB65B /* Info.plist */,
 				942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */,
-				9479DFDD1CD360CB00C49B32 /* HttpdnsReport.m */,
-				9479DFE01CD3611400C49B32 /* HttpdnsReport.h */,
 			);
 			path = AlicloudHttpDNS;
 			sourceTree = "<group>";
@@ -164,7 +159,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2197CAC31BC7B3D400BDB65B /* Httpdns.h in Headers */,
+				2197CAC31BC7B3D400BDB65B /* AlicloudHttpDNS.h in Headers */,
 				942376DD1C5764C700736E50 /* HttpdnsServiceProvider.h in Headers */,
 				942376DE1C5764CF00736E50 /* HttpdnsDegradationDelegate.h in Headers */,
 			);
@@ -270,7 +265,6 @@
 				946229911C5509D800B7C13E /* HttpdnsServiceProvider.m in Sources */,
 				2197CAC91BC7B3D400BDB65B /* HttpdnsModel.m in Sources */,
 				2197CAD11BC7B3D400BDB65B /* HttpdnsUtil.m in Sources */,
-				9479DFDE1CD360CB00C49B32 /* HttpdnsReport.m in Sources */,
 				2197CACD1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m in Sources */,
 				2197CACB1BC7B3D400BDB65B /* HttpdnsRequest.m in Sources */,
 				2197CAC71BC7B3D400BDB65B /* HttpdnsLog.m in Sources */,
