@@ -26,11 +26,11 @@
 #import "AlicloudUtils/AlicloudUtils.h"
 
 #ifndef DEBUG
-NSString * const HTTPDNS_SERVER_IP = @"203.107.1.1";
-NSString * const HTTPDNS_SERVER_PORT = @"80";
+NSString * const ALICLOUD_HTTPDNS_SERVER_IP = @"203.107.1.1";
+NSString * const ALICLOUD_HTTPDNS_SERVER_PORT = @"80";
 #else
-NSString * const HTTPDNS_SERVER_IP = @"10.125.65.207";
-NSString * const HTTPDNS_SERVER_PORT = @"8100";
+NSString * const ALICLOUD_HTTPDNS_SERVER_IP = @"10.125.65.207";
+NSString * const ALICLOUD_HTTPDNS_SERVER_PORT = @"8100";
 #endif
 
 @implementation HttpdnsRequest
@@ -72,13 +72,13 @@ NSString * const HTTPDNS_SERVER_PORT = @"8100";
 
 -(NSMutableURLRequest *)constructRequestWith:(NSString *)hostsString {
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    NSString *serverIp = HTTPDNS_SERVER_IP;
+    NSString *serverIp = ALICLOUD_HTTPDNS_SERVER_IP;
     // Adapt to IPv6-only network.
     if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
-        serverIp = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:HTTPDNS_SERVER_IP]];
+        serverIp = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:ALICLOUD_HTTPDNS_SERVER_IP]];
     }
     NSString *url = [NSString stringWithFormat:@"http://%@:%@/%d/d?host=%@",
-                     serverIp, HTTPDNS_SERVER_PORT, sharedService.accountID, hostsString];
+                     serverIp, ALICLOUD_HTTPDNS_SERVER_PORT, sharedService.accountID, hostsString];
     HttpdnsLogDebug("Request URL: %@", url);
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:url]
