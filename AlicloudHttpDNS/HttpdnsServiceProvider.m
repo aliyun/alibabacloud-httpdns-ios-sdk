@@ -65,20 +65,27 @@
 }
 
 -(NSString *)getIpByHost:(NSString *)host {
-    
+    NSArray *ips = [self getIpsByHost:host];
+    if (ips != nil && ips.count > 0) {
+        return ips[0];
+    }
+    return nil;
+}
+
+- (NSArray *)getIpsByHost:(NSString *)host {
     if ([self.delegate shouldDegradeHTTPDNS:host]) {
         return nil;
     }
-
+    
     if (!host) {
-        return host;
+        return nil;
     }
-
+    
     if ([HttpdnsUtil isAnIP:host]) {
         HttpdnsLogDebug("The host is just an IP.");
-        return host;
+        return nil;
     }
-
+    
     if (![HttpdnsUtil isAHost:host]) {
         HttpdnsLogDebug("The host is illegal.");
         return nil;
@@ -86,12 +93,17 @@
     
     HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:YES];
     if (hostObject) {
-        NSArray * ips = [hostObject getIps];
-        if (ips && [ips count] > 0) {
-            return [ips[0] getIpString];
+        NSArray * ipsObject = [hostObject getIps];
+        NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
+        if (ipsObject && [ipsObject count] > 0) {
+            for (HttpdnsIpObject *ipObject in ipsObject) {
+                [ipsArray addObject:[ipObject getIpString]];
+            }
+            return ipsArray;
         }
     }
     return nil;
+
 }
 
 - (NSString *)getIpByHostInURLFormat:(NSString *)host {
@@ -103,20 +115,27 @@
 }
 
 -(NSString *)getIpByHostAsync:(NSString *)host {
-    
+    NSArray *ips = [self getIpsByHostAsync:host];
+    if (ips != nil && ips.count > 0) {
+        return ips[0];
+    }
+    return nil;
+}
+
+- (NSArray *)getIpsByHostAsync:(NSString *)host {
     if ([self.delegate shouldDegradeHTTPDNS:host]) {
         return nil;
     }
-
+    
     if (!host) {
-        return host;
+        return nil;
     }
-
+    
     if ([HttpdnsUtil isAnIP:host]) {
         HttpdnsLogDebug("The host is just an IP.");
-        return host;
+        return nil;
     }
-
+    
     if (![HttpdnsUtil isAHost:host]) {
         HttpdnsLogDebug("The host is illegal.");
         return nil;
@@ -124,13 +143,18 @@
     
     HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO];
     if (hostObject) {
-        NSArray *ips = [hostObject getIps];
-        if (ips && [ips count] > 0) {
-            return [[ips objectAtIndex:0] getIpString];
+        NSArray * ipsObject = [hostObject getIps];
+        NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
+        if (ipsObject && [ipsObject count] > 0) {
+            for (HttpdnsIpObject *ipObject in ipsObject) {
+                [ipsArray addObject:[ipObject getIpString]];
+            }
+            return ipsArray;
         }
     }
     HttpdnsLogDebug("No available IP cached for %@", host);
     return nil;
+
 }
 
 - (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host {
@@ -151,6 +175,10 @@
     } else {
         [HttpdnsLog disableLog];
     }
+}
+
+- (void)setPreResolveAfterNetworkChanged:(BOOL)enable {
+    [_requestScheduler setPreResolveAfterNetworkChanged:enable];
 }
 
 @end
