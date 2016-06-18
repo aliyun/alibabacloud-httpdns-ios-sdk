@@ -26,7 +26,9 @@
 #import "AlicloudUtils/AlicloudUtils.h"
 
 @implementation HttpdnsRequestScheduler {
+    long _lastNetworkStatus;
     BOOL _isExpiredIPEnabled;
+    BOOL _isPreResolveAfterNetworkChangedEnabled;
     NSMutableDictionary *_hostManagerDict;
     dispatch_queue_t _syncDispatchQueue;
     NSOperationQueue *_asyncOperationQueue;
@@ -34,7 +36,9 @@
 
 -(instancetype)init {
     if (self = [super init]) {
+        _lastNetworkStatus = 0;
         _isExpiredIPEnabled = NO;
+        _isPreResolveAfterNetworkChangedEnabled = NO;
         _syncDispatchQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.sync", NULL);
         _asyncOperationQueue = [[NSOperationQueue alloc] init];
         [_asyncOperationQueue setMaxConcurrentOperationCount:MAX_REQUEST_THREAD_NUM];
@@ -66,7 +70,7 @@
                 }
             } else {
                 [self executeRequest:hostName synchronously:NO retryCount:0];
-                HttpdnsLogDebug("Add host %@ and do async lookup.", hostName);
+                HttpdnsLogDebug("Pre resolve host %@ by async lookup.", hostName);
             }
         }
     });
@@ -195,9 +199,13 @@
     _isExpiredIPEnabled = enable;
 }
 
+- (void)setPreResolveAfterNetworkChanged:(BOOL)enable {
+    _isPreResolveAfterNetworkChangedEnabled = enable;
+}
+
 - (void)networkChanged:(NSNotification *)notification {
     NSNumber *networkStatus = [notification object];
-    NSString *statusString;
+    __block NSString *statusString;
     switch ([networkStatus longValue]) {
         case 0:
             statusString = @"None";
@@ -212,10 +220,20 @@
             statusString = @"Unknown";
             break;
     }
-    HttpdnsLogDebug(@"Network changed, status: %@", statusString);
-    dispatch_async(_syncDispatchQueue, ^{
-        [_hostManagerDict removeAllObjects];
-    });
+    HttpdnsLogDebug(@"Network changed, status: %@(%ld), lastNetworkStatus: %ld", statusString, [networkStatus longValue], _lastNetworkStatus);
+    if (_lastNetworkStatus != [networkStatus longValue]) {
+        dispatch_async(_syncDispatchQueue, ^{
+            if (![statusString isEqualToString:@"None"]) {
+                NSArray * hostArray = [_hostManagerDict allKeys];
+                [_hostManagerDict removeAllObjects];
+                if (_isPreResolveAfterNetworkChangedEnabled == YES) {
+                    HttpdnsLogDebug(@"Network changed, pre resolve for hosts: %@", hostArray);
+                    [self addPreResolveHosts:hostArray];
+                }
+            }
+        });
+    }
+    _lastNetworkStatus = [networkStatus longValue];
 }
 
 @end
