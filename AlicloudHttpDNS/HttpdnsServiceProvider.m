@@ -83,7 +83,7 @@
     
     if ([HttpdnsUtil isAnIP:host]) {
         HttpdnsLogDebug("The host is just an IP.");
-        return nil;
+        return [NSArray arrayWithObjects:host, nil];
     }
     
     if (![HttpdnsUtil isAHost:host]) {
@@ -133,7 +133,7 @@
     
     if ([HttpdnsUtil isAnIP:host]) {
         HttpdnsLogDebug("The host is just an IP.");
-        return nil;
+        return [NSArray arrayWithObjects:host, nil];
     }
     
     if (![HttpdnsUtil isAHost:host]) {
