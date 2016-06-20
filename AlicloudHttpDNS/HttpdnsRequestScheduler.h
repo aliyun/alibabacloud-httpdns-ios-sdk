@@ -23,10 +23,12 @@
 
 @interface HttpdnsRequestScheduler : NSObject
 
--(void)addPreResolveHosts:(NSArray *)hosts;
+- (void)addPreResolveHosts:(NSArray *)hosts;
 
--(HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync;
+- (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync;
 
--(void)setExpiredIPEnabled:(BOOL)enable;
+- (void)setExpiredIPEnabled:(BOOL)enable;
+
+- (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
 
 @end
