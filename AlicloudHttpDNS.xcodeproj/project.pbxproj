@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		2197CA9B1BC7AB9B00BDB65B /* HttpdnsRequestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CA931BC7AB9B00BDB65B /* HttpdnsRequestTest.m */; };
 		2197CA9E1BC7AB9B00BDB65B /* HttpdnsUtilTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CA961BC7AB9B00BDB65B /* HttpdnsUtilTest.m */; };
-		2197CAAD1BC7ADE600BDB65B /* AlicloudHttpDNS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2197CA371BC79A4500BDB65B /* AlicloudHttpDNS.framework */; };
 		2197CAC31BC7B3D400BDB65B /* AlicloudHttpDNS.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB11BC7B3D400BDB65B /* AlicloudHttpDNS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2197CAC51BC7B3D400BDB65B /* HttpdnsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */; };
 		2197CAC71BC7B3D400BDB65B /* HttpdnsLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB51BC7B3D400BDB65B /* HttpdnsLog.m */; };
@@ -17,14 +16,20 @@
 		2197CACB1BC7B3D400BDB65B /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB91BC7B3D400BDB65B /* HttpdnsRequest.m */; };
 		2197CACD1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABB1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m */; };
 		2197CAD11BC7B3D400BDB65B /* HttpdnsUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */; };
+		4AF5AB821DCB32D600206DD8 /* AlicloudUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AF5AB811DCB32D600206DD8 /* AlicloudUtils.framework */; };
+		4AF5AB831DCB332800206DD8 /* HttpdnsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */; };
+		4AF5AB841DCB332800206DD8 /* HttpdnsLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB51BC7B3D400BDB65B /* HttpdnsLog.m */; };
+		4AF5AB851DCB332800206DD8 /* HttpdnsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB71BC7B3D400BDB65B /* HttpdnsModel.m */; };
+		4AF5AB861DCB332800206DD8 /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB91BC7B3D400BDB65B /* HttpdnsRequest.m */; };
+		4AF5AB871DCB332800206DD8 /* HttpdnsRequestScheduler.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABB1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m */; };
+		4AF5AB881DCB332800206DD8 /* HttpdnsServiceProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */; };
+		4AF5AB891DCB332800206DD8 /* HttpdnsUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */; };
 		942376DD1C5764C700736E50 /* HttpdnsServiceProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CABC1BC7B3D400BDB65B /* HttpdnsServiceProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		942376DE1C5764CF00736E50 /* HttpdnsDegradationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		9459140C1CEB5D8400D95CF7 /* AlicloudUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9459140B1CEB5D8300D95CF7 /* AlicloudUtils.framework */; };
 		9459140E1CEB5D8C00D95CF7 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9459140D1CEB5D8C00D95CF7 /* SystemConfiguration.framework */; };
 		945914101CEB5D9400D95CF7 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9459140F1CEB5D9400D95CF7 /* CoreTelephony.framework */; };
 		945914121CEB5D9C00D95CF7 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 945914111CEB5D9C00D95CF7 /* libresolv.tbd */; };
 		946229911C5509D800B7C13E /* HttpdnsServiceProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */; };
-		946BBE681CEC0ABA006E5477 /* AlicloudUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9459140B1CEB5D8300D95CF7 /* AlicloudUtils.framework */; };
 		9479DFE21CD361EE00C49B32 /* UTDID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9479DFE11CD361EE00C49B32 /* UTDID.framework */; };
 		9479DFE31CD361FD00C49B32 /* UTDID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9479DFE11CD361EE00C49B32 /* UTDID.framework */; };
 /* End PBXBuildFile section */
@@ -61,8 +66,8 @@
 		2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsServiceProvider.m; sourceTree = "<group>"; };
 		2197CABE1BC7B3D400BDB65B /* HttpdnsUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsUtil.h; sourceTree = "<group>"; };
 		2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtil.m; sourceTree = "<group>"; };
+		4AF5AB811DCB32D600206DD8 /* AlicloudUtils.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AlicloudUtils.framework; sourceTree = "<group>"; };
 		942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsDegradationDelegate.h; sourceTree = "<group>"; };
-		9459140B1CEB5D8300D95CF7 /* AlicloudUtils.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AlicloudUtils.framework; path = "../alicloud-ios-sdk-util/Products/AlicloudUtils.framework"; sourceTree = "<group>"; };
 		9459140D1CEB5D8C00D95CF7 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		9459140F1CEB5D9400D95CF7 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
 		945914111CEB5D9C00D95CF7 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
@@ -74,7 +79,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				946BBE681CEC0ABA006E5477 /* AlicloudUtils.framework in Frameworks */,
 				9479DFE21CD361EE00C49B32 /* UTDID.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -83,12 +87,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4AF5AB821DCB32D600206DD8 /* AlicloudUtils.framework in Frameworks */,
 				945914121CEB5D9C00D95CF7 /* libresolv.tbd in Frameworks */,
 				945914101CEB5D9400D95CF7 /* CoreTelephony.framework in Frameworks */,
 				9459140E1CEB5D8C00D95CF7 /* SystemConfiguration.framework in Frameworks */,
-				9459140C1CEB5D8400D95CF7 /* AlicloudUtils.framework in Frameworks */,
 				9479DFE31CD361FD00C49B32 /* UTDID.framework in Frameworks */,
-				2197CAAD1BC7ADE600BDB65B /* AlicloudHttpDNS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -101,11 +104,11 @@
 				945914111CEB5D9C00D95CF7 /* libresolv.tbd */,
 				9459140F1CEB5D9400D95CF7 /* CoreTelephony.framework */,
 				9459140D1CEB5D8C00D95CF7 /* SystemConfiguration.framework */,
-				9459140B1CEB5D8300D95CF7 /* AlicloudUtils.framework */,
 				9479DFE11CD361EE00C49B32 /* UTDID.framework */,
 				2197CA391BC79A4500BDB65B /* AlicloudHttpDNS */,
 				2197CA451BC79A4500BDB65B /* AlicloudHttpDNSTests */,
 				2197CA381BC79A4500BDB65B /* Products */,
+				4AF5AB801DCB32D600206DD8 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -150,6 +153,14 @@
 				2197CA481BC79A4500BDB65B /* Info.plist */,
 			);
 			path = AlicloudHttpDNSTests;
+			sourceTree = "<group>";
+		};
+		4AF5AB801DCB32D600206DD8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4AF5AB811DCB32D600206DD8 /* AlicloudUtils.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -218,7 +229,7 @@
 					};
 					2197CA401BC79A4500BDB65B = {
 						CreatedOnToolsVersion = 7.0.1;
-						DevelopmentTeam = SFLQ3557MD;
+						DevelopmentTeam = QBMN2BBW3K;
 					};
 				};
 			};
@@ -276,6 +287,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4AF5AB831DCB332800206DD8 /* HttpdnsConfig.m in Sources */,
+				4AF5AB841DCB332800206DD8 /* HttpdnsLog.m in Sources */,
+				4AF5AB851DCB332800206DD8 /* HttpdnsModel.m in Sources */,
+				4AF5AB861DCB332800206DD8 /* HttpdnsRequest.m in Sources */,
+				4AF5AB871DCB332800206DD8 /* HttpdnsRequestScheduler.m in Sources */,
+				4AF5AB881DCB332800206DD8 /* HttpdnsServiceProvider.m in Sources */,
+				4AF5AB891DCB332800206DD8 /* HttpdnsUtil.m in Sources */,
 				2197CA9E1BC7AB9B00BDB65B /* HttpdnsUtilTest.m in Sources */,
 				2197CA9B1BC7AB9B00BDB65B /* HttpdnsRequestTest.m in Sources */,
 			);
@@ -320,7 +338,6 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					IS_DPA_RELEASE,
 					"DEBUG=1",
 					"$(inherited)",
 				);
@@ -365,7 +382,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = IS_DPA_RELEASE;
+				GCC_PREPROCESSOR_DEFINITIONS = "";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -385,6 +402,7 @@
 		2197CA4C1BC79A4500BDB65B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULE_DEBUGGING = NO;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEFINES_MODULE = YES;
@@ -396,8 +414,7 @@
 					"$(PROJECT_DIR)",
 					"/Users/ryan/IOS/alicloud-ios-sdk-util/Products",
 				);
-				GCC_PREPROCESSOR_DEFINITIONS = "";
-				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = DEBUG;
+				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
 				INFOPLIST_FILE = "$(SRCROOT)/AlicloudHttpDNS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -414,6 +431,7 @@
 		2197CA4D1BC79A4500BDB65B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULE_DEBUGGING = NO;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEFINES_MODULE = YES;
@@ -441,12 +459,14 @@
 		2197CA4F1BC79A4500BDB65B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = QBMN2BBW3K;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 					"/Users/ryan/IOS/alicloud-ios-sdk-util/Products",
 				);
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				GCC_PREFIX_HEADER = "";
+				GCC_PREPROCESSOR_DEFINITIONS = "";
 				INFOPLIST_FILE = AlicloudHttpDNSTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
@@ -458,11 +478,13 @@
 		2197CA501BC79A4500BDB65B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = QBMN2BBW3K;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 					"/Users/ryan/IOS/alicloud-ios-sdk-util/Products",
 				);
+				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				INFOPLIST_FILE = AlicloudHttpDNSTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";

@@ -44,10 +44,26 @@
 }
 
 /**
- * 测试目的：测试查询功能；
+ * 测试目的：测试基于HTTP请求查询功能；
  * 测试方法：1. 查询某个真实域名并判断是否获取了正常的返回数据；
  */
-- (void)testRequestOneHost {
+- (void)testHTTPRequestOneHost {
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
+    NSString *hostName = @"www.taobao.com";
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
+    NSError *error;
+    HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
+    XCTAssertNil(error);
+    XCTAssertNotNil(result);
+    XCTAssertNotEqual([[result getIps] count], 0);
+}
+
+/**
+ * 测试目的：测试基于HTTPS请求查询功能；
+ * 测试方法：1. 查询某个真实域名并判断是否获取了正常的返回数据；
+ */
+- (void)testHTTPSRequestOneHost {
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
     NSString *hostName = @"www.taobao.com";
     HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
     NSError *error;
