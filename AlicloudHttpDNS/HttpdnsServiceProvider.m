@@ -20,6 +20,7 @@
 #import "HttpdnsRequestScheduler.h"
 #import "HttpdnsServiceProvider.h"
 #import "HttpdnsRequest.h"
+#import "HttpdnsConfig.h"
 #import "HttpdnsModel.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
@@ -163,6 +164,10 @@
         return [NSString stringWithFormat:@"[%@]", IP];
     }
     return IP;
+}
+
+- (void)setHTTPSRequestEnabled:(BOOL)enable {
+    REQUEST_PROTOCOL_HTTPS_ENABLED = enable;
 }
 
 -(void)setExpiredIPEnabled:(BOOL)enable {

@@ -20,6 +20,7 @@
 #import <XCTest/XCTest.h>
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsRequest.h"
+#import "HttpdnsConfig.h"
 
 @interface HttpdnsRequestTest : XCTestCase
 
@@ -44,10 +45,26 @@
 }
 
 /**
- * 测试目的：测试查询功能；
+ * 测试目的：测试基于HTTP请求查询功能；
  * 测试方法：1. 查询某个真实域名并判断是否获取了正常的返回数据；
  */
-- (void)testRequestOneHost {
+- (void)testHTTPRequestOneHost {
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
+    NSString *hostName = @"www.taobao.com";
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
+    NSError *error;
+    HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
+    XCTAssertNil(error);
+    XCTAssertNotNil(result);
+    XCTAssertNotEqual([[result getIps] count], 0);
+}
+
+/**
+ * 测试目的：测试基于HTTPS请求查询功能；
+ * 测试方法：1. 查询某个真实域名并判断是否获取了正常的返回数据；
+ */
+- (void)testHTTPSRequestOneHost {
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
     NSString *hostName = @"www.taobao.com";
     HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
     NSError *error;
@@ -59,16 +76,31 @@
 
 /**
  * 测试目的：测试查询超时；[M]
- * 测试方法：1. 更改HTTPDNS IP地址为无效地址(192.192.192.192)；2. 查询真实域名并判断是否超时返回；
+ * 测试方法：1. 更改HTTPDNS IP地址为无效地址(192.192.192.192)；2. 查询真实域名并判断是否超时返回，比较超时时间；
  */
-//- (void)testRequestTimeout {
-//    NSString *hostName = @"www.baidu.com";
-//    HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
-//    NSError *error;
-//    HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
-//    XCTAssertNotNil(error);
-//    XCTAssertNil(result);
-//}
+- (void)testRequestTimeout {
+    NSString *hostName = @"www.baidu.com";
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
+    NSError *error;
+    NSDate *startDate = [NSDate date];
+    // HTTPS
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
+    NSTimeInterval interval = [startDate timeIntervalSinceNow];
+    XCTAssertEqualWithAccuracy(interval * (-1), REQUEST_TIMEOUT_INTERVAL, 1);
+    XCTAssertNotNil(error);
+    XCTAssertNil(result);
+    
+    // HTTP
+    startDate = [NSDate date];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
+    result = [request lookupHostFromServer:hostName error:&error];
+    interval = [startDate timeIntervalSinceNow];
+    XCTAssertEqualWithAccuracy(interval * (-1), REQUEST_TIMEOUT_INTERVAL, 1);
+    XCTAssertNotNil(error);
+    XCTAssertNil(result);
+    
+}
 
 
 @end
