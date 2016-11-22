@@ -120,12 +120,12 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
                     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                           @"Response code not 200, and parse response message error", @"ErrorMessage",
                                           [NSString stringWithFormat:@"%ld", (long)statusCode], @"ResponseCode", nil];
-                    *pError = [[NSError alloc] initWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10002 userInfo:dict];
+                    *pError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10002 userInfo:dict];
                 } else {
                     NSString *errCode = [json objectForKey:@"code"];
                     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                           errCode, @"ErrorMessage", nil];
-                    *pError = [[NSError alloc] initWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10003 userInfo:dict];
+                    *pError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10003 userInfo:dict];
                 }
             } else {
                 HttpdnsLogDebug("Response code 200.");
@@ -167,19 +167,51 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
             NSString *errCode = [json objectForKey:@"code"];
             NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                   errCode, @"ErrorMessage", nil];
-            *error = [[NSError alloc] initWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10003 userInfo:dict];
+            *error = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10003 userInfo:dict];
         } else {
             HttpdnsLogDebug("Response code 200.");
             UInt8 buf[1024];
-            CFIndex numBytesRead;
+            CFIndex numBytesRead = 0;
             NSMutableData *resultData = [NSMutableData data];
-            do {
-                numBytesRead = CFReadStreamRead(requestReadStream, buf, sizeof(buf));
-                if ( numBytesRead > 0 ) {
-                    [resultData appendBytes:buf length:numBytesRead];
+            int waitSenconds = 0;
+            BOOL done = NO;
+            while (!done) {
+                if (CFReadStreamHasBytesAvailable(requestReadStream)) {
+                    numBytesRead = CFReadStreamRead(requestReadStream, buf, sizeof(buf));
+                    if (numBytesRead < 0) {
+                        // read error
+                        NSDictionary *dic = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                             @"Read stream error.", @"ErrorMessage", nil];
+                        *error = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10004 userInfo:dic];
+                        break;
+                    } else if (numBytesRead == 0) {
+                        // end
+                        if (CFReadStreamGetStatus(requestReadStream) == kCFStreamStatusAtEnd) {
+                            done = YES;
+                        }
+                    } else {
+                        [resultData appendBytes:buf length:numBytesRead];
+                        // end
+                        if (CFReadStreamGetStatus(requestReadStream) == kCFStreamStatusAtEnd) {
+                            done = YES;
+                        }
+                    }
+                } else {
+                    // no data avaliable, wait
+                    if (waitSenconds++ < REQUEST_TIMEOUT_INTERVAL) {
+                        sleep(1);
+                    } else {
+                        // timeout
+                        NSDictionary *dic = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                              @"Request time out.", @"ErrorMessage", nil];
+                        *error = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10005 userInfo:dic];
+                        break;
+                    }
                 }
-            } while( numBytesRead > 0 );
-            json = [NSJSONSerialization JSONObjectWithData:resultData options:kNilOptions error:error];
+            }
+            if (*error == nil) {
+                json = [NSJSONSerialization JSONObjectWithData:resultData options:kNilOptions error:error];
+            }
         }
     }
     
