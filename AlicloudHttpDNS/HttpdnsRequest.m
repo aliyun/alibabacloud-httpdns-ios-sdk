@@ -35,11 +35,31 @@ NSString * const ALICLOUD_HTTPDNS_HTTP_SERVER_PORT = @"80";
 NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 #endif
 
+@interface HttpdnsRequest () <NSStreamDelegate>
+
+@end
+
 @implementation HttpdnsRequest
+{
+    NSMutableData *resultData;
+    dispatch_semaphore_t sem;
+    NSRunLoop *runloop;
+    NSInputStream *inputStream;
+    NSError *networkError;
+    BOOL responseResolved;
+    BOOL compeleted;
+    NSTimer *timeoutTimer;
+}
 
 #pragma mark init
 
--(instancetype)init {
+- (instancetype)init {
+    if (self = [super init]) {
+        resultData = [NSMutableData data];
+        sem = dispatch_semaphore_create(0);
+        networkError = nil;
+        responseResolved = NO;
+    }
     return self;
 }
 
@@ -103,11 +123,8 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                            cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                        timeoutInterval:REQUEST_TIMEOUT_INTERVAL];
-    NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
-    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
     __block NSDictionary *json;
-    NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+    NSURLSessionTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if (error) {
             HttpdnsLogDebug("Network error: %@", error);
             *pError = error;
@@ -120,12 +137,12 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
                     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                           @"Response code not 200, and parse response message error", @"ErrorMessage",
                                           [NSString stringWithFormat:@"%ld", (long)statusCode], @"ResponseCode", nil];
-                    *pError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10002 userInfo:dict];
+                    *pError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10002 userInfo:dict];
                 } else {
                     NSString *errCode = [json objectForKey:@"code"];
                     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                           errCode, @"ErrorMessage", nil];
-                    *pError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10003 userInfo:dict];
+                    *pError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10003 userInfo:dict];
                 }
             } else {
                 HttpdnsLogDebug("Response code 200.");
@@ -143,6 +160,9 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 
 // 基于CFNetwork发送HTTP请求
 - (HttpdnsHostObject *)sendHTTPRequest:(NSString *)urlStr error:(NSError **)error {
+    if (!error) {
+        return nil;
+    }
     NSString *fullUrlStr = [NSString stringWithFormat:@"http://%@", urlStr];
     HttpdnsLogDebug("Request URL: %@", fullUrlStr);
     CFStringRef urlString = (__bridge CFStringRef)fullUrlStr;
@@ -150,82 +170,128 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
     CFStringRef requestMethod = CFSTR("GET");
     CFHTTPMessageRef request = CFHTTPMessageCreateRequest(kCFAllocatorDefault, requestMethod, url, kCFHTTPVersion1_1);
     CFReadStreamRef requestReadStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, request);
+    inputStream = (__bridge_transfer NSInputStream *)requestReadStream;
     
-    NSDictionary *json;
-    if (CFReadStreamOpen(requestReadStream) == NO) {
-        CFStreamError err = CFReadStreamGetError(requestReadStream);
-        if (err.error != 0) {
-            *error = [NSError errorWithDomain:@"CFStreamErrorDomain" code:err.error userInfo:nil];
-        } else {
-            *error = [NSError errorWithDomain:@"UnknownCFStreamErrorDomain" code:0 userInfo:nil];
-        }
-    } else {
-        CFHTTPMessageRef response = (CFHTTPMessageRef)CFReadStreamCopyProperty(requestReadStream, kCFStreamPropertyHTTPResponseHeader);
-        CFIndex statusCode = CFHTTPMessageGetResponseStatusCode(response);
-        if (statusCode != 200) {
-            HttpdnsLogDebug("ReponseCode %ld.", (long)statusCode);
-            NSString *errCode = [json objectForKey:@"code"];
-            NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                  errCode, @"ErrorMessage", nil];
-            *error = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10003 userInfo:dict];
-        } else {
-            HttpdnsLogDebug("Response code 200.");
-            UInt8 buf[1024];
-            CFIndex numBytesRead = 0;
-            NSMutableData *resultData = [NSMutableData data];
-            int waitSenconds = 0;
-            BOOL done = NO;
-            while (!done) {
-                if (CFReadStreamHasBytesAvailable(requestReadStream)) {
-                    numBytesRead = CFReadStreamRead(requestReadStream, buf, sizeof(buf));
-                    if (numBytesRead < 0) {
-                        // read error
-                        NSDictionary *dic = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                             @"Read stream error.", @"ErrorMessage", nil];
-                        *error = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10004 userInfo:dic];
-                        break;
-                    } else if (numBytesRead == 0) {
-                        // end
-                        if (CFReadStreamGetStatus(requestReadStream) == kCFStreamStatusAtEnd) {
-                            done = YES;
-                        }
-                    } else {
-                        [resultData appendBytes:buf length:numBytesRead];
-                        // end
-                        if (CFReadStreamGetStatus(requestReadStream) == kCFStreamStatusAtEnd) {
-                            done = YES;
-                        }
-                    }
-                } else {
-                    // no data avaliable, wait
-                    if (waitSenconds++ < REQUEST_TIMEOUT_INTERVAL) {
-                        sleep(1);
-                    } else {
-                        // timeout
-                        NSDictionary *dic = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                              @"Request time out.", @"ErrorMessage", nil];
-                        *error = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer" code:10005 userInfo:dic];
-                        break;
-                    }
-                }
-            }
-            if (*error == nil) {
-                json = [NSJSONSerialization JSONObjectWithData:resultData options:kNilOptions error:error];
-            }
-        }
-    }
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        runloop = [NSRunLoop currentRunLoop];
+        [self openInputStream];
+        [self startTimer];
+        [runloop run];
+    });
+    
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     
     CFRelease(url);
     CFRelease(request);
     request = NULL;
-    CFReadStreamClose(requestReadStream);
-    CFRelease(requestReadStream);
-    requestReadStream = NULL;
+    [self closeInputStream];
+    [self stopTimer];
+    
+    *error = networkError;
+    NSDictionary *json;
+    if (*error == nil) {
+        json = [NSJSONSerialization JSONObjectWithData:resultData options:kNilOptions error:error];
+    }
     
     if (*error == nil) {
         return [self parseHostInfoFromHttpResponse:json];
     }
     return nil;
+}
+
+- (void)openInputStream {
+    [inputStream setDelegate:self];
+    [inputStream scheduleInRunLoop:runloop forMode:NSRunLoopCommonModes];
+    [inputStream open];
+}
+
+- (void)closeInputStream {
+    if (inputStream && inputStream.streamStatus != NSStreamStatusClosed) {
+        [inputStream close];
+        [inputStream removeFromRunLoop:runloop forMode:NSRunLoopCommonModes];
+        [inputStream setDelegate:nil];
+        inputStream = nil;
+    }
+}
+
+- (void)startTimer {
+    if (!timeoutTimer) {
+        timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:REQUEST_TIMEOUT_INTERVAL target:self selector:@selector(checkRequestStatus) userInfo:nil repeats:NO];
+        [runloop addTimer:timeoutTimer forMode:NSRunLoopCommonModes];
+    }
+}
+
+- (void)stopTimer {
+    if (timeoutTimer) {
+        [timeoutTimer invalidate];
+        timeoutTimer = nil;
+    }
+}
+
+- (void)checkRequestStatus {
+    [self stopTimer];
+    if (!compeleted) {
+        NSDictionary *dic = [[NSDictionary alloc] initWithObjectsAndKeys:
+                             @"Request timeout.", @"ErrorMessage", nil];
+        networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:10005 userInfo:dic];
+        dispatch_semaphore_signal(sem);
+    }
+}
+
+- (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode {
+    switch (eventCode) {
+        case NSStreamEventHasBytesAvailable:{
+            if (!responseResolved) {
+                CFReadStreamRef readStream = (__bridge CFReadStreamRef)inputStream;
+                CFHTTPMessageRef message = (CFHTTPMessageRef)CFReadStreamCopyProperty(readStream, kCFStreamPropertyHTTPResponseHeader);
+                if (!message) {
+                    return;
+                }
+                if (!CFHTTPMessageIsHeaderComplete(message)) {
+                    HttpdnsLogDebug("Response not complete, continue.");
+                    CFRelease(message);
+                    return;
+                }
+                responseResolved = YES;
+                CFIndex statusCode = CFHTTPMessageGetResponseStatusCode(message);
+                CFRelease(message);
+                if (statusCode != 200) {
+                    NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                          @"status code not 200", @"ErrorMessage", nil];
+                    networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:10004 userInfo:dict];
+                    dispatch_semaphore_signal(sem);
+                    return;
+                }
+                HttpdnsLogDebug("Response code 200.");
+            }
+            UInt8 buffer[16 * 1024];
+            unsigned long numBytesRead = 0;
+            // Read data
+            if (!resultData) {
+                resultData = [NSMutableData data];
+            }
+            do {
+                numBytesRead = [inputStream read:buffer maxLength:sizeof(buffer)];
+                [resultData appendBytes:buffer length:numBytesRead];
+            } while (numBytesRead > 0);
+        }
+            break;
+        case NSStreamEventErrorOccurred:
+        {
+            NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                  [NSString stringWithFormat:@"read stream error: %@", [aStream streamError].userInfo], @"ErrorMessage", nil];
+            networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:10006 userInfo:dict];
+            compeleted = YES;
+            dispatch_semaphore_signal(sem);
+        }
+            break;
+        case NSStreamEventEndEncountered:
+            compeleted = YES;
+            dispatch_semaphore_signal(sem);
+            break;
+        default:
+            break;
+    }
 }
 
 @end
