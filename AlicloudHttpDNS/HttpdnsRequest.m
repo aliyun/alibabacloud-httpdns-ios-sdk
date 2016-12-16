@@ -179,11 +179,13 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
         [runloop run];
     });
     
-    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-    
     CFRelease(url);
     CFRelease(request);
+    CFRelease(requestMethod);
     request = NULL;
+    
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    
     [self closeInputStream];
     [self stopTimer];
     
@@ -200,13 +202,15 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 }
 
 - (void)openInputStream {
-    [inputStream setDelegate:self];
+    // 防止循环引用
+    __weak typeof(self) weakSelf = self;
+    [inputStream setDelegate:weakSelf];
     [inputStream scheduleInRunLoop:runloop forMode:NSRunLoopCommonModes];
     [inputStream open];
 }
 
 - (void)closeInputStream {
-    if (inputStream && inputStream.streamStatus != NSStreamStatusClosed) {
+    if (inputStream) {
         [inputStream close];
         [inputStream removeFromRunLoop:runloop forMode:NSRunLoopCommonModes];
         [inputStream setDelegate:nil];
@@ -236,6 +240,11 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
         networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:10005 userInfo:dic];
         dispatch_semaphore_signal(sem);
     }
+}
+
+- (void)dealloc {
+    [self stopTimer];
+    [self closeInputStream];
 }
 
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode {

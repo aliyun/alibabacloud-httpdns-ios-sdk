@@ -1,3 +1,7 @@
+1.1.0
+- HTTPS请求基于NSURLSession发送，HTTP请求基于CFNetwork发送；
+- 增加解析域名请求HTTPS开关；
+
 1.0.5
 - 增加获取域名解析IP列表的API接口；
 - 增加网络切换后，后台自动预解析的开关；
