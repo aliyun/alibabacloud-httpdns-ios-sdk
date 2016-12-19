@@ -83,6 +83,16 @@
 }
 
 /**
+ * 测试目的：测试基于CFNetwork发送HTTPDNS解析请求异常情况；[M]
+ * 测试方法：并发解析域名请求，模拟网络异常环境，读取数据过程中将网络断开，查看是否出现异常；
+ */
+- (void)testHTTPRequestException {
+    NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
+    [[HttpDnsService sharedInstance] setPreResolveHosts:array];
+    [NSThread sleepForTimeInterval:120];
+}
+
+/**
  * 测试目的：测试基于HTTPS请求查询功能；
  * 测试方法：1. 查询某个真实域名并判断是否获取了正常的返回数据；
  */
