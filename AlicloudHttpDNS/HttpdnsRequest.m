@@ -279,14 +279,16 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
                 HttpdnsLogDebug("Response code 200.");
             }
             UInt8 buffer[16 * 1024];
-            unsigned long numBytesRead = 0;
+            NSInteger numBytesRead = 0;
             // Read data
             if (!resultData) {
                 resultData = [NSMutableData data];
             }
             do {
                 numBytesRead = [inputStream read:buffer maxLength:sizeof(buffer)];
-                [resultData appendBytes:buffer length:numBytesRead];
+                if (numBytesRead > 0) {
+                    [resultData appendBytes:buffer length:numBytesRead];
+                }
             } while (numBytesRead > 0);
         }
             break;
