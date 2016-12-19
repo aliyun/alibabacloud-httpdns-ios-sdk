@@ -60,10 +60,23 @@
 }
 
 /**
- * 测试目的：测试基于CFNetwork发送HTTPDNS解析请求时，RunLoop是否正确退出；[M]
- * 测试方法：并发异步解析几个域名，解析成功后等待并暂停运行，查看解析线程是否正确退出；
+ * 测试目的：测试基于CFNetwork正确发送HTTPDNS解析请求时，RunLoop是否正确退出；[M]
+ * 测试方法：1. [runloop runUtilDate:]后添加日志打印；
+ *         2. 并发异步解析几个域名，解析成功后等待并暂停运行，通过查看日志和堆栈信息查看解析线程是否正确退出；
  */
-- (void)testHTTPRequestRunLoop {
+- (void)testSuccessHTTPRequestRunLoop {
+    NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
+    [[HttpDnsService sharedInstance] setPreResolveHosts:array];
+    [NSThread sleepForTimeInterval:60];
+}
+
+/**
+ * 测试目的：测试基于CFNetwork发送HTTPDNS解析请求异常情况时，RunLoop是否正确退出；[M]
+ * 测试方法：1. [runloop runUtilDate:]后添加日志打印；
+ *         2. 手动更改HTTPDNS IP地址为无效地址(192.192.192.192)；
+ *         3. 并发异步解析几个域名，解析后等待并暂停运行，通过查看日志和堆栈信息查看解析线程是否正确退出；
+ */
+- (void)testFailedHTTPRequestRunLoop {
     NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
     [[HttpDnsService sharedInstance] setPreResolveHosts:array];
     [NSThread sleepForTimeInterval:60];
