@@ -60,6 +60,16 @@
 }
 
 /**
+ * 测试目的：测试基于CFNetwork发送HTTPDNS解析请求时，RunLoop是否正确退出；[M]
+ * 测试方法：并发异步解析几个域名，解析成功后等待并暂停运行，查看解析线程是否正确退出；
+ */
+- (void)testHTTPRequestRunLoop {
+    NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
+    [[HttpDnsService sharedInstance] setPreResolveHosts:array];
+    [NSThread sleepForTimeInterval:60];
+}
+
+/**
  * 测试目的：测试基于HTTPS请求查询功能；
  * 测试方法：1. 查询某个真实域名并判断是否获取了正常的返回数据；
  */
@@ -83,17 +93,17 @@
     HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
     NSError *error;
     NSDate *startDate = [NSDate date];
-    // HTTPS
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    // HTTP
+    startDate = [NSDate date];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
     NSTimeInterval interval = [startDate timeIntervalSinceNow];
     XCTAssertEqualWithAccuracy(interval * (-1), REQUEST_TIMEOUT_INTERVAL, 1);
     XCTAssertNotNil(error);
     XCTAssertNil(result);
     
-    // HTTP
-    startDate = [NSDate date];
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
+    // HTTPS
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
     result = [request lookupHostFromServer:hostName error:&error];
     interval = [startDate timeIntervalSinceNow];
     XCTAssertEqualWithAccuracy(interval * (-1), REQUEST_TIMEOUT_INTERVAL, 1);
