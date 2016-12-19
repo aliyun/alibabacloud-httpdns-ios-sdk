@@ -59,6 +59,7 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
         sem = dispatch_semaphore_create(0);
         networkError = nil;
         responseResolved = NO;
+        compeleted = NO;
     }
     return self;
 }
@@ -176,7 +177,13 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
         runloop = [NSRunLoop currentRunLoop];
         [self openInputStream];
         [self startTimer];
-        [runloop run];
+        /*
+         *  通过调用[runloop run]; 开启线程的RunLoop时，引用苹果文档描述，"Manually removing all known input sources and timers from the run loop is not a guarantee that the run loop will exit. "，
+         *  一定要手动停止RunLoop，CFRunLoopStop([runloop getCFRunLoop])；
+         *  此处不再调用[runloop run]，改为[runloop runUtilDate:]，确保RunLoop正确退出。
+         *  且NSRunLoop为非线程安全的。
+         */
+        [runloop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:(REQUEST_TIMEOUT_INTERVAL + 5)]];
     });
     
     CFRelease(url);
@@ -185,9 +192,6 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
     request = NULL;
     
     dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-    
-    [self closeInputStream];
-    [self stopTimer];
     
     *error = networkError;
     NSDictionary *json;
@@ -215,6 +219,7 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
         [inputStream removeFromRunLoop:runloop forMode:NSRunLoopCommonModes];
         [inputStream setDelegate:nil];
         inputStream = nil;
+        CFRunLoopStop([runloop getCFRunLoop]);
     }
 }
 
@@ -234,17 +239,14 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 
 - (void)checkRequestStatus {
     [self stopTimer];
+    [self closeInputStream];
     if (!compeleted) {
+        compeleted = YES;
         NSDictionary *dic = [[NSDictionary alloc] initWithObjectsAndKeys:
                              @"Request timeout.", @"ErrorMessage", nil];
         networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:10005 userInfo:dic];
         dispatch_semaphore_signal(sem);
     }
-}
-
-- (void)dealloc {
-    [self stopTimer];
-    [self closeInputStream];
 }
 
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode {
@@ -268,6 +270,9 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
                     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                           @"status code not 200", @"ErrorMessage", nil];
                     networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:10004 userInfo:dict];
+                    compeleted = YES;
+                    [self stopTimer];
+                    [self closeInputStream];
                     dispatch_semaphore_signal(sem);
                     return;
                 }
@@ -290,11 +295,10 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
             NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                   [NSString stringWithFormat:@"read stream error: %@", [aStream streamError].userInfo], @"ErrorMessage", nil];
             networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:10006 userInfo:dict];
-            compeleted = YES;
-            dispatch_semaphore_signal(sem);
         }
-            break;
         case NSStreamEventEndEncountered:
+            [self stopTimer];
+            [self closeInputStream];
             compeleted = YES;
             dispatch_semaphore_signal(sem);
             break;

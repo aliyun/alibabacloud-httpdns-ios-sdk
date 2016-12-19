@@ -1,3 +1,6 @@
+1.1.1
+- 修复NSRunloop没有正确退出的Bug；
+
 1.1.0
 - HTTPS请求基于NSURLSession发送，HTTP请求基于CFNetwork发送；
 - 增加解析域名请求HTTPS开关；
