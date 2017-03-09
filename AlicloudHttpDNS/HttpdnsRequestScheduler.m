@@ -41,7 +41,7 @@
         _isPreResolveAfterNetworkChangedEnabled = NO;
         _syncDispatchQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.sync", DISPATCH_QUEUE_SERIAL);
         _asyncOperationQueue = [[NSOperationQueue alloc] init];
-        [_asyncOperationQueue setMaxConcurrentOperationCount:MAX_REQUEST_THREAD_NUM];
+        [_asyncOperationQueue setMaxConcurrentOperationCount:HTTPDNS_MAX_REQUEST_THREAD_NUM];
         _hostManagerDict = [[NSMutableDictionary alloc] init];
         [AlicloudIPv6Adapter getInstance];
         [AlicloudReachabilityManager shareInstance];
@@ -141,7 +141,7 @@
 }
 
 -(HttpdnsHostObject *)executeRequest:(NSString *)host synchronously:(BOOL)sync retryCount:(int)hasRetryedCount {
-    if (hasRetryedCount > MAX_REQUEST_RETRY_TIME) {
+    if (hasRetryedCount > HTTPDNS_MAX_REQUEST_RETRY_TIME) {
         HttpdnsLogDebug("Retry count exceed limit, abort!");
         dispatch_async(_syncDispatchQueue, ^{
             [self mergeLookupResultToManager:nil forHost:host];
@@ -188,8 +188,8 @@
 }
 
 -(BOOL)isHostsNumberLimitReached {
-    if ([_hostManagerDict count] >= MAX_MANAGE_HOST_NUM) {
-        HttpdnsLogDebug(@"Can't handle more than %d hosts due to the software configuration.", MAX_MANAGE_HOST_NUM);
+    if ([_hostManagerDict count] >= HTTPDNS_MAX_MANAGE_HOST_NUM) {
+        HttpdnsLogDebug(@"Can't handle more than %d hosts due to the software configuration.", HTTPDNS_MAX_MANAGE_HOST_NUM);
         return YES;
     }
     return NO;
