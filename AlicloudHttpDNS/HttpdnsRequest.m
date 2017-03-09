@@ -100,7 +100,7 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
     if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
         serverIp = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:ALICLOUD_HTTPDNS_SERVER_IP]];
     }
-    NSString *port = REQUEST_PROTOCOL_HTTPS_ENABLED ? ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT : ALICLOUD_HTTPDNS_HTTP_SERVER_PORT;
+    NSString *port = HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED ? ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT : ALICLOUD_HTTPDNS_HTTP_SERVER_PORT;
     NSString *url = [NSString stringWithFormat:@"%@:%@/%d/d?host=%@",
                      serverIp, port, sharedService.accountID, hostsString];
     return url;
@@ -109,7 +109,7 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 -(HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error {
     HttpdnsLogDebug("Resolve host(%@) over network.", hostString);
     NSString *url = [self constructRequestURLWith:hostString];
-    if (REQUEST_PROTOCOL_HTTPS_ENABLED) {
+    if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
         return [self sendHTTPSRequest:url error:error];
     } else {
         return [self sendHTTPRequest:url error:error];
@@ -123,7 +123,7 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
     HttpdnsLogDebug("Request URL: %@", fullUrlStr);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                            cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
-                                                       timeoutInterval:REQUEST_TIMEOUT_INTERVAL];
+                                                       timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
     __block NSDictionary *json;
     NSURLSessionTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if (error) {
@@ -183,7 +183,7 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
          *  此处不再调用[runloop run]，改为[runloop runUtilDate:]，确保RunLoop正确退出。
          *  且NSRunLoop为非线程安全的。
          */
-        [runloop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:(REQUEST_TIMEOUT_INTERVAL + 5)]];
+        [runloop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:([HttpDnsService sharedInstance].timeoutInterval + 5)]];
     });
     
     CFRelease(url);
@@ -225,7 +225,7 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 
 - (void)startTimer {
     if (!timeoutTimer) {
-        timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:REQUEST_TIMEOUT_INTERVAL target:self selector:@selector(checkRequestStatus) userInfo:nil repeats:NO];
+        timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:[HttpDnsService sharedInstance].timeoutInterval target:self selector:@selector(checkRequestStatus) userInfo:nil repeats:NO];
         [runloop addTimer:timeoutTimer forMode:NSRunLoopCommonModes];
     }
 }
