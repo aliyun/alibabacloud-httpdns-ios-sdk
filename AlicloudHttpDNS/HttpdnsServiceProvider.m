@@ -37,6 +37,7 @@
     static HttpDnsService * _httpDnsClient = nil;
     dispatch_once(&onceToken, ^{
         _httpDnsClient = [[super allocWithZone:NULL] init];
+        _httpDnsClient.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
         [AlicloudReport statAsync:AMSHTTPDNS];
     });
     return _httpDnsClient;
@@ -127,7 +128,7 @@
     if ([self.delegate shouldDegradeHTTPDNS:host]) {
         return nil;
     }
-    
+
     if (!host) {
         return nil;
     }
@@ -167,7 +168,7 @@
 }
 
 - (void)setHTTPSRequestEnabled:(BOOL)enable {
-    REQUEST_PROTOCOL_HTTPS_ENABLED = enable;
+    HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED = enable;
 }
 
 -(void)setExpiredIPEnabled:(BOOL)enable {
