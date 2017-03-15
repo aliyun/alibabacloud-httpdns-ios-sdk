@@ -124,26 +124,27 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                            cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                        timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
-    __block NSDictionary *json;
+    __block NSDictionary *json = nil;
+    __block NSError *errorStrong = nil;
     NSURLSessionTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if (error) {
             HttpdnsLogDebug("Network error: %@", error);
-            *pError = error;
+            errorStrong = error;
         } else {
-            json = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:pError];
+            json = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
             NSInteger statusCode = [(NSHTTPURLResponse *) response statusCode];
             if (statusCode != 200) {
                 HttpdnsLogDebug("ReponseCode %ld.", (long)statusCode);
-                if (*pError) {
+                if (errorStrong) {
                     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                           @"Response code not 200, and parse response message error", @"ErrorMessage",
                                           [NSString stringWithFormat:@"%ld", (long)statusCode], @"ResponseCode", nil];
-                    *pError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10002 userInfo:dict];
+                    errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10002 userInfo:dict];
                 } else {
                     NSString *errCode = [json objectForKey:@"code"];
                     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                           errCode, @"ErrorMessage", nil];
-                    *pError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10003 userInfo:dict];
+                    errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10003 userInfo:dict];
                 }
             } else {
                 HttpdnsLogDebug("Response code 200.");
@@ -153,8 +154,13 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
     }];
     [task resume];
     dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-    if (*pError == nil) {
+    
+    if (!errorStrong) {
         return [self parseHostInfoFromHttpResponse:json];
+    }
+    
+    if (pError != NULL && errorStrong) {
+        *pError = errorStrong;
     }
     return nil;
 }
