@@ -159,7 +159,7 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
         return [self parseHostInfoFromHttpResponse:json];
     }
     
-    if (pError != NULL && errorStrong) {
+    if (pError != NULL) {
         *pError = errorStrong;
     }
     return nil;
