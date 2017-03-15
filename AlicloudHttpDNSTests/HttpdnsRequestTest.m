@@ -119,22 +119,22 @@
     // HTTP
     startDate = [NSDate date];
     [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
-    [HttpDnsService sharedInstance].timeoutInterval = 5;
+    [HttpDnsService sharedInstance].timeoutInterval = 3;
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
     HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
     NSTimeInterval interval = [startDate timeIntervalSinceNow];
-    XCTAssertEqualWithAccuracy(interval * (-1), customizedTimeoutInterval, 1);
-    XCTAssertNotNil(error);
+    XCTAssert(interval <= customizedTimeoutInterval);
+    XCTAssertNil(error);
     XCTAssertNil(result);
-    
+
     // HTTPS
     startDate = [NSDate date];
     [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
     result = [request lookupHostFromServer:hostName error:&error];
     interval = [startDate timeIntervalSinceNow];
     
-    XCTAssertEqualWithAccuracy(interval * (-1), customizedTimeoutInterval, 1);
-    XCTAssertNotNil(error);
+    XCTAssert(interval <= customizedTimeoutInterval);
+    XCTAssertNil(error);
     XCTAssertNil(result);
 }
 
