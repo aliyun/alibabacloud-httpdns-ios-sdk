@@ -205,7 +205,7 @@
 
 - (void)networkChanged:(NSNotification *)notification {
     NSNumber *networkStatus = [notification object];
-    __block NSString *statusString;
+    __block NSString *statusString = nil;
     switch ([networkStatus longValue]) {
         case 0:
             statusString = @"None";
