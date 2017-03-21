@@ -20,6 +20,7 @@
 #import <XCTest/XCTest.h>
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsUtil.h"
+#import "HttpdnsServiceProvider_Internal.h"
 
 @interface HttpdnsUtilTest : XCTestCase
 

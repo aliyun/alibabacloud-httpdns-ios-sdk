@@ -32,6 +32,7 @@
 		946229911C5509D800B7C13E /* HttpdnsServiceProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */; };
 		9479DFE21CD361EE00C49B32 /* UTDID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9479DFE11CD361EE00C49B32 /* UTDID.framework */; };
 		9479DFE31CD361FD00C49B32 /* UTDID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9479DFE11CD361EE00C49B32 /* UTDID.framework */; };
+		9A9CBB7C1E8133D300F878BA /* HttpdnsServiceProvider_Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A9CBB7B1E8133D300F878BA /* HttpdnsServiceProvider_Internal.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -62,6 +63,7 @@
 		9459140F1CEB5D9400D95CF7 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
 		945914111CEB5D9C00D95CF7 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
 		9479DFE11CD361EE00C49B32 /* UTDID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = UTDID.framework; sourceTree = "<group>"; };
+		9A9CBB7B1E8133D300F878BA /* HttpdnsServiceProvider_Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsServiceProvider_Internal.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +131,7 @@
 				2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */,
 				2197CABE1BC7B3D400BDB65B /* HttpdnsUtil.h */,
 				2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */,
+				9A9CBB7B1E8133D300F878BA /* HttpdnsServiceProvider_Internal.h */,
 				2197CA3C1BC79A4500BDB65B /* Info.plist */,
 				942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */,
 			);
@@ -160,6 +163,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A9CBB7C1E8133D300F878BA /* HttpdnsServiceProvider_Internal.h in Headers */,
 				2197CAC31BC7B3D400BDB65B /* AlicloudHttpDNS.h in Headers */,
 				942376DD1C5764C700736E50 /* HttpdnsServiceProvider.h in Headers */,
 				942376DE1C5764CF00736E50 /* HttpdnsDegradationDelegate.h in Headers */,

@@ -17,33 +17,15 @@
  * under the License.
  */
 
-#import <Foundation/Foundation.h>
-#import "HttpdnsDegradationDelegate.h"
+#import "HttpdnsServiceProvider.h"
 
-@interface HttpDnsService: NSObject
+@interface HttpDnsService()
 
-@property (nonatomic, assign) int accountID;
+- (NSString *)getIpByHost:(NSString *)host;
 
-@property (nonatomic, weak, setter=setDelegateForDegradationFilter:) id<HttpDNSDegradationDelegate> delegate;
+- (NSArray *)getIpsByHost:(NSString *)host;
 
-@property (nonatomic, assign) NSTimeInterval timeoutInterval;
-
-+ (instancetype)sharedInstance;
-
-- (void)setPreResolveHosts:(NSArray *)hosts;
-
-- (NSString *)getIpByHostAsync:(NSString *)host;
-
-- (NSArray *)getIpsByHostAsync:(NSString *)host;
-
-- (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host;
-
-- (void)setHTTPSRequestEnabled:(BOOL)enable;
-
-- (void)setExpiredIPEnabled:(BOOL)enable;
-
-- (void)setLogEnabled:(BOOL)enable;
-
-- (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
+- (NSString *)getIpByHostInURLFormat:(NSString *)host;
 
 @end
+
