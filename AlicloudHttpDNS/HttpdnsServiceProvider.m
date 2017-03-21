@@ -25,6 +25,7 @@
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
 #import <AlicloudUtils/AlicloudUtils.h>
+#import "HttpdnsServiceProvider_Internal.h"
 
 @implementation HttpDnsService {
     HttpdnsRequestScheduler *_requestScheduler;
