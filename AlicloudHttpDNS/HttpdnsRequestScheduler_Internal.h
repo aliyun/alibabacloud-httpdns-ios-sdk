@@ -17,8 +17,32 @@
  * under the License.
  */
 
-static NSString *const HTTPDNS_IOS_SDK_VERSION = @"1.4.0";
+#import "HttpdnsRequestScheduler.h"
 
-#import <Foundation/Foundation.h>
-#import "HttpdnsServiceProvider.h"
-#import "HttpdnsDegradationDelegate.h"
+@interface HttpdnsRequestTestHelper : NSObject
+
+- (void)setFirstIPWrongForTest;
+
+- (void)shortResetActivatedIPTimeForTest;
+- (void)setTwoFirstIPWrongForTest;
+- (void)setFourFirstIPWrongForTest;
+- (void)zeroSnifferTimeForTest;
+
+@end
+
+@interface HttpdnsRequestScheduler ()
+
+@property (nonatomic, assign) NSInteger activatedServerIPIndex;
+
+- (void)setServerDisable:(BOOL)serverDisable host:(NSString *)host;
+
+- (void)setServerDisable:(BOOL)serverDisable host:(NSString *)host activatedServerIPIndex:(NSInteger)activatedServerIPIndex;
+
+- (BOOL)isServerDisable;
+
+@property (nonatomic, strong) HttpdnsRequestTestHelper *testHelper;
+
++ (void)configureServerIPsAndResetActivatedIPTime;
+
+@end
+
