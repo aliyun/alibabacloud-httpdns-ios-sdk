@@ -17,8 +17,25 @@
  * under the License.
  */
 
-static NSString *const HTTPDNS_IOS_SDK_VERSION = @"1.4.0";
+#import <Foundation/Foundation.h>   
 
-#import <Foundation/Foundation.h>
-#import "HttpdnsServiceProvider.h"
-#import "HttpdnsDegradationDelegate.h"
+@interface HttpdnsPersistenceUtils : NSObject
+
++ (NSString *)disableStatusPath;
++ (NSString *)activatedIPIndexPath;
+
++ (BOOL)saveJSON:(id)JSON toPath:(NSString *)path;
++ (id)getJSONFromPath:(NSString *)path;
+
++(BOOL)removeFile:(NSString *)path;
++(BOOL)fileExist:(NSString *)path;
++(BOOL)createFile:(NSString *)path;
+
+/*!
+ * 请勿直接使用文件名调用该接口，应该使用文件所在文件夹
+ */
++ (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanDays:(NSInteger)numberOfDays;
++ (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanHours:(NSInteger)numberOfHours;
++ (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanTimeInterval:(NSTimeInterval)timeInterval;
+
+@end
