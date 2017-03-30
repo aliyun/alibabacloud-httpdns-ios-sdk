@@ -17,20 +17,25 @@
  * under the License.
  */
 
-#import "HttpdnsServiceProvider.h"
-#import "HttpdnsRequestScheduler_Internal.h"
+#import <Foundation/Foundation.h>   
 
-@interface HttpDnsService()
+@interface HttpdnsPersistenceUtils : NSObject
 
-@property (nonatomic, strong) HttpdnsRequestScheduler *requestScheduler;
++ (NSString *)disableStatusPath;
++ (NSString *)activatedIPIndexPath;
 
-- (NSString *)getIpByHost:(NSString *)host;
++ (BOOL)saveJSON:(id)JSON toPath:(NSString *)path;
++ (id)getJSONFromPath:(NSString *)path;
 
-- (NSArray *)getIpsByHost:(NSString *)host;
++(BOOL)removeFile:(NSString *)path;
++(BOOL)fileExist:(NSString *)path;
++(BOOL)createFile:(NSString *)path;
 
-- (NSString *)getIpByHostInURLFormat:(NSString *)host;
-
-+ (void)statIfNeeded;
+/*!
+ * 请勿直接使用文件名调用该接口，应该使用文件所在文件夹
+ */
++ (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanDays:(NSInteger)numberOfDays;
++ (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanHours:(NSInteger)numberOfHours;
++ (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanTimeInterval:(NSTimeInterval)timeInterval;
 
 @end
-

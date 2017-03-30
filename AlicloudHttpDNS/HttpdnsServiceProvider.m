@@ -17,8 +17,8 @@
  * under the License.
  */
 
-#import "HttpdnsRequestScheduler.h"
 #import "HttpdnsServiceProvider.h"
+#import "HttpdnsRequestScheduler.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsModel.h"
@@ -26,10 +26,11 @@
 #import "HttpdnsLog.h"
 #import <AlicloudUtils/AlicloudUtils.h>
 #import "HttpdnsServiceProvider_Internal.h"
+#import "AlicloudHttpDNS.h"
 
-@implementation HttpDnsService {
-    HttpdnsRequestScheduler *_requestScheduler;
-}
+static NSDictionary * HTTPDNS_EXT_INFO = nil;
+
+@implementation HttpDnsService
 
 #pragma mark singleton
 
@@ -39,9 +40,16 @@
     dispatch_once(&onceToken, ^{
         _httpDnsClient = [[super allocWithZone:NULL] init];
         _httpDnsClient.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
-        [AlicloudReport statAsync:AMSHTTPDNS];
+        HTTPDNS_EXT_INFO = @{
+                             EXT_INFO_KEY_VERSION : HTTPDNS_IOS_SDK_VERSION,
+                             };
+        [self statIfNeeded];
     });
     return _httpDnsClient;
+}
+
++ (void)statIfNeeded {
+    [AlicloudReport statAsync:AMSHTTPDNS extInfo:HTTPDNS_EXT_INFO];
 }
 
 + (id)allocWithZone:(NSZone *)zone {

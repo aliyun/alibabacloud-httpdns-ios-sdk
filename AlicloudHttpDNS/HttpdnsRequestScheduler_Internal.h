@@ -17,20 +17,32 @@
  * under the License.
  */
 
-#import "HttpdnsServiceProvider.h"
-#import "HttpdnsRequestScheduler_Internal.h"
+#import "HttpdnsRequestScheduler.h"
 
-@interface HttpDnsService()
+@interface HttpdnsRequestTestHelper : NSObject
 
-@property (nonatomic, strong) HttpdnsRequestScheduler *requestScheduler;
+- (void)setFirstIPWrongForTest;
 
-- (NSString *)getIpByHost:(NSString *)host;
+- (void)shortResetActivatedIPTimeForTest;
+- (void)setTwoFirstIPWrongForTest;
+- (void)setFourFirstIPWrongForTest;
+- (void)zeroSnifferTimeForTest;
 
-- (NSArray *)getIpsByHost:(NSString *)host;
+@end
 
-- (NSString *)getIpByHostInURLFormat:(NSString *)host;
+@interface HttpdnsRequestScheduler ()
 
-+ (void)statIfNeeded;
+@property (nonatomic, assign) NSInteger activatedServerIPIndex;
+
+- (void)setServerDisable:(BOOL)serverDisable host:(NSString *)host;
+
+- (void)setServerDisable:(BOOL)serverDisable host:(NSString *)host activatedServerIPIndex:(NSInteger)activatedServerIPIndex;
+
+- (BOOL)isServerDisable;
+
+@property (nonatomic, strong) HttpdnsRequestTestHelper *testHelper;
+
++ (void)configureServerIPsAndResetActivatedIPTime;
 
 @end
 
