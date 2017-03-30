@@ -46,4 +46,6 @@ FOUNDATION_EXTERN NSInteger ALICLOUD_HTTPDNS_RESET_ACTIVATED_SERVER_IP_TIME_HOUR
                                   fromIPIndex:(NSInteger)IPIndex
                                       isHTTPS:(BOOL)isHTTPS;
 
+- (NSString *)getActivatedServerIPWithIndex:(NSInteger)index;
+
 @end
