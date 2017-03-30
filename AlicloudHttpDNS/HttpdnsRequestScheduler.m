@@ -531,6 +531,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
     @try {
         serverIP = ALICLOUD_HTTPDNS_SERVER_IP_LIST[index];
     } @catch (NSException *exception) {
+        self.activatedIPIndexPath = 0;
         serverIP = ALICLOUD_HTTPDNS_SERVER_IP_LIST[0];
     }
     return serverIP;
