@@ -524,7 +524,16 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 - (void)changeToNextServerIPIndexFromIPIndex:(NSInteger)IPIndex {
     NSInteger nextServerIPIndex = [self nextServerIPIndexFromIPIndex:IPIndex increase:1];
     self.activatedServerIPIndex = nextServerIPIndex;
+}
 
+- (NSString *)getActivatedServerIPWithIndex:(NSInteger)index {
+    NSString *serverIP = nil;
+    @try {
+        serverIP = ALICLOUD_HTTPDNS_SERVER_IP_LIST[index];
+    } @catch (NSException *exception) {
+        serverIP = ALICLOUD_HTTPDNS_SERVER_IP_LIST[0];
+    }
+    return serverIP;
 }
 
 - (NSInteger)nextServerIPIndexFromIPIndex:(NSInteger)IPIndex increase:(NSInteger)increase {

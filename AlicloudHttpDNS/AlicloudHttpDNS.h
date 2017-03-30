@@ -17,6 +17,8 @@
  * under the License.
  */
 
+#import <Foundation/Foundation.h>
+
 static NSString *const HTTPDNS_IOS_SDK_VERSION = @"1.4.0";
 
 #import <Foundation/Foundation.h>

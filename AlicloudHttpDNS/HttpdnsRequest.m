@@ -98,10 +98,9 @@ static NSURLSession *_session = nil;
     return hostObject;
 }
 
--(NSString *)constructRequestURLWith:(NSString *)hostsString {
+-(NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    NSInteger activatedServerIPIndex = sharedService.requestScheduler.activatedServerIPIndex;
-    NSString *serverIp = ALICLOUD_HTTPDNS_SERVER_IP_LIST[activatedServerIPIndex];
+    NSString *serverIp = [sharedService.requestScheduler getActivatedServerIPWithIndex:activatedServerIPIndex];
 
     // Adapt to IPv6-only network.
     if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
@@ -120,7 +119,7 @@ static NSURLSession *_session = nil;
 -(HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     [self resetRequestConfigure];
     HttpdnsLogDebug("Resolve host(%@) over network.", hostString);
-    NSString *url = [self constructRequestURLWith:hostString];
+    NSString *url = [self constructRequestURLWith:hostString activatedServerIPIndex:activatedServerIPIndex];
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
         return [self sendHTTPSRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
     } else {
