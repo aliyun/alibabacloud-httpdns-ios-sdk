@@ -19,6 +19,17 @@
 
 #import <Foundation/Foundation.h>
 
+FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED;
+FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_1;
+FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_2;
+FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_3;
+FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_4;
+FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_HTTP_SERVER_PORT;
+FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT;
+
+FOUNDATION_EXTERN NSArray *ALICLOUD_HTTPDNS_SERVER_IP_LIST;
+FOUNDATION_EXTERN NSInteger ALICLOUD_HTTPDNS_RESET_ACTIVATED_SERVER_IP_TIME_HOURS;
+
 @class HttpdnsHostObject;
 
 @interface HttpdnsRequestScheduler : NSObject
@@ -30,5 +41,9 @@
 - (void)setExpiredIPEnabled:(BOOL)enable;
 
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
+
+- (void)changeToNextServerIPIfNeededWithError:(NSError *)error
+                                  fromIPIndex:(NSInteger)IPIndex
+                                      isHTTPS:(BOOL)isHTTPS;
 
 @end
