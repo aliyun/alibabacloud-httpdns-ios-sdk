@@ -20,8 +20,16 @@
 #import <Foundation/Foundation.h>
 #import "HttpdnsModel.h"
 
+FOUNDATION_EXTERN NSInteger const ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE;
+FOUNDATION_EXTERN NSInteger const ALICLOUD_HTTPDNS_HTTP_STREAM_READ_ERROR_CODE;
+FOUNDATION_EXTERN NSInteger const ALICLOUD_HTTPDNS_HTTPS_TIMEOUT_ERROR_CODE;
+FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_KEY;
+FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_CACHE_FILE_NAME;
+
 @interface HttpdnsRequest : NSObject
 
 -(HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error;
+
+-(HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex;
 
 @end

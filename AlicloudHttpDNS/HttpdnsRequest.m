@@ -24,44 +24,49 @@
 #import "HttpdnsLog.h"
 #import "HttpdnsConfig.h"
 #import "AlicloudUtils/AlicloudUtils.h"
+#import "HttpdnsPersistenceUtils.h"
+#import "HttpdnsServiceProvider_Internal.h"
+#import "HttpdnsRequestScheduler.h"
 
-#ifdef DEBUG
-NSString * const ALICLOUD_HTTPDNS_SERVER_IP = @"10.125.65.207";
-NSString * const ALICLOUD_HTTPDNS_HTTP_SERVER_PORT = @"8100";
-NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"8100";
-#else
-NSString * const ALICLOUD_HTTPDNS_SERVER_IP = @"203.107.1.1";
-NSString * const ALICLOUD_HTTPDNS_HTTP_SERVER_PORT = @"80";
-NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
-#endif
+NSInteger const ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE = 10005;
+NSInteger const ALICLOUD_HTTPDNS_HTTP_STREAM_READ_ERROR_CODE = 10006;
+NSInteger const ALICLOUD_HTTPDNS_HTTPS_TIMEOUT_ERROR_CODE = -1001;
 
-@interface HttpdnsRequest () <NSStreamDelegate>
+NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_KEY = @"activated_IP_index_key";
+NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_CACHE_FILE_NAME = @"activated_IP_index";
 
+static NSURLSession *_session = nil;
+
+@interface HttpdnsRequest () <NSStreamDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
 @end
 
 @implementation HttpdnsRequest
 {
-    NSMutableData *resultData;
-    dispatch_semaphore_t sem;
-    NSRunLoop *runloop;
-    NSInputStream *inputStream;
-    NSError *networkError;
-    BOOL responseResolved;
-    BOOL compeleted;
-    NSTimer *timeoutTimer;
+    NSMutableData *_resultData;
+    dispatch_semaphore_t _sem;
+    NSRunLoop *_runloop;
+    NSInputStream *_inputStream;
+    NSError *_networkError;
+    BOOL _responseResolved;
+    BOOL _compeleted;
+    NSTimer *_timeoutTimer;
 }
 
 #pragma mark init
 
 - (instancetype)init {
     if (self = [super init]) {
-        resultData = [NSMutableData data];
-        sem = dispatch_semaphore_create(0);
-        networkError = nil;
-        responseResolved = NO;
-        compeleted = NO;
+        [self resetRequestConfigure];
     }
     return self;
+}
+
+- (void)resetRequestConfigure {
+    _sem = dispatch_semaphore_create(0);
+    _resultData = [NSMutableData data];
+    _networkError = nil;
+    _responseResolved = NO;
+    _compeleted = NO;
 }
 
 #pragma mark LookupIpAction
@@ -95,10 +100,12 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 
 -(NSString *)constructRequestURLWith:(NSString *)hostsString {
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    NSString *serverIp = ALICLOUD_HTTPDNS_SERVER_IP;
+    NSInteger activatedServerIPIndex = sharedService.requestScheduler.activatedServerIPIndex;
+    NSString *serverIp = ALICLOUD_HTTPDNS_SERVER_IP_LIST[activatedServerIPIndex];
+
     // Adapt to IPv6-only network.
     if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
-        serverIp = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:ALICLOUD_HTTPDNS_SERVER_IP]];
+        serverIp = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:serverIp]];
     }
     NSString *port = HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED ? ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT : ALICLOUD_HTTPDNS_HTTP_SERVER_PORT;
     NSString *url = [NSString stringWithFormat:@"%@:%@/%d/d?host=%@",
@@ -107,26 +114,38 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 }
 
 -(HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error {
+   return [self lookupHostFromServer:hostString error:error activatedServerIPIndex:self.requestScheduler.activatedServerIPIndex];
+}
+
+-(HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
+    [self resetRequestConfigure];
     HttpdnsLogDebug("Resolve host(%@) over network.", hostString);
     NSString *url = [self constructRequestURLWith:hostString];
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
-        return [self sendHTTPSRequest:url error:error];
+        return [self sendHTTPSRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
     } else {
-        return [self sendHTTPRequest:url error:error];
+        return [self sendHTTPRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
     }
     return nil;
 }
 
 // 基于URLSession发送HTTPS请求
-- (HttpdnsHostObject *)sendHTTPSRequest:(NSString *)urlStr error:(NSError **)pError {
+- (HttpdnsHostObject *)sendHTTPSRequest:(NSString *)urlStr
+                                  error:(NSError **)pError
+ activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     NSString *fullUrlStr = [NSString stringWithFormat:@"https://%@", urlStr];
     HttpdnsLogDebug("Request URL: %@", fullUrlStr);
+    
+    if (!_session) {
+        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+        _session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
+    }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                            cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                        timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
     __block NSDictionary *json = nil;
     __block NSError *errorStrong = nil;
-    NSURLSessionTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+    NSURLSessionTask *task = [_session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if (error) {
             HttpdnsLogDebug("Network error: %@", error);
             errorStrong = error;
@@ -150,23 +169,28 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
                 HttpdnsLogDebug("Response code 200.");
             }
         }
-        dispatch_semaphore_signal(sem);
+        dispatch_semaphore_signal(_sem);
     }];
     [task resume];
-    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
     
     if (!errorStrong) {
         return [self parseHostInfoFromHttpResponse:json];
     }
     
     if (pError != NULL) {
-        *pError = errorStrong;
+        *pError = errorStrong;        
+        [self.requestScheduler changeToNextServerIPIfNeededWithError:errorStrong
+                                                         fromIPIndex:activatedServerIPIndex
+                                                             isHTTPS:YES];
     }
     return nil;
 }
 
 // 基于CFNetwork发送HTTP请求
-- (HttpdnsHostObject *)sendHTTPRequest:(NSString *)urlStr error:(NSError **)error {
+- (HttpdnsHostObject *)sendHTTPRequest:(NSString *)urlStr
+                                 error:(NSError **)error
+ activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     if (!error) {
         return nil;
     }
@@ -177,10 +201,10 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
     CFStringRef requestMethod = CFSTR("GET");
     CFHTTPMessageRef request = CFHTTPMessageCreateRequest(kCFAllocatorDefault, requestMethod, url, kCFHTTPVersion1_1);
     CFReadStreamRef requestReadStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, request);
-    inputStream = (__bridge_transfer NSInputStream *)requestReadStream;
+    _inputStream = (__bridge_transfer NSInputStream *)requestReadStream;
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        runloop = [NSRunLoop currentRunLoop];
+        _runloop = [NSRunLoop currentRunLoop];
         [self openInputStream];
         [self startTimer];
         /*
@@ -189,7 +213,7 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
          *  此处不再调用[runloop run]，改为[runloop runUtilDate:]，确保RunLoop正确退出。
          *  且NSRunLoop为非线程安全的。
          */
-        [runloop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:([HttpDnsService sharedInstance].timeoutInterval + 5)]];
+        [_runloop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:([HttpDnsService sharedInstance].timeoutInterval + 5)]];
     });
     
     CFRelease(url);
@@ -197,15 +221,20 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
     CFRelease(requestMethod);
     request = NULL;
     
-    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
     
-    *error = networkError;
+    *error = _networkError;
+    
+    [self.requestScheduler changeToNextServerIPIfNeededWithError:_networkError
+                                                     fromIPIndex:activatedServerIPIndex
+                                                         isHTTPS:NO];
+    
     NSDictionary *json;
     if (*error == nil) {
-        json = [NSJSONSerialization JSONObjectWithData:resultData options:kNilOptions error:error];
+        json = [NSJSONSerialization JSONObjectWithData:_resultData options:kNilOptions error:error];
     }
     
-    if (*error == nil) {
+    if (json) {
         return [self parseHostInfoFromHttpResponse:json];
     }
     return nil;
@@ -214,52 +243,52 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 - (void)openInputStream {
     // 防止循环引用
     __weak typeof(self) weakSelf = self;
-    [inputStream setDelegate:weakSelf];
-    [inputStream scheduleInRunLoop:runloop forMode:NSRunLoopCommonModes];
-    [inputStream open];
+    [_inputStream setDelegate:weakSelf];
+    [_inputStream scheduleInRunLoop:_runloop forMode:NSRunLoopCommonModes];
+    [_inputStream open];
 }
 
 - (void)closeInputStream {
-    if (inputStream) {
-        [inputStream close];
-        [inputStream removeFromRunLoop:runloop forMode:NSRunLoopCommonModes];
-        [inputStream setDelegate:nil];
-        inputStream = nil;
-        CFRunLoopStop([runloop getCFRunLoop]);
+    if (_inputStream) {
+        [_inputStream close];
+        [_inputStream removeFromRunLoop:_runloop forMode:NSRunLoopCommonModes];
+        [_inputStream setDelegate:nil];
+        _inputStream = nil;
+        CFRunLoopStop([_runloop getCFRunLoop]);
     }
 }
 
 - (void)startTimer {
-    if (!timeoutTimer) {
-        timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:[HttpDnsService sharedInstance].timeoutInterval target:self selector:@selector(checkRequestStatus) userInfo:nil repeats:NO];
-        [runloop addTimer:timeoutTimer forMode:NSRunLoopCommonModes];
+    if (!_timeoutTimer) {
+        _timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:[HttpDnsService sharedInstance].timeoutInterval target:self selector:@selector(checkRequestStatus) userInfo:nil repeats:NO];
+        [_runloop addTimer:_timeoutTimer forMode:NSRunLoopCommonModes];
     }
 }
 
 - (void)stopTimer {
-    if (timeoutTimer) {
-        [timeoutTimer invalidate];
-        timeoutTimer = nil;
+    if (_timeoutTimer) {
+        [_timeoutTimer invalidate];
+        _timeoutTimer = nil;
     }
 }
 
 - (void)checkRequestStatus {
     [self stopTimer];
     [self closeInputStream];
-    if (!compeleted) {
-        compeleted = YES;
+    if (!_compeleted) {
+        _compeleted = YES;
         NSDictionary *dic = [[NSDictionary alloc] initWithObjectsAndKeys:
                              @"Request timeout.", @"ErrorMessage", nil];
-        networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:10005 userInfo:dic];
-        dispatch_semaphore_signal(sem);
+        _networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE userInfo:dic];
+        dispatch_semaphore_signal(_sem);
     }
 }
 
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode {
     switch (eventCode) {
         case NSStreamEventHasBytesAvailable:{
-            if (!responseResolved) {
-                CFReadStreamRef readStream = (__bridge CFReadStreamRef)inputStream;
+            if (!_responseResolved) {
+                CFReadStreamRef readStream = (__bridge CFReadStreamRef)_inputStream;
                 CFHTTPMessageRef message = (CFHTTPMessageRef)CFReadStreamCopyProperty(readStream, kCFStreamPropertyHTTPResponseHeader);
                 if (!message) {
                     return;
@@ -269,17 +298,17 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
                     CFRelease(message);
                     return;
                 }
-                responseResolved = YES;
+                _responseResolved = YES;
                 CFIndex statusCode = CFHTTPMessageGetResponseStatusCode(message);
                 CFRelease(message);
                 if (statusCode != 200) {
                     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                           @"status code not 200", @"ErrorMessage", nil];
-                    networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:10004 userInfo:dict];
-                    compeleted = YES;
+                    _networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:10004 userInfo:dict];
+                    _compeleted = YES;
                     [self stopTimer];
                     [self closeInputStream];
-                    dispatch_semaphore_signal(sem);
+                    dispatch_semaphore_signal(_sem);
                     return;
                 }
                 HttpdnsLogDebug("Response code 200.");
@@ -287,13 +316,13 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
             UInt8 buffer[16 * 1024];
             NSInteger numBytesRead = 0;
             // Read data
-            if (!resultData) {
-                resultData = [NSMutableData data];
+            if (!_resultData) {
+                _resultData = [NSMutableData data];
             }
             do {
-                numBytesRead = [inputStream read:buffer maxLength:sizeof(buffer)];
+                numBytesRead = [_inputStream read:buffer maxLength:sizeof(buffer)];
                 if (numBytesRead > 0) {
-                    [resultData appendBytes:buffer length:numBytesRead];
+                    [_resultData appendBytes:buffer length:numBytesRead];
                 }
             } while (numBytesRead > 0);
         }
@@ -302,17 +331,58 @@ NSString * const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
         {
             NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                   [NSString stringWithFormat:@"read stream error: %@", [aStream streamError].userInfo], @"ErrorMessage", nil];
-            networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:10006 userInfo:dict];
+            _networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:ALICLOUD_HTTPDNS_HTTP_STREAM_READ_ERROR_CODE userInfo:dict];
         }
         case NSStreamEventEndEncountered:
             [self stopTimer];
             [self closeInputStream];
-            compeleted = YES;
-            dispatch_semaphore_signal(sem);
+            _compeleted = YES;
+            dispatch_semaphore_signal(_sem);
             break;
         default:
             break;
     }
 }
 
+- (HttpdnsRequestScheduler *)requestScheduler {
+    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+    return sharedService.requestScheduler;
+}
+
+#pragma mark - NSURLSessionTaskDelegate
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *_Nullable))completionHandler {
+    if (!challenge) {
+        return;
+    }
+    NSURLSessionAuthChallengeDisposition disposition = NSURLSessionAuthChallengePerformDefaultHandling;
+    NSURLCredential *credential = nil;
+    NSString *host = ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED;
+    if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
+        if ([self evaluateServerTrust:challenge.protectionSpace.serverTrust forDomain:host]) {
+            disposition = NSURLSessionAuthChallengeUseCredential;
+            credential = [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust];
+        } else {
+            disposition = NSURLSessionAuthChallengePerformDefaultHandling;
+        }
+    } else {
+        disposition = NSURLSessionAuthChallengePerformDefaultHandling;
+    }
+    completionHandler(disposition, credential);
+}
+
+- (BOOL)evaluateServerTrust:(SecTrustRef)serverTrust
+                  forDomain:(NSString *)domain {
+    NSMutableArray *policies = [NSMutableArray array];
+    if (domain) {
+        [policies addObject:(__bridge_transfer id) SecPolicyCreateSSL(true, (__bridge CFStringRef) domain)];
+    } else {
+        [policies addObject:(__bridge_transfer id) SecPolicyCreateBasicX509()];
+    }
+    SecTrustSetPolicies(serverTrust, (__bridge CFArrayRef) policies);
+    SecTrustResultType result;
+    SecTrustEvaluate(serverTrust, &result);
+    return (result == kSecTrustResultUnspecified || result == kSecTrustResultProceed);
+}
+
 @end
+

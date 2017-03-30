@@ -18,14 +18,19 @@
  */
 
 #import "HttpdnsServiceProvider.h"
+#import "HttpdnsRequestScheduler_Internal.h"
 
 @interface HttpDnsService()
+
+@property (nonatomic, strong) HttpdnsRequestScheduler *requestScheduler;
 
 - (NSString *)getIpByHost:(NSString *)host;
 
 - (NSArray *)getIpsByHost:(NSString *)host;
 
 - (NSString *)getIpByHostInURLFormat:(NSString *)host;
+
++ (void)statIfNeeded;
 
 @end
 
