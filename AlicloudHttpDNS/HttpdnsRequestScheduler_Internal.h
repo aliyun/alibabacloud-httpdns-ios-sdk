@@ -22,11 +22,11 @@
 @interface HttpdnsRequestTestHelper : NSObject
 
 - (void)setFirstIPWrongForTest;
-
 - (void)shortResetActivatedIPTimeForTest;
 - (void)setTwoFirstIPWrongForTest;
 - (void)setFourFirstIPWrongForTest;
 - (void)zeroSnifferTimeForTest;
+- (void)setFourLastIPWrongForTest;
 
 @end
 

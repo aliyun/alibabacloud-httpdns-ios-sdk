@@ -240,6 +240,11 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
     }
 }
 
+/*!
+ * 用户访问引发的嗅探超时的情况，和重试引起的主动嗅探都会访问该方法，但是主动嗅探场景会在 `-[setServerDisable:]` 里直接返回。
+ *
+ if (_serverDisable == serverDisable) { return; }
+ */
 - (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     dispatch_async(_syncDispatchQueue, ^{
         BOOL isTimeoutError = [self isTimeoutError:error isHTTPS:HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED];
@@ -294,9 +299,11 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
      */
     
     HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
-    NSInteger newActivatedServerIPIndex = activatedServerIPIndex + hasRetryedCount;
+    NSInteger newActivatedServerIPIndex = [self nextServerIPIndexFromIPIndex:activatedServerIPIndex increase:hasRetryedCount];
     
-    if (sync && !self.isServerDisable) {
+    BOOL shouldRetry = !self.isServerDisable;
+    
+    if (sync && shouldRetry) {
         NSError *error;
         HttpdnsLogDebug("Sync request for %@ starts.", host);
         HttpdnsHostObject *result = [request lookupHostFromServer:host
@@ -329,7 +336,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
                                            activatedServerIPIndex:newActivatedServerIPIndex];
         if (error) {
             HttpdnsLogDebug("Async request for %@ error: %@", host, error);
-            BOOL shouldRetry = !self.isServerDisable;
+            
             if (shouldRetry) {
                 [self executeRequest:host
                        synchronously:NO
@@ -496,7 +503,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
         return YES;
     }
     NSTimeInterval timeInterval = [[NSDate date] timeIntervalSinceDate:self.lastServerDisableDate];
-    BOOL isAbleToSniffer = timeInterval > ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL;
+    BOOL isAbleToSniffer = (timeInterval > ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL);
     return isAbleToSniffer;
 }
 
@@ -632,6 +639,16 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
                                         @"192.192.192.192",
                                         @"193.193.193.193",
                                         ALICLOUD_HTTPDNS_SERVER_IP_4,
+                                        ];
+}
+
+- (void)setFourLastIPWrongForTest {
+    ALICLOUD_HTTPDNS_SERVER_IP_LIST = @[
+                                        ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED,
+                                        @"191.191.191.191",
+                                        @"192.192.192.192",
+                                        @"193.193.193.193",
+                                        @"194.194.194.194",
                                         ];
 }
 
