@@ -452,4 +452,55 @@
     });
 }
 
+/*!
+ * 最初的IP index非0的情况下，并发访问
+ 
+ 0 right
+ 1 wrong <--start IP
+ 2 wrong
+ 3 wrong
+ 4 wrong
+ */
+- (void)testComplicatedlyAccessSameLastFourWrongHostIP {
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
+    
+    NSString *hostName = @"www.taobao.com";
+    HttpDnsService *service = [HttpDnsService sharedInstance];
+    HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
+    [requestScheduler setServerDisable:NO host:hostName];
+    requestScheduler.activatedServerIPIndex = 1;
+    [requestScheduler.testHelper zeroSnifferTimeForTest];
+    
+    [requestScheduler.testHelper setFourLastIPWrongForTest];
+    NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
+    
+    dispatch_queue_t concurrentQueue =
+    dispatch_queue_create("com.ConcurrentQueue",
+                          DISPATCH_QUEUE_CONCURRENT);
+    for (int i = 0; i < 5; i++) {
+        dispatch_async(concurrentQueue, ^{
+            //三次 = 两次重试 + 一次嗅探
+            [service getIpByHost:hostName];
+            sleep(customizedTimeoutInterval);
+            
+            //嗅探
+            [service getIpByHost:hostName];
+            sleep(customizedTimeoutInterval);
+            
+        });
+    }
+    dispatch_barrier_sync(concurrentQueue, ^{
+        XCTAssert([requestScheduler isServerDisable]);
+        
+        //嗅探正确的IP，但先返回nil。
+        XCTAssertNil([service getIpByHost:hostName]);
+        sleep(customizedTimeoutInterval);
+
+        //已经切到正确的IP
+        XCTAssert(![requestScheduler isServerDisable]);
+        XCTAssertNotNil([service getIpByHost:hostName]);
+        XCTAssertEqual(requestScheduler.activatedServerIPIndex, 0);
+    });
+}
+
 @end
