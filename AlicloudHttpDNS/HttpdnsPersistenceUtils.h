@@ -23,9 +23,13 @@
 
 + (NSString *)disableStatusPath;
 + (NSString *)activatedIPIndexPath;
++ (NSString *)scheduleCenterResultPath;
++ (NSString *)needFetchFromScheduleCenterStatusPatch;
 
++ (NSTimeInterval)timeSinceCreateForPath:(NSString *)patch;
 + (BOOL)saveJSON:(id)JSON toPath:(NSString *)path;
-+ (id)getJSONFromPath:(NSString *)path;
++ (id)getJSONFromDirectory:(NSString *)directory fileName:(NSString *)fileName;
++ (id)getJSONFromDirectory:(NSString *)directory fileName:(NSString *)fileName timeout:(NSTimeInterval)timeoutInterval;
 
 +(BOOL)removeFile:(NSString *)path;
 +(BOOL)fileExist:(NSString *)path;
