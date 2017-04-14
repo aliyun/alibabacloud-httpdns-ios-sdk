@@ -73,7 +73,6 @@ static NSURLSession *_scheduleCenterSession = nil;
 - (NSString *)constructRequestURLWithHostIndex:(NSInteger)hostIndex {
     NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    //FIXME:应该是https:
     NSString *url = [NSString stringWithFormat:@"https://%@/%@?account_id=%@&platform=ios&sdk_version=%@",
                      serverIpOrHost, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_PATH, @(sharedService.accountID), HTTPDNS_IOS_SDK_VERSION];
     return url;
