@@ -27,15 +27,18 @@
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsRequestScheduler.h"
+#import "HttpdnsScheduleCenter.h"
 
 NSInteger const ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE = 10005;
 NSInteger const ALICLOUD_HTTPDNS_HTTP_STREAM_READ_ERROR_CODE = 10006;
 NSInteger const ALICLOUD_HTTPDNS_HTTPS_TIMEOUT_ERROR_CODE = -1001;
+NSInteger const ALICLOUD_HTTPDNS_HTTP_CANNOT_CONNECT_SERVER_ERROR_CODE = -1004;
+NSInteger const ALICLOUD_HTTPDNS_HTTP_USER_LEVEL_CHANGED_ERROR_CODE = 403;
 
 NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_KEY = @"activated_IP_index_key";
 NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_CACHE_FILE_NAME = @"activated_IP_index";
 
-static NSURLSession *_session = nil;
+static NSURLSession *_resolveHOSTSession = nil;
 
 @interface HttpdnsRequest () <NSStreamDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
 @end
@@ -105,13 +108,14 @@ static NSURLSession *_session = nil;
 }
 
 -(NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
-    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    NSString *serverIp = [sharedService.requestScheduler getActivatedServerIPWithIndex:activatedServerIPIndex];
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    NSString *serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
 
     // Adapt to IPv6-only network.
     if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
         serverIp = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:serverIp]];
     }
+    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
     NSString *port = HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED ? ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT : ALICLOUD_HTTPDNS_HTTP_SERVER_PORT;
     NSString *url = [NSString stringWithFormat:@"%@:%@/%d/d?host=%@",
                      serverIp, port, sharedService.accountID, hostsString];
@@ -119,7 +123,8 @@ static NSURLSession *_session = nil;
 }
 
 -(HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error {
-   return [self lookupHostFromServer:hostString error:error activatedServerIPIndex:self.requestScheduler.activatedServerIPIndex];
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+   return [self lookupHostFromServer:hostString error:error activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
 }
 
 -(HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
@@ -146,7 +151,7 @@ static NSURLSession *_session = nil;
                                                        timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
     __block NSDictionary *json = nil;
     __block NSError *errorStrong = nil;
-    NSURLSessionTask *task = [_session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+    NSURLSessionTask *task = [_resolveHOSTSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if (error) {
             HttpdnsLogDebug("Network error: %@", error);
             errorStrong = error;
@@ -303,8 +308,15 @@ static NSURLSession *_session = nil;
                 CFIndex statusCode = CFHTTPMessageGetResponseStatusCode(message);
                 CFRelease(message);
                 if (statusCode != 200) {
+                    //403错误需要强制更新SC
+                    NSString *errorMessage;
+                    if (statusCode == 403) {
+                        errorMessage = @"ServiceLevelDeny";
+                    } else {
+                        errorMessage = @"status code not 200";
+                    }
                     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                          @"status code not 200", @"ErrorMessage", nil];
+                                          errorMessage, @"ErrorMessage", nil];
                     _networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:10004 userInfo:dict];
                     _compeleted = YES;
                     [self stopTimer];

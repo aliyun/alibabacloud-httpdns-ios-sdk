@@ -17,9 +17,9 @@
  * under the License.
  */
 
+#import "HttpdnsRequestScheduler.h"
 #import "HttpdnsModel.h"
 #import "HttpdnsRequest.h"
-#import "HttpdnsRequestScheduler.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
@@ -27,6 +27,7 @@
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsServiceProvider_Internal.h"
+#import "HttpdnsScheduleCenter.h"
 
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS = @"disable_status_key";
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME = @"disable_status";
@@ -40,11 +41,7 @@ NSString *const ALICLOUD_HTTPDNS_HTTP_SERVER_PORT = @"80";
 NSString *const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 
 NSArray *ALICLOUD_HTTPDNS_SERVER_IP_LIST = nil;
-NSInteger ALICLOUD_HTTPDNS_RESET_ACTIVATED_SERVER_IP_TIME_HOURS = 0;
-/**
- * Disable状态开始30秒后可以进行“嗅探”行为
- */
-static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL = 0;
+NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0;
 
 @interface HttpdnsRequestScheduler()
 
@@ -55,10 +52,6 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 @property (nonatomic, strong) NSDate *lastServerDisableDate;
 @property (nonatomic, strong) dispatch_queue_t cacheQueue;
 @property (nonatomic, copy) NSString *disableStatusPath;
-@property (nonatomic, strong) dispatch_queue_t cacheActivatedServerIPStatusQueue;
-@property (nonatomic, copy) NSString *activatedIPIndexPath;
-
-
 @end
 
 @implementation HttpdnsRequestScheduler {
@@ -69,11 +62,13 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
     dispatch_queue_t _syncDispatchQueue;
     NSOperationQueue *_asyncOperationQueue;
 }
-@synthesize activatedServerIPIndex = _activatedServerIPIndex;
+
++(void)initialize {
+    [self configureServerIPsAndResetActivatedIPTime];
+}
 
 - (instancetype)init {
     if (self = [super init]) {
-        [[self class] configureServerIPsAndResetActivatedIPTime];
         _lastNetworkStatus = 0;
         _isExpiredIPEnabled = NO;
         _isPreResolveAfterNetworkChangedEnabled = NO;
@@ -88,8 +83,6 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
                                                      name:ALICLOUD_NETWOEK_STATUS_NOTIFY
                                                    object:nil];
         [self initServerDisableStatus];
-        _activatedServerIPIndex = 0;
-        [self initActivatedServerIPIndex];
         _testHelper = [[HttpdnsRequestTestHelper alloc] init];
     }
     return self;
@@ -98,46 +91,17 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 + (void)configureServerIPsAndResetActivatedIPTime {
     ALICLOUD_HTTPDNS_SERVER_IP_LIST = @[
                                         ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED,
-                                        ALICLOUD_HTTPDNS_SERVER_IP_1,
-                                        ALICLOUD_HTTPDNS_SERVER_IP_2,
-                                        ALICLOUD_HTTPDNS_SERVER_IP_3,
-                                        ALICLOUD_HTTPDNS_SERVER_IP_4
                                         ];
-    ALICLOUD_HTTPDNS_RESET_ACTIVATED_SERVER_IP_TIME_HOURS = 2;
-    ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL = 30;
+    ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL = 30; // 30 second
+    ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 1 * 24 * 60 * 60; // one day
 }
 
-- (void)initActivatedServerIPIndex {
-    dispatch_async(self.cacheActivatedServerIPStatusQueue, ^{
-        NSInteger oldServerIPIndex = _activatedServerIPIndex;
-        [HttpdnsPersistenceUtils deleteFilesInDirectory:[HttpdnsPersistenceUtils activatedIPIndexPath] moreThanHours:ALICLOUD_HTTPDNS_RESET_ACTIVATED_SERVER_IP_TIME_HOURS];
-        BOOL isfileExist = [HttpdnsPersistenceUtils fileExist:self.activatedIPIndexPath];
-        if (!isfileExist) {
-            return;
-        }
-        NSDictionary *json = [HttpdnsPersistenceUtils getJSONFromPath:self.activatedIPIndexPath];
-        if (!json) {
-            return;
-        }
-        
-        @try {
-            _activatedServerIPIndex = [json[ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_KEY] integerValue];
-        } @catch (NSException *exception) {}
-        
-        if (_activatedServerIPIndex != oldServerIPIndex) {
-            HttpdnsLogDebug("HTTPDNS activated IP changed");
-        }
-    });
-}
 
 - (void)initServerDisableStatus {
     dispatch_async(self.cacheQueue, ^{
-        [HttpdnsPersistenceUtils deleteFilesInDirectory:[HttpdnsPersistenceUtils disableStatusPath] moreThanDays:1];
-        BOOL isfileExist = [HttpdnsPersistenceUtils fileExist:self.disableStatusPath];
-        if (!isfileExist) {
-            return;
-        }
-        NSDictionary *json = [HttpdnsPersistenceUtils getJSONFromPath:self.disableStatusPath];
+        NSDictionary *json = [HttpdnsPersistenceUtils getJSONFromDirectory:[HttpdnsPersistenceUtils disableStatusPath]
+                                                                  fileName:ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME
+                                                                   timeout:ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL];
         if (!json) {
             //本地无缓存，常见于第一次安装，或者未发生过 DNS 故障。
             return;
@@ -155,6 +119,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 
 - (void)addPreResolveHosts:(NSArray *)hosts {
     dispatch_async(_syncDispatchQueue, ^{
+        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
         for (NSString *hostName in hosts) {
             if ([self isHostsNumberLimitReached]) {
                 break;
@@ -163,13 +128,13 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
             if (hostObject) {
                 if ([hostObject isExpired] && ![hostObject isQuerying]) {
                     HttpdnsLogDebug("%@ is expired, pre fetch again.", hostName);
-                    [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:self.activatedServerIPIndex];
+                    [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
                 } else {
                     HttpdnsLogDebug(@"%@ is omitted, expired: %d querying: %d", hostName, [hostObject isExpired], [hostObject isQuerying]);
                     continue;
                 }
             } else {
-                [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:self.activatedServerIPIndex];
+                [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
                 HttpdnsLogDebug("Pre resolve host %@ by async lookup.", hostName);
             }
         }
@@ -179,6 +144,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 - (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync {
     __block HttpdnsHostObject *result = nil;
     __block BOOL needToQuery = NO;
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     dispatch_sync(_syncDispatchQueue, ^{
         result = [_hostManagerDict objectForKey:host];
         HttpdnsLogDebug(@"Get from cache: %@", result);
@@ -194,7 +160,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
                 needToQuery = NO;
                 if (![result isQuerying]) {
                     [result setQueryingState:YES];
-                    [self executeRequest:host synchronously:NO retryCount:0 activatedServerIPIndex:self.activatedServerIPIndex];
+                    [self executeRequest:host synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
                 }
             } else {
                 HttpdnsLogDebug("Expired IP is not accepted.");
@@ -208,8 +174,8 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
         }
     });
     if (needToQuery) {
-        if (sync) return [self executeRequest:host synchronously:YES retryCount:0 activatedServerIPIndex:self.activatedServerIPIndex];
-        else [self executeRequest:host synchronously:NO retryCount:0 activatedServerIPIndex:self.activatedServerIPIndex];
+        if (sync) return [self executeRequest:host synchronously:YES retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
+        else [self executeRequest:host synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
     }
     return result;
 }
@@ -246,13 +212,24 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
  if (_serverDisable == serverDisable) { return; }
  */
 - (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
-    dispatch_async(_syncDispatchQueue, ^{
-        BOOL isTimeoutError = [self isTimeoutError:error isHTTPS:HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED];
-        if (isRetry && isTimeoutError) {
-            [self setServerDisable:YES host:host activatedServerIPIndex:activatedServerIPIndex];
-        }
-        [self mergeLookupResultToManager:nil forHost:host];
-    });
+    NSDictionary *userInfo = error.userInfo;
+    //403错误强制更新，不触发disable机制。
+    BOOL isServiceLevelDeny;
+    @try {
+        NSString *errorMessage = userInfo[@"ErrorMessage"];
+        isServiceLevelDeny = [errorMessage isEqualToString:@"ServiceLevelDeny"];
+    } @catch (NSException *exception) {}
+    if (isServiceLevelDeny) {
+        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+        [scheduleCenter forceUpdateIpListAsync];
+        return;
+    }
+    
+    BOOL isTimeoutError = [self isTimeoutError:error isHTTPS:HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED];
+    if (isRetry && isTimeoutError) {
+        [self setServerDisable:YES host:host activatedServerIPIndex:activatedServerIPIndex];
+    }
+    [self mergeLookupResultToManager:nil forHost:host];
 }
 
 - (HttpdnsHostObject *)executeRequest:(NSString *)host
@@ -267,6 +244,10 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
                            retryCount:(int)hasRetryedCount
                activatedServerIPIndex:(NSInteger)activatedServerIPIndex
                                 error:(NSError *)error {
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    if (scheduleCenter.isStopService) {
+        return nil;
+    }
     BOOL isRetry = NO;
     if (hasRetryedCount == 0) {
         error = nil;
@@ -299,7 +280,8 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
      */
     
     HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
-    NSInteger newActivatedServerIPIndex = [self nextServerIPIndexFromIPIndex:activatedServerIPIndex increase:hasRetryedCount];
+
+    NSInteger newActivatedServerIPIndex = [scheduleCenter nextServerIPIndexFromIPIndex:activatedServerIPIndex increase:hasRetryedCount];
     
     BOOL shouldRetry = !self.isServerDisable;
     
@@ -420,7 +402,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 }
 
 - (void)snifferIfNeededWithHost:(NSString *)host activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
-    if (!self.serverDisable) {
+    if (!_serverDisable) {
         return;
     }
     [self executeRequest:host synchronously:NO retryCount:0 activatedServerIPIndex:activatedServerIPIndex];
@@ -440,36 +422,27 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
         } else {
             _lastServerDisableDate = [NSDate date];
         }
-        
-        if (_serverDisable == serverDisable) {
-            return;
-        }
-        _serverDisable = serverDisable;
-        if (!_serverDisable) {
-            [HttpdnsPersistenceUtils removeFile:self.disableStatusPath];
-            return;
-        }
-        NSDictionary *json = @{
-                               ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS : @(serverDisable)
-                               };
-        BOOL success = [HttpdnsPersistenceUtils saveJSON:json toPath:self.disableStatusPath];
-        HttpdnsLogDebug(@"HTTPDNS disable status changes %@", success ? @"succeeded" : @"failed");
     });
-    
-    if (serverDisable) {
-        [_asyncOperationQueue cancelAllOperations];
-        NSInteger snifferServerIPIndex = [self nextServerIPIndexFromIPIndex:activatedServerIPIndex increase:2];
-        [self snifferIfNeededWithHost:host activatedServerIPIndex:snifferServerIPIndex];
-        HttpdnsLogDebug("HTTPDNS is disabled");
+    if (_serverDisable == serverDisable) {
+        return;
     }
-}
-
-- (BOOL)isServerDisable {
-    __block BOOL isServerDisable = NO;
-    dispatch_sync(self.cacheQueue, ^{
-        isServerDisable = _serverDisable;
-    });
-    return isServerDisable;
+    _serverDisable = serverDisable;
+    if (!serverDisable) {
+        [HttpdnsPersistenceUtils removeFile:self.disableStatusPath];
+        return;
+    }
+    NSDictionary *json = @{
+                           ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS : @(serverDisable)
+                           };
+    BOOL success = [HttpdnsPersistenceUtils saveJSON:json toPath:self.disableStatusPath];
+    HttpdnsLogDebug(@"HTTPDNS disable status changes %@", success ? @"succeeded" : @"failed");
+    if (serverDisable) {
+        HttpdnsLogDebug("HTTPDNS is disabled");
+        [_asyncOperationQueue cancelAllOperations];
+        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+        NSInteger snifferServerIPIndex = [scheduleCenter nextServerIPIndexFromIPIndex:activatedServerIPIndex increase:2];
+        [self snifferIfNeededWithHost:host activatedServerIPIndex:snifferServerIPIndex];
+    }
 }
 
 - (NSDate *)lastServerDisableDate {
@@ -498,162 +471,55 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
  * 可以进行嗅探行为，也即：异步请求服务端解析 DNS，且不执行重试逻辑。
  */
 - (BOOL)isAbleToSniffer {
+    //如果正在与SC进行同步，停止更新。
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    if (scheduleCenter.isConnectingWithScheduleCenter) {
+        return NO;
+    }
     //需要考虑首次启动，值恒为nil，或者网络正常情况下。
     if (!self.lastServerDisableDate) {
         return YES;
     }
     NSTimeInterval timeInterval = [[NSDate date] timeIntervalSinceDate:self.lastServerDisableDate];
-    BOOL isAbleToSniffer = (timeInterval > ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL);
+    BOOL isAbleToSniffer = (timeInterval > ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL);    
     return isAbleToSniffer;
 }
 
 - (BOOL)isDisableToServer {
-    if (self.isServerDisable && !self.isAbleToSniffer) {
+    if (_serverDisable && !self.isAbleToSniffer) {
         return YES;
     }
     return NO;
 }
 
-- (void)changeToNextServerIPIndexFromIPIndex:(NSInteger)IPIndex {
-    NSInteger nextServerIPIndex = [self nextServerIPIndexFromIPIndex:IPIndex increase:1];
-    self.activatedServerIPIndex = nextServerIPIndex;
-}
-
-- (NSString *)getActivatedServerIPWithIndex:(NSInteger)index {
-    NSString *serverIP = nil;
-    @try {
-        serverIP = ALICLOUD_HTTPDNS_SERVER_IP_LIST[index];
-    } @catch (NSException *exception) {
-        self.activatedIPIndexPath = 0;
-        serverIP = ALICLOUD_HTTPDNS_SERVER_IP_LIST[0];
-    }
-    return serverIP;
-}
-
-- (NSInteger)nextServerIPIndexFromIPIndex:(NSInteger)IPIndex increase:(NSInteger)increase {
-    NSInteger nextServerIPIndex = ((IPIndex + increase) % ALICLOUD_HTTPDNS_SERVER_IP_LIST.count);
-    return nextServerIPIndex;
-}
-
-- (void)setActivatedServerIPIndex:(NSInteger)activatedServerIPIndex {
-    dispatch_async(self.cacheActivatedServerIPStatusQueue, ^{
-        if (_activatedServerIPIndex == activatedServerIPIndex) {
-            return;
-        }
-        _activatedServerIPIndex = activatedServerIPIndex;
-        
-        if (activatedServerIPIndex == 0) {
-            [HttpdnsPersistenceUtils removeFile:self.activatedIPIndexPath];
-            return;
-        }
-        
-        NSDictionary *json = @{
-                               ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_KEY : @(activatedServerIPIndex)
-                               };
-        BOOL success = [HttpdnsPersistenceUtils saveJSON:json toPath:self.activatedIPIndexPath];
-        HttpdnsLogDebug(@"HTTPDNS activated IP changes %@, index is %@", success ? @"succeeded" : @"failed", @(activatedServerIPIndex));
-    });
-}
-
-- (NSInteger)activatedServerIPIndex {
-    __block NSInteger activatedServerIPIndex = 0;
-    dispatch_sync(self.cacheActivatedServerIPStatusQueue, ^{
-        activatedServerIPIndex = _activatedServerIPIndex;
-    });
-    return activatedServerIPIndex;
-}
-
-- (dispatch_queue_t)cacheActivatedServerIPStatusQueue {
-    if (!_cacheActivatedServerIPStatusQueue) {
-        _cacheActivatedServerIPStatusQueue =
-        dispatch_queue_create("com.alibaba.sdk.httpdns.cacheActivatedServerIPStatusQueue", DISPATCH_QUEUE_SERIAL);
-    }
-    return _cacheActivatedServerIPStatusQueue;
-}
-
-#pragma mark -
-#pragma mark - Activated IP Index Method
-
-
-- (NSString *)activatedIPIndexPath {
-    if (_activatedIPIndexPath) {
-        return _activatedIPIndexPath;
-    }
-    NSString *fileName = ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_CACHE_FILE_NAME;
-    NSString *fullPath = [[HttpdnsPersistenceUtils activatedIPIndexPath] stringByAppendingPathComponent:fileName];
-    _activatedIPIndexPath = fullPath;
-    return _activatedIPIndexPath;
-}
-
 - (void)changeToNextServerIPIfNeededWithError:(NSError *)error
                                   fromIPIndex:(NSInteger)IPIndex
                                       isHTTPS:(BOOL)isHTTPS {
-    //异步嗅探时是10006错误，重试时是10005错误
     if (!error) {
         return;
     }
     
     BOOL shouldChange = [self isTimeoutError:error isHTTPS:isHTTPS];
     if (shouldChange) {
-        [self changeToNextServerIPIndexFromIPIndex:IPIndex];
+        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+        [scheduleCenter changeToNextServerIPIndexFromIPIndex:IPIndex];
     }
 }
 
 - (BOOL)isTimeoutError:(NSError *)error isHTTPS:(BOOL)isHTTPS {
+    //异步嗅探时是10006错误，重试时是10005错误
+    //IPv6环境下，如果连接错误的域名，可能会有-1004错误
+    BOOL canNotConnectServer = ALICLOUD_HTTPDNS_HTTP_CANNOT_CONNECT_SERVER_ERROR_CODE;
     BOOL isTimeout = (isHTTPS && (error.code == ALICLOUD_HTTPDNS_HTTPS_TIMEOUT_ERROR_CODE)) || (!isHTTPS && ((error.code == ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE) || (error.code == ALICLOUD_HTTPDNS_HTTP_STREAM_READ_ERROR_CODE)));
-    return isTimeout;
+    return isTimeout || canNotConnectServer;
 }
 
 @end
 
 @implementation HttpdnsRequestTestHelper
 
-- (void)setFirstIPWrongForTest {
-    ALICLOUD_HTTPDNS_SERVER_IP_LIST = @[
-                                        @"190.190.190.190",
-                                        ALICLOUD_HTTPDNS_SERVER_IP_1,
-                                        ALICLOUD_HTTPDNS_SERVER_IP_2,
-                                        ALICLOUD_HTTPDNS_SERVER_IP_3,
-                                        ALICLOUD_HTTPDNS_SERVER_IP_4
-                                        ];
-}
-
-- (void)shortResetActivatedIPTimeForTest {
-    ALICLOUD_HTTPDNS_RESET_ACTIVATED_SERVER_IP_TIME_HOURS = 1/3600;  /**< 1秒 */
-}
-
-- (void)setTwoFirstIPWrongForTest {
-    ALICLOUD_HTTPDNS_SERVER_IP_LIST = @[
-                                        @"190.190.190.190",
-                                        @"191.191.191.191",
-                                        ALICLOUD_HTTPDNS_SERVER_IP_2,
-                                        ALICLOUD_HTTPDNS_SERVER_IP_3,
-                                        ALICLOUD_HTTPDNS_SERVER_IP_4
-                                        ];
-}
-
-- (void)setFourFirstIPWrongForTest {
-    ALICLOUD_HTTPDNS_SERVER_IP_LIST = @[
-                                        @"190.190.190.190",
-                                        @"191.191.191.191",
-                                        @"192.192.192.192",
-                                        @"193.193.193.193",
-                                        ALICLOUD_HTTPDNS_SERVER_IP_4,
-                                        ];
-}
-
-- (void)setFourLastIPWrongForTest {
-    ALICLOUD_HTTPDNS_SERVER_IP_LIST = @[
-                                        ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED,
-                                        @"191.191.191.191",
-                                        @"192.192.192.192",
-                                        @"193.193.193.193",
-                                        @"194.194.194.194",
-                                        ];
-}
-
-- (void)zeroSnifferTimeForTest {
-    ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL = 0;  /**< 1秒 */
++ (void)zeroSnifferTimeForTest {
+    ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL = 0;  /**< 0秒 */
 }
 
 @end
