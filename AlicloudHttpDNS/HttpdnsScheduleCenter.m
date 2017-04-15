@@ -173,10 +173,8 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
         
         HttpdnsScheduleCenterRequest *scheduleCenterRequest = [HttpdnsScheduleCenterRequest new];
         NSDictionary *queryScheduleCenterRecord = [scheduleCenterRequest queryScheduleCenterRecordFromServerSync];
-//        dispatch_async(dispatch_get_main_queue(),^{
-            !callback ?: callback(queryScheduleCenterRecord);
-            self.connectingWithScheduleCenter = NO;
-//        });
+        !callback ?: callback(queryScheduleCenterRecord);
+        self.connectingWithScheduleCenter = NO;
     });
 }
 
@@ -266,7 +264,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
                                                    ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2,
                                                    ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
                                                    ];
-
+    
 }
 
 - (void)initActivatedServerIPIndex {

@@ -11,6 +11,8 @@
 
 #define NOTIFY [self notify:XCTAsyncTestCaseStatusSucceeded];
 #define WAIT [self waitForStatus:XCTAsyncTestCaseStatusSucceeded timeout:30];
+#define WAIT_60 [self waitForStatus:XCTAsyncTestCaseStatusSucceeded timeout:60];
+#define WAIT_120 [self waitForStatus:XCTAsyncTestCaseStatusSucceeded timeout:120];
 #define WAIT_10 [self waitForStatus:XCTAsyncTestCaseStatusSucceeded timeout:10.0];
 #define WAIT_FOREVER [self waitForStatus:XCTAsyncTestCaseStatusSucceeded timeout:DBL_MAX];
 
