@@ -10,7 +10,7 @@
 #import "HttpdnsConstants.h"
 #import "HttpdnsScheduleCenter_Internal.h"
 #import "HttpdnsRequestScheduler_Internal.h"
-//#import "HttpdnsPersistenceUtils.h"
+#import "HttpdnsPersistenceUtils.h"
 
 @implementation ScheduleCenterTestHelper
 
@@ -108,19 +108,7 @@
 
 + (NSTimeInterval)timeSinceCreateForScheduleCenterResult  {
     NSString *path = [[HttpdnsScheduleCenter sharedInstance] scheduleCenterResultPath];
-    return [self timeSinceCreateForPath:path];
-}
-
-+ (NSTimeInterval)timeSinceCreateForPath:(NSString *)patch {
-    NSDate *nowDate = [NSDate date];
-    NSDate *lastModified = [self lastModified:patch];
-    NSTimeInterval timeSinceCreate = [nowDate timeIntervalSinceDate:lastModified];
-    return timeSinceCreate;
-}
-
-+ (NSDate *)lastModified:(NSString *)fullPath {
-    NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:fullPath error:NULL];
-    return [fileAttributes fileModificationDate];
+    return [HttpdnsPersistenceUtils timeSinceCreateForPath:path];
 }
 
 @end

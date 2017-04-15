@@ -82,7 +82,8 @@ static NSURLSession *_scheduleCenterSession = nil;
 - (NSDictionary *)queryScheduleCenterRecordFromServerWithHostIndex:(NSInteger)hostIndex error:(NSError **)pError {
     NSString *fullUrlStr = [self constructRequestURLWithHostIndex:hostIndex];
     HttpdnsLogDebug("Request URL: %@", fullUrlStr);
-    if (!_scheduleCenterSession) {
+    if (!_scheduleCenterSession
+        ) {
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
         _scheduleCenterSession = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
     }

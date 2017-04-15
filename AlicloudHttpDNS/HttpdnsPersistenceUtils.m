@@ -189,10 +189,14 @@ static NSString *const ALICLOUD_HTTPDNS_ROOT_DIR_NAME = @"HTTPDNS";
     return success;
 }
 
-// assume the file is exist
 + (NSDate *)lastModified:(NSString *)fullPath {
     NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:fullPath error:NULL];
-    return [fileAttributes fileModificationDate];
+   NSDate *lastModified = [fileAttributes fileModificationDate];
+    // assume the file is exist
+    if (!lastModified) {
+        lastModified = [NSDate distantFuture];
+    }
+    return lastModified;
 }
 
 + (NSTimeInterval)timeSinceCreateForPath:(NSString *)patch {
