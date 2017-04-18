@@ -47,7 +47,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 @property (nonatomic, strong) dispatch_queue_t connectToScheduleCenterQueue;
 @property (nonatomic, strong) dispatch_queue_t needToFetchFromScheduleCenterQueue;
 @property (nonatomic, strong) dispatch_queue_t cacheActivatedServerIPStatusQueue;
-
+@property (nonatomic, strong) dispatch_queue_t changeServerIPIndexQueue;
 @property (nonatomic, copy) NSString *activatedIPIndexPath;
 
 @property (nonatomic, strong) NSDate *lastScheduleCenterConnectDate;
@@ -116,6 +116,8 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
         _scheduleCenterResultQueue = dispatch_queue_create("com.scheduleCenterResultQueue.httpdns", DISPATCH_QUEUE_SERIAL);
         _connectToScheduleCenterQueue = dispatch_queue_create("com.connectToScheduleCenterQueue.httpdns", DISPATCH_QUEUE_SERIAL);
         _needToFetchFromScheduleCenterQueue = dispatch_queue_create("com.needToFetchFromScheduleCenterQueue.httpdns", DISPATCH_QUEUE_SERIAL);
+        _changeServerIPIndexQueue = dispatch_queue_create("com.changeServerIPIndexQueue.httpdns", DISPATCH_QUEUE_SERIAL);
+
         _activatedServerIPIndex = 0;
         [self initActivatedServerIPIndex];
         [self initScheduleCenterResultFromCache];
@@ -373,7 +375,10 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 }
 
 - (NSInteger)nextServerIPIndexFromIPIndex:(NSInteger)IPIndex increase:(NSInteger)increase {
-    NSInteger nextServerIPIndex = ((IPIndex + increase) % self.IPList.count);
+    __block NSInteger nextServerIPIndex = 0;
+    dispatch_sync(self.changeServerIPIndexQueue, ^{
+        nextServerIPIndex = ((IPIndex + increase) % self.IPList.count);
+    });
     return nextServerIPIndex;
 }
 
