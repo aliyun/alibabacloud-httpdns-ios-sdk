@@ -164,7 +164,6 @@ static NSString *const ALICLOUD_HTTPDNS_ROOT_DIR_NAME = @"HTTPDNS";
 + (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanTimeInterval:(NSTimeInterval)timeInterval {
     BOOL success = NO;
     
-//    NSDate *nowDate = [NSDate date];
     NSFileManager *fileMgr = [[NSFileManager alloc] init];
     NSError *error = nil;
     NSArray *directoryContents = [fileMgr contentsOfDirectoryAtPath:dirPath error:&error];
