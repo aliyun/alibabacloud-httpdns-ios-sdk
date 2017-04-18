@@ -454,9 +454,4 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
                                                    ];
 }
 
-//ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = @[
-//                                               ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP,
-//                                               ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2,
-//                                               ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
-//                                               ];
 @end
