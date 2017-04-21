@@ -55,7 +55,7 @@
  * 测试方法：1. 查询某个真实域名并判断是否获取了正常的返回数据；
  */
 - (void)testHTTPRequestOneHost {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
     NSString *hostName = @"www.taobao.com";
     HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
     NSError *error;
@@ -71,6 +71,8 @@
  *         2. 并发异步解析几个域名，解析成功后等待并暂停运行，通过查看日志和堆栈信息查看解析线程是否正确退出；
  */
 - (void)testSuccessHTTPRequestRunLoop {
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+
     NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
     [[HttpDnsService sharedInstance] setPreResolveHosts:array];
     [NSThread sleepForTimeInterval:60];
@@ -83,6 +85,8 @@
  *         3. 并发异步解析几个域名，解析后等待并暂停运行，通过查看日志和堆栈信息查看解析线程是否正确退出；
  */
 - (void)testFailedHTTPRequestRunLoop {
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+
     NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
     [[HttpDnsService sharedInstance] setPreResolveHosts:array];
     [NSThread sleepForTimeInterval:60];
@@ -124,7 +128,7 @@
     NSDate *startDate = [NSDate date];
     // HTTP
     startDate = [NSDate date];
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
     [HttpDnsService sharedInstance].timeoutInterval = 3;
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
     HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
@@ -223,6 +227,8 @@
     requestScheduler.activatedServerIPIndex = 0;
     
     [requestScheduler.testHelper setTwoFirstIPWrongForTest];
+    [requestScheduler.testHelper zeroSnifferTimeForTest];
+
     NSDate *startDate = [NSDate date];
     XCTAssert(![requestScheduler isServerDisable]);
     [[HttpDnsService sharedInstance] getIpByHost:hostName];
@@ -248,6 +254,7 @@
  disable降级机制功能验证
  */
 - (void)testDisable {
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
     [HttpDnsService sharedInstance].timeoutInterval = 5;
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
     
@@ -262,17 +269,23 @@
     [service getIpByHost:hostName];
     
     //重试2次+嗅探1次
-    sleep(customizedTimeoutInterval);
+    sleep(customizedTimeoutInterval + 1);
     XCTAssert([requestScheduler isServerDisable]);
     
     //第2次嗅探失败
     [service getIpByHost:hostName];
     XCTAssert([requestScheduler isServerDisable]);
-    sleep(customizedTimeoutInterval);
+    sleep(customizedTimeoutInterval + 1);
     
     //第3次嗅探成功
     [service getIpByHost:hostName];
+    sleep(customizedTimeoutInterval + 1);
     sleep(1);//正在异步更新isServerDisable状态
+    
+    //第3次嗅探成功
+    [service getIpByHost:hostName];
+    sleep(customizedTimeoutInterval + 1);
+    
     XCTAssert(![requestScheduler isServerDisable]);
     [HttpdnsRequestScheduler configureServerIPsAndResetActivatedIPTime];
 }
@@ -312,7 +325,7 @@
  * 并发嗅探，结果一致，不会导致叠加
  */
 - (void)testComplicatedlyAccessSameTwoWrongHostIP {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
     
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
@@ -321,6 +334,7 @@
     requestScheduler.activatedServerIPIndex = 0;
     
     [requestScheduler.testHelper setTwoFirstIPWrongForTest];
+    [requestScheduler.testHelper zeroSnifferTimeForTest];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
     
     dispatch_queue_t concurrentQueue =
@@ -347,7 +361,7 @@
  4 right
  */
 - (void)testComplicatedlyAccessSameFourWrongHostIP {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
     
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
@@ -388,7 +402,7 @@
  4 right
  */
 - (void)testComplicatedlyAccessSameFourWrongHostIPWithDisableStatus {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
     
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
@@ -397,6 +411,7 @@
     requestScheduler.activatedServerIPIndex = 1;
     
     [requestScheduler.testHelper setFourFirstIPWrongForTest];
+//    [requestScheduler.testHelper zeroSnifferTimeForTest];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
     
     dispatch_queue_t concurrentQueue =
@@ -412,7 +427,7 @@
     dispatch_barrier_sync(concurrentQueue, ^{
         sleep(customizedTimeoutInterval);
         XCTAssert([requestScheduler isServerDisable]);
-        XCTAssertEqual(requestScheduler.activatedServerIPIndex, 4);
+        XCTAssertEqual(requestScheduler.activatedServerIPIndex, 3);
         XCTAssertNil([service getIpByHost:hostName]);
     });
 }
