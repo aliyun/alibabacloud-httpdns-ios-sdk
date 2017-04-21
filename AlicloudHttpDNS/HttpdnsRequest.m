@@ -66,6 +66,11 @@ static NSURLSession *_resolveHOSTSession = nil;
         });
         
         [self resetRequestConfigure];
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+            _resolveHOSTSession = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
+        });
     }
     return self;
 }
@@ -145,7 +150,6 @@ static NSURLSession *_resolveHOSTSession = nil;
  activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     NSString *fullUrlStr = [NSString stringWithFormat:@"https://%@", urlStr];
     HttpdnsLogDebug("Request URL: %@", fullUrlStr);
-    
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                            cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                        timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
