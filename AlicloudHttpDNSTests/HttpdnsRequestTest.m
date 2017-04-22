@@ -71,8 +71,28 @@
  *         2. 并发异步解析几个域名，解析成功后等待并暂停运行，通过查看日志和堆栈信息查看解析线程是否正确退出；
  */
 - (void)testSuccessHTTPRequestRunLoop {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
+    NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
+    [[HttpDnsService sharedInstance] setPreResolveHosts:array];
+    [NSThread sleepForTimeInterval:60];
+}
 
+- (void)testSuccessHTTPSRequestRunLoop0 {
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
+    [[HttpDnsService sharedInstance] setPreResolveHosts:array];
+    [NSThread sleepForTimeInterval:60];
+}
+
+- (void)testSuccessHTTPSRequestRunLoop1 {
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
+    [[HttpDnsService sharedInstance] setPreResolveHosts:array];
+    [NSThread sleepForTimeInterval:60];
+}
+
+- (void)testSuccessHTTPSRequestRunLoop2 {
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
     NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
     [[HttpDnsService sharedInstance] setPreResolveHosts:array];
     [NSThread sleepForTimeInterval:60];
