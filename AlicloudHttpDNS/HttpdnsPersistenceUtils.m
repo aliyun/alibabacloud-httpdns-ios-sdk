@@ -84,7 +84,9 @@ static NSString *const ALICLOUD_HTTPDNS_ROOT_DIR_NAME = @"HTTPDNS";
 
 + (BOOL)saveJSON:(id)JSON toPath:(NSString *)path {
     if ([JSON isKindOfClass:[NSDictionary class]] || [JSON isKindOfClass:[NSArray class]]) {
-        return [NSKeyedArchiver archiveRootObject:JSON toFile:path];
+        [self removeFile:path];
+        BOOL saveSucceed = [NSKeyedArchiver archiveRootObject:JSON toFile:path];
+        return saveSucceed;
     }
     
     return NO;
@@ -111,6 +113,20 @@ static NSString *const ALICLOUD_HTTPDNS_ROOT_DIR_NAME = @"HTTPDNS";
     }
     
     return JSON;
+}
+
++ (id)getJSONFromDirectory:(NSString *)directory fileName:(NSString *)fileName {
+    NSString *fullPath = [directory stringByAppendingPathComponent:fileName];
+    BOOL isfileExist = [HttpdnsPersistenceUtils fileExist:fullPath];
+    if (!isfileExist) {
+        return nil;
+    }
+    return [self getJSONFromPath:fullPath];
+}
+
++ (id)getJSONFromDirectory:(NSString *)directory fileName:(NSString *)fileName timeout:(NSTimeInterval)timeoutInterval {
+    [HttpdnsPersistenceUtils deleteFilesInDirectory:directory moreThanTimeInterval:timeoutInterval];
+    return [self getJSONFromDirectory:directory fileName:fileName];
 }
 
 + (BOOL)removeFile:(NSString *)path {
@@ -148,15 +164,13 @@ static NSString *const ALICLOUD_HTTPDNS_ROOT_DIR_NAME = @"HTTPDNS";
 + (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanTimeInterval:(NSTimeInterval)timeInterval {
     BOOL success = NO;
     
-    NSDate *nowDate = [NSDate date];
     NSFileManager *fileMgr = [[NSFileManager alloc] init];
     NSError *error = nil;
     NSArray *directoryContents = [fileMgr contentsOfDirectoryAtPath:dirPath error:&error];
     if (error == nil) {
         for (NSString *path in directoryContents) {
             NSString *fullPath = [dirPath stringByAppendingPathComponent:path];
-            NSDate *lastModified = [HttpdnsPersistenceUtils lastModified:fullPath];
-            NSTimeInterval timeSinceCreate = [nowDate timeIntervalSinceDate:lastModified];
+            NSTimeInterval timeSinceCreate = [self timeSinceCreateForPath:fullPath];
             if (timeSinceCreate < timeInterval)
                 continue;
             
@@ -174,10 +188,21 @@ static NSString *const ALICLOUD_HTTPDNS_ROOT_DIR_NAME = @"HTTPDNS";
     return success;
 }
 
-// assume the file is exist
 + (NSDate *)lastModified:(NSString *)fullPath {
     NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:fullPath error:NULL];
-    return [fileAttributes fileModificationDate];
+   NSDate *lastModified = [fileAttributes fileModificationDate];
+    // assume the file is exist
+    if (!lastModified) {
+        lastModified = [NSDate distantFuture];
+    }
+    return lastModified;
+}
+
++ (NSTimeInterval)timeSinceCreateForPath:(NSString *)patch {
+    NSDate *nowDate = [NSDate date];
+    NSDate *lastModified = [self lastModified:patch];
+    NSTimeInterval timeSinceCreate = [nowDate timeIntervalSinceDate:lastModified];
+    return timeSinceCreate;
 }
 
 #pragma mark -  Private Documents Concrete Path
@@ -201,4 +226,15 @@ static NSString *const ALICLOUD_HTTPDNS_ROOT_DIR_NAME = @"HTTPDNS";
     return ret;
 }
 
++ (NSString *)scheduleCenterResultPath {
+    NSString *ret = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:@"scheduleCenterResult"];
+    [self createDirectoryIfNeeded:ret];
+    return ret;
+}
+
++ (NSString *)needFetchFromScheduleCenterStatusPatch {
+    NSString *ret = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:@"needFetchFromScheduleCenterStatus"];
+    [self createDirectoryIfNeeded:ret];
+    return ret;
+}
 @end

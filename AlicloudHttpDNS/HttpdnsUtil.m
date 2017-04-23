@@ -21,6 +21,7 @@
 #import "HttpdnsLog.h"
 #import "CommonCrypto/CommonCrypto.h"
 #import "arpa/inet.h"
+#import "AlicloudUtils/AlicloudUtils.h"
 
 @implementation HttpdnsUtil
 
@@ -62,4 +63,14 @@
         return NO;
     }
 }
+
++ (NSString *)getRequestHostFromString:(NSString *)string {
+    NSString *requestHost = string;
+    // Adapt to IPv6-only network.
+    if (([self isAnIP:string]) && ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork])) {
+        requestHost = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:string]];
+    }
+    return requestHost;
+}
+
 @end
