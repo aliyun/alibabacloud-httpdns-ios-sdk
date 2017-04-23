@@ -19,20 +19,23 @@
 
 #import "HttpdnsRequestScheduler.h"
 
+FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_1;
+FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_2;
+FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_3;
+FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_4;
+
 @interface HttpdnsRequestTestHelper : NSObject
 
-- (void)setFirstIPWrongForTest;
-
-- (void)shortResetActivatedIPTimeForTest;
-- (void)setTwoFirstIPWrongForTest;
-- (void)setFourFirstIPWrongForTest;
-- (void)zeroSnifferTimeForTest;
++ (void)zeroSnifferTimeForTest;
 
 @end
 
-@interface HttpdnsRequestScheduler ()
+/**
+ * Disable状态开始30秒后可以进行“嗅探”行为
+ */
+static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL = 0;
 
-@property (nonatomic, assign) NSInteger activatedServerIPIndex;
+@interface HttpdnsRequestScheduler ()
 
 - (void)setServerDisable:(BOOL)serverDisable host:(NSString *)host;
 
@@ -43,6 +46,8 @@
 @property (nonatomic, strong) HttpdnsRequestTestHelper *testHelper;
 
 + (void)configureServerIPsAndResetActivatedIPTime;
+
+- (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry activatedServerIPIndex:(NSInteger)activatedServerIPIndex;
 
 @end
 

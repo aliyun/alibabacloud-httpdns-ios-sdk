@@ -21,9 +21,13 @@
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsConfig.h"
-#import "HttpdnsRequestScheduler.h"
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsRequestScheduler_Internal.h"
+#import "HttpdnsScheduleCenter_Internal.h"
+#import "TestBase.h"
+
+//#import "RequestSchedulerTestHelper.h"
+#import "ScheduleCenterTestHelper.h"
 
 @interface HttpdnsRequestTest : XCTestCase
 
@@ -39,14 +43,18 @@
 
 - (void)setUp {
     [super setUp];
+    
     // Put setup code here. This method is called before the invocation of each test method in the class.
 }
 
 - (void)tearDown {
+    //    [ScheduleCenterTestHelper resetAutoConnectToScheduleCenter];
+    [ScheduleCenterTestHelper resetAllThreeRightForTest];
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [HttpdnsRequestScheduler configureServerIPsAndResetActivatedIPTime];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
     sleep(customizedTimeoutInterval);
+    
     [super tearDown];
 }
 
@@ -60,6 +68,8 @@
     HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
     NSError *error;
     HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
+    NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
+    sleep(customizedTimeoutInterval);
     XCTAssertNil(error);
     XCTAssertNotNil(result);
     XCTAssertNotEqual([[result getIps] count], 0);
@@ -194,10 +204,10 @@
 - (void)testIPPool {
     NSString *hostName = @"www.taobao.com";
     HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
-    HttpdnsRequestScheduler *requestScheduler =  [[HttpDnsService sharedInstance] requestScheduler];
-    
-    requestScheduler.activatedServerIPIndex = 0;
-    [requestScheduler.testHelper setFirstIPWrongForTest];
+    //    HttpdnsRequestScheduler *requestScheduler =  [[HttpDnsService sharedInstance] requestScheduler];
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    scheduleCenter.activatedServerIPIndex = 0;
+    [ScheduleCenterTestHelper setFirstIPWrongForTest];
     NSError *error;
     NSDate *startDate = [NSDate date];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
@@ -243,12 +253,12 @@
     NSString *hostName = @"www.taobao.com";
     HttpdnsRequestScheduler *requestScheduler =  [[HttpDnsService sharedInstance] requestScheduler];
     [requestScheduler setServerDisable:NO host:hostName];
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    scheduleCenter.activatedServerIPIndex = 0;
     
-    requestScheduler.activatedServerIPIndex = 0;
+    [ScheduleCenterTestHelper setTwoFirstIPWrongForTest];
+    [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
     
-    [requestScheduler.testHelper setTwoFirstIPWrongForTest];
-    [requestScheduler.testHelper zeroSnifferTimeForTest];
-
     NSDate *startDate = [NSDate date];
     XCTAssert(![requestScheduler isServerDisable]);
     [[HttpDnsService sharedInstance] getIpByHost:hostName];
@@ -256,14 +266,14 @@
     NSTimeInterval interval = [startDate timeIntervalSinceNow];
     sleep(0.02);//嗅探前
     XCTAssert([requestScheduler isServerDisable]);
-
+    
     XCTAssert(-interval >= 2* customizedTimeoutInterval);
     XCTAssert(-interval < 3* customizedTimeoutInterval);
     
     //嗅探中
     sleep(customizedTimeoutInterval);
-    XCTAssertEqual(requestScheduler.activatedServerIPIndex, 2);
-
+    XCTAssertEqual(scheduleCenter.activatedServerIPIndex, 2);
+    
     //重试2次
     XCTAssert(![requestScheduler isServerDisable]);
     
@@ -282,10 +292,11 @@
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
     [requestScheduler setServerDisable:NO host:hostName];
-    requestScheduler.activatedServerIPIndex = 0;
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    scheduleCenter.activatedServerIPIndex = 0;
     
-    [requestScheduler.testHelper setFourFirstIPWrongForTest];
-    [requestScheduler.testHelper zeroSnifferTimeForTest];
+    [ScheduleCenterTestHelper setFourFirstIPWrongForTest];
+    [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
     [service getIpByHost:hostName];
     
     //重试2次+嗅探1次
@@ -320,11 +331,12 @@
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
     [requestScheduler setServerDisable:NO host:hostName];
-    requestScheduler.activatedServerIPIndex = 0;
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    scheduleCenter.activatedServerIPIndex = 0;
     
-    [requestScheduler.testHelper setFirstIPWrongForTest];
+    [ScheduleCenterTestHelper setFirstIPWrongForTest];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
-
+    
     dispatch_queue_t concurrentQueue =
     dispatch_queue_create("com.ConcurrentQueue",
                           DISPATCH_QUEUE_CONCURRENT);
@@ -336,9 +348,9 @@
     dispatch_barrier_sync(concurrentQueue, ^{
         sleep(customizedTimeoutInterval);
         XCTAssert(![requestScheduler isServerDisable]);
-        XCTAssertEqual(requestScheduler.activatedServerIPIndex, 1);
+        XCTAssertEqual(scheduleCenter.activatedServerIPIndex, 1);
     });
-
+    
 }
 
 /*!
@@ -351,10 +363,13 @@
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
     [requestScheduler setServerDisable:NO host:hostName];
-    requestScheduler.activatedServerIPIndex = 0;
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     
-    [requestScheduler.testHelper setTwoFirstIPWrongForTest];
-    [requestScheduler.testHelper zeroSnifferTimeForTest];
+    scheduleCenter.activatedServerIPIndex = 0;
+    
+    [ScheduleCenterTestHelper setTwoFirstIPWrongForTest];
+    [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
+
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
     
     dispatch_queue_t concurrentQueue =
@@ -368,7 +383,7 @@
     dispatch_barrier_sync(concurrentQueue, ^{
         sleep(customizedTimeoutInterval);
         XCTAssert(![requestScheduler isServerDisable]);
-        XCTAssertEqual(requestScheduler.activatedServerIPIndex, 2);
+        XCTAssertEqual(scheduleCenter.activatedServerIPIndex, 2);
     });
 }
 /*!
@@ -387,10 +402,11 @@
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
     [requestScheduler setServerDisable:NO host:hostName];
-    requestScheduler.activatedServerIPIndex = 1;
-    [requestScheduler.testHelper zeroSnifferTimeForTest];
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    scheduleCenter.activatedServerIPIndex = 1;
+    [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
     
-    [requestScheduler.testHelper setFourFirstIPWrongForTest];
+    [ScheduleCenterTestHelper setFourFirstIPWrongForTest];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
     
     dispatch_queue_t concurrentQueue =
@@ -406,12 +422,12 @@
     dispatch_barrier_sync(concurrentQueue, ^{
         sleep(customizedTimeoutInterval);
         XCTAssert(![requestScheduler isServerDisable]);
-        XCTAssertEqual(requestScheduler.activatedServerIPIndex, 4);
+        XCTAssertEqual(scheduleCenter.activatedServerIPIndex, 4);
     });
 }
 
 /*!
- * 
+ *
  嗅探间隔是否生效
  最初的IP index非0的情况下，并发访问
  
@@ -428,10 +444,10 @@
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
     [requestScheduler setServerDisable:NO host:hostName];
-    requestScheduler.activatedServerIPIndex = 1;
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    scheduleCenter.activatedServerIPIndex = 1;
     
-    [requestScheduler.testHelper setFourFirstIPWrongForTest];
-//    [requestScheduler.testHelper zeroSnifferTimeForTest];
+    [ScheduleCenterTestHelper setFourFirstIPWrongForTest];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
     
     dispatch_queue_t concurrentQueue =
@@ -447,9 +463,239 @@
     dispatch_barrier_sync(concurrentQueue, ^{
         sleep(customizedTimeoutInterval);
         XCTAssert([requestScheduler isServerDisable]);
-        XCTAssertEqual(requestScheduler.activatedServerIPIndex, 3);
+        XCTAssertEqual(scheduleCenter.activatedServerIPIndex, 3);
         XCTAssertNil([service getIpByHost:hostName]);
     });
+}
+
+/*!
+ * 最初的IP index非0的情况下，并发访问
+ 
+ 0 right
+ 1 wrong <--start IP
+ 2 wrong
+ 3 wrong
+ 4 wrong
+ */
+- (void)testComplicatedlyAccessSameLastFourWrongHostIP {
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
+    
+    NSString *hostName = @"www.taobao.com";
+    HttpDnsService *service = [HttpDnsService sharedInstance];
+    HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
+    [requestScheduler setServerDisable:NO host:hostName];
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    scheduleCenter.activatedServerIPIndex = 1;
+    [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
+    
+    [ScheduleCenterTestHelper setFourLastIPWrongForTest];
+    NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
+    
+    dispatch_queue_t concurrentQueue =
+    dispatch_queue_create("com.ConcurrentQueue",
+                          DISPATCH_QUEUE_CONCURRENT);
+    for (int i = 0; i < 5; i++) {
+        dispatch_async(concurrentQueue, ^{
+            //三次 = 两次重试 + 一次嗅探
+            [service getIpByHost:hostName];
+            sleep(customizedTimeoutInterval);
+            
+            //嗅探
+            [service getIpByHost:hostName];
+            sleep(customizedTimeoutInterval);
+            
+        });
+    }
+    dispatch_barrier_sync(concurrentQueue, ^{
+        XCTAssert([requestScheduler isServerDisable]);
+        
+        //嗅探正确的IP，但先返回nil。
+        XCTAssertNil([service getIpByHost:hostName]);
+        sleep(customizedTimeoutInterval);
+        
+        //已经切到正确的IP
+        XCTAssert(![requestScheduler isServerDisable]);
+        XCTAssertNotNil([service getIpByHost:hostName]);
+        XCTAssertEqual(scheduleCenter.activatedServerIPIndex, 0);
+    });
+}
+
+/**
+ * 测试目的：测试 ScheduleCenter 的触发条件：IP全部超时，会触发。
+ * 测试方法：将现有的所有IP置为错误的IP，尝试触发SC，之后再发请求，如果成功即通过。
+ * 详细步骤：
+ *          1. 将当前server ip列表全部置换为错误ip
+ *          2. 解析域名，查看日志：1)分别使用ip1，ip2，ip3进行解析，均失败，
+ *          3. 等待30S，解析域名，查看日志：1）用ip4发起一次嗅探，失败
+ *          4. 等待30S，解析域名，查看日志：1)用ip5发起嗅探，失败，触发 ScheduleCenter 更新
+ *          5. 解析域名，查看日志：1）通过更新后的ip进行解析； 2)成功解析，disable状态解除
+ */
+- (void)testScheduleCenterTrigger {
+    [ScheduleCenterTestHelper cancelAutoConnectToScheduleCenter];
+    [ScheduleCenterTestHelper setAllThreeWrongForTest];
+    
+    HttpDnsService *service = [HttpDnsService sharedInstance];
+    NSString *hostName = @"www.taobao.com";
+    HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
+    [requestScheduler setServerDisable:NO host:hostName];
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    scheduleCenter.activatedServerIPIndex = 0;
+    
+    [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
+    [HttpdnsScheduleCenterTestHelper zeroMixConnectToScheduleCenterInterval];
+    [HttpdnsScheduleCenterTestHelper zeroAutoConnectToScheduleCenterInterval];
+    [service getIpByHost:hostName];
+    
+}
+
+/**
+ * 测试目的：测试 ScheduleCenter 是否可以正常更新server ip
+ * 测试方法：取内置默认的 IP 列表的首个 IP，手动调用SC请求，再取首个 IP，看能否是对应。并看本地文件的更新时间戳。
+ */
+- (void)testScheduleCenterUpdateIPList {
+    [ScheduleCenterTestHelper setAllThreeWrongForTest];
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    [HttpdnsScheduleCenterTestHelper zeroMixConnectToScheduleCenterInterval];
+    [HttpdnsScheduleCenterTestHelper zeroAutoConnectToScheduleCenterInterval];
+    [scheduleCenter forceUpdateIpListAsync];
+    NSTimeInterval timeInterval = 15 * 2;
+    sleep(timeInterval);
+    //SC更新本地文件的时间戳
+    NSTimeInterval time = [ScheduleCenterTestHelper timeSinceCreateForScheduleCenterResult];
+    NSLog(@"%@", @(time));
+    XCTAssertTrue(time < timeInterval + 1);
+    XCTAssertTrue(time >= 0);
+    {
+        NSTimeInterval time = [ScheduleCenterTestHelper timeSinceCreateForScheduleCenterResult];
+        NSLog(@"%@", @(time));
+    }
+    XCTAssertTrue(![scheduleCenter.IPList[0] isEqualToString:@"190.190.190.190"]);
+    XCTAssertTrue([scheduleCenter.IPList[0] isEqualToString:@"203.107.1.65"]);
+}
+
+/**
+ *  测试目的：测试 ScheduleCenter 的停服操作是否能够生效，
+ *  测试步骤：控制 ScheduleCenter 返回的值为停服，然后使用任意 API 看是否始终返回nil。
+ */
+- (void)testScheduleCenterStopService {
+    [ScheduleCenterTestHelper cancelAutoConnectToScheduleCenter];
+    [ScheduleCenterTestHelper setStopService];
+    NSString *hostName = @"www.taobao.com";
+    HttpDnsService *service = [HttpDnsService sharedInstance];
+    XCTAssertNil([service getIpByHost:hostName]);
+    sleep(10);
+    XCTAssertNil([service getIpByHost:hostName]);
+    sleep(10);
+    XCTAssertNil([service getIpByHost:hostName]);
+    [ScheduleCenterTestHelper resetAllThreeRightForTest];
+}
+
+/**
+ * 测试目的：测试 ScheduleCenter 24小时内，持久化功能是否正常 以及测试 ScheduleCenter 的触发条件：每24小时的间隔，触发一次。最小时间间隔为5MIN。
+ *        （三个IP失败后就继续按照原来的 IP 池轮转。如果IP池再轮转了一遍且继续失败重新触发SC时必须距上一次SC5min以上才会真正发起新的SC）
+ * 测试方法：修改24小时，为较短时间比如10秒，5MIN 为 5S，
+ *           1. 测试5MIN间隔：为手动调用 SC 请求，sleep 4秒，再请求，不能请求。再sleep 1秒，再请求，可以请求。
+ *           2. 测试24小时内只主动请求一次：设置24小时为较短时间，比如10S，首次启动后，会更新 IP 列表。10S内再次启动不会更新IP列表，10S后再次启动会更新列表。
+ *           3. 请求成功与否判断：本地是否能更新。获取本地固化数据的最近更新时间。
+ */
+- (void)testScheduleCenterInterval {
+    [ScheduleCenterTestHelper cancelAutoConnectToScheduleCenter];
+    sleep(10);
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    [HttpdnsScheduleCenterTestHelper shortMixConnectToScheduleCenterInterval];
+    [HttpdnsScheduleCenterTestHelper shortAutoConnectToScheduleCenterInterval];
+    __block NSTimeInterval timeInterval1 = 0;
+    __block NSTimeInterval timeInterval2 = 0;
+    __block NSTimeInterval timeInterval3 = 0;
+    //第一次，超过最小间隔5S，可以更新。误差为1妙
+    NSTimeInterval sleepTime = 1;
+    [scheduleCenter forceUpdateIpListAsyncWithCallback:^(NSDictionary *result) {
+        sleep(sleepTime);
+        timeInterval1 = [ScheduleCenterTestHelper timeSinceCreateForScheduleCenterResult];
+        NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), @(timeInterval1));
+        XCTAssertNotNil(result);
+        XCTAssertTrue(timeInterval1 > 0);
+        XCTAssertTrue(timeInterval1 < sleepTime + 1);
+        
+        //未超过最小间隔，不可以更新
+        [scheduleCenter forceUpdateIpListAsyncWithCallback:^(NSDictionary *result) {
+            sleep(sleepTime);
+            timeInterval2 = [ScheduleCenterTestHelper timeSinceCreateForScheduleCenterResult];
+            NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), @(timeInterval2));
+            XCTAssertNil(result);
+            XCTAssertTrue(timeInterval2 > 0);
+            XCTAssertTrue(timeInterval2 > timeInterval1 + sleepTime);
+            XCTAssertTrue(timeInterval2 < timeInterval1 + sleepTime + 1);
+            
+            sleep(10);//让下一次，超过最小间隔，可以更新
+            //超过最小间隔，可以更新
+            [scheduleCenter forceUpdateIpListAsyncWithCallback:^(NSDictionary *result) {
+                sleep(sleepTime);
+                XCTAssertTrue(YES);
+                NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@==%@==%@", @(__PRETTY_FUNCTION__), @(__LINE__), @(timeInterval1), @(timeInterval2), @(timeInterval3));
+                XCTAssertNotNil(result);
+                timeInterval3 = [ScheduleCenterTestHelper timeSinceCreateForScheduleCenterResult];
+                XCTAssertTrue(timeInterval3<sleepTime+1);
+                XCTAssertTrue(timeInterval3 >= 0);
+                NOTIFY
+            }];
+        }];
+    }];
+    WAIT
+}
+
+/**
+ * 测试目的：SC 触发失败后，测试SC的轮转机制。
+ * 测试方法：
+ *          1. 将 server ips 大小设置为3，且均为错误ip。同时将 ScheduleCenter 访问 ip 全部设置为错误 ip。
+ *          2. 解析域名,观察日志：1) 三次尝试均失败；2) 访问 ScheduleCenter ，且三次尝试均失败。查看SC轮转的IP的index。
+ *          3. 解析域名,观察日志： 1) 处于 disable 模式,准备启动嗅探； 2) 访问 ScheduleCenter 未完成,放弃嗅探。
+ *          4. 解析域名,观察日志：1) 发起一次嗅探，且继续按照原有 IP 轮转逻辑进行访问。
+ */
+- (void)testScheduleCenterRetry {
+    [ScheduleCenterTestHelper cancelAutoConnectToScheduleCenter];
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    [HttpdnsScheduleCenterTestHelper shortMixConnectToScheduleCenterInterval];
+    [HttpdnsScheduleCenterTestHelper shortAutoConnectToScheduleCenterInterval];
+    //超过最小间隔，可以更新。误差为1妙
+    NSTimeInterval sleepTime = 1;
+    [HttpdnsScheduleCenterTestHelper setFirstTwoWrongForScheduleCenterIPs];
+    [scheduleCenter forceUpdateIpListAsyncWithCallback:^(NSDictionary *result) {
+        sleep(sleepTime);
+        NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), result);
+        XCTAssertNotNil(result);
+        NOTIFY
+    }];
+    WAIT_FOREVER
+}
+
+/**
+ * 测试目的：用户 Level 变更后，服务端返回403错误，也会触发SC。
+ * 测试方法：访问测试服务器，始终返回403，看能否最终更新本地 IP 列表，并访问成功。
+ *http://30.27.80.142:3000/httpdns403/100000/d?host=www.taobao.com   mock403错误
+ *http://30.27.80.142:3000/sc/httpdns_config?account_id=153519&platform=android&sdk_version=1.2.4
+ mock disable错误 可以用这个来测试sc disable状态和降级错误
+ */
+- (void)testScheduleCenterUserLevelChanged {
+    [ScheduleCenterTestHelper cancelAutoConnectToScheduleCenter];
+    [ScheduleCenterTestHelper setAllThreeWrongForTest];
+    NSString *hostName = @"www.taobao.com";
+    HttpDnsService *service = [HttpDnsService sharedInstance];
+    XCTAssertNil([service getIpByHost:hostName]);
+    
+    HttpdnsRequestScheduler *requestScheduler =  [[HttpDnsService sharedInstance] requestScheduler];
+    
+    NSInteger code = 403;
+    NSDictionary *errorInfo = @{
+                                @"ErrorMessage" : @"ServiceLevelDeny",
+                                };
+    NSError *error = [NSError errorWithDomain:NSStringFromClass([self class])
+                                         code:code
+                                     userInfo:errorInfo];
+    
+    [requestScheduler canNotResolveHost:hostName error:error isRetry:NO activatedServerIPIndex:0];
+    sleep(20);
+    XCTAssertNotNil([service getIpByHost:hostName]);
 }
 
 @end
