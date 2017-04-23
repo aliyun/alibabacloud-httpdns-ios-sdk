@@ -59,12 +59,6 @@ static NSURLSession *_resolveHOSTSession = nil;
 
 - (instancetype)init {
     if (self = [super init]) {
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
-            NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
-            _session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
-        });
-        
         [self resetRequestConfigure];
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
