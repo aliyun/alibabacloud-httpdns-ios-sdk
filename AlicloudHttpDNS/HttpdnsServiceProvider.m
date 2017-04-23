@@ -28,7 +28,7 @@
 #import "HttpdnsServiceProvider_Internal.h"
 #import "AlicloudHttpDNS.h"
 
-static NSDictionary * HTTPDNS_EXT_INFO = nil;
+static NSDictionary *HTTPDNS_EXT_INFO = nil;
 
 @implementation HttpDnsService
 

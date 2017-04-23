@@ -31,19 +31,6 @@
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS = @"disable_status_key";
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME = @"disable_status";
 
-//#define DEBUG 1
-#ifdef DEBUG
-
-NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED = @"10.125.65.207";
- NSString *const ALICLOUD_HTTPDNS_SERVER_IP_1 = @"10.125.65.207";
-NSString *const ALICLOUD_HTTPDNS_SERVER_IP_2 = @"10.125.65.207";
-NSString *const ALICLOUD_HTTPDNS_SERVER_IP_3 = @"10.125.65.207";
-NSString *const ALICLOUD_HTTPDNS_SERVER_IP_4 = @"10.125.65.207";
-NSString *const ALICLOUD_HTTPDNS_HTTP_SERVER_PORT = @"8100";
-NSString *const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"8100";
-
-#else
-
 NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED = @"203.107.1.1";
 NSString *const ALICLOUD_HTTPDNS_SERVER_IP_1 = @"203.107.1.65";
 NSString *const ALICLOUD_HTTPDNS_SERVER_IP_2 = @"203.107.1.34";
@@ -51,8 +38,6 @@ NSString *const ALICLOUD_HTTPDNS_SERVER_IP_3 = @"203.107.1.66";
 NSString *const ALICLOUD_HTTPDNS_SERVER_IP_4 = @"203.107.1.33";
 NSString *const ALICLOUD_HTTPDNS_HTTP_SERVER_PORT = @"80";
 NSString *const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
-
-#endif
 
 NSArray *ALICLOUD_HTTPDNS_SERVER_IP_LIST = nil;
 NSInteger ALICLOUD_HTTPDNS_RESET_ACTIVATED_SERVER_IP_TIME_HOURS = 0;
@@ -399,6 +384,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
             statusString = @"Unknown";
             break;
     }
+   
     HttpdnsLogDebug(@"Network changed, status: %@(%ld), lastNetworkStatus: %ld", statusString, [networkStatus longValue], _lastNetworkStatus);
     if (_lastNetworkStatus != [networkStatus longValue]) {
         dispatch_async(_syncDispatchQueue, ^{
@@ -442,7 +428,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 
 - (void)setServerDisable:(BOOL)serverDisable host:(NSString *)host activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     dispatch_async(self.cacheQueue, ^{
-        if (!_serverDisable) {
+        if (!serverDisable) {
             _lastServerDisableDate = nil;
         } else {
             _lastServerDisableDate = [NSDate date];
