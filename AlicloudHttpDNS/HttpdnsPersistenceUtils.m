@@ -21,6 +21,8 @@
 #import "HttpdnsServiceProvider.h"
 
 static NSString *const ALICLOUD_HTTPDNS_ROOT_DIR_NAME = @"HTTPDNS";
+static NSString *const ALICLOUD_HTTPDNS_HOST_CACHE_DIR_NAME = @"HostCache";
+//static NSString *const ALICLOUD_HTTPDNS_HOST_IP_CACHE_DIR_NAME = @"HostIPCache";
 
 @implementation HttpdnsPersistenceUtils
 
@@ -53,6 +55,27 @@ static NSString *const ALICLOUD_HTTPDNS_ROOT_DIR_NAME = @"HTTPDNS";
     [self createDirectoryIfNeeded:path];
     
     return path;
+}
+
+// ~/Library/Caches/HTTPDNS/HostCache
++ (NSString *)hostCachePatch {
+    NSString *path = [self appCachePath];
+    
+    path = [path stringByAppendingPathComponent:ALICLOUD_HTTPDNS_ROOT_DIR_NAME];
+    path = [path stringByAppendingPathComponent:ALICLOUD_HTTPDNS_HOST_CACHE_DIR_NAME];
+    
+    [self createDirectoryIfNeeded:path];
+    
+    return path;
+}
+
+// ~/Library/Caches/HTTPDNS/HostCache/databaseName
++ (NSString *)hostCacheDatabasePathWithName:(NSString *)name {
+    if (name) {
+        return [[self hostCachePatch] stringByAppendingPathComponent:name];
+    }
+    
+    return nil;
 }
 
 #pragma mark - ~/Library/Caches
@@ -237,4 +260,5 @@ static NSString *const ALICLOUD_HTTPDNS_ROOT_DIR_NAME = @"HTTPDNS";
     [self createDirectoryIfNeeded:ret];
     return ret;
 }
+
 @end
