@@ -47,6 +47,17 @@
 		9A5D5E2A1E9CB4D400CAC3A6 /* HttpdnsScheduleCenterRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A5D5E281E9CB4D400CAC3A6 /* HttpdnsScheduleCenterRequest.m */; };
 		9A5D5E2B1E9D027200CAC3A6 /* HttpdnsScheduleCenter.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A4D181C1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.m */; };
 		9A9CBB7C1E8133D300F878BA /* HttpdnsServiceProvider_Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A9CBB7B1E8133D300F878BA /* HttpdnsServiceProvider_Internal.h */; };
+		9AA0FC4E1EB97D1E00E242DD /* LCDatabase.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AA0FC431EB97D1E00E242DD /* LCDatabase.h */; };
+		9AA0FC4F1EB97D1E00E242DD /* LCDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AA0FC441EB97D1E00E242DD /* LCDatabase.m */; };
+		9AA0FC501EB97D1E00E242DD /* LCDatabaseAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AA0FC451EB97D1E00E242DD /* LCDatabaseAdditions.h */; };
+		9AA0FC511EB97D1E00E242DD /* LCDatabaseAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AA0FC461EB97D1E00E242DD /* LCDatabaseAdditions.m */; };
+		9AA0FC521EB97D1E00E242DD /* LCDatabasePool.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AA0FC471EB97D1E00E242DD /* LCDatabasePool.h */; };
+		9AA0FC531EB97D1E00E242DD /* LCDatabasePool.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AA0FC481EB97D1E00E242DD /* LCDatabasePool.m */; };
+		9AA0FC541EB97D1E00E242DD /* LCDatabaseQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AA0FC491EB97D1E00E242DD /* LCDatabaseQueue.h */; };
+		9AA0FC551EB97D1E00E242DD /* LCDatabaseQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AA0FC4A1EB97D1E00E242DD /* LCDatabaseQueue.m */; };
+		9AA0FC561EB97D1E00E242DD /* LCDB.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AA0FC4B1EB97D1E00E242DD /* LCDB.h */; };
+		9AA0FC571EB97D1E00E242DD /* LCResultSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AA0FC4C1EB97D1E00E242DD /* LCResultSet.h */; };
+		9AA0FC581EB97D1E00E242DD /* LCResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AA0FC4D1EB97D1E00E242DD /* LCResultSet.m */; };
 		9AA600651EA06CAD00B72D01 /* HttpdnsScheduleCenter_Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AA600641EA06CAD00B72D01 /* HttpdnsScheduleCenter_Internal.h */; };
 		9AF899271E8B5CF600D9CA8E /* HttpdnsRequestScheduler_Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AF899261E8B5CF600D9CA8E /* HttpdnsRequestScheduler_Internal.h */; };
 /* End PBXBuildFile section */
@@ -95,6 +106,17 @@
 		9A5D5E271E9CB4D400CAC3A6 /* HttpdnsScheduleCenterRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsScheduleCenterRequest.h; sourceTree = "<group>"; };
 		9A5D5E281E9CB4D400CAC3A6 /* HttpdnsScheduleCenterRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsScheduleCenterRequest.m; sourceTree = "<group>"; };
 		9A9CBB7B1E8133D300F878BA /* HttpdnsServiceProvider_Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsServiceProvider_Internal.h; sourceTree = "<group>"; };
+		9AA0FC431EB97D1E00E242DD /* LCDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LCDatabase.h; sourceTree = "<group>"; };
+		9AA0FC441EB97D1E00E242DD /* LCDatabase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LCDatabase.m; sourceTree = "<group>"; };
+		9AA0FC451EB97D1E00E242DD /* LCDatabaseAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LCDatabaseAdditions.h; sourceTree = "<group>"; };
+		9AA0FC461EB97D1E00E242DD /* LCDatabaseAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LCDatabaseAdditions.m; sourceTree = "<group>"; };
+		9AA0FC471EB97D1E00E242DD /* LCDatabasePool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LCDatabasePool.h; sourceTree = "<group>"; };
+		9AA0FC481EB97D1E00E242DD /* LCDatabasePool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LCDatabasePool.m; sourceTree = "<group>"; };
+		9AA0FC491EB97D1E00E242DD /* LCDatabaseQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LCDatabaseQueue.h; sourceTree = "<group>"; };
+		9AA0FC4A1EB97D1E00E242DD /* LCDatabaseQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LCDatabaseQueue.m; sourceTree = "<group>"; };
+		9AA0FC4B1EB97D1E00E242DD /* LCDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LCDB.h; sourceTree = "<group>"; };
+		9AA0FC4C1EB97D1E00E242DD /* LCResultSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LCResultSet.h; sourceTree = "<group>"; };
+		9AA0FC4D1EB97D1E00E242DD /* LCResultSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LCResultSet.m; sourceTree = "<group>"; };
 		9AA600641EA06CAD00B72D01 /* HttpdnsScheduleCenter_Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsScheduleCenter_Internal.h; sourceTree = "<group>"; };
 		9AF899261E8B5CF600D9CA8E /* HttpdnsRequestScheduler_Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsRequestScheduler_Internal.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -149,6 +171,7 @@
 		2197CA391BC79A4500BDB65B /* AlicloudHttpDNS */ = {
 			isa = PBXGroup;
 			children = (
+				9AA0FC411EB97D1E00E242DD /* ThirdParty */,
 				2197CAB11BC7B3D400BDB65B /* AlicloudHttpDNS.h */,
 				2197CAB21BC7B3D400BDB65B /* HttpdnsConfig.h */,
 				2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */,
@@ -206,6 +229,32 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		9AA0FC411EB97D1E00E242DD /* ThirdParty */ = {
+			isa = PBXGroup;
+			children = (
+				9AA0FC421EB97D1E00E242DD /* LCDB */,
+			);
+			path = ThirdParty;
+			sourceTree = "<group>";
+		};
+		9AA0FC421EB97D1E00E242DD /* LCDB */ = {
+			isa = PBXGroup;
+			children = (
+				9AA0FC431EB97D1E00E242DD /* LCDatabase.h */,
+				9AA0FC441EB97D1E00E242DD /* LCDatabase.m */,
+				9AA0FC451EB97D1E00E242DD /* LCDatabaseAdditions.h */,
+				9AA0FC461EB97D1E00E242DD /* LCDatabaseAdditions.m */,
+				9AA0FC471EB97D1E00E242DD /* LCDatabasePool.h */,
+				9AA0FC481EB97D1E00E242DD /* LCDatabasePool.m */,
+				9AA0FC491EB97D1E00E242DD /* LCDatabaseQueue.h */,
+				9AA0FC4A1EB97D1E00E242DD /* LCDatabaseQueue.m */,
+				9AA0FC4B1EB97D1E00E242DD /* LCDB.h */,
+				9AA0FC4C1EB97D1E00E242DD /* LCResultSet.h */,
+				9AA0FC4D1EB97D1E00E242DD /* LCResultSet.m */,
+			);
+			path = LCDB;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -216,13 +265,19 @@
 				9A4D181D1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.h in Headers */,
 				9AF899271E8B5CF600D9CA8E /* HttpdnsRequestScheduler_Internal.h in Headers */,
 				9A5D5E291E9CB4D400CAC3A6 /* HttpdnsScheduleCenterRequest.h in Headers */,
+				9AA0FC4E1EB97D1E00E242DD /* LCDatabase.h in Headers */,
 				9A5914821EA0815D00A7ED28 /* HttpdnsPersistenceUtils.h in Headers */,
 				9A4D181A1E8F8FE1001E45B4 /* HttpdnsConstants.h in Headers */,
 				9A9CBB7C1E8133D300F878BA /* HttpdnsServiceProvider_Internal.h in Headers */,
 				2197CAC31BC7B3D400BDB65B /* AlicloudHttpDNS.h in Headers */,
+				9AA0FC541EB97D1E00E242DD /* LCDatabaseQueue.h in Headers */,
 				942376DD1C5764C700736E50 /* HttpdnsServiceProvider.h in Headers */,
+				9AA0FC561EB97D1E00E242DD /* LCDB.h in Headers */,
 				942376DE1C5764CF00736E50 /* HttpdnsDegradationDelegate.h in Headers */,
+				9AA0FC501EB97D1E00E242DD /* LCDatabaseAdditions.h in Headers */,
+				9AA0FC571EB97D1E00E242DD /* LCResultSet.h in Headers */,
 				9AA600651EA06CAD00B72D01 /* HttpdnsScheduleCenter_Internal.h in Headers */,
+				9AA0FC521EB97D1E00E242DD /* LCDatabasePool.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -327,7 +382,12 @@
 				946229911C5509D800B7C13E /* HttpdnsServiceProvider.m in Sources */,
 				9A5914831EA0815D00A7ED28 /* HttpdnsPersistenceUtils.m in Sources */,
 				2197CAC91BC7B3D400BDB65B /* HttpdnsModel.m in Sources */,
+				9AA0FC551EB97D1E00E242DD /* LCDatabaseQueue.m in Sources */,
 				2197CAD11BC7B3D400BDB65B /* HttpdnsUtil.m in Sources */,
+				9AA0FC531EB97D1E00E242DD /* LCDatabasePool.m in Sources */,
+				9AA0FC4F1EB97D1E00E242DD /* LCDatabase.m in Sources */,
+				9AA0FC511EB97D1E00E242DD /* LCDatabaseAdditions.m in Sources */,
+				9AA0FC581EB97D1E00E242DD /* LCResultSet.m in Sources */,
 				2197CACD1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m in Sources */,
 				2197CACB1BC7B3D400BDB65B /* HttpdnsRequest.m in Sources */,
 				2197CAC71BC7B3D400BDB65B /* HttpdnsLog.m in Sources */,
