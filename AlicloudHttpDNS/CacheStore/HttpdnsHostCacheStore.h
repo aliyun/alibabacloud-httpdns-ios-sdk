@@ -7,9 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "HttpdnsCacheStore.h"
+
 @class HttpdnsHostRecord;
 
-@interface HttpdnsHostCacheStore : NSObject
+@interface HttpdnsHostCacheStore : HttpdnsCacheStore
 
 - (void)insertHostRecords:(NSArray<HttpdnsHostRecord *> *)HostRecords;
 
