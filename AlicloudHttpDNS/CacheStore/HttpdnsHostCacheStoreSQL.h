@@ -21,28 +21,26 @@
 
 #define ALICLOUD_HTTPDNS_FIELD_HOST_RECORD_ID       @"HostRecord_id"
 #define ALICLOUD_HTTPDNS_FIELD_HOST                 @"host"
-#define ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER     @"carrier"
+#define ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER      @"carrier"
 #define ALICLOUD_HTTPDNS_FIELD_TIMESTAMP            @"timestamp"
 #define ALICLOUD_HTTPDNS_FIELD_IPS                  @"ips"
 
-#define ALICLOUD_HTTPDNS_SQL_CREATE_CONVERSATION_TABLE \
+#define ALICLOUD_HTTPDNS_SQL_CREATE_CONVERSATION_TABLE                        \
     @"CREATE TABLE IF NOT EXISTS " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD  @" ("  \
-        ALICLOUD_HTTPDNS_FIELD_HOST_RECORD_ID       @" NUMBERIC, "            \
-        ALICLOUD_HTTPDNS_FIELD_HOST                 @" TEXT, "                \
-        ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER     @" TEXT, "                \
-        ALICLOUD_HTTPDNS_FIELD_TIMESTAMP            @" NUMBERIC, "            \
-        ALICLOUD_HTTPDNS_FIELD_IPS                  @" BLOB, "                \
-        @"PRIMARY KEY(" ALICLOUD_HTTPDNS_FIELD_HOST_RECORD_ID @")"            \
+        ALICLOUD_HTTPDNS_FIELD_HOST_RECORD_ID       @" INTEGER PRIMARY KEY AUTOINCREMENT, "            \
+        ALICLOUD_HTTPDNS_FIELD_HOST                 @" TEXT NOT NULL, "                \
+        ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER      @" TEXT NOT NULL, "                \
+        ALICLOUD_HTTPDNS_FIELD_TIMESTAMP            @" NUMBERIC NOT NULL, "            \
+        ALICLOUD_HTTPDNS_FIELD_IPS                  @" BLOB NOT NULL"                \
     @")"
 
 #define ALICLOUD_HTTPDNS_SQL_INSERT_CONVERSATION                           \
     @"INSERT OR REPLACE INTO " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD   @" ("  \
-        ALICLOUD_HTTPDNS_FIELD_HOST_RECORD_ID       @", "                  \
         ALICLOUD_HTTPDNS_FIELD_HOST                 @", "                  \
-        ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER     @", "                  \
+        ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER      @", "                  \
         ALICLOUD_HTTPDNS_FIELD_TIMESTAMP            @", "                  \
         ALICLOUD_HTTPDNS_FIELD_IPS                                         \
-    @") VALUES(?, ?, ?, ?, ?)"
+    @") VALUES( ?, ?, ?, ?)"
 
 #define ALICLOUD_HTTPDNS_SQL_DELETE_CONVERSATION              \
     @"DELETE FROM " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD  @" "  \

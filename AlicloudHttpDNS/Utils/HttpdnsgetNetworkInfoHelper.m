@@ -13,8 +13,10 @@
 
 @implementation HttpdnsgetNetworkInfoHelper
 
-static NSUInteger const ALICLOUD_HTTPDNS_CARRIER_CHINA_CODE = 460;
 #define ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(type) [NSString stringWithFormat:@"%@", @(type)]
+#define ALICLOUD_HTTPDNS_NETWORK_FROME_COUNTRY_NETWORK(type, mobileCountryCode, mobileNetworkCode) [NSString stringWithFormat:@"%@-%@-%@", @(type), mobileCountryCode, mobileNetworkCode]
+
+#define ALICLOUD_HTTPDNS_NETWORK_FROME_WIFI_SSID(type, SSID) [NSString stringWithFormat:@"%@-%@", @(type), SSID]
 
 //wifi是否可用
 + (BOOL)isWifiEnable {
@@ -37,12 +39,14 @@ static NSUInteger const ALICLOUD_HTTPDNS_CARRIER_CHINA_CODE = 460;
 + (NSString *)getNetworkName {
     if (self.isWifiEnable) {
         NSString *currentWifiHotSpotName = [self getCurrentWifiHotSpotName];
+        NSString *networkName = ALICLOUD_HTTPDNS_NETWORK_FROME_WIFI_SSID(HttpdnsCarrierTypeWifi, @"0");
         if (currentWifiHotSpotName.length == 0 || !currentWifiHotSpotName) {
             HttpdnsLogDebug("Get wifi name failed!");
-            return nil;
+            //若读不到WIFI名字，则默认为2-0
+            return networkName;
         }
-        //加前缀“4-”防止，wifi名字是0-3的数字，导致缓存时与运营商信息混淆。
-        NSString *networkName = [NSString stringWithFormat:@"%@-%@", ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeWifi), currentWifiHotSpotName];
+        //加前缀“2-”防止，wifi名字是0-3的数字，导致缓存时与运营商信息混淆。
+        networkName = ALICLOUD_HTTPDNS_NETWORK_FROME_WIFI_SSID(HttpdnsCarrierTypeWifi, currentWifiHotSpotName);
         return networkName;
     }
     if (self.isCarrierConnectEnable) {
@@ -63,29 +67,30 @@ static NSUInteger const ALICLOUD_HTTPDNS_CARRIER_CHINA_CODE = 460;
     }
     return wifiName;
 }
-
+/*!
+ * 
+ 联通     1-460-01
+         1-460-06
+ 移动     1-460-00
+         1-460-02
+         1-460-07
+ 电信     1-460-03
+         1-460-05
+ */
 + (NSString *)checkMobileOperator {
     CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];
     CTCarrier *carrier = info.subscriberCellularProvider;
-    NSString *carrierName = carrier.carrierName;// 运营商名称
     NSString *mobileCountryCode = carrier.mobileCountryCode;// 运营商国家编号
     NSString *mobileNetworkCode = carrier.mobileNetworkCode;// 运营商编号
-    if (!mobileNetworkCode) {
-        return ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeUnknown);//查询不到运营商
+    //没有装SIM卡
+    if (!carrier.isoCountryCode) {
+        return [self statusBarCheckMobileOperator];
     }
-    if ([mobileCountryCode intValue] == ALICLOUD_HTTPDNS_CARRIER_CHINA_CODE) { // 中国
-        if ([carrierName rangeOfString:@"联通"].length>0 || [mobileNetworkCode isEqualToString:@"01"] || [mobileNetworkCode isEqualToString:@"06"]) {
-            return ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeChinaUnicom);//中国联通
-        } else if ([carrierName rangeOfString:@"移动"].length>0 || [mobileNetworkCode isEqualToString:@"00"] || [mobileNetworkCode isEqualToString:@"02"] || [mobileNetworkCode isEqualToString:@"07"]) {
-            return ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeChinaMobile);//中国移动
-        } else if ([carrierName rangeOfString:@"电信"].length>0 || [mobileNetworkCode isEqualToString:@"03"] || [mobileNetworkCode isEqualToString:@"05"]) {
-            return ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeChinaTelecom);//中国电信
-        }
-        //        else if ([carrierName rangeOfString:@"铁通"].length>0 || [mobileNetworkCode isEqualToString:@"20"]) {
-        //            return @"中国铁通";
-        //        }
+    //装了SIM卡
+    if (mobileCountryCode && mobileCountryCode.length > 0 && mobileNetworkCode && mobileNetworkCode.length > 0) {
+        return ALICLOUD_HTTPDNS_NETWORK_FROME_COUNTRY_NETWORK(HttpdnsCarrierTypeWWAN, mobileCountryCode, mobileNetworkCode);
     }
-    return [self statusBarCheckMobileOperator];
+    return ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeUnknown);//查询不到运营商
 }
 
 /**
@@ -103,17 +108,9 @@ static NSUInteger const ALICLOUD_HTTPDNS_CARRIER_CHINA_CODE = 460;
     }
     if (serviceView) {
         NSString *carrierName = [serviceView valueForKey:[@"service" stringByAppendingString:@"String"]];
-        if ([carrierName rangeOfString:@"联通"].length>0) {
-            return ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeChinaUnicom);//中国联通
-        } else if ([carrierName rangeOfString:@"移动"].length>0) {
-            return ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeChinaMobile);//中国移动
-        } else if ([carrierName rangeOfString:@"电信"].length>0) {
-            return ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeChinaTelecom);//中国电信
+        if (carrierName && carrierName.length > 0) {
+            return carrierName;
         }
-        //        else if ([carrierName rangeOfString:@"铁通"].length>0) {
-        //            return @"中国铁通";
-        //        }
-        return ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeUnknown);//查询不到运营商
     }
     return ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeUnknown);//查询不到运营商
 }

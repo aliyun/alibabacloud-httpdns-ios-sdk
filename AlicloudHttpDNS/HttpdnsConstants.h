@@ -62,4 +62,18 @@ static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IP_KEY
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_ENABLE_VALUE = @"enable";
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_DISABLE_VALUE = @"disable";
 
+//当前时间戳，单位毫秒
+#define ALICLOUD_HTTPDNS_DISTANT_CURRENT_TIMESTAMP \
+    ([[NSDate date] timeIntervalSince1970] * 1000)
+
+//单位毫秒
+#define ALICLOUD_HTTPDNS_DISTANT_FUTURE_TIMESTAMP \
+    ([[NSDate distantFuture] timeIntervalSince1970] * 1000)
+
+#define ALICLOUD_HTTPDNS_VALID_TIMESTAMP(timestamp) ({      \
+    int64_t timestamp_ = (int64_t)(timestamp);  \
+    if (timestamp_ <= 0) timestamp_ = ALICLOUD_HTTPDNS_DISTANT_FUTURE_TIMESTAMP;  \
+    timestamp_;  \
+})
+
 #endif /* HttpdnsConstants_h */

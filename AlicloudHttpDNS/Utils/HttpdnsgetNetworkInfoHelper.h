@@ -12,11 +12,9 @@
 #import "AVReachability.h"
 
 typedef NS_ENUM(NSInteger, HttpdnsCarrierType) {
-    HttpdnsCarrierTypeUnknown,       /**< 未知运营商 */
-    HttpdnsCarrierTypeChinaMobile,   /**< 中国移动(China Mobile) */
-    HttpdnsCarrierTypeChinaUnicom,   /**< 中国联通(China Unicom) */
-    HttpdnsCarrierTypeChinaTelecom,  /**< 中国电信(China Telecom) */
-    HttpdnsCarrierTypeWifi      /**< Wifi */
+    HttpdnsCarrierTypeUnknown,/**< 未知运营商 */
+    HttpdnsCarrierTypeWWAN,   /**< 移动运营商 */
+    HttpdnsCarrierTypeWifi    /**< Wifi */
 };
 
 @interface HttpdnsgetNetworkInfoHelper : NSObject
