@@ -19,28 +19,28 @@
 
 
 #import <Foundation/Foundation.h>
-#import "LCDatabaseCommon.h"
+#import "HttpdnsDatabaseCommon.h"
 
 /*!
  * Database migration object.
  */
-@interface LCDatabaseMigration : NSObject
+@interface HttpdnsDatabaseMigration : NSObject
 
 /*!
  * The job of current migration.
  */
-@property (readonly) LCDatabaseJob block;
+@property (readonly) HttpdnsDatabaseJob block;
 
-+ (instancetype)migrationWithBlock:(LCDatabaseJob)block;
++ (instancetype)migrationWithBlock:(HttpdnsDatabaseJob)block;
 
-- (instancetype)initWithBlock:(LCDatabaseJob)block;
+- (instancetype)initWithBlock:(HttpdnsDatabaseJob)block;
 
 @end
 
 /*!
  * SQLite database migrator.
  */
-@interface LCDatabaseMigrator : NSObject
+@interface HttpdnsDatabaseMigrator : NSObject
 
 @property (readonly) NSString *databasePath;
 
@@ -48,7 +48,7 @@
 
 /*!
  * Migrate database with migrations.
- * @param migrations An array of object confirms LCDatabaseMigration protocol.
+ * @param migrations An array of object confirms HttpdnsDatabaseMigration protocol.
  * NOTE: migration can not be removed, only can be added.
  * @return void.
  */

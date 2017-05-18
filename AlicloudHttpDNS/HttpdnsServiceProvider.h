@@ -30,6 +30,8 @@
 
 + (instancetype)sharedInstance;
 
+- (void)setCachedIPEnabled:(BOOL)enable;
+
 - (void)setPreResolveHosts:(NSArray *)hosts;
 
 - (NSString *)getIpByHostAsync:(NSString *)host;

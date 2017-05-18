@@ -1,19 +1,19 @@
-#import "LCResultSet.h"
-#import "LCDatabase.h"
+#import "HttpdnsResultSet.h"
+#import "HttpdnsDatabase.h"
 #import "unistd.h"
 
-@interface LCDatabase ()
-- (void)resultSetDidClose:(LCResultSet *)resultSet;
+@interface HttpdnsDatabase ()
+- (void)resultSetDidClose:(HttpdnsResultSet *)resultSet;
 @end
 
 
-@implementation LCResultSet
+@implementation HttpdnsResultSet
 @synthesize query=_query;
 @synthesize statement=_statement;
 
-+ (instancetype)resultSetWithStatement:(LCStatement *)statement usingParentDatabase:(LCDatabase*)aDB {
++ (instancetype)resultSetWithStatement:(HttpdnsStatement *)statement usingParentDatabase:(HttpdnsDatabase*)aDB {
     
-    LCResultSet *rs = [[LCResultSet alloc] init];
+    HttpdnsResultSet *rs = [[HttpdnsResultSet alloc] init];
     
     [rs setStatement:statement];
     [rs setParentDB:aDB];
@@ -400,7 +400,7 @@
     return [NSString stringWithUTF8String: sqlite3_column_name([_statement statement], columnIdx)];
 }
 
-- (void)setParentDB:(LCDatabase *)newDb {
+- (void)setParentDB:(HttpdnsDatabase *)newDb {
     _parentDB = newDb;
 }
 

@@ -20,6 +20,6 @@
 
 #import <Foundation/Foundation.h>
 
-@class LCDatabase;
+@class HttpdnsDatabase;
 
-typedef void(^LCDatabaseJob)(LCDatabase *db);
+typedef void(^HttpdnsDatabaseJob)(HttpdnsDatabase *db);

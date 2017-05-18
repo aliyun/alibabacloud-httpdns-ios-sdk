@@ -57,6 +57,11 @@ static NSString *const ALICLOUD_HTTPDNS_HOST_CACHE_DIR_NAME = @"HostCache";
     return path;
 }
 
+// ~/Documents/HTTPDNS/keyvalue
++ (NSString *)keyValueDatabasePath {
+    return [[self HttpDnsDocumentPath] stringByAppendingPathComponent:@"keyvalue"];
+}
+
 // ~/Library/Caches/HTTPDNS/HostCache
 + (NSString *)hostCachePatch {
     NSString *path = [self appCachePath];

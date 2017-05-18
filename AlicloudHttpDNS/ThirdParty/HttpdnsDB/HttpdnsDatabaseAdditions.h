@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "LCDatabase.h"
+#import "HttpdnsDatabase.h"
 
 
 /** Category of additions for `<FMDatabase>` class.
@@ -17,7 +17,7 @@
  - `<FMDatabase>`
  */
 
-@interface LCDatabase (LCDatabaseAdditions)
+@interface HttpdnsDatabase (HttpdnsDatabaseAdditions)
 
 ///----------------------------------------
 /// @name Return results of SQL to variable
@@ -141,7 +141,7 @@
  @see [SQLite File Format](http://www.sqlite.org/fileformat.html)
  */
 
-- (LCResultSet*)getSchema;
+- (HttpdnsResultSet*)getSchema;
 
 /** The schema of the database.
 
@@ -165,7 +165,7 @@
  @see [table_info](http://www.sqlite.org/pragma.html#pragma_table_info)
  */
 
-- (LCResultSet*)getTableSchema:(NSString*)tableName;
+- (HttpdnsResultSet*)getTableSchema:(NSString*)tableName;
 
 /** Test to see if particular column exists for particular table in database
  

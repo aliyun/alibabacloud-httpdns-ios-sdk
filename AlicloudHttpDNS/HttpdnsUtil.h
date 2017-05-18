@@ -21,17 +21,19 @@
 
 @interface HttpdnsUtil : NSObject
 
-+(long long)currentEpochTimeInSecond;
++ (int64_t)currentEpochTimeInSecond;
 
-+(NSString *)currentEpochTimeInSecondString;
++ (NSString *)currentEpochTimeInSecondString;
 
-+(BOOL)isAnIP:(NSString *)candidate;
++ (BOOL)isAnIP:(NSString *)candidate;
 
-+(BOOL)isAHost:(NSString *)host;
++ (BOOL)isAHost:(NSString *)host;
 
 /*!
  * host 或者 IPv4环境下直接返回，IPv6环境下做兼容处理。
  */
 + (NSString *)getRequestHostFromString:(NSString *)string;
+
++ (void)warnMainThreadIfNecessary;
 
 @end

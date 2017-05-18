@@ -2,29 +2,29 @@
 //  HttpdnsCacheStore.h
 //  AlicloudHttpDNS
 //
-//  Created by chenyilong on 2017/5/3.
+//  Created by ElonChan（地风） on 2017/5/3.
 //  Copyright © 2017年 alibaba-inc.com. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 
 #import <Foundation/Foundation.h>
-#import "LCDB.h"
+#import "HttpdnsDB.h"
 
 #ifdef DEBUG
-#define LCIM_SHOULD_LOG_ERRORS YES
+#define ALICLOUD_HTTPDNS_SHOULD_LOG_ERRORS YES
 #else
-#define LCIM_SHOULD_LOG_ERRORS NO
+#define ALICLOUD_HTTPDNS_SHOULD_LOG_ERRORS NO
 #endif
 
-#define LCIM_OPEN_DATABASE(db, routine) do {    \
-LCDatabaseQueue *dbQueue = [self databaseQueue]; \
-                                                 \
-    [dbQueue inDatabase:^(LCDatabase *db) {     \
-        db.logsErrors = LCIM_SHOULD_LOG_ERRORS; \
-        routine;                                \
-    }];                                         \
-} while (0)
+#define ALICLOUD_HTTPDNS_OPEN_DATABASE(db, routine) do {                \
+      HttpdnsDatabaseQueue *dbQueue = [self databaseQueue];             \
+                                                                        \
+           [dbQueue inDatabase:^(HttpdnsDatabase *db) {                 \
+                    db.logsErrors = ALICLOUD_HTTPDNS_SHOULD_LOG_ERRORS; \
+                    routine;                                            \
+                }];                                                     \
+    } while (0)
 
 @interface HttpdnsCacheStore : NSObject
 
@@ -32,9 +32,7 @@ LCDatabaseQueue *dbQueue = [self databaseQueue]; \
 
 + (NSString *)databasePathWithName:(NSString *)name;
 
-- (instancetype)initWithAccountId:(NSString *)accountId;
-
-- (LCDatabaseQueue *)databaseQueue;
+- (HttpdnsDatabaseQueue *)databaseQueue;
 
 - (void)databaseQueueDidLoad;
 

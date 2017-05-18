@@ -1,16 +1,17 @@
 //
-//  AVReachability.m
-//  AVOS
+//  HttpdnsCacheStore.m
+//  AlicloudHttpDNS
 //
-//  Created by Qihe Bian on 10/10/14.
-//
+//  Created by ElonChan（地风） on 2017/5/3.
+//  Copyright © 2017年 alibaba-inc.com. All rights reserved.
 //
 
-#import "AVReachability.h"
 
-NSString *const kAVReachabilityChangedNotification = @"kAVReachabilityChangedNotification";
+#import "HttpdnsReachability.h"
 
-@interface AVReachability ()
+NSString *const kHttpdnsReachabilityChangedNotification = @"kHttpdnsReachabilityChangedNotification";
+
+@interface HttpdnsReachability ()
 
 @property (nonatomic, assign) SCNetworkReachabilityRef  reachabilityRef;
 
@@ -24,8 +25,8 @@ NSString *const kAVReachabilityChangedNotification = @"kAVReachabilityChangedNot
 
 @property (nonatomic, strong) id reachabilityObject;
 
--(void)reachabilityChanged:(SCNetworkReachabilityFlags)flags;
--(BOOL)isReachableWithFlags:(SCNetworkReachabilityFlags)flags;
+- (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags;
+- (BOOL)isReachableWithFlags:(SCNetworkReachabilityFlags)flags;
 
 @end
 
@@ -48,13 +49,13 @@ static NSString *reachabilityFlags(SCNetworkReachabilityFlags flags)
 }
 
 // Start listening for reachability notifications on the current run loop
-static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info)
+static void HttpdnsReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info)
 {
 #pragma unused (target)
 #if __has_feature(objc_arc)
-    AVReachability *reachability = ((__bridge AVReachability*)info);
+    HttpdnsReachability *reachability = ((__bridge HttpdnsReachability*)info);
 #else
-    AVReachability *reachability = ((AVReachability*)info);
+    HttpdnsReachability *reachability = ((HttpdnsReachability*)info);
 #endif
     
     // We probably don't need an autoreleasepool here, as GCD docs state each queue has its own autorelease pool,
@@ -66,7 +67,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 
 
-@implementation AVReachability
+@implementation HttpdnsReachability
 
 @synthesize reachabilityRef;
 @synthesize reachabilitySerialQueue;
@@ -80,12 +81,12 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 #pragma mark - Class Constructor Methods
 
-+(AVReachability*)reachabilityWithHostName:(NSString*)hostname
++ (HttpdnsReachability*)reachabilityWithHostName:(NSString*)hostname
 {
-    return [AVReachability reachabilityWithHostname:hostname];
+    return [HttpdnsReachability reachabilityWithHostname:hostname];
 }
 
-+(AVReachability*)reachabilityWithHostname:(NSString*)hostname
++ (HttpdnsReachability*)reachabilityWithHostname:(NSString*)hostname
 {
     SCNetworkReachabilityRef ref = SCNetworkReachabilityCreateWithName(NULL, [hostname UTF8String]);
     if (ref)
@@ -103,7 +104,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return nil;
 }
 
-+(AVReachability *)reachabilityWithAddress:(const struct sockaddr_in *)hostAddress
++ (HttpdnsReachability *)reachabilityWithAddress:(const struct sockaddr_in *)hostAddress
 {
     SCNetworkReachabilityRef ref = SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (const struct sockaddr*)hostAddress);
     if (ref)
@@ -120,7 +121,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return nil;
 }
 
-+(AVReachability *)reachabilityForInternetConnection
++ (HttpdnsReachability *)reachabilityForInternetConnection
 {
     struct sockaddr_in zeroAddress;
     bzero(&zeroAddress, sizeof(zeroAddress));
@@ -130,7 +131,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return [self reachabilityWithAddress:&zeroAddress];
 }
 
-+(AVReachability*)reachabilityForLocalWiFi
++ (HttpdnsReachability*)reachabilityForLocalWiFi
 {
     struct sockaddr_in localWifiAddress;
     bzero(&localWifiAddress, sizeof(localWifiAddress));
@@ -145,7 +146,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 // Initialization methods
 
--(AVReachability *)initWithReachabilityRef:(SCNetworkReachabilityRef)ref
+- (HttpdnsReachability *)initWithReachabilityRef:(SCNetworkReachabilityRef)ref
 {
     self = [super init];
     if (self != nil)
@@ -157,7 +158,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return self;
 }
 
--(void)dealloc
+- (void)dealloc
 {
     [self stopNotifier];
     
@@ -184,7 +185,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 // - In other words DO NOT DO ANY UI UPDATES IN THE BLOCKS.
 //   INSTEAD USE dispatch_async(dispatch_get_main_queue(), ^{UISTUFF}) (or dispatch_sync if you want)
 
--(BOOL)startNotifier
+- (BOOL)startNotifier
 {
     SCNetworkReachabilityContext    context = { 0, NULL, NULL, NULL, NULL };
     
@@ -208,7 +209,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     context.info = (void *)self;
 #endif
     
-    if (!SCNetworkReachabilitySetCallback(self.reachabilityRef, AVReachabilityCallback, &context))
+    if (!SCNetworkReachabilitySetCallback(self.reachabilityRef, HttpdnsReachabilityCallback, &context))
     {
 #ifdef DEBUG
         NSLog(@"SCNetworkReachabilitySetCallback() failed: %s", SCErrorString(SCError()));
@@ -257,7 +258,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return YES;
 }
 
--(void)stopNotifier
+- (void)stopNotifier
 {
     // First stop, any callbacks!
     SCNetworkReachabilitySetCallback(self.reachabilityRef, NULL, NULL);
@@ -288,7 +289,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 #define testcase (kSCNetworkReachabilityFlagsConnectionRequired | kSCNetworkReachabilityFlagsTransientConnection)
 
--(BOOL)isReachableWithFlags:(SCNetworkReachabilityFlags)flags
+- (BOOL)isReachableWithFlags:(SCNetworkReachabilityFlags)flags
 {
     BOOL connectionUP = YES;
     
@@ -313,7 +314,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return connectionUP;
 }
 
--(BOOL)isReachable
+- (BOOL)isReachable
 {
     SCNetworkReachabilityFlags flags;
     
@@ -323,7 +324,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return [self isReachableWithFlags:flags];
 }
 
--(BOOL)isReachableViaWWAN
+- (BOOL)isReachableViaWWAN
 {
 #if	TARGET_OS_IPHONE
     
@@ -346,7 +347,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return NO;
 }
 
--(BOOL)isReachableViaWiFi
+- (BOOL)isReachableViaWiFi
 {
     SCNetworkReachabilityFlags flags = 0;
     
@@ -372,12 +373,12 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 // WWAN may be available, but not active until a connection has been established.
 // WiFi may require a connection for VPN on Demand.
--(BOOL)isConnectionRequired
+- (BOOL)isConnectionRequired
 {
     return [self connectionRequired];
 }
 
--(BOOL)connectionRequired
+- (BOOL)connectionRequired
 {
     SCNetworkReachabilityFlags flags;
     
@@ -390,7 +391,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 
 // Dynamic, on demand connection?
--(BOOL)isConnectionOnDemand
+- (BOOL)isConnectionOnDemand
 {
     SCNetworkReachabilityFlags flags;
     
@@ -404,7 +405,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 
 // Is user intervention required?
--(BOOL)isInterventionRequired
+- (BOOL)isInterventionRequired
 {
     SCNetworkReachabilityFlags flags;
     
@@ -420,22 +421,22 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 #pragma mark - reachability status stuff
 
--(AVNetworkStatus)currentReachabilityStatus
+- (HttpdnsNetworkStatus)currentReachabilityStatus
 {
     if([self isReachable])
     {
         if([self isReachableViaWiFi])
-            return AVReachableViaWiFi;
+            return HttpdnsReachableViaWiFi;
         
 #if	TARGET_OS_IPHONE
-        return AVReachableViaWWAN;
+        return HttpdnsReachableViaWWAN;
 #endif
     }
     
-    return AVNotReachable;
+    return HttpdnsNotReachable;
 }
 
--(SCNetworkReachabilityFlags)reachabilityFlags
+- (SCNetworkReachabilityFlags)reachabilityFlags
 {
     SCNetworkReachabilityFlags flags = 0;
     
@@ -447,16 +448,16 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return 0;
 }
 
--(NSString*)currentReachabilityString
+- (NSString*)currentReachabilityString
 {
-    AVNetworkStatus temp = [self currentReachabilityStatus];
+    HttpdnsNetworkStatus temp = [self currentReachabilityStatus];
     
     if(temp == reachableOnWWAN)
     {
         // Updated for the fact that we have CDMA phones now!
         return NSLocalizedString(@"Cellular", @"");
     }
-    if (temp == AVReachableViaWiFi)
+    if (temp == HttpdnsReachableViaWiFi)
     {
         return NSLocalizedString(@"WiFi", @"");
     }
@@ -464,14 +465,14 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return NSLocalizedString(@"No Connection", @"");
 }
 
--(NSString*)currentReachabilityFlags
+- (NSString*)currentReachabilityFlags
 {
     return reachabilityFlags([self reachabilityFlags]);
 }
 
 #pragma mark - Callback function calls this method
 
--(void)reachabilityChanged:(SCNetworkReachabilityFlags)flags
+- (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags
 {
     if([self isReachableWithFlags:flags])
     {
@@ -490,7 +491,7 @@ static void AVReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     
     // this makes sure the change notification happens on the MAIN THREAD
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:kAVReachabilityChangedNotification
+        [[NSNotificationCenter defaultCenter] postNotificationName:kHttpdnsReachabilityChangedNotification
                                                             object:self];
     });
 }
