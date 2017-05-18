@@ -26,7 +26,7 @@
  * API 文档：http://gitlab.alibaba-inc.com/alicloud-ams/httpdns-doc/blob/master/v6/sc-proto.md
  */
 
-//http://106.11.90.200/sc/httpdns_config?account_id=153519&platform=ios&sdk_version=1.5.0
+//http://106.11.90.200/sc/httpdns_config?account_id=153519&platform=ios&sdk_version=1.6.0
 
 #pragma mark - Schedule Center
 ///=============================================================================
@@ -37,6 +37,8 @@ static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST = @"httpdns
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP = @"203.107.1.97";
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2 = @"203.107.1.100";
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_PATH = @"sc/httpdns_config";
+static NSString *const ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY = @"ErrorMessage";
+static NSString *const ALICLOUD_HTTPDNS_ERROR_SERVICE_LEVEL_DENY = @"ServiceLevelDeny";
 
 //requst paramer
 
@@ -55,20 +57,20 @@ static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_PARAMER_APP_KEY 
 //requst result
 
 //SCHEDULE_CENTER configure
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_KEY = @"service";
+static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_KEY = @"service_status";
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IP_KEY = @"service_ip";
 
-//"service": "enable"
+//"service_status": "enable"
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_ENABLE_VALUE = @"enable";
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_DISABLE_VALUE = @"disable";
 
-//当前时间戳，单位毫秒
+//当前时间戳，单位秒
 #define ALICLOUD_HTTPDNS_DISTANT_CURRENT_TIMESTAMP \
-    ([[NSDate date] timeIntervalSince1970] * 1000)
+    ([[NSDate date] timeIntervalSince1970])
 
-//单位毫秒
+//单位秒
 #define ALICLOUD_HTTPDNS_DISTANT_FUTURE_TIMESTAMP \
-    ([[NSDate distantFuture] timeIntervalSince1970] * 1000)
+    ([[NSDate distantFuture] timeIntervalSince1970])
 
 #define ALICLOUD_HTTPDNS_VALID_TIMESTAMP(timestamp) ({      \
     int64_t timestamp_ = (int64_t)(timestamp);  \

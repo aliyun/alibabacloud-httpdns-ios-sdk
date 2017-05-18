@@ -1,7 +1,7 @@
 #import <Foundation/Foundation.h>
 #import "sqlite3.h"
-#import "LCResultSet.h"
-#import "LCDatabasePool.h"
+#import "HttpdnsResultSet.h"
+#import "HttpdnsDatabasePool.h"
 
 
 #if ! __has_feature(objc_arc)
@@ -71,7 +71,7 @@ typedef int(^FMDBExecuteStatementsCallbackBlock)(NSDictionary *resultsDictionary
 #pragma clang diagnostic ignored "-Wobjc-interface-ivars"
 
 
-@interface LCDatabase : NSObject  {
+@interface HttpdnsDatabase : NSObject  {
     
     sqlite3*            _db;
     NSString*           _databasePath;
@@ -477,7 +477,7 @@ typedef int(^FMDBExecuteStatementsCallbackBlock)(NSDictionary *resultsDictionary
  @note If you want to use this from Swift, please note that you must include `FMDatabaseVariadic.swift` in your project. Without that, you cannot use this method directly, and instead have to use methods such as `<executeQuery:withArgumentsInArray:>`.
  */
 
-- (LCResultSet *)executeQuery:(NSString*)sql, ...;
+- (HttpdnsResultSet *)executeQuery:(NSString*)sql, ...;
 
 /** Execute select statement
 
@@ -507,7 +507,7 @@ typedef int(^FMDBExecuteStatementsCallbackBlock)(NSDictionary *resultsDictionary
  
  */
 
-- (LCResultSet *)executeQueryWithFormat:(NSString*)format, ... NS_FORMAT_FUNCTION(1,2);
+- (HttpdnsResultSet *)executeQueryWithFormat:(NSString*)format, ... NS_FORMAT_FUNCTION(1,2);
 
 /** Execute select statement
 
@@ -525,7 +525,7 @@ typedef int(^FMDBExecuteStatementsCallbackBlock)(NSDictionary *resultsDictionary
  @see [`FMResultSet next`](<[FMResultSet next]>)
  */
 
-- (LCResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray *)arguments;
+- (HttpdnsResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray *)arguments;
 
 /** Execute select statement
 
@@ -543,11 +543,11 @@ typedef int(^FMDBExecuteStatementsCallbackBlock)(NSDictionary *resultsDictionary
  @see [`FMResultSet next`](<[FMResultSet next]>)
  */
 
-- (LCResultSet *)executeQuery:(NSString *)sql withParameterDictionary:(NSDictionary *)arguments;
+- (HttpdnsResultSet *)executeQuery:(NSString *)sql withParameterDictionary:(NSDictionary *)arguments;
 
 
 // Documentation forthcoming.
-- (LCResultSet *)executeQuery:(NSString*)sql withVAList: (va_list)args;
+- (HttpdnsResultSet *)executeQuery:(NSString*)sql withVAList: (va_list)args;
 
 ///-------------------
 /// @name Transactions
@@ -1035,7 +1035,7 @@ typedef int(^FMDBExecuteStatementsCallbackBlock)(NSDictionary *resultsDictionary
  - [`sqlite3_stmt`](http://www.sqlite.org/c3ref/stmt.html)
  */
 
-@interface LCStatement : NSObject {
+@interface HttpdnsStatement : NSObject {
     sqlite3_stmt *_statement;
     NSString *_query;
     long _useCount;

@@ -2,12 +2,13 @@
 //  HttpdnsCacheStore.m
 //  AlicloudHttpDNS
 //
-//  Created by chenyilong on 2017/5/3.
+//  Created by ElonChan（地风） on 2017/5/3.
 //  Copyright © 2017年 alibaba-inc.com. All rights reserved.
 //
 
 #import "HttpdnsCacheStore.h"
 #import "HttpdnsPersistenceUtils.h"
+#import "HttpdnsServiceProvider.h"
 
 @interface HttpdnsCacheStore()
 
@@ -16,24 +17,25 @@
 @end
 
 @implementation HttpdnsCacheStore {
-    LCDatabaseQueue *_databaseQueue;
+    HttpdnsDatabaseQueue *_databaseQueue;
 }
 
 + (NSString *)databasePathWithName:(NSString *)name {
     return [HttpdnsPersistenceUtils hostCacheDatabasePathWithName:name];
 }
 
-- (instancetype)initWithAccountId:(NSString *)accountId {
+- (instancetype)init {
     self = [super init];
     
     if (self) {
-        _accountId = [accountId copy];
+        HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+        _accountId = [NSString stringWithFormat:@"%@", @(sharedService.accountID)];
     }
     
     return self;
 }
 
-- (LCDatabaseQueue *)databaseQueue {
+- (HttpdnsDatabaseQueue *)databaseQueue {
     @synchronized(self) {
         if (_databaseQueue) {
             return _databaseQueue;
@@ -41,7 +43,7 @@
         
         if (self.accountId) {
             NSString *path = [[self class] databasePathWithName:self.accountId];
-            _databaseQueue = [LCDatabaseQueue databaseQueueWithPath:path];
+            _databaseQueue = [HttpdnsDatabaseQueue databaseQueueWithPath:path];
             
             if (_databaseQueue) {
                 [self databaseQueueDidLoad];
@@ -54,6 +56,8 @@
 
 - (void)databaseQueueDidLoad {
     // Stub
+    // This enforces implementing this method in subclasses
+    [self doesNotRecognizeSelector:_cmd];
 }
 
 - (void)dealloc {

@@ -25,9 +25,15 @@
 #import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsScheduleCenter_Internal.h"
 #import "TestBase.h"
+#import "HttpdnsConstants.h"
 
 //#import "RequestSchedulerTestHelper.h"
 #import "ScheduleCenterTestHelper.h"
+#import "HttpdnsHostCacheStore.h"
+#import "HttpdnsIPCacheStore.h"
+#import "HttpdnsHostRecord.h"
+#import "HttpdnsIPRecord.h"
+#import "HttpdnsHostCacheStore_Internal.h"
 
 @interface HttpdnsRequestTest : XCTestCase
 
@@ -116,7 +122,7 @@
  */
 - (void)testFailedHTTPRequestRunLoop {
     [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
-
+    
     NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
     [[HttpDnsService sharedInstance] setPreResolveHosts:array];
     [NSThread sleepForTimeInterval:60];
@@ -369,7 +375,7 @@
     
     [ScheduleCenterTestHelper setTwoFirstIPWrongForTest];
     [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
-
+    
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
     
     dispatch_queue_t concurrentQueue =
@@ -687,7 +693,7 @@
     
     NSInteger code = 403;
     NSDictionary *errorInfo = @{
-                                @"ErrorMessage" : @"ServiceLevelDeny",
+                                ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY : ALICLOUD_HTTPDNS_ERROR_SERVICE_LEVEL_DENY,
                                 };
     NSError *error = [NSError errorWithDomain:NSStringFromClass([self class])
                                          code:code
@@ -696,6 +702,253 @@
     [requestScheduler canNotResolveHost:hostName error:error isRetry:NO activatedServerIPIndex:0];
     sleep(20);
     XCTAssertNotNil([service getIpByHost:hostName]);
+}
+
+#pragma mark -
+#pragma mark -  DB 缓存相关单元测试 Method
+
+/**
+ * 测试目的：持久化缓存的开关功能是否符合预期
+ * 测试方法：
+ * 1.调用getIpByHostAsync
+ * 2.等待片刻，再次调用getIpByHostAsync，预期返回ip不为空
+ * 3.持久化缓存中load相应数据，预期为空
+ 
+ * 测试目的：getIpByHostAsync调用后是否缓存成功
+ * 测试方法：
+ * 1.setDBCacheEnable(true)
+ * 2.调用getIpByHostAsync
+ * 3.等待片刻，再次调用getIpByHostAsync，确保成功返回ip
+ * 4.测试load是否正常
+ 
+ * 测试目的：持久化缓存在初始化阶段和网络切换后是否成功加载
+ * 测试方法：
+ * 1.mService.setDBCacheEnable(true)
+ * 2.模拟初始化状态
+ * 3.在持久化缓存中构造数据
+ * 4.调用getIpByHostAsync，预期返回构造数据
+ * 5.模拟网络切换后的状态
+ * 6.调用getIpByHostAsync，预期返回构造数据
+
+ */
+- (void)testDBEnableSwitch {
+    NSString *hostName = @"www.taobao.com";
+    HttpDnsService *service = [HttpDnsService sharedInstance];
+    HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
+
+    //内部缓存开关，不触发加载DB到内存的操作
+    [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
+    [requestScheduler loadIPsFromCacheSyncIfNeeded];
+    //    XCTAssertNil([service getIpByHostAsync:hostName]);
+    XCTAssertNotNil([service getIpByHostAsync:hostName]);
+}
+
+/**
+ * 测试目的：持久化缓存载入内存缓存后是否按预期TTL失效
+ * 测试方法：
+ * 1.setDBCacheEnable(true)
+ * 2.构造容易过期的缓存记录
+ * 3.调用getIpByHostAsync，预期能取到构造的ip
+ * 4.等待过期
+ * 5.再次调用getIpByHostAsync，预期拿到ip为空，并发起httpdns请求
+ * 6.等待片刻，再次调用getIpByHostAsync，预期返回新的ip
+ */
+- (void)testDBTTLExpire {
+    
+    NSString *hostName = @"www.taobao.com";
+    HttpDnsService *service = [HttpDnsService sharedInstance];
+    HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
+    
+    //内部缓存开关，不触发加载DB到内存的操作
+    [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
+    [requestScheduler loadIPsFromCacheSyncIfNeeded];
+    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+    HttpdnsHostRecord *hostRecord = [hostCacheStore hostRecordsWithCurrentCarrierForHost:hostName];
+    
+    HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore new];
+    NSArray<HttpdnsIPRecord *> *IPRecords = [IPCacheStore IPRecordsForHostID:hostRecord.hostRecordId];
+    HttpdnsIPRecord *IPRecord = IPRecords[0];
+    //    XCTAssertNotNil([service getIpByHost:hostName]);
+    sleep(IPRecord.TTL);
+    XCTAssertNil([service getIpByHostAsync:hostName]);
+    [requestScheduler loadIPsFromCacheSyncIfNeeded];
+    XCTAssertNotNil([service getIpByHostAsync:hostName]);
+}
+
+/**
+ * 测试目的：测试用户下线host后的边界情况
+ * 测试方法：
+ * 1.setDBCacheEnable(true)
+ * 2.准备fake的容易过期数据
+ * 3.store数据，模拟上次缓存场景
+ * 4.调用getIpByHostAsync，第一次命中持久化缓存
+ * 5.等待片刻，直到过期
+ * 6.调用getIpByHostAsync，已经过期，发起httpdns请求，返回ip为空
+ * 7.等待片刻
+ * 8.load数据
+ * 9.断言host为空
+ */
+- (void)testDB4 {
+    NSString *hostName = @"www.taobao.com";
+    HttpDnsService *service = [HttpDnsService sharedInstance];
+    HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
+    //内部缓存开关，不触发加载DB到内存的操作
+    [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
+    XCTAssertNotNil([service getIpByHost:hostName]);
+    [requestScheduler cleanAllHostMemoryCache];
+    [requestScheduler loadIPsFromCacheSyncIfNeeded];
+    XCTAssertNotNil([service getIpByHostAsync:hostName]);
+    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:hostName IPs:@[] TTL:0];
+    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+    [hostCacheStore insertHostRecords:@[hostRecord]];
+    
+    [requestScheduler cleanAllHostMemoryCache];
+    [requestScheduler loadIPsFromCacheSyncIfNeeded];
+    XCTAssertNil([service getIpByHostAsync:hostName]);
+}
+
+/**
+ * 测试目的：不同sp下，DB缓存load出来的host记录不相同
+ * 测试方法：
+ * 1.mService.setDBCacheEnable(true)
+ * 2.调用getIpByHostAsync
+ * 3.load HostRecord h2
+ * 4.mock SpStatusMgr
+ * 5.load HostRecord h3
+ * 6.断言h2.id != h3.id
+ */
+- (void)testDB5 {
+    
+}
+/**
+ * 测试目的：本地轮询100次，确认sp信息读取是否都保持一致
+ * 测试方法：
+ * 1.mService.setDBCacheEnable(true)
+ * 2.在持久化缓存中构造数据
+ * 3.轮询调用100次getIpByHostAsync，断言返回结果一致
+ */
+- (void)testDB6 {
+    NSString *hostName = @"www.taobao.com";
+    HttpDnsService *service = [HttpDnsService sharedInstance];
+    HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
+    
+    //内部缓存开关，不触发加载DB到内存的操作
+    [requestScheduler _setCachedIPEnabled:YES];//[service setCachedIPEnabled:YES];
+    [requestScheduler loadIPsFromCacheSyncIfNeeded];
+    for (int i = 0; i < 10; i++) {
+        NSString *IP1 = [service getIpByHostAsync:hostName];
+        NSString *IP2 = [service getIpByHostAsync:hostName];
+        XCTAssertNotNil(IP1);
+        XCTAssertNotNil(IP2);
+        XCTAssertTrue([IP1 isEqualToString:IP2]);
+    }
+    
+    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+    HttpdnsHostRecord *hostRecord = [hostCacheStore hostRecordsWithCurrentCarrierForHost:hostName];
+    
+    HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore new];
+    NSArray<HttpdnsIPRecord *> *IPRecords = [IPCacheStore IPRecordsForHostID:hostRecord.hostRecordId];
+    HttpdnsIPRecord *IPRecord = IPRecords[0];
+    //    XCTAssertNotNil([service getIpByHost:hostName]);
+    sleep(IPRecord.TTL);
+    
+    for (int i = 0; i < 10; i++) {
+        NSString *IP1 = [service getIpByHostAsync:hostName];
+        NSString *IP2 = [service getIpByHostAsync:hostName];
+        XCTAssertNil(IP1);
+        XCTAssertNil(IP2);
+    }
+}
+
+/**
+ * 测试目的：disable逻辑触发后，在合法缓存的情况下，是否返回空
+ * 测试方法：
+ * 1.mService.setDBCacheEnable(true)
+ * 2.触发disable状态
+ * 3.在持久化缓存中构造数据
+ * 4.调用getIpByHostAsync，预期构造的host返回的ip为空
+ */
+- (void)testDBAndDisable {
+    NSString *hostName = @"www.taobao.com";
+    HttpDnsService *service = [HttpDnsService sharedInstance];
+    HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
+    [requestScheduler setServerDisable:NO host:hostName];
+    
+    //内部缓存开关，不触发加载DB到内存的操作
+    [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
+    [requestScheduler loadIPsFromCacheSyncIfNeeded];
+    
+    for (int i = 0; i < 10; i++) {
+        NSString *IP1 = [service getIpByHostAsync:hostName];
+        NSString *IP2 = [service getIpByHostAsync:hostName];
+        XCTAssertNotNil(IP1);
+        XCTAssertNotNil(IP2);
+        XCTAssertTrue([IP1 isEqualToString:IP2]);
+    }
+    
+    [requestScheduler setServerDisable:YES host:hostName];
+    
+    for (int i = 0; i < 10; i++) {
+        NSString *IP1 = [service getIpByHostAsync:hostName];
+        NSString *IP2 = [service getIpByHostAsync:hostName];
+        XCTAssertNil(IP1);
+        XCTAssertNil(IP2);
+    }
+}
+
+
+/**
+ * 测试目的：API是否正常工作
+ * 测试方法：
+ * 1.准备数据
+ * 2.store
+ * 3.load
+ * 4.断言结果正常
+ * 5.clean
+ * 6.断言结果正常
+ */
+- (void)testDBInsertManyTime {
+    NSString *hostName = @"www.taobao.com";
+    HttpDnsService *service = [HttpDnsService sharedInstance];
+    //XCTAssertNotNil([service getIpByHost:hostName]);
+    HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
+    [requestScheduler setServerDisable:NO host:hostName];
+    
+    //内部缓存开关，不触发加载DB到内存的操作
+    [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
+    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+    //XCTAssertNotNil([service getIpByHostAsync:hostName]);
+    
+    [HttpdnsHostCacheStoreTestHelper shortCacheExpireTime];
+    NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), @(ALICLOUD_HTTPDNS_HOST_CACHE_MAX_CACHE_AGE));
+    
+    //内部缓存开关，不触发加载DB到内存的操作
+    [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
+    //[requestScheduler loadIPsFromCacheSyncIfNeeded];
+    
+    for (int i = 0; i < 10; i++) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+            NSString *IP1 = [service getIpByHostAsync:hostName];
+            NSString *IP2 = [service getIpByHostAsync:hostName];
+            if (i == 9) {
+                NOTIFY
+            }
+        });
+    }
+    WAIT
+    sleep(15);
+    
+    XCTAssertNotNil([service getIpByHostAsync:hostName]);
+    [requestScheduler cleanAllHostMemoryCache];
+    //内部缓存开关，不触发加载DB到内存的操作
+    [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
+    //XCTAssertNotNil([service getIpByHostAsync:hostName]);
+    //缓存过期
+    sleep(5);
+    [hostCacheStore cleanAllExpiredHostRecordsSync];
+    [requestScheduler loadIPsFromCacheSyncIfNeeded];
+    //HttpdnsHostRecord *hostRecord = [hostCacheStore hostRecordsWithCurrentCarrierForHost:hostName];
+    XCTAssertNil([service getIpByHostAsync:hostName]);
 }
 
 @end

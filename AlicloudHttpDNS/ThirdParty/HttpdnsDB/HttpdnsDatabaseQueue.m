@@ -6,8 +6,8 @@
 //  Copyright 2011 Flying Meat Inc. All rights reserved.
 //
 
-#import "LCDatabaseQueue.h"
-#import "LCDatabase.h"
+#import "HttpdnsDatabaseQueue.h"
+#import "HttpdnsDatabase.h"
 
 /*
  
@@ -24,14 +24,14 @@
  */
 static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey;
  
-@implementation LCDatabaseQueue
+@implementation HttpdnsDatabaseQueue
 
 @synthesize path = _path;
 @synthesize openFlags = _openFlags;
 
 + (instancetype)databaseQueueWithPath:(NSString*)aPath {
     
-    LCDatabaseQueue *q = [[self alloc] initWithPath:aPath];
+    HttpdnsDatabaseQueue *q = [[self alloc] initWithPath:aPath];
     
     FMDBAutorelease(q);
     
@@ -40,7 +40,7 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
 
 + (instancetype)databaseQueueWithPath:(NSString*)aPath flags:(int)openFlags {
     
-    LCDatabaseQueue *q = [[self alloc] initWithPath:aPath flags:openFlags];
+    HttpdnsDatabaseQueue *q = [[self alloc] initWithPath:aPath flags:openFlags];
     
     FMDBAutorelease(q);
     
@@ -48,7 +48,7 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
 }
 
 + (Class)databaseClass {
-    return [LCDatabase class];
+    return [HttpdnsDatabase class];
 }
 
 - (instancetype)initWithPath:(NSString*)aPath flags:(int)openFlags {
@@ -116,9 +116,9 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
     FMDBRelease(self);
 }
 
-- (LCDatabase*)database {
+- (HttpdnsDatabase*)database {
     if (!_db) {
-        _db = FMDBReturnRetained([LCDatabase databaseWithPath:_path]);
+        _db = FMDBReturnRetained([HttpdnsDatabase databaseWithPath:_path]);
         
 #if SQLITE_VERSION_NUMBER >= 3005000
         BOOL success = [_db openWithFlags:_openFlags];
@@ -136,17 +136,17 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
     return _db;
 }
 
-- (void)inDatabase:(void (^)(LCDatabase *db))block {
+- (void)inDatabase:(void (^)(HttpdnsDatabase *db))block {
     /* Get the currently executing queue (which should probably be nil, but in theory could be another DB queue
      * and then check it against self to make sure we're not about to deadlock. */
-    LCDatabaseQueue *currentSyncQueue = (__bridge id)dispatch_get_specific(kDispatchQueueSpecificKey);
+    HttpdnsDatabaseQueue *currentSyncQueue = (__bridge id)dispatch_get_specific(kDispatchQueueSpecificKey);
     assert(currentSyncQueue != self && "inDatabase: was called reentrantly on the same queue, which would lead to a deadlock");
     
     FMDBRetain(self);
     
     dispatch_sync(_queue, ^() {
         
-        LCDatabase *db = [self database];
+        HttpdnsDatabase *db = [self database];
         block(db);
         
         if ([db hasOpenResultSets]) {
@@ -155,7 +155,7 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
 #if defined(DEBUG) && DEBUG
             NSSet *openSetCopy = FMDBReturnAutoreleased([[db valueForKey:@"_openResultSets"] copy]);
             for (NSValue *rsInWrappedInATastyValueMeal in openSetCopy) {
-                LCResultSet *rs = (LCResultSet *)[rsInWrappedInATastyValueMeal pointerValue];
+                HttpdnsResultSet *rs = (HttpdnsResultSet *)[rsInWrappedInATastyValueMeal pointerValue];
                 NSLog(@"query: '%@'", [rs query]);
             }
 #endif
@@ -166,7 +166,7 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
 }
 
 
-- (void)beginTransaction:(BOOL)useDeferred withBlock:(void (^)(LCDatabase *db, BOOL *rollback))block {
+- (void)beginTransaction:(BOOL)useDeferred withBlock:(void (^)(HttpdnsDatabase *db, BOOL *rollback))block {
     FMDBRetain(self);
     dispatch_sync(_queue, ^() { 
         
@@ -192,16 +192,16 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
     FMDBRelease(self);
 }
 
-- (void)inDeferredTransaction:(void (^)(LCDatabase *db, BOOL *rollback))block {
+- (void)inDeferredTransaction:(void (^)(HttpdnsDatabase *db, BOOL *rollback))block {
     [self beginTransaction:YES withBlock:block];
 }
 
-- (void)inTransaction:(void (^)(LCDatabase *db, BOOL *rollback))block {
+- (void)inTransaction:(void (^)(HttpdnsDatabase *db, BOOL *rollback))block {
     [self beginTransaction:NO withBlock:block];
 }
 
 #if SQLITE_VERSION_NUMBER >= 3007000
-- (NSError*)inSavePoint:(void (^)(LCDatabase *db, BOOL *rollback))block {
+- (NSError*)inSavePoint:(void (^)(HttpdnsDatabase *db, BOOL *rollback))block {
     
     static unsigned long savePointIdx = 0;
     __block NSError *err = 0x00;

@@ -18,25 +18,35 @@
  */
 
 #import <Foundation/Foundation.h>
+@class HttpdnsHostRecord;
+@class HttpdnsIPRecord;
 
 @interface HttpdnsIpObject: NSObject<NSCoding>
 
 @property (nonatomic, copy, getter=getIpString, setter=setIp:) NSString *ip;
+
+//+ (NSArray<HttpdnsIpObject *> *)IPObjectsFromIPs:(NSArray<NSString *> *)IPs;
 
 @end
 
 @interface HttpdnsHostObject : NSObject<NSCoding>
 
 @property (nonatomic, strong, setter=setHostName:, getter=getHostName) NSString *hostName;
-@property (nonatomic, strong, setter=setIps:, getter=getIps) NSArray *ips;
-@property (nonatomic, setter=setTTL:, getter=getTTL) long long ttl;
-@property (nonatomic, getter=getLastLookupTime, setter=setLastLookupTime:) long long lastLookupTime;
+@property (nonatomic, strong, setter=setIps:, getter=getIps) NSArray<HttpdnsIpObject *> *ips;
+@property (nonatomic, setter=setTTL:, getter=getTTL) int64_t ttl;
+
+/*!
+ * 查询成功后的本地时间戳
+ */
+@property (nonatomic, getter=getLastLookupTime, setter=setLastLookupTime:) int64_t lastLookupTime;
 @property (atomic, setter=setQueryingState:, getter=isQuerying) BOOL queryingState;
 
--(instancetype)init;
+- (instancetype)init;
 
--(BOOL)isExpired;
+- (BOOL)isExpired;
 
--(NSString *)description;
++ (instancetype)hostObjectWithHostRecord:(HttpdnsHostRecord *)IPRecord;
+
+- (NSArray<NSString *> *)getIPStrings;
 
 @end

@@ -2,7 +2,7 @@
 //  HttpdnsHostCacheStore.h
 //  AlicloudHttpDNS
 //
-//  Created by chenyilong on 2017/5/3.
+//  Created by ElonChan（地风） on 2017/5/3.
 //  Copyright © 2017年 alibaba-inc.com. All rights reserved.
 //
 
@@ -10,15 +10,25 @@
 #import "HttpdnsCacheStore.h"
 
 @class HttpdnsHostRecord;
+@class HttpdnsIPRecord;
+
+static NSTimeInterval ALICLOUD_HTTPDNS_HOST_CACHE_MAX_CACHE_AGE = 0;
 
 @interface HttpdnsHostCacheStore : HttpdnsCacheStore
 
-- (void)insertHostRecords:(NSArray<HttpdnsHostRecord *> *)HostRecords;
+- (void)insertHostRecords:(NSArray<HttpdnsHostRecord *> *)hostRecords;
 
-- (void)deleteHostRecord:(HttpdnsHostRecord *)HostRecord;
+//- (NSArray<HttpdnsIPRecord *> *)IPRecordsForHosts:(NSArray<NSString *> *)hosts;
 
-- (void)deleteHostRecordForHost:(NSString *)host;
+- (NSArray<NSNumber *> *)hostRecordIdsForHost:(NSString *)host;
 
-- (NSArray<HttpdnsHostRecord *> *)hostRecordsForHosts:(NSArray<NSString *> *)hosts;
+- (NSArray<HttpdnsHostRecord *> *)hostRecordsForCurrentCarrier;
+- (NSArray<HttpdnsHostRecord *> *)hostRecordsForCarrier:(NSString *)carrier;
+
+- (HttpdnsHostRecord *)hostRecordsWithCurrentCarrierForHost:(NSString *)host;
+
+- (HttpdnsHostRecord *)hostRecordsForHost:(NSString *)host carrier:(NSString *)carrier;
+
+- (void)cleanAllExpiredHostRecordsSync;
 
 @end

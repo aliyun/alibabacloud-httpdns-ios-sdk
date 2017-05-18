@@ -2,33 +2,33 @@
 //  HttpdnsHostRecord.h
 //  AlicloudHttpDNS
 //
-//  Created by chenyilong on 2017/5/3.
+//  Created by ElonChan（地风） on 2017/5/3.
 //  Copyright © 2017年 alibaba-inc.com. All rights reserved.
 //
 
-#import "LCDatabaseCoordinator.h"
-#import "LCDatabase.h"
-#import "LCDatabaseQueue.h"
+#import "HttpdnsDatabaseCoordinator.h"
+#import "HttpdnsDatabase.h"
+#import "HttpdnsDatabaseQueue.h"
 #import "HttpdnsLog.h"
 
 #import <libkern/OSAtomic.h>
 
 #ifdef DEBUG
-#define LC_SHOULD_LOG_ERRORS YES
+#define ALICLOUD_HTTPDNS_SHOULD_LOG_ERRORS YES
 #else
-#define LC_SHOULD_LOG_ERRORS NO
+#define ALICLOUD_HTTPDNS_SHOULD_LOG_ERRORS NO
 #endif
 
-@interface LCDatabaseCoordinator () {
-    LCDatabaseQueue *_dbQueue;
+@interface HttpdnsDatabaseCoordinator () {
+    HttpdnsDatabaseQueue *_dbQueue;
     OSSpinLock _dbQueueLock;
 }
 
-- (LCDatabaseQueue *)dbQueue;
+- (HttpdnsDatabaseQueue *)dbQueue;
 
 @end
 
-@implementation LCDatabaseCoordinator
+@implementation HttpdnsDatabaseCoordinator
 
 - (instancetype)init {
     self = [super init];
@@ -50,8 +50,8 @@
     return self;
 }
 
-- (void)executeTransaction:(LCDatabaseJob)job fail:(LCDatabaseJob)fail {
-    [self executeJob:^(LCDatabase *db) {
+- (void)executeTransaction:(HttpdnsDatabaseJob)job fail:(HttpdnsDatabaseJob)fail {
+    [self executeJob:^(HttpdnsDatabase *db) {
         [db beginTransaction];
         @try {
             job(db);
@@ -63,16 +63,16 @@
     }];
 }
 
-- (void)executeJob:(LCDatabaseJob)job {
-    [self.dbQueue inDatabase:^(LCDatabase *db) {
-        db.logsErrors = LC_SHOULD_LOG_ERRORS;
+- (void)executeJob:(HttpdnsDatabaseJob)job {
+    [self.dbQueue inDatabase:^(HttpdnsDatabase *db) {
+        db.logsErrors = ALICLOUD_HTTPDNS_SHOULD_LOG_ERRORS;
         job(db);
     }];
 }
 
 #pragma mark - Lazy loading
 
-- (LCDatabaseQueue *)dbQueue {
+- (HttpdnsDatabaseQueue *)dbQueue {
     if (!_databasePath) {
         HttpdnsLogDebug("%@: Database path not found.", [[self class] description]);
         return nil;
@@ -81,7 +81,7 @@
     OSSpinLockLock(&_dbQueueLock);
 
     if (!_dbQueue) {
-        _dbQueue = [LCDatabaseQueue databaseQueueWithPath:_databasePath];
+        _dbQueue = [HttpdnsDatabaseQueue databaseQueueWithPath:_databasePath];
     }
 
     OSSpinLockUnlock(&_dbQueueLock);

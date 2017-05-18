@@ -2,7 +2,7 @@
 //  HttpdnsScheduleCenterRequest.m
 //  AlicloudHttpDNS
 //
-//  Created by chenyilong on 2017/4/11.
+//  Created by ElonChan（地风） on 2017/4/11.
 //  Copyright © 2017年 alibaba-inc.com. All rights reserved.
 //
 
@@ -68,7 +68,7 @@ static NSURLSession *_scheduleCenterSession = nil;
 }
 
 /*!
- * 形如 https://106.11.90.200/sc/httpdns_config?account_id=153519&platform=ios&sdk_version=1.5.0
+ * 形如 https://106.11.90.200/sc/httpdns_config?account_id=153519&platform=ios&sdk_version=1.6.0
  */
 - (NSString *)constructRequestURLWithHostIndex:(NSInteger)hostIndex {
     NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];

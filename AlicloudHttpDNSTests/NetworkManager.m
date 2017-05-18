@@ -23,7 +23,7 @@ static dispatch_queue_t reachabilityQueue;
     CTTelephonyNetworkInfo* _cttInfo;
 }
 
--(id)init {
+- (id)init {
     if (self = [super init]) {
         _ref = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, [@"gw.alicdn.com" UTF8String]);
         _cttInfo = [[CTTelephonyNetworkInfo alloc] init];
@@ -35,7 +35,7 @@ static dispatch_queue_t reachabilityQueue;
     return self;
 }
 
-+(NetworkManager*)instance {
++ (NetworkManager*)instance {
     static NetworkManager* _instance = nil;
     @synchronized(self) {
         _instance = [[NetworkManager alloc] init];
@@ -47,7 +47,7 @@ static dispatch_queue_t reachabilityQueue;
 /*
  * 当前网络状态的String描述
  */
--(NSString*)currentStatusString
+- (NSString*)currentStatusString
 {
     return [NSString stringWithFormat:@"%u",_current];
 }
@@ -56,7 +56,7 @@ static dispatch_queue_t reachabilityQueue;
  * 如果当前网络是Wifi,
  * 获取到当前网络的ssid
  */
--(NSString *)currentWifiSsid
+- (NSString *)currentWifiSsid
 {
     return _ssid;
 }
@@ -110,7 +110,7 @@ static dispatch_queue_t reachabilityQueue;
     return returnValue;
 }
 
--(void)update {
+- (void)update {
     SCNetworkReachabilityFlags flags = 0;
     if (SCNetworkReachabilityGetFlags(_ref, &flags)) {
         _last = _current;
@@ -139,7 +139,7 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     [instance update];
 }
 
--(void)startNotify {
+- (void)startNotify {
     SCNetworkReachabilityContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
     
     if(SCNetworkReachabilitySetCallback(_ref, ReachabilityCallback, &context)) {

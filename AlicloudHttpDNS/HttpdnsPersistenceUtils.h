@@ -44,5 +44,6 @@
 
 // ~/Library/Caches/HTTPDNS/HostCache/databaseName
 + (NSString *)hostCacheDatabasePathWithName:(NSString *)name;
++ (NSString *)keyValueDatabasePath;
 
 @end

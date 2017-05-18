@@ -18,23 +18,23 @@
  */
 
 
-#import "LCDatabaseMigrator.h"
-#import "LCDatabaseCoordinator.h"
-#import "LCDatabase.h"
-#import "LCDatabaseAdditions.h"
+#import "HttpdnsDatabaseMigrator.h"
+#import "HttpdnsDatabaseCoordinator.h"
+#import "HttpdnsDatabase.h"
+#import "HttpdnsDatabaseAdditions.h"
 
 #import <libkern/OSAtomic.h>
 
-@interface LCDatabaseMigrator () {
-    LCDatabaseCoordinator *_coordinator;
+@interface HttpdnsDatabaseMigrator () {
+    HttpdnsDatabaseCoordinator *_coordinator;
     OSSpinLock _coordinatorLock;
 }
 
-@property (readonly) LCDatabaseCoordinator *coordinator;
+@property (readonly) HttpdnsDatabaseCoordinator *coordinator;
 
 @end
 
-@implementation LCDatabaseMigrator
+@implementation HttpdnsDatabaseMigrator
 
 - (instancetype)init {
     self = [super init];
@@ -59,7 +59,7 @@
 - (NSInteger)versionOfDatabase {
     __block NSInteger version = 0;
 
-    [self.coordinator executeJob:^(LCDatabase *db) {
+    [self.coordinator executeJob:^(HttpdnsDatabase *db) {
         version = (NSInteger)[db userVersion];
     }];
 
@@ -68,9 +68,9 @@
 
 - (void)applyMigrations:(NSArray *)migrations
             fromVersion:(uint32_t)fromVersion
-               database:(LCDatabase *)database
+               database:(HttpdnsDatabase *)database
 {
-    for (LCDatabaseMigration *migration in migrations) {
+    for (HttpdnsDatabaseMigration *migration in migrations) {
         if (migration.block) {
             migration.block(database);
         }
@@ -87,10 +87,10 @@
         NSArray *restMigrations = [migrations subarrayWithRange:NSMakeRange(oldVersion, newVersion - oldVersion)];
 
         [self.coordinator
-         executeTransaction:^(LCDatabase *db) {
+         executeTransaction:^(HttpdnsDatabase *db) {
              [self applyMigrations:restMigrations fromVersion:oldVersion database:db];
          }
-         fail:^(LCDatabase *db) {
+         fail:^(HttpdnsDatabase *db) {
              [db setUserVersion:oldVersion];
          }];
     }
@@ -98,11 +98,11 @@
 
 #pragma mark - Lazy loading
 
-- (LCDatabaseCoordinator *)coordinator {
+- (HttpdnsDatabaseCoordinator *)coordinator {
     OSSpinLockLock(&_coordinatorLock);
 
     if (!_coordinator) {
-        _coordinator = [[LCDatabaseCoordinator alloc] initWithDatabasePath:_databasePath];
+        _coordinator = [[HttpdnsDatabaseCoordinator alloc] initWithDatabasePath:_databasePath];
     }
 
     OSSpinLockUnlock(&_coordinatorLock);
@@ -112,13 +112,13 @@
 
 @end
 
-@implementation LCDatabaseMigration
+@implementation HttpdnsDatabaseMigration
 
-+ (instancetype)migrationWithBlock:(LCDatabaseJob)block {
++ (instancetype)migrationWithBlock:(HttpdnsDatabaseJob)block {
     return [[self alloc] initWithBlock:block];
 }
 
-- (instancetype)initWithBlock:(LCDatabaseJob)block {
+- (instancetype)initWithBlock:(HttpdnsDatabaseJob)block {
     self = [super init];
 
     if (self) {

@@ -2,7 +2,7 @@
 //  HttpdnsgetNetworkInfoHelper.m
 //  AlicloudHttpDNS
 //
-//  Created by chenyilong on 2017/5/3.
+//  Created by ElonChan（地风） on 2017/5/3.
 //  Copyright © 2017年 alibaba-inc.com. All rights reserved.
 //
 
@@ -15,17 +15,16 @@
 
 #define ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(type) [NSString stringWithFormat:@"%@", @(type)]
 #define ALICLOUD_HTTPDNS_NETWORK_FROME_COUNTRY_NETWORK(type, mobileCountryCode, mobileNetworkCode) [NSString stringWithFormat:@"%@-%@-%@", @(type), mobileCountryCode, mobileNetworkCode]
-
 #define ALICLOUD_HTTPDNS_NETWORK_FROME_WIFI_SSID(type, SSID) [NSString stringWithFormat:@"%@-%@", @(type), SSID]
 
 //wifi是否可用
 + (BOOL)isWifiEnable {
-    return ([[AVReachability reachabilityForLocalWiFi] currentReachabilityStatus] == AVReachableViaWiFi);
+    return ([[HttpdnsReachability reachabilityForLocalWiFi] currentReachabilityStatus] == HttpdnsReachableViaWiFi);
 }
 
 //蜂窝移动网络是否可用
 + (BOOL)isCarrierConnectEnable {
-    return ([[AVReachability reachabilityForInternetConnection] currentReachabilityStatus] == AVReachableViaWWAN);
+    return ([[HttpdnsReachability reachabilityForInternetConnection] currentReachabilityStatus] == HttpdnsReachableViaWWAN);
 }
 
 /**

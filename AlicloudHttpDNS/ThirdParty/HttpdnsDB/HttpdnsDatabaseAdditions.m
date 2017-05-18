@@ -6,20 +6,20 @@
 //  Copyright 2005 Flying Meat Inc.. All rights reserved.
 //
 
-#import "LCDatabase.h"
-#import "LCDatabaseAdditions.h"
+#import "HttpdnsDatabase.h"
+#import "HttpdnsDatabaseAdditions.h"
 #import "TargetConditionals.h"
 
-@interface LCDatabase (PrivateStuff)
-- (LCResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray*)arrayArgs orDictionary:(NSDictionary *)dictionaryArgs orVAList:(va_list)args;
+@interface HttpdnsDatabase (PrivateStuff)
+- (HttpdnsResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray*)arrayArgs orDictionary:(NSDictionary *)dictionaryArgs orVAList:(va_list)args;
 @end
 
-@implementation LCDatabase (LCDatabaseAdditions)
+@implementation HttpdnsDatabase (HttpdnsDatabaseAdditions)
 
 #define RETURN_RESULT_FOR_QUERY_WITH_SELECTOR(type, sel)             \
 va_list args;                                                        \
 va_start(args, query);                                               \
-LCResultSet *resultSet = [self executeQuery:query withArgumentsInArray:0x00 orDictionary:0x00 orVAList:args];   \
+HttpdnsResultSet *resultSet = [self executeQuery:query withArgumentsInArray:0x00 orDictionary:0x00 orVAList:args];   \
 va_end(args);                                                        \
 if (![resultSet next]) { return (type)0; }                           \
 type ret = [resultSet sel:0];                                        \
@@ -61,7 +61,7 @@ return ret;
     
     tableName = [tableName lowercaseString];
     
-    LCResultSet *rs = [self executeQuery:@"select [sql] from sqlite_master where [type] = 'table' and lower(name) = ?", tableName];
+    HttpdnsResultSet *rs = [self executeQuery:@"select [sql] from sqlite_master where [type] = 'table' and lower(name) = ?", tableName];
     
     //if at least one next exists, table exists
     BOOL returnBool = [rs next];
@@ -76,10 +76,10 @@ return ret;
  get table with list of tables: result colums: type[STRING], name[STRING],tbl_name[STRING],rootpage[INTEGER],sql[STRING]
  check if table exist in database  (patch from OZLB)
 */
-- (LCResultSet*)getSchema {
+- (HttpdnsResultSet*)getSchema {
     
     //result colums: type[STRING], name[STRING],tbl_name[STRING],rootpage[INTEGER],sql[STRING]
-    LCResultSet *rs = [self executeQuery:@"SELECT type, name, tbl_name, rootpage, sql FROM (SELECT * FROM sqlite_master UNION ALL SELECT * FROM sqlite_temp_master) WHERE type != 'meta' AND name NOT LIKE 'sqlite_%' ORDER BY tbl_name, type DESC, name"];
+    HttpdnsResultSet *rs = [self executeQuery:@"SELECT type, name, tbl_name, rootpage, sql FROM (SELECT * FROM sqlite_master UNION ALL SELECT * FROM sqlite_temp_master) WHERE type != 'meta' AND name NOT LIKE 'sqlite_%' ORDER BY tbl_name, type DESC, name"];
     
     return rs;
 }
@@ -87,10 +87,10 @@ return ret;
 /* 
  get table schema: result colums: cid[INTEGER], name,type [STRING], notnull[INTEGER], dflt_value[],pk[INTEGER]
 */
-- (LCResultSet*)getTableSchema:(NSString*)tableName {
+- (HttpdnsResultSet*)getTableSchema:(NSString*)tableName {
     
     //result colums: cid[INTEGER], name,type [STRING], notnull[INTEGER], dflt_value[],pk[INTEGER]
-    LCResultSet *rs = [self executeQuery:[NSString stringWithFormat: @"pragma table_info('%@')", tableName]];
+    HttpdnsResultSet *rs = [self executeQuery:[NSString stringWithFormat: @"pragma table_info('%@')", tableName]];
     
     return rs;
 }
@@ -102,7 +102,7 @@ return ret;
     tableName  = [tableName lowercaseString];
     columnName = [columnName lowercaseString];
     
-    LCResultSet *rs = [self getTableSchema:tableName];
+    HttpdnsResultSet *rs = [self getTableSchema:tableName];
     
     //check if column is present in table schema
     while ([rs next]) {
@@ -125,7 +125,7 @@ return ret;
     
     uint32_t r = 0;
     
-    LCResultSet *rs = [self executeQuery:@"pragma application_id"];
+    HttpdnsResultSet *rs = [self executeQuery:@"pragma application_id"];
     
     if ([rs next]) {
         r = (uint32_t)[rs longLongIntForColumnIndex:0];
@@ -138,7 +138,7 @@ return ret;
 
 - (void)setApplicationID:(uint32_t)appID {
     NSString *query = [NSString stringWithFormat:@"pragma application_id=%d", appID];
-    LCResultSet *rs = [self executeQuery:query];
+    HttpdnsResultSet *rs = [self executeQuery:query];
     [rs next];
     [rs close];
 }
@@ -174,7 +174,7 @@ return ret;
 - (uint32_t)userVersion {
     uint32_t r = 0;
     
-    LCResultSet *rs = [self executeQuery:@"pragma user_version"];
+    HttpdnsResultSet *rs = [self executeQuery:@"pragma user_version"];
     
     if ([rs next]) {
         r = (uint32_t)[rs longLongIntForColumnIndex:0];
@@ -186,7 +186,7 @@ return ret;
 
 - (void)setUserVersion:(uint32_t)version {
     NSString *query = [NSString stringWithFormat:@"pragma user_version = %d", version];
-    LCResultSet *rs = [self executeQuery:query];
+    HttpdnsResultSet *rs = [self executeQuery:query];
     [rs next];
     [rs close];
 }

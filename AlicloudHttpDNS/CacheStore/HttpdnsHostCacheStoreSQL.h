@@ -2,60 +2,67 @@
 //  HttpdnsHostCacheStoreSQL.h
 //  AlicloudHttpDNS
 //
-//  Created by chenyilong on 2017/5/3.
+//  Created by ElonChan（地风） on 2017/5/3.
 //  Copyright © 2017年 alibaba-inc.com. All rights reserved.
 //
 
 #ifndef HttpdnsHostCacheStoreSQL_h
 #define HttpdnsHostCacheStoreSQL_h
-/*!
- *
- Field	Type	Desc
- 1. id	INTEGER	自增id
- 2. host	TEXT	域名
- 3. Carrier	TEXT	运营商
- 4. time	TEXT	查询时间(单位：秒)
- 5. IPs
- */
+
 #define ALICLOUD_HTTPDNS_TABLE_HOST_RECORD          @"HostRecord"
 
-#define ALICLOUD_HTTPDNS_FIELD_HOST_RECORD_ID       @"HostRecord_id"
+#define ALICLOUD_HTTPDNS_FIELD_HOST_RECORD_ID       @"hostRecord_id"
 #define ALICLOUD_HTTPDNS_FIELD_HOST                 @"host"
 #define ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER      @"carrier"
-#define ALICLOUD_HTTPDNS_FIELD_TIMESTAMP            @"timestamp"
-#define ALICLOUD_HTTPDNS_FIELD_IPS                  @"ips"
+#define ALICLOUD_HTTPDNS_FIELD_CREATE_AT            @"create_at"
+#define ALICLOUD_HTTPDNS_FIELD_EXPIRE_AT            @"expire_at"
 
-#define ALICLOUD_HTTPDNS_SQL_CREATE_CONVERSATION_TABLE                        \
+#define ALICLOUD_HTTPDNS_SQL_CREATE_HOST_RECORD_TABLE                        \
     @"CREATE TABLE IF NOT EXISTS " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD  @" ("  \
         ALICLOUD_HTTPDNS_FIELD_HOST_RECORD_ID       @" INTEGER PRIMARY KEY AUTOINCREMENT, "            \
-        ALICLOUD_HTTPDNS_FIELD_HOST                 @" TEXT NOT NULL, "                \
-        ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER      @" TEXT NOT NULL, "                \
-        ALICLOUD_HTTPDNS_FIELD_TIMESTAMP            @" NUMBERIC NOT NULL, "            \
-        ALICLOUD_HTTPDNS_FIELD_IPS                  @" BLOB NOT NULL"                \
+        ALICLOUD_HTTPDNS_FIELD_HOST                 @" TEXT, "                \
+        ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER      @" TEXT, "                \
+        ALICLOUD_HTTPDNS_FIELD_CREATE_AT            @" REAL, "                \
+        ALICLOUD_HTTPDNS_FIELD_EXPIRE_AT            @" REAL, "                 \
+        @"UNIQUE (" ALICLOUD_HTTPDNS_FIELD_HOST @", " ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER @")"           \
     @")"
 
-#define ALICLOUD_HTTPDNS_SQL_INSERT_CONVERSATION                           \
+#define ALICLOUD_HTTPDNS_SQL_INSERT_HOST_RECORD                            \
     @"INSERT OR REPLACE INTO " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD   @" ("  \
         ALICLOUD_HTTPDNS_FIELD_HOST                 @", "                  \
         ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER      @", "                  \
-        ALICLOUD_HTTPDNS_FIELD_TIMESTAMP            @", "                  \
-        ALICLOUD_HTTPDNS_FIELD_IPS                                         \
+        ALICLOUD_HTTPDNS_FIELD_CREATE_AT            @", "                  \
+        ALICLOUD_HTTPDNS_FIELD_EXPIRE_AT                                   \
     @") VALUES( ?, ?, ?, ?)"
 
-#define ALICLOUD_HTTPDNS_SQL_DELETE_CONVERSATION              \
-    @"DELETE FROM " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD  @" "  \
-    @"WHERE " ALICLOUD_HTTPDNS_FIELD_CONVERSATION_ID @" = ?"
-
-#define ALICLOUD_HTTPDNS_SQL_SELECT_CONVERSATION                \
+#define ALICLOUD_HTTPDNS_SQL_SELECT_HOST_RECORD                 \
     @"SELECT * FROM " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD  @" "  \
-    @"WHERE " ALICLOUD_HTTPDNS_FIELD_CONVERSATION_ID @" = ?"
+    @"WHERE " ALICLOUD_HTTPDNS_FIELD_HOST @" = ?"
 
-#define ALICLOUD_HTTPDNS_SQL_SELECT_EXPIRED_CONVERSATIONS       \
+#define ALICLOUD_HTTPDNS_SQL_SELECT_HOST_RECORD_WITH_CARRIER    \
     @"SELECT * FROM " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD  @" "  \
+    @"WHERE " ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER      @" = ?"
+
+#define ALICLOUD_HTTPDNS_SQL_SELECT_HOST_RECORD_WITH_HOST_AND_CARRIER    \
+    @"SELECT * FROM " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD    @" "         \
+    @"WHERE " ALICLOUD_HTTPDNS_FIELD_HOST                   @" = ?"  @" "\
+    @"AND " ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER          @" = ?"
+
+#define ALICLOUD_HTTPDNS_SQL_SELECT_EXPIRED_HOST_RECORD        \
+    @"SELECT * FROM " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD @" "  \
     @"WHERE " ALICLOUD_HTTPDNS_FIELD_EXPIRE_AT @" <= ?"
 
-#define ALICLOUD_HTTPDNS_SQL_SELECT_ALIVE_CONVERSATIONS         \
-    @"SELECT * FROM " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD  @" "  \
-    @"WHERE " ALICLOUD_HTTPDNS_FIELD_EXPIRE_AT @" > ?"
+#define ALICLOUD_HTTPDNS_SQL_DELETE_HOST_RECORD_WITH_HOST_ID     \
+    @"DELETE FROM " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD  @" "     \
+    @"WHERE " ALICLOUD_HTTPDNS_FIELD_HOST_RECORD_ID @" = ?"
+
+#define ALICLOUD_HTTPDNS_SQL_DELETE_HOST_RECORD_WITH_HOST     \
+    @"DELETE FROM " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD  @" "  \
+    @"WHERE " ALICLOUD_HTTPDNS_FIELD_HOST @" = ?"
+
+#define ALICLOUD_HTTPDNS_SQL_DELETE_HOST_RECORD_WITH_HOST_AND_CARRIER   \
+    @"DELETE FROM " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD  @" "            \
+    @"WHERE " ALICLOUD_HTTPDNS_FIELD_HOST               @" = ?"  @" "   \
+    @"AND " ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER      @" = ?"
 
 #endif /* HttpdnsHostCacheStoreSQL_h */

@@ -2,14 +2,14 @@
 //  HttpdnsgetNetworkInfoHelper.h
 //  AlicloudHttpDNS
 //
-//  Created by chenyilong on 2017/5/3.
+//  Created by ElonChan（地风） on 2017/5/3.
 //  Copyright © 2017年 alibaba-inc.com. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 #import <CoreTelephony/CTCarrier.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
-#import "AVReachability.h"
+#import "HttpdnsReachability.h"
 
 typedef NS_ENUM(NSInteger, HttpdnsCarrierType) {
     HttpdnsCarrierTypeUnknown,/**< 未知运营商 */

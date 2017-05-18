@@ -13,8 +13,8 @@
 #endif
 #endif
 
-@class LCDatabase;
-@class LCStatement;
+@class HttpdnsDatabase;
+@class HttpdnsStatement;
 
 /** Represents the results of executing a query on an `<FMDatabase>`.
  
@@ -23,9 +23,9 @@
  - `<FMDatabase>`
  */
 
-@interface LCResultSet : NSObject {
-    LCDatabase          *_parentDB;
-    LCStatement         *_statement;
+@interface HttpdnsResultSet : NSObject {
+    HttpdnsDatabase          *_parentDB;
+    HttpdnsStatement         *_statement;
     
     NSString            *_query;
     NSMutableDictionary *_columnNameToIndexMap;
@@ -45,7 +45,7 @@
 
 /** `FMStatement` used by result set. */
 
-@property (atomic, retain) LCStatement *statement;
+@property (atomic, retain) HttpdnsStatement *statement;
 
 ///------------------------------------
 /// @name Creating and closing database
@@ -60,13 +60,13 @@
  @return A `FMResultSet` on success; `nil` on failure
  */
 
-+ (instancetype)resultSetWithStatement:(LCStatement *)statement usingParentDatabase:(LCDatabase*)aDB;
++ (instancetype)resultSetWithStatement:(HttpdnsStatement *)statement usingParentDatabase:(HttpdnsDatabase*)aDB;
 
 /** Close result set */
 
 - (void)close;
 
-- (void)setParentDB:(LCDatabase *)newDb;
+- (void)setParentDB:(HttpdnsDatabase *)newDb;
 
 ///---------------------------------------
 /// @name Iterating through the result set

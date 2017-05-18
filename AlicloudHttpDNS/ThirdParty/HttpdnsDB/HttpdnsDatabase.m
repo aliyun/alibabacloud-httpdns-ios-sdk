@@ -1,15 +1,15 @@
-#import "LCDatabase.h"
+#import "HttpdnsDatabase.h"
 #import "unistd.h"
 #import <objc/runtime.h>
 
-@interface LCDatabase ()
+@interface HttpdnsDatabase ()
 
-- (LCResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray*)arrayArgs orDictionary:(NSDictionary *)dictionaryArgs orVAList:(va_list)args;
+- (HttpdnsResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray*)arrayArgs orDictionary:(NSDictionary *)dictionaryArgs orVAList:(va_list)args;
 - (BOOL)executeUpdate:(NSString*)sql error:(NSError**)outErr withArgumentsInArray:(NSArray*)arrayArgs orDictionary:(NSDictionary *)dictionaryArgs orVAList:(va_list)args;
 
 @end
 
-@implementation LCDatabase
+@implementation HttpdnsDatabase
 @synthesize cachedStatements=_cachedStatements;
 @synthesize logsErrors=_logsErrors;
 @synthesize crashOnErrors=_crashOnErrors;
@@ -221,7 +221,7 @@
 //       files with appledoc will prevent this problem from occurring.
 
 static int FMDBDatabaseBusyHandler(void *f, int count) {
-    LCDatabase *self = (__bridge LCDatabase*)f;
+    HttpdnsDatabase *self = (__bridge HttpdnsDatabase*)f;
     
     if (count == 0) {
         self->_startBusyRetryTime = [NSDate timeIntervalSinceReferenceDate];
@@ -289,7 +289,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     //Copy the set so we don't get mutation errors
     NSSet *openSetCopy = FMDBReturnAutoreleased([_openResultSets copy]);
     for (NSValue *rsInWrappedInATastyValueMeal in openSetCopy) {
-        LCResultSet *rs = (LCResultSet *)[rsInWrappedInATastyValueMeal pointerValue];
+        HttpdnsResultSet *rs = (HttpdnsResultSet *)[rsInWrappedInATastyValueMeal pointerValue];
         
         [rs setParentDB:nil];
         [rs close];
@@ -298,7 +298,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     }
 }
 
-- (void)resultSetDidClose:(LCResultSet *)resultSet {
+- (void)resultSetDidClose:(HttpdnsResultSet *)resultSet {
     NSValue *setValue = [NSValue valueWithNonretainedObject:resultSet];
     
     [_openResultSets removeObject:setValue];
@@ -315,11 +315,11 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     [_cachedStatements removeAllObjects];
 }
 
-- (LCStatement*)cachedStatementForQuery:(NSString*)query {
+- (HttpdnsStatement*)cachedStatementForQuery:(NSString*)query {
     
     NSMutableSet* statements = [_cachedStatements objectForKey:query];
     
-    return [[statements objectsPassingTest:^BOOL(LCStatement* statement, BOOL *stop) {
+    return [[statements objectsPassingTest:^BOOL(HttpdnsStatement* statement, BOOL *stop) {
         
         *stop = ![statement inUse];
         return *stop;
@@ -328,7 +328,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 }
 
 
-- (void)setCachedStatement:(LCStatement*)statement forQuery:(NSString*)query {
+- (void)setCachedStatement:(HttpdnsStatement*)statement forQuery:(NSString*)query {
     
     query = [query copy]; // in case we got handed in a mutable string...
     [statement setQuery:query];
@@ -429,7 +429,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
         return NO;
     }
     
-    LCResultSet *rs = [self executeQuery:@"select name from sqlite_master where type='table'"];
+    HttpdnsResultSet *rs = [self executeQuery:@"select name from sqlite_master where type='table'"];
     
     if (rs) {
         [rs close];
@@ -488,7 +488,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 - (NSError*)errorWithMessage:(NSString*)message {
     NSDictionary* errorMessage = [NSDictionary dictionaryWithObject:message forKey:NSLocalizedDescriptionKey];
     
-    return [NSError errorWithDomain:@"LCDatabase" code:sqlite3_errcode(_db) userInfo:errorMessage];    
+    return [NSError errorWithDomain:@"HttpdnsDatabase" code:sqlite3_errcode(_db) userInfo:errorMessage];    
 }
 
 - (NSError*)lastError {
@@ -724,11 +724,11 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 
 #pragma mark Execute queries
 
-- (LCResultSet *)executeQuery:(NSString *)sql withParameterDictionary:(NSDictionary *)arguments {
+- (HttpdnsResultSet *)executeQuery:(NSString *)sql withParameterDictionary:(NSDictionary *)arguments {
     return [self executeQuery:sql withArgumentsInArray:nil orDictionary:arguments orVAList:nil];
 }
 
-- (LCResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray*)arrayArgs orDictionary:(NSDictionary *)dictionaryArgs orVAList:(va_list)args {
+- (HttpdnsResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray*)arrayArgs orDictionary:(NSDictionary *)dictionaryArgs orVAList:(va_list)args {
     
     if (![self databaseExists]) {
         return 0x00;
@@ -743,8 +743,8 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     
     int rc                  = 0x00;
     sqlite3_stmt *pStmt     = 0x00;
-    LCStatement *statement  = 0x00;
-    LCResultSet *rs         = 0x00;
+    HttpdnsStatement *statement  = 0x00;
+    HttpdnsResultSet *rs         = 0x00;
     
     if (_traceExecution && sql) {
         NSLog(@"%@ executeQuery: %@", self, sql);
@@ -850,7 +850,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     FMDBRetain(statement); // to balance the release below
     
     if (!statement) {
-        statement = [[LCStatement alloc] init];
+        statement = [[HttpdnsStatement alloc] init];
         [statement setStatement:pStmt];
         
         if (_shouldCacheStatements && sql) {
@@ -859,7 +859,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     }
     
     // the statement gets closed in rs's dealloc or [rs close];
-    rs = [LCResultSet resultSetWithStatement:statement usingParentDatabase:self];
+    rs = [HttpdnsResultSet resultSetWithStatement:statement usingParentDatabase:self];
     [rs setQuery:sql];
     
     NSValue *openResultSet = [NSValue valueWithNonretainedObject:rs];
@@ -874,7 +874,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     return rs;
 }
 
-- (LCResultSet *)executeQuery:(NSString*)sql, ... {
+- (HttpdnsResultSet *)executeQuery:(NSString*)sql, ... {
     va_list args;
     va_start(args, sql);
     
@@ -884,7 +884,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     return result;
 }
 
-- (LCResultSet *)executeQueryWithFormat:(NSString*)format, ... {
+- (HttpdnsResultSet *)executeQueryWithFormat:(NSString*)format, ... {
     va_list args;
     va_start(args, format);
     
@@ -897,11 +897,11 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     return [self executeQuery:sql withArgumentsInArray:arguments];
 }
 
-- (LCResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray *)arguments {
+- (HttpdnsResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray *)arguments {
     return [self executeQuery:sql withArgumentsInArray:arguments orDictionary:nil orVAList:nil];
 }
 
-- (LCResultSet *)executeQuery:(NSString*)sql withVAList:(va_list)args {
+- (HttpdnsResultSet *)executeQuery:(NSString*)sql withVAList:(va_list)args {
     return [self executeQuery:sql withArgumentsInArray:nil orDictionary:nil orVAList:args];
 }
 
@@ -922,7 +922,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     
     int rc                   = 0x00;
     sqlite3_stmt *pStmt      = 0x00;
-    LCStatement *cachedStmt  = 0x00;
+    HttpdnsStatement *cachedStmt  = 0x00;
     
     if (_traceExecution && sql) {
         NSLog(@"%@ executeUpdate: %@", self, sql);
@@ -1065,7 +1065,7 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
     }
     
     if (_shouldCacheStatements && !cachedStmt) {
-        cachedStmt = [[LCStatement alloc] init];
+        cachedStmt = [[HttpdnsStatement alloc] init];
         
         [cachedStmt setStatement:pStmt];
         
@@ -1136,8 +1136,8 @@ static int FMDBDatabaseBusyHandler(void *f, int count) {
 }
 
 
-int LCDBExecuteBulkSQLCallback(void *theBlockAsVoid, int columns, char **values, char **names); // shhh clang.
-int LCDBExecuteBulkSQLCallback(void *theBlockAsVoid, int columns, char **values, char **names) {
+int HttpdnsDBExecuteBulkSQLCallback(void *theBlockAsVoid, int columns, char **values, char **names); // shhh clang.
+int HttpdnsDBExecuteBulkSQLCallback(void *theBlockAsVoid, int columns, char **values, char **names) {
     
     if (!theBlockAsVoid) {
         return SQLITE_OK;
@@ -1165,7 +1165,7 @@ int LCDBExecuteBulkSQLCallback(void *theBlockAsVoid, int columns, char **values,
     int rc;
     char *errmsg = nil;
     
-    rc = sqlite3_exec([self sqliteHandle], [sql UTF8String], block ? LCDBExecuteBulkSQLCallback : nil, (__bridge void *)(block), &errmsg);
+    rc = sqlite3_exec([self sqliteHandle], [sql UTF8String], block ? HttpdnsDBExecuteBulkSQLCallback : nil, (__bridge void *)(block), &errmsg);
     
     if (errmsg && [self logsErrors]) {
         NSLog(@"Error inserting batch: %s", errmsg);
@@ -1346,8 +1346,8 @@ static NSString *FMDBEscapeSavePointName(NSString *savepointName) {
 
 #pragma mark Callback function
 
-void LCDBBlockSQLiteCallBackFunction(sqlite3_context *context, int argc, sqlite3_value **argv); // -Wmissing-prototypes
-void LCDBBlockSQLiteCallBackFunction(sqlite3_context *context, int argc, sqlite3_value **argv) {
+void HttpdnsDBBlockSQLiteCallBackFunction(sqlite3_context *context, int argc, sqlite3_value **argv); // -Wmissing-prototypes
+void HttpdnsDBBlockSQLiteCallBackFunction(sqlite3_context *context, int argc, sqlite3_value **argv) {
 #if ! __has_feature(objc_arc)
     void (^block)(sqlite3_context *context, int argc, sqlite3_value **argv) = (id)sqlite3_user_data(context);
 #else
@@ -1369,9 +1369,9 @@ void LCDBBlockSQLiteCallBackFunction(sqlite3_context *context, int argc, sqlite3
     
     /* I tried adding custom functions to release the block when the connection is destroyed- but they seemed to never be called, so we use _openFunctions to store the values instead. */
 #if ! __has_feature(objc_arc)
-    sqlite3_create_function([self sqliteHandle], [name UTF8String], count, SQLITE_UTF8, (void*)b, &LCDBBlockSQLiteCallBackFunction, 0x00, 0x00);
+    sqlite3_create_function([self sqliteHandle], [name UTF8String], count, SQLITE_UTF8, (void*)b, &HttpdnsDBBlockSQLiteCallBackFunction, 0x00, 0x00);
 #else
-    sqlite3_create_function([self sqliteHandle], [name UTF8String], count, SQLITE_UTF8, (__bridge void*)b, &LCDBBlockSQLiteCallBackFunction, 0x00, 0x00);
+    sqlite3_create_function([self sqliteHandle], [name UTF8String], count, SQLITE_UTF8, (__bridge void*)b, &HttpdnsDBBlockSQLiteCallBackFunction, 0x00, 0x00);
 #endif
 }
 
@@ -1379,7 +1379,7 @@ void LCDBBlockSQLiteCallBackFunction(sqlite3_context *context, int argc, sqlite3
 
 
 
-@implementation LCStatement
+@implementation HttpdnsStatement
 @synthesize statement=_statement;
 @synthesize query=_query;
 @synthesize useCount=_useCount;

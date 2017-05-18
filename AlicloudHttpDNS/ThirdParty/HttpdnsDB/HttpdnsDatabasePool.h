@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "sqlite3.h"
 
-@class LCDatabase;
+@class HttpdnsDatabase;
 
 /** Pool of `<FMDatabase>` objects.
 
@@ -29,7 +29,7 @@
  in the main.m file.
  */
 
-@interface LCDatabasePool : NSObject {
+@interface HttpdnsDatabasePool : NSObject {
     NSString            *_path;
     
     dispatch_queue_t    _lockQueue;
@@ -140,21 +140,21 @@
  @param block The code to be run on the `FMDatabasePool` pool.
  */
 
-- (void)inDatabase:(void (^)(LCDatabase *db))block;
+- (void)inDatabase:(void (^)(HttpdnsDatabase *db))block;
 
 /** Synchronously perform database operations in pool using transaction.
 
  @param block The code to be run on the `FMDatabasePool` pool.
  */
 
-- (void)inTransaction:(void (^)(LCDatabase *db, BOOL *rollback))block;
+- (void)inTransaction:(void (^)(HttpdnsDatabase *db, BOOL *rollback))block;
 
 /** Synchronously perform database operations in pool using deferred transaction.
 
  @param block The code to be run on the `FMDatabasePool` pool.
  */
 
-- (void)inDeferredTransaction:(void (^)(LCDatabase *db, BOOL *rollback))block;
+- (void)inDeferredTransaction:(void (^)(HttpdnsDatabase *db, BOOL *rollback))block;
 
 #if SQLITE_VERSION_NUMBER >= 3007000
 
@@ -167,7 +167,7 @@
  @warning You can not nest these, since calling it will pull another database out of the pool and you'll get a deadlock. If you need to nest, use `<[FMDatabase startSavePointWithName:error:]>` instead.
 */
 
-- (NSError*)inSavePoint:(void (^)(LCDatabase *db, BOOL *rollback))block;
+- (NSError*)inSavePoint:(void (^)(HttpdnsDatabase *db, BOOL *rollback))block;
 #endif
 
 @end
@@ -189,7 +189,7 @@
  
  */
 
-- (BOOL)databasePool:(LCDatabasePool*)pool shouldAddDatabaseToPool:(LCDatabase*)database;
+- (BOOL)databasePool:(HttpdnsDatabasePool*)pool shouldAddDatabaseToPool:(HttpdnsDatabase*)database;
 
 /** Tells the delegate that database was added to the pool.
  
@@ -198,7 +198,7 @@
 
  */
 
-- (void)databasePool:(LCDatabasePool*)pool didAddDatabase:(LCDatabase*)database;
+- (void)databasePool:(HttpdnsDatabasePool*)pool didAddDatabase:(HttpdnsDatabase*)database;
 
 @end
 

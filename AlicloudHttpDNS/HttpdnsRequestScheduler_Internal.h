@@ -45,9 +45,18 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 
 @property (nonatomic, strong) HttpdnsRequestTestHelper *testHelper;
 
+//内部缓存开关，不触发加载DB到内存的操作
+- (void)_setCachedIPEnabled:(BOOL)enable;
+
 + (void)configureServerIPsAndResetActivatedIPTime;
 
 - (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry activatedServerIPIndex:(NSInteger)activatedServerIPIndex;
+
++ (dispatch_queue_t)hostCacheQueue;
+
+- (void)loadIPsFromCacheSyncIfNeeded;
+
+- (void)cleanAllHostMemoryCache;
 
 @end
 

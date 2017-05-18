@@ -27,6 +27,7 @@
 #import <AlicloudUtils/AlicloudUtils.h>
 #import "HttpdnsServiceProvider_Internal.h"
 #import "AlicloudHttpDNS.h"
+#import "HttpdnsHostCacheStore.h"
 
 static NSDictionary *HTTPDNS_EXT_INFO = nil;
 
@@ -34,7 +35,7 @@ static NSDictionary *HTTPDNS_EXT_INFO = nil;
 
 #pragma mark singleton
 
-+(instancetype)sharedInstance {
++ (instancetype)sharedInstance {
     static dispatch_once_t onceToken;
     static HttpDnsService * _httpDnsClient = nil;
     dispatch_once(&onceToken, ^{
@@ -62,7 +63,7 @@ static NSDictionary *HTTPDNS_EXT_INFO = nil;
 
 #pragma mark init
 
--(instancetype)init {
+- (instancetype)init {
     if (self = [super init]) {
         _requestScheduler = [[HttpdnsRequestScheduler alloc] init];
     }
@@ -71,11 +72,11 @@ static NSDictionary *HTTPDNS_EXT_INFO = nil;
 
 #pragma mark dnsLookupMethods
 
--(void)setPreResolveHosts:(NSArray *)hosts {
+- (void)setPreResolveHosts:(NSArray *)hosts {
     [_requestScheduler addPreResolveHosts:hosts];
 }
 
--(NSString *)getIpByHost:(NSString *)host {
+- (NSString *)getIpByHost:(NSString *)host {
     NSArray *ips = [self getIpsByHost:host];
     if (ips != nil && ips.count > 0) {
         return ips[0];
@@ -125,7 +126,7 @@ static NSDictionary *HTTPDNS_EXT_INFO = nil;
     return IP;
 }
 
--(NSString *)getIpByHostAsync:(NSString *)host {
+- (NSString *)getIpByHostAsync:(NSString *)host {
     NSArray *ips = [self getIpsByHostAsync:host];
     if (ips != nil && ips.count > 0) {
         return ips[0];
@@ -180,7 +181,11 @@ static NSDictionary *HTTPDNS_EXT_INFO = nil;
     HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED = enable;
 }
 
--(void)setExpiredIPEnabled:(BOOL)enable {
+- (void)setCachedIPEnabled:(BOOL)enable {
+    [_requestScheduler setCachedIPEnabled:enable];
+}
+
+- (void)setExpiredIPEnabled:(BOOL)enable {
     [_requestScheduler setExpiredIPEnabled:enable];
 }
 

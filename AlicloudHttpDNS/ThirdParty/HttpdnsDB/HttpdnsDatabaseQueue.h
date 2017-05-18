@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "sqlite3.h"
 
-@class LCDatabase;
+@class HttpdnsDatabase;
 
 /** To perform queries and updates on multiple threads, you'll want to use `FMDatabaseQueue`.
 
@@ -61,10 +61,10 @@
 
  */
 
-@interface LCDatabaseQueue : NSObject {
+@interface HttpdnsDatabaseQueue : NSObject {
     NSString            *_path;
     dispatch_queue_t    _queue;
-    LCDatabase          *_db;
+    HttpdnsDatabase          *_db;
     int                 _openFlags;
 }
 
@@ -139,21 +139,21 @@
  @param block The code to be run on the queue of `FMDatabaseQueue`
  */
 
-- (void)inDatabase:(void (^)(LCDatabase *db))block;
+- (void)inDatabase:(void (^)(HttpdnsDatabase *db))block;
 
 /** Synchronously perform database operations on queue, using transactions.
 
  @param block The code to be run on the queue of `FMDatabaseQueue`
  */
 
-- (void)inTransaction:(void (^)(LCDatabase *db, BOOL *rollback))block;
+- (void)inTransaction:(void (^)(HttpdnsDatabase *db, BOOL *rollback))block;
 
 /** Synchronously perform database operations on queue, using deferred transactions.
 
  @param block The code to be run on the queue of `FMDatabaseQueue`
  */
 
-- (void)inDeferredTransaction:(void (^)(LCDatabase *db, BOOL *rollback))block;
+- (void)inDeferredTransaction:(void (^)(HttpdnsDatabase *db, BOOL *rollback))block;
 
 ///-----------------------------------------------
 /// @name Dispatching database operations to queue
@@ -167,7 +167,7 @@
 #if SQLITE_VERSION_NUMBER >= 3007000
 // NOTE: you can not nest these, since calling it will pull another database out of the pool and you'll get a deadlock.
 // If you need to nest, use FMDatabase's startSavePointWithName:error: instead.
-- (NSError*)inSavePoint:(void (^)(LCDatabase *db, BOOL *rollback))block;
+- (NSError*)inSavePoint:(void (^)(HttpdnsDatabase *db, BOOL *rollback))block;
 #endif
 
 @end

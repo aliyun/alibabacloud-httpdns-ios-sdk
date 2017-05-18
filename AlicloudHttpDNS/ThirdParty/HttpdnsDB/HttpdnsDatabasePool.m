@@ -6,18 +6,18 @@
 //  Copyright 2011 Flying Meat Inc. All rights reserved.
 //
 
-#import "LCDatabasePool.h"
-#import "LCDatabase.h"
+#import "HttpdnsDatabasePool.h"
+#import "HttpdnsDatabase.h"
 
-@interface LCDatabasePool()
+@interface HttpdnsDatabasePool()
 
-- (void)pushDatabaseBackInPool:(LCDatabase*)db;
-- (LCDatabase*)db;
+- (void)pushDatabaseBackInPool:(HttpdnsDatabase*)db;
+- (HttpdnsDatabase*)db;
 
 @end
 
 
-@implementation LCDatabasePool
+@implementation HttpdnsDatabasePool
 @synthesize path=_path;
 @synthesize delegate=_delegate;
 @synthesize maximumNumberOfDatabasesToCreate=_maximumNumberOfDatabasesToCreate;
@@ -79,7 +79,7 @@
     dispatch_sync(_lockQueue, aBlock);
 }
 
-- (void)pushDatabaseBackInPool:(LCDatabase*)db {
+- (void)pushDatabaseBackInPool:(HttpdnsDatabase*)db {
     
     if (!db) { // db can be null if we set an upper bound on the # of databases to create.
         return;
@@ -97,9 +97,9 @@
     }];
 }
 
-- (LCDatabase*)db {
+- (HttpdnsDatabase*)db {
     
-    __block LCDatabase *db;
+    __block HttpdnsDatabase *db;
     
     
     [self executeLocked:^() {
@@ -122,7 +122,7 @@
                 }
             }
             
-            db = [LCDatabase databaseWithPath:self->_path];
+            db = [HttpdnsDatabase databaseWithPath:self->_path];
             shouldNotifyDelegate = YES;
         }
         
@@ -196,20 +196,20 @@
     }];
 }
 
-- (void)inDatabase:(void (^)(LCDatabase *db))block {
+- (void)inDatabase:(void (^)(HttpdnsDatabase *db))block {
     
-    LCDatabase *db = [self db];
+    HttpdnsDatabase *db = [self db];
     
     block(db);
     
     [self pushDatabaseBackInPool:db];
 }
 
-- (void)beginTransaction:(BOOL)useDeferred withBlock:(void (^)(LCDatabase *db, BOOL *rollback))block {
+- (void)beginTransaction:(BOOL)useDeferred withBlock:(void (^)(HttpdnsDatabase *db, BOOL *rollback))block {
     
     BOOL shouldRollback = NO;
     
-    LCDatabase *db = [self db];
+    HttpdnsDatabase *db = [self db];
     
     if (useDeferred) {
         [db beginDeferredTransaction];
@@ -231,15 +231,15 @@
     [self pushDatabaseBackInPool:db];
 }
 
-- (void)inDeferredTransaction:(void (^)(LCDatabase *db, BOOL *rollback))block {
+- (void)inDeferredTransaction:(void (^)(HttpdnsDatabase *db, BOOL *rollback))block {
     [self beginTransaction:YES withBlock:block];
 }
 
-- (void)inTransaction:(void (^)(LCDatabase *db, BOOL *rollback))block {
+- (void)inTransaction:(void (^)(HttpdnsDatabase *db, BOOL *rollback))block {
     [self beginTransaction:NO withBlock:block];
 }
 #if SQLITE_VERSION_NUMBER >= 3007000
-- (NSError*)inSavePoint:(void (^)(LCDatabase *db, BOOL *rollback))block {
+- (NSError*)inSavePoint:(void (^)(HttpdnsDatabase *db, BOOL *rollback))block {
     
     static unsigned long savePointIdx = 0;
     
@@ -247,7 +247,7 @@
     
     BOOL shouldRollback = NO;
     
-    LCDatabase *db = [self db];
+    HttpdnsDatabase *db = [self db];
     
     NSError *err = 0x00;
     
