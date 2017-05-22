@@ -141,7 +141,6 @@ static NSURLSession *_resolveHOSTSession = nil;
     return nil;
 }
 
-//TODO:携带SDK版本 http://gitlab.alibaba-inc.com/alicloud-ams/httpdns-doc/blob/master/api/param_sdk.md
 // 基于URLSession发送HTTPS请求
 - (HttpdnsHostObject *)sendHTTPSRequest:(NSString *)urlStr
                                   error:(NSError **)pError
