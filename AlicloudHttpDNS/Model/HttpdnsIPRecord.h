@@ -11,11 +11,6 @@
 @interface HttpdnsIPRecord : NSObject
 
 /*!
- * 自增id
- */
-//@property (nonatomic, assign) NSUInteger IPRecordId;
-
-/*!
  * 关联host的id
  */
 @property (nonatomic, assign, readonly) NSUInteger hostRecordId;
@@ -29,6 +24,7 @@
  * TTL
  */
 @property (nonatomic, assign, readonly) int64_t TTL;
+
 /*!
  * 从数据库初始化
  */
