@@ -194,13 +194,17 @@
     if (db) {
         HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore new];
         NSArray<HttpdnsIPRecord *> *IPRecords = [IPCacheStore IPRecordsForHostID:hostID db:db];
-        HttpdnsIPRecord *IPRecord = IPRecords[0];
-        NSMutableArray *mutableIPs = [NSMutableArray arrayWithCapacity:IPRecords.count];
-        for (HttpdnsIPRecord *IPRecord in IPRecords) {
-            [mutableIPs addObject:IPRecord.IP];
+        @try {
+            HttpdnsIPRecord *IPRecord = IPRecords[0];
+            NSMutableArray *mutableIPs = [NSMutableArray arrayWithCapacity:IPRecords.count];
+            for (HttpdnsIPRecord *IPRecord in IPRecords) {
+                [mutableIPs addObject:IPRecord.IP];
+            }
+            IPs = [mutableIPs copy];
+            TTL = IPRecord.TTL;
+        } @catch (NSException *exception) {
+            HttpdnsLogDebug("DB error, HostRecord has data with id %@, but there is not IPRecord data with same id.", @(hostID));
         }
-        IPs = [mutableIPs copy];
-        TTL = IPRecord.TTL;
     }
     
     HttpdnsHostRecord *record = [HttpdnsHostRecord hostRecordWithId:hostID

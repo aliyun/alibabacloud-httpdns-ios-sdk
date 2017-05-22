@@ -117,7 +117,7 @@ static NSURLSession *_resolveHOSTSession = nil;
         serverIp = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:serverIp]];
     }
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    NSString *versionInfo = [NSString stringWithFormat:@"ios_%@",HTTPDNS_IOS_SDK_VERSION];
+    NSString *versionInfo = [NSString stringWithFormat:@"ios_%@", HTTPDNS_IOS_SDK_VERSION];
     NSString *port = HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED ? ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT : ALICLOUD_HTTPDNS_HTTP_SERVER_PORT;
     NSString *url = [NSString stringWithFormat:@"%@:%@/%d/d?host=%@&sdk=%@",
                      serverIp, port, sharedService.accountID, hostsString, versionInfo];
