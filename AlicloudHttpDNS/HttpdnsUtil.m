@@ -25,15 +25,15 @@
 
 @implementation HttpdnsUtil
 
-+(long long)currentEpochTimeInSecond {
-    return (long long)[[[NSDate alloc] init] timeIntervalSince1970];
++ (int64_t)currentEpochTimeInSecond {
+    return (int64_t)[[[NSDate alloc] init] timeIntervalSince1970];
 }
 
-+(NSString *)currentEpochTimeInSecondString {
++ (NSString *)currentEpochTimeInSecondString {
     return [NSString stringWithFormat:@"%lld", [HttpdnsUtil currentEpochTimeInSecond]];
 }
 
-+(BOOL)isAnIP:(NSString *)candidate {
++ (BOOL)isAnIP:(NSString *)candidate {
     const char *utf8 = [candidate UTF8String];
 
     // Check valid IPv4.
@@ -46,7 +46,8 @@
     }
     return (success == 1);
 }
-+(BOOL)isAHost:(NSString *)host {
+
++ (BOOL)isAHost:(NSString *)host {
     static dispatch_once_t once_token;
     static NSRegularExpression *hostExpression = nil;
     dispatch_once(&once_token, ^{
@@ -71,6 +72,24 @@
         requestHost = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:string]];
     }
     return requestHost;
+}
+
++ (void)warnMainThreadIfNecessary {
+    if ([NSThread isMainThread]) {
+        HttpdnsLogDebug("Warning: A long-running Paas operation is being executed on the main thread.");
+    }
+}
+
+//wifi是否可用
++ (BOOL)isWifiEnable {
+    BOOL isReachableViaWiFi =  [[AlicloudReachabilityManager shareInstance] isReachableViaWifi];
+    return isReachableViaWiFi;
+}
+
+//蜂窝移动网络是否可用
++ (BOOL)isCarrierConnectEnable {
+    BOOL isReachableViaWWAN = [[AlicloudReachabilityManager shareInstance] isReachableViaWWAN];
+    return isReachableViaWWAN;
 }
 
 @end

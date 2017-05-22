@@ -10,23 +10,23 @@ typedef enum {
 
 @interface NetworkManager : NSObject
 
-+(NetworkManager *)instance;
++ (NetworkManager *)instance;
 
 /*
  * 当前网络状态的String描述
  */
--(NSString*)currentStatusString;
+- (NSString*)currentStatusString;
 
 /*
  * 如果当前网络是Wifi,
  * 获取到当前网络的ssid
  */
--(NSString *)currentWifiSsid;
+- (NSString *)currentWifiSsid;
 
 /*
  * 判断当前网络状态下
  * 是否处理有Http/Https代理
  */
-+(BOOL) configureProxies;
++ (BOOL) configureProxies;
 
 @end
