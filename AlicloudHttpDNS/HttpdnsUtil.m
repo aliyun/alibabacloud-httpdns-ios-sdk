@@ -82,15 +82,13 @@
 
 //wifi是否可用
 + (BOOL)isWifiEnable {
-    BOOL isReachableViaWiFi =  ([[AlicloudReachabilityManager shareInstance] currentNetworkStatus] == AlicloudReachableViaWiFi);
+    BOOL isReachableViaWiFi =  [[AlicloudReachabilityManager shareInstance] isReachableViaWifi];
     return isReachableViaWiFi;
 }
 
 //蜂窝移动网络是否可用
 + (BOOL)isCarrierConnectEnable {
-   BOOL checkInternetConnection = [[AlicloudReachabilityManager shareInstance] checkInternetConnection];
-    BOOL isReachableViaWiFi =  ([[AlicloudReachabilityManager shareInstance] currentNetworkStatus] == AlicloudReachableViaWiFi);
-    BOOL isReachableViaWWAN = checkInternetConnection && !isReachableViaWiFi;
+    BOOL isReachableViaWWAN = [[AlicloudReachabilityManager shareInstance] isReachableViaWWAN];
     return isReachableViaWWAN;
 }
 
