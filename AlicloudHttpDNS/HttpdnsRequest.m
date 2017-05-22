@@ -28,6 +28,8 @@
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsRequestScheduler.h"
 #import "HttpdnsScheduleCenter.h"
+#import "HttpdnsConstants.h"
+#import "AlicloudHttpDNS.h"
 
 NSInteger const ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE = 10005;
 NSInteger const ALICLOUD_HTTPDNS_HTTP_STREAM_READ_ERROR_CODE = 10006;
@@ -79,7 +81,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 
 #pragma mark LookupIpAction
 
--(HttpdnsHostObject *)parseHostInfoFromHttpResponse:(NSDictionary *)json {
+- (HttpdnsHostObject *)parseHostInfoFromHttpResponse:(NSDictionary *)json {
     if (json == nil) {
         return nil;
     }
@@ -106,7 +108,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     return hostObject;
 }
 
--(NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
+- (NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
 
@@ -115,18 +117,19 @@ static NSURLSession *_resolveHOSTSession = nil;
         serverIp = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:serverIp]];
     }
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+    NSString *versionInfo = [NSString stringWithFormat:@"ios_%@", HTTPDNS_IOS_SDK_VERSION];
     NSString *port = HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED ? ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT : ALICLOUD_HTTPDNS_HTTP_SERVER_PORT;
-    NSString *url = [NSString stringWithFormat:@"%@:%@/%d/d?host=%@",
-                     serverIp, port, sharedService.accountID, hostsString];
+    NSString *url = [NSString stringWithFormat:@"%@:%@/%d/d?host=%@&sdk=%@",
+                     serverIp, port, sharedService.accountID, hostsString, versionInfo];
     return url;
 }
 
--(HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error {
+- (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
    return [self lookupHostFromServer:hostString error:error activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
 }
 
--(HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
+- (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     [self resetRequestConfigure];
     HttpdnsLogDebug("Resolve host(%@) over network.", hostString);
     NSString *url = [self constructRequestURLWith:hostString activatedServerIPIndex:activatedServerIPIndex];
@@ -160,13 +163,13 @@ static NSURLSession *_resolveHOSTSession = nil;
                 HttpdnsLogDebug("ReponseCode %ld.", (long)statusCode);
                 if (errorStrong) {
                     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                          @"Response code not 200, and parse response message error", @"ErrorMessage",
+                                          @"Response code not 200, and parse response message error", ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY,
                                           [NSString stringWithFormat:@"%ld", (long)statusCode], @"ResponseCode", nil];
                     errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10002 userInfo:dict];
                 } else {
                     NSString *errCode = [json objectForKey:@"code"];
                     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                          errCode, @"ErrorMessage", nil];
+                                          errCode, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
                     errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10003 userInfo:dict];
                 }
             } else {
@@ -282,7 +285,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     if (!_compeleted) {
         _compeleted = YES;
         NSDictionary *dic = [[NSDictionary alloc] initWithObjectsAndKeys:
-                             @"Request timeout.", @"ErrorMessage", nil];
+                             @"Request timeout.", ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
         _networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE userInfo:dic];
         dispatch_semaphore_signal(_sem);
     }
@@ -309,12 +312,12 @@ static NSURLSession *_resolveHOSTSession = nil;
                     //403错误需要强制更新SC
                     NSString *errorMessage;
                     if (statusCode == 403) {
-                        errorMessage = @"ServiceLevelDeny";
+                        errorMessage = ALICLOUD_HTTPDNS_ERROR_SERVICE_LEVEL_DENY;
                     } else {
                         errorMessage = @"status code not 200";
                     }
                     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                          errorMessage, @"ErrorMessage", nil];
+                                          errorMessage, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
                     _networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:10004 userInfo:dict];
                     _compeleted = YES;
                     [self stopTimer];
@@ -341,7 +344,7 @@ static NSURLSession *_resolveHOSTSession = nil;
         case NSStreamEventErrorOccurred:
         {
             NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                  [NSString stringWithFormat:@"read stream error: %@", [aStream streamError].userInfo], @"ErrorMessage", nil];
+                                  [NSString stringWithFormat:@"read stream error: %@", [aStream streamError].userInfo], ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
             _networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:ALICLOUD_HTTPDNS_HTTP_STREAM_READ_ERROR_CODE userInfo:dict];
         }
         case NSStreamEventEndEncountered:

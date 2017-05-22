@@ -79,7 +79,7 @@
  * 测试目的：测试host合法判断功能；
  * 测试方法：1. 给出多个用例，判断是否能正确测试出是否为host；
  */
--(void)testHostLegalJudge{
+- (void)testHostLegalJudge{
     NSString *host1 = @"nihao";
     NSString *host2 = @"baidu.com";
     NSString *host3 = @"https://www.baidu.com/";

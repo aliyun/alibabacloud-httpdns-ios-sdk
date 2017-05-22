@@ -28,6 +28,10 @@
 #import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsScheduleCenter.h"
+#import "HttpdnsConstants.h"
+#import "HttpdnsHostCacheStore.h"
+#import "HttpdnsHostRecord.h"
+#import "HttpdnsIPRecord.h"
 
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS = @"disable_status_key";
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME = @"disable_status";
@@ -42,6 +46,7 @@ NSString *const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 
 NSArray *ALICLOUD_HTTPDNS_SERVER_IP_LIST = nil;
 NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0;
+static dispatch_queue_t _hostCacheQueue = NULL;
 
 @interface HttpdnsRequestScheduler()
 
@@ -52,6 +57,8 @@ NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0
 @property (nonatomic, strong) NSDate *lastServerDisableDate;
 @property (nonatomic, strong) dispatch_queue_t cacheQueue;
 @property (nonatomic, copy) NSString *disableStatusPath;
+@property (nonatomic, assign) BOOL cachedIPEnabled;
+
 @end
 
 @implementation HttpdnsRequestScheduler {
@@ -63,7 +70,13 @@ NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0
     NSOperationQueue *_asyncOperationQueue;
 }
 
-+(void)initialize {
++ (void)initialize {
+    static dispatch_once_t onceToken;
+    
+    dispatch_once(&onceToken, ^{
+        _hostCacheQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.hostCacheQueue", DISPATCH_QUEUE_SERIAL);
+    });
+    
     [self configureServerIPsAndResetActivatedIPTime];
 }
 
@@ -96,7 +109,6 @@ NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0
     ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 1 * 24 * 60 * 60; // one day
 }
 
-
 - (void)initServerDisableStatus {
     dispatch_async(self.cacheQueue, ^{
         NSDictionary *json = [HttpdnsPersistenceUtils getJSONFromDirectory:[HttpdnsPersistenceUtils disableStatusPath]
@@ -124,7 +136,7 @@ NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0
             if ([self isHostsNumberLimitReached]) {
                 break;
             }
-            HttpdnsHostObject *hostObject = [_hostManagerDict objectForKey:hostName];
+            HttpdnsHostObject *hostObject = [self hostObjectFromCacheForHostName:hostName];
             if (hostObject) {
                 if ([hostObject isExpired] && ![hostObject isQuerying]) {
                     HttpdnsLogDebug("%@ is expired, pre fetch again.", hostName);
@@ -141,12 +153,15 @@ NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0
     });
 }
 
+#pragma mark -
+#pragma mark - core method for all public query API
+
 - (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync {
     __block HttpdnsHostObject *result = nil;
     __block BOOL needToQuery = NO;
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     dispatch_sync(_syncDispatchQueue, ^{
-        result = [_hostManagerDict objectForKey:host];
+        result = [self hostObjectFromCacheForHostName:host];
         HttpdnsLogDebug(@"Get from cache: %@", result);
         if (result == nil) {
             HttpdnsLogDebug("No available cache for %@ yet.", host);
@@ -184,23 +199,29 @@ NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0
     if (result) {
         [self setServerDisable:NO host:host];
         NSString *hostName = [result getHostName];
-        HttpdnsHostObject * old = [_hostManagerDict objectForKey:hostName];
+        HttpdnsHostObject *old = [_hostManagerDict objectForKey:hostName];
+        
+        int64_t TTL = [result getTTL];
+        int64_t lastLookupTime = [result getLastLookupTime];
+        NSArray<NSString *> *IPStrings = [result getIPStrings];
+        NSArray<HttpdnsIpObject *> *IPObjects = [result getIps];
         if (old) {
-            [old setTTL:[result getTTL]];
-            [old setLastLookupTime:[result getLastLookupTime]];
-            [old setIps:[result getIps]];
+            [old setTTL:TTL];
+            [old setLastLookupTime:lastLookupTime];
+            [old setIps:IPObjects];
             [old setQueryingState:NO];
             HttpdnsLogDebug("Update %@: %@", hostName, result);
         } else {
             HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
             [hostObject setHostName:host];
-            [hostObject setLastLookupTime:[result getLastLookupTime]];
-            [hostObject setTTL:[result getTTL]];
-            [hostObject setIps:[result getIps]];
+            [hostObject setLastLookupTime:lastLookupTime];
+            [hostObject setTTL:TTL];
+            [hostObject setIps:IPObjects];
             [hostObject setQueryingState:NO];
             HttpdnsLogDebug("New resolved item: %@: %@", host, result);
             [_hostManagerDict setObject:hostObject forKey:host];
         }
+        [self cacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings TTL:TTL];
     } else {
         HttpdnsLogDebug("Can't resolve %@", host);
     }
@@ -216,8 +237,8 @@ NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0
     //403错误强制更新，不触发disable机制。
     BOOL isServiceLevelDeny;
     @try {
-        NSString *errorMessage = userInfo[@"ErrorMessage"];
-        isServiceLevelDeny = [errorMessage isEqualToString:@"ServiceLevelDeny"];
+        NSString *errorMessage = userInfo[ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY];
+        isServiceLevelDeny = [errorMessage isEqualToString:ALICLOUD_HTTPDNS_ERROR_SERVICE_LEVEL_DENY];
     } @catch (NSException *exception) {}
     if (isServiceLevelDeny) {
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
@@ -352,6 +373,15 @@ NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0
     _isExpiredIPEnabled = enable;
 }
 
+- (void)setCachedIPEnabled:(BOOL)enable {
+    [self _setCachedIPEnabled:enable];
+    [self cleanAllExpiredHostRecordsAsyncIfNeeded];
+    [self loadIPsFromCacheAsyncIfNeeded];
+}
+
+- (void)_setCachedIPEnabled:(BOOL)enable {
+    _cachedIPEnabled = enable;
+}
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable {
     _isPreResolveAfterNetworkChangedEnabled = enable;
 }
@@ -378,8 +408,10 @@ NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0
     if (_lastNetworkStatus != [networkStatus longValue]) {
         dispatch_async(_syncDispatchQueue, ^{
             if (![statusString isEqualToString:@"None"]) {
-                NSArray * hostArray = [_hostManagerDict allKeys];
-                [_hostManagerDict removeAllObjects];
+                NSArray *hostArray = [_hostManagerDict allKeys];
+                [self cleanAllHostMemoryCache];
+                //同步操作，防止网络请求成功，更新后，缓存数据再覆盖掉。
+                [self loadIPsFromCacheSyncIfNeeded];
                 if (_isPreResolveAfterNetworkChangedEnabled == YES) {
                     HttpdnsLogDebug(@"Network changed, pre resolve for hosts: %@", hostArray);
                     [self addPreResolveHosts:hostArray];
@@ -512,6 +544,65 @@ NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0
     BOOL canNotConnectServer = ALICLOUD_HTTPDNS_HTTP_CANNOT_CONNECT_SERVER_ERROR_CODE;
     BOOL isTimeout = (isHTTPS && (error.code == ALICLOUD_HTTPDNS_HTTPS_TIMEOUT_ERROR_CODE)) || (!isHTTPS && ((error.code == ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE) || (error.code == ALICLOUD_HTTPDNS_HTTP_STREAM_READ_ERROR_CODE)));
     return isTimeout || canNotConnectServer;
+}
+
++ (dispatch_queue_t)hostCacheQueue {
+    return _hostCacheQueue;
+}
+
+- (HttpdnsHostObject *)hostObjectFromCacheForHostName:(NSString *)hostName {
+    //v1.6.0版本及以后，disable状态下了，不仅网络请求受限，缓存也同样受限。
+    if (self.isServerDisable) {
+        return nil;
+    }
+    HttpdnsHostObject *hostObject = [_hostManagerDict objectForKey:hostName];
+    return hostObject;
+}
+
+- (void)loadIPsFromCacheAsyncIfNeeded {
+    dispatch_async([[self class] hostCacheQueue], ^{
+        [self loadIPsFromCacheSyncIfNeeded];
+    });
+}
+
+- (void)cleanAllHostMemoryCache {
+    [_hostManagerDict removeAllObjects];
+}
+
+- (void)loadIPsFromCacheSyncIfNeeded {
+    if (!_cachedIPEnabled) {
+        return;
+    }
+    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+    NSArray<HttpdnsHostRecord *> *hostRecords = [hostCacheStore hostRecordsForCurrentCarrier];
+    for (HttpdnsHostRecord *hostRecord in hostRecords) {
+        NSString *host = hostRecord.host;
+        HttpdnsHostObject *hostObject = [HttpdnsHostObject hostObjectWithHostRecord:hostRecord];
+        //从DB缓存中加载到内存里的数据，此时不会出现过期的情况，TTL时间后过期。
+        [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
+        [_hostManagerDict setObject:hostObject forKey:host];
+    }
+}
+
+- (void)cacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs TTL:(int64_t)TTL {
+    if (!_cachedIPEnabled) {
+        return;
+    }
+    dispatch_async([HttpdnsRequestScheduler hostCacheQueue], ^{
+        HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:host IPs:IPs TTL:TTL];
+        HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+        [hostCacheStore insertHostRecords:@[hostRecord]];
+    });
+}
+
+//清理过期数据的时机放在 `-loadIPsFromCacheSyncIfNeeded` 之前，应用启动后就进行，
+- (void)cleanAllExpiredHostRecordsAsyncIfNeeded {
+    if (!_cachedIPEnabled) {
+        return;
+    }
+    dispatch_async([HttpdnsRequestScheduler hostCacheQueue], ^{
+        [[HttpdnsHostCacheStore new] cleanAllExpiredHostRecordsSync];
+    });
 }
 
 @end

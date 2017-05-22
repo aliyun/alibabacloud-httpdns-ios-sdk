@@ -17,26 +17,41 @@
  * under the License.
  */
 
+
 #import <Foundation/Foundation.h>
+#import "HttpdnsDatabaseCommon.h"
 
-@interface HttpdnsIpObject: NSObject<NSCoding>
+/*!
+ * Database migration object.
+ */
+@interface HttpdnsDatabaseMigration : NSObject
 
-@property (nonatomic, copy, getter=getIpString, setter=setIp:) NSString *ip;
+/*!
+ * The job of current migration.
+ */
+@property (readonly) HttpdnsDatabaseJob block;
+
++ (instancetype)migrationWithBlock:(HttpdnsDatabaseJob)block;
+
+- (instancetype)initWithBlock:(HttpdnsDatabaseJob)block;
 
 @end
 
-@interface HttpdnsHostObject : NSObject<NSCoding>
+/*!
+ * SQLite database migrator.
+ */
+@interface HttpdnsDatabaseMigrator : NSObject
 
-@property (nonatomic, strong, setter=setHostName:, getter=getHostName) NSString *hostName;
-@property (nonatomic, strong, setter=setIps:, getter=getIps) NSArray *ips;
-@property (nonatomic, setter=setTTL:, getter=getTTL) long long ttl;
-@property (nonatomic, getter=getLastLookupTime, setter=setLastLookupTime:) long long lastLookupTime;
-@property (atomic, setter=setQueryingState:, getter=isQuerying) BOOL queryingState;
+@property (readonly) NSString *databasePath;
 
--(instancetype)init;
+- (instancetype)initWithDatabasePath:(NSString *)databasePath;
 
--(BOOL)isExpired;
-
--(NSString *)description;
+/*!
+ * Migrate database with migrations.
+ * @param migrations An array of object confirms HttpdnsDatabaseMigration protocol.
+ * NOTE: migration can not be removed, only can be added.
+ * @return void.
+ */
+- (void)executeMigrations:(NSArray *)migrations;
 
 @end
