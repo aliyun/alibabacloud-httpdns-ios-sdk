@@ -11,17 +11,17 @@
 @interface HttpdnsIPRecord : NSObject
 
 /*!
- * 关联host的id
+ * 关联host的id，对应于 IPRecord 数据库表内的同名字段。
  */
 @property (nonatomic, assign, readonly) NSUInteger hostRecordId;
 
 /*!
- * 解析的IP
+ * 解析的IP，对应于 IPRecord 数据库表内的同名字段。
  */
 @property (nonatomic, copy, readonly) NSString *IP;
 
 /*!
- * TTL
+ * TTL，对应于 IPRecord 数据库表内的同名字段。
  */
 @property (nonatomic, assign, readonly) int64_t TTL;
 

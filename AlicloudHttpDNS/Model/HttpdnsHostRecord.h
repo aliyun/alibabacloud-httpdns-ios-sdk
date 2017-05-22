@@ -19,27 +19,27 @@
 @interface HttpdnsHostRecord : NSObject
 
 /*!
- * 自增id，对应于HostRecord数据库表内的同名字段。
+ * 自增id，对应于 HostRecord 数据库表内的同名字段。
  */
 @property (nonatomic, assign, readonly) NSUInteger hostRecordId;
 
 /*!
- * 域名，对应于HostRecord数据库表内的同名字段。
+ * 域名，对应于 HostRecord 数据库表内的同名字段。
  */
 @property (nonatomic, copy, readonly) NSString *host;
 
 /*!
- * 运营商，对应于HostRecord数据库表内的同名字段。
+ * 运营商，对应于 HostRecord 数据库表内的同名字段。
  */
 @property (nonatomic, copy, readonly) NSString *carrier;
 
 /*!
- * 查询时间，单位是秒，对应于HostRecord数据库表内的同名字段。
+ * 查询时间，单位是秒，对应于 HostRecord 数据库表内的同名字段。
  */
 @property (nonatomic, strong, readonly) NSDate *createAt;
 
 /*!
- * 过期时间，对应于HostRecord数据库表内的同名字段。
+ * 过期时间，对应于 HostRecord 数据库表内的同名字段。
  */
 @property (nonatomic, strong, readonly) NSDate *expireAt;
 
