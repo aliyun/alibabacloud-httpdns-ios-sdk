@@ -10,22 +10,18 @@
 #import <UIKit/UIKit.h>
 #import <SystemConfiguration/CaptiveNetwork.h>
 #import "HttpdnsLog.h"
+#import "HttpdnsUtil.h"
 
+typedef NS_ENUM(NSInteger, HttpdnsCarrierType) {
+    HttpdnsCarrierTypeUnknown,/**< 未知运营商 */
+    HttpdnsCarrierTypeWWAN,   /**< 移动运营商 */
+    HttpdnsCarrierTypeWifi    /**< Wifi */
+};
 @implementation HttpdnsgetNetworkInfoHelper
 
 #define ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(type) [NSString stringWithFormat:@"%@", @(type)]
 #define ALICLOUD_HTTPDNS_NETWORK_FROME_COUNTRY_NETWORK(type, mobileCountryCode, mobileNetworkCode) [NSString stringWithFormat:@"%@-%@-%@", @(type), mobileCountryCode, mobileNetworkCode]
 #define ALICLOUD_HTTPDNS_NETWORK_FROME_WIFI_SSID(type, SSID) [NSString stringWithFormat:@"%@-%@", @(type), SSID]
-
-//wifi是否可用
-+ (BOOL)isWifiEnable {
-    return ([[HttpdnsReachability reachabilityForLocalWiFi] currentReachabilityStatus] == HttpdnsReachableViaWiFi);
-}
-
-//蜂窝移动网络是否可用
-+ (BOOL)isCarrierConnectEnable {
-    return ([[HttpdnsReachability reachabilityForInternetConnection] currentReachabilityStatus] == HttpdnsReachableViaWWAN);
-}
 
 /**
  *  获取运营商名称
@@ -36,7 +32,7 @@
 }
 
 + (NSString *)getNetworkName {
-    if (self.isWifiEnable) {
+    if ([HttpdnsUtil isWifiEnable]) {
         NSString *currentWifiHotSpotName = [self getCurrentWifiHotSpotName];
         NSString *networkName = ALICLOUD_HTTPDNS_NETWORK_FROME_WIFI_SSID(HttpdnsCarrierTypeWifi, @"0");
         if (currentWifiHotSpotName.length == 0 || !currentWifiHotSpotName) {
@@ -48,9 +44,11 @@
         networkName = ALICLOUD_HTTPDNS_NETWORK_FROME_WIFI_SSID(HttpdnsCarrierTypeWifi, currentWifiHotSpotName);
         return networkName;
     }
-    if (self.isCarrierConnectEnable) {
-        return [self checkMobileOperator];
+    if ([HttpdnsUtil isCarrierConnectEnable]) {
+        NSString *networkName = [self checkMobileOperator];
+        return networkName;
     }
+    
     HttpdnsLogDebug("Get network name failed!");
     return nil;
 }
@@ -60,12 +58,15 @@
     NSArray *ifs = (__bridge_transfer id)CNCopySupportedInterfaces();
     for (NSString *ifnam in ifs) {
         NSDictionary *info = (__bridge_transfer id)CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifnam);
-        if (info[@"SSID"]) {
-            wifiName = info[@"SSID"];
-        }
+        @try {
+            if (info[@"SSID"]) {
+                wifiName = info[@"SSID"];
+            }
+        } @catch (NSException *exception) {}
     }
     return wifiName;
 }
+
 /*!
  * 
  联通     1-460-01

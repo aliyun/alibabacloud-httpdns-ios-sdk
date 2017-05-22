@@ -9,13 +9,6 @@
 #import <Foundation/Foundation.h>
 #import <CoreTelephony/CTCarrier.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
-#import "HttpdnsReachability.h"
-
-typedef NS_ENUM(NSInteger, HttpdnsCarrierType) {
-    HttpdnsCarrierTypeUnknown,/**< 未知运营商 */
-    HttpdnsCarrierTypeWWAN,   /**< 移动运营商 */
-    HttpdnsCarrierTypeWifi    /**< Wifi */
-};
 
 @interface HttpdnsgetNetworkInfoHelper : NSObject
 

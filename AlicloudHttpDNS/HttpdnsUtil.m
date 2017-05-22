@@ -79,4 +79,19 @@
         HttpdnsLogDebug("Warning: A long-running Paas operation is being executed on the main thread.");
     }
 }
+
+//wifi是否可用
++ (BOOL)isWifiEnable {
+    BOOL isReachableViaWiFi =  ([[AlicloudReachabilityManager shareInstance] currentNetworkStatus] == AlicloudReachableViaWiFi);
+    return isReachableViaWiFi;
+}
+
+//蜂窝移动网络是否可用
++ (BOOL)isCarrierConnectEnable {
+   BOOL checkInternetConnection = [[AlicloudReachabilityManager shareInstance] checkInternetConnection];
+    BOOL isReachableViaWiFi =  ([[AlicloudReachabilityManager shareInstance] currentNetworkStatus] == AlicloudReachableViaWiFi);
+    BOOL isReachableViaWWAN = checkInternetConnection && !isReachableViaWiFi;
+    return isReachableViaWWAN;
+}
+
 @end
