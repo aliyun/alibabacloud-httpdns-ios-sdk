@@ -8,6 +8,7 @@ Pod::Spec.new do |s|
   s.platform     = :ios
   s.source       = { :http => "framework_url" }
   s.vendored_frameworks = 'httpdns/AlicloudHttpDNS.framework'
+  s.library = 'sqlite3.0'
   s.dependency "AlicloudUtils"
 
 end
