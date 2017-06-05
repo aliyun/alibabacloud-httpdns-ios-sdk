@@ -30,7 +30,13 @@ static NSURLSession *_scheduleCenterSession = nil;
     if (!(self = [super init])) {
         return nil;
     }
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+        _scheduleCenterSession = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
+    });
     _sem = dispatch_semaphore_create(0);
+
     return self;
 }
 
@@ -82,11 +88,6 @@ static NSURLSession *_scheduleCenterSession = nil;
 - (NSDictionary *)queryScheduleCenterRecordFromServerWithHostIndex:(NSInteger)hostIndex error:(NSError **)pError {
     NSString *fullUrlStr = [self constructRequestURLWithHostIndex:hostIndex];
     HttpdnsLogDebug("Request URL: %@", fullUrlStr);
-    if (!_scheduleCenterSession
-        ) {
-        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
-        _scheduleCenterSession = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
-    }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                            cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                        timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
@@ -131,7 +132,6 @@ static NSURLSession *_scheduleCenterSession = nil;
     }
     return nil;
 }
-
 
 #pragma mark - NSURLSessionTaskDelegate
 
