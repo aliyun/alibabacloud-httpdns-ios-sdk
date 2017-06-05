@@ -17,15 +17,13 @@
  * under the License.
  */
 
-#import "HttpdnsServiceProvider.h"
-#import "HttpdnsRequestScheduler.h"
+#import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsModel.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
 #import <AlicloudUtils/AlicloudUtils.h>
-#import "HttpdnsServiceProvider_Internal.h"
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsHostCacheStore.h"
 

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-#import "HttpdnsRequestScheduler.h"
+#import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsModel.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsConfig.h"
@@ -25,7 +25,6 @@
 #import "HttpdnsLog.h"
 #import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsPersistenceUtils.h"
-#import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsConstants.h"
