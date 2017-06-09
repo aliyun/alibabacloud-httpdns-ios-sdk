@@ -74,7 +74,7 @@ static NSURLSession *_scheduleCenterSession = nil;
 }
 
 /*!
- * 形如 https://106.11.90.200/sc/httpdns_config?account_id=153519&platform=ios&sdk_version=1.6.0
+ * 形如 https://106.11.90.200/sc/httpdns_config?account_id=153519&platform=ios&sdk_version=1.6.1
  */
 - (NSString *)constructRequestURLWithHostIndex:(NSInteger)hostIndex {
     NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
