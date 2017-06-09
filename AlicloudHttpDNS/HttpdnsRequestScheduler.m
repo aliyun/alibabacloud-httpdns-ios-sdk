@@ -550,7 +550,7 @@ static dispatch_queue_t _hostCacheQueue = NULL;
 }
 
 - (HttpdnsHostObject *)hostObjectFromCacheForHostName:(NSString *)hostName {
-    //v1.6.0版本及以后，disable状态下了，不仅网络请求受限，缓存也同样受限。
+    //v1.6.1版本及以后，disable状态下了，不仅网络请求受限，缓存也同样受限。
     if (self.isServerDisable) {
         return nil;
     }

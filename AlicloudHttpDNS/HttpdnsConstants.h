@@ -26,7 +26,7 @@
  * API 文档：http://gitlab.alibaba-inc.com/alicloud-ams/httpdns-doc/blob/master/v6/sc-proto.md
  */
 
-//http://106.11.90.200/sc/httpdns_config?account_id=153519&platform=ios&sdk_version=1.6.0
+//http://106.11.90.200/sc/httpdns_config?account_id=153519&platform=ios&sdk_version=1.6.1
 
 #pragma mark - Schedule Center
 ///=============================================================================
