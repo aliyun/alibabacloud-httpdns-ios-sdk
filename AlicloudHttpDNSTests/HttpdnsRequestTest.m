@@ -92,8 +92,12 @@
             XCTAssertNil(error);
             XCTAssertNotNil(result);
             XCTAssertNotEqual([[result getIps] count], 0);
+            if (i == 299) {
+                NOTIFY
+            }
         });
     }
+    WAIT
 }
 
 /**
