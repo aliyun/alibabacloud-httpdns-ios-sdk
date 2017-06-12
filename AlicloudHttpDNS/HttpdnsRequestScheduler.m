@@ -17,7 +17,7 @@
  * under the License.
  */
 
-#import "HttpdnsRequestScheduler.h"
+#import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsModel.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsConfig.h"
@@ -25,7 +25,6 @@
 #import "HttpdnsLog.h"
 #import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsPersistenceUtils.h"
-#import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsConstants.h"
@@ -551,7 +550,7 @@ static dispatch_queue_t _hostCacheQueue = NULL;
 }
 
 - (HttpdnsHostObject *)hostObjectFromCacheForHostName:(NSString *)hostName {
-    //v1.6.0版本及以后，disable状态下了，不仅网络请求受限，缓存也同样受限。
+    //v1.6.1版本及以后，disable状态下了，不仅网络请求受限，缓存也同样受限。
     if (self.isServerDisable) {
         return nil;
     }

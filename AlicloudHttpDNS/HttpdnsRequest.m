@@ -210,18 +210,8 @@ static NSURLSession *_resolveHOSTSession = nil;
     CFReadStreamRef requestReadStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, request);
     _inputStream = (__bridge_transfer NSInputStream *)requestReadStream;
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        _runloop = [NSRunLoop currentRunLoop];
-        [self openInputStream];
-        [self startTimer];
-        /*
-         *  通过调用[runloop run]; 开启线程的RunLoop时，引用苹果文档描述，"Manually removing all known input sources and timers from the run loop is not a guarantee that the run loop will exit. "，
-         *  一定要手动停止RunLoop，CFRunLoopStop([runloop getCFRunLoop])；
-         *  此处不再调用[runloop run]，改为[runloop runUtilDate:]，确保RunLoop正确退出。
-         *  且NSRunLoop为非线程安全的。
-         */
-        [_runloop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:([HttpDnsService sharedInstance].timeoutInterval + 5)]];
-    });
+    NSThread *networkRequestThread = [[NSThread alloc] initWithTarget:self selector:@selector(networkRequestThreadEntryPoint:) object:nil];
+    [networkRequestThread start];
     
     CFRelease(url);
     CFRelease(request);
@@ -245,6 +235,21 @@ static NSURLSession *_resolveHOSTSession = nil;
         return [self parseHostInfoFromHttpResponse:json];
     }
     return nil;
+}
+
+- (void)networkRequestThreadEntryPoint:(id)__unused object {
+    @autoreleasepool {
+        _runloop = [NSRunLoop currentRunLoop];
+        [self openInputStream];
+        [self startTimer];
+        /*
+         *  通过调用[runloop run]; 开启线程的RunLoop时，引用苹果文档描述，"Manually removing all known input sources and timers from the run loop is not a guarantee that the run loop will exit. "，
+         *  一定要手动停止RunLoop，CFRunLoopStop([runloop getCFRunLoop])；
+         *  此处不再调用[runloop run]，改为[runloop runUtilDate:]，确保RunLoop正确退出。
+         *  且NSRunLoop为非线程安全的。
+         */
+        [_runloop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:([HttpDnsService sharedInstance].timeoutInterval + 5)]];
+    }
 }
 
 - (void)openInputStream {
