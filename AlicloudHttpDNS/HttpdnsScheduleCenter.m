@@ -17,7 +17,7 @@
  * under the License.
  */
 
-#import "HttpdnsScheduleCenter.h"
+#import "HttpdnsScheduleCenter_Internal.h"
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsLog.h"
 #import "HttpdnsConstants.h"
@@ -25,7 +25,6 @@
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsScheduleCenterRequest.h"
 #import "HttpdnsRequest.h"
-#import "HttpdnsScheduleCenter_Internal.h"
 
 NSInteger ALICLOUD_HTTPDNS_RESET_IP_LIST_TIME_DAY = 1;
 
@@ -164,7 +163,6 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
         !callback ?: callback(nil);
     }];
 }
-
 
 - (void)updateIpListAsyncWithCallback:(HttpDnsIdCallback)callback {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
