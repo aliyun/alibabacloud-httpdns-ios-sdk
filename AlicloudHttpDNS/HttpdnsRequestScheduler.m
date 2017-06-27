@@ -129,6 +129,13 @@ static dispatch_queue_t _hostCacheQueue = NULL;
 }
 
 - (void)addPreResolveHosts:(NSArray *)hosts {
+    if (![HttpdnsUtil isAbleToRequest]) {
+        HttpdnsLogDebug("You should set accountID before adding PreResolveHosts");
+        return;
+    }
+    if (![HttpdnsUtil isValidArray:hosts]) {
+        return;
+    }
     dispatch_async(_syncDispatchQueue, ^{
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
         for (NSString *hostName in hosts) {
@@ -156,6 +163,12 @@ static dispatch_queue_t _hostCacheQueue = NULL;
 #pragma mark - core method for all public query API
 
 - (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync {
+    if (![HttpdnsUtil isAbleToRequest]) {
+        return nil;
+    }
+    if (![HttpdnsUtil isValidString:host]) {
+        return nil;
+    }
     __block HttpdnsHostObject *result = nil;
     __block BOOL needToQuery = NO;
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
@@ -265,6 +278,9 @@ static dispatch_queue_t _hostCacheQueue = NULL;
                activatedServerIPIndex:(NSInteger)activatedServerIPIndex
                                 error:(NSError *)error {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    if (![HttpdnsUtil isAbleToRequest]) {
+        return nil;
+    }
     if (scheduleCenter.isStopService) {
         return nil;
     }

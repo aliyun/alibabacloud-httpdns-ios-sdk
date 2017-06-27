@@ -42,9 +42,12 @@
 @implementation HttpdnsRequestTest
 
 + (void)initialize {
-    HttpDnsService *httpdns = [HttpDnsService sharedInstance];
+//    HttpDnsService *httpdns = [HttpDnsService sharedInstance];
+//    [httpdns setLogEnabled:YES];
+//    [httpdns setAccountID:100000];
+    
+    HttpDnsService *httpdns = [[HttpDnsService alloc] initWithAccountID:100000];
     [httpdns setLogEnabled:YES];
-    [httpdns setAccountID:100000];
 }
 
 - (void)setUp {
