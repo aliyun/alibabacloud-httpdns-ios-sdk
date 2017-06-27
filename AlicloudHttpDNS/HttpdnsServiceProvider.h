@@ -19,14 +19,17 @@
 
 #import <Foundation/Foundation.h>
 #import "HttpdnsDegradationDelegate.h"
+#import "HttpdnsConstants.h"
 
 @interface HttpDnsService: NSObject
 
-@property (nonatomic, assign) int accountID;
+@property (nonatomic, assign, readonly) int accountID;
 
 @property (nonatomic, weak, setter=setDelegateForDegradationFilter:) id<HttpDNSDegradationDelegate> delegate;
 
 @property (nonatomic, assign) NSTimeInterval timeoutInterval;
+
+- (instancetype)initWithAccountID:(int)accountID;
 
 + (instancetype)sharedInstance;
 
@@ -47,5 +50,11 @@
 - (void)setLogEnabled:(BOOL)enable;
 
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
+
+@end
+
+@interface HttpDnsService (HttpdnsDeprecated)
+
+- (void)setAccountID:(int)accountID ALICLOUD_HTTPDNS_DEPRECATED("Deprecated in AVOSCloud SDK 1.5.2. Use -[HttpDnsService initWithAccountID:] instead.");
 
 @end

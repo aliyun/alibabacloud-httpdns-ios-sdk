@@ -85,14 +85,24 @@ static NSURLSession *_resolveHOSTSession = nil;
     if (json == nil) {
         return nil;
     }
-    NSString *hostName = [json objectForKey:@"host"];
-    NSArray *ips = [json objectForKey:@"ips"];
-    if (ips == nil || [ips count] == 0) {
+    NSString *hostName;
+    NSArray *ips;
+    NSInteger ipsCount = 0;
+    @try {
+        hostName = [json objectForKey:@"host"];
+        ips = [json objectForKey:@"ips"];
+        ipsCount = [ips count];
+    } @catch (NSException *exception) {}
+    
+    if (ips == nil || ipsCount == 0) {
         HttpdnsLogDebug("IP list is empty for host %@", hostName);
         return nil;
     }
     NSMutableArray *ipArray = [[NSMutableArray alloc] init];
     for (NSString *ip in ips) {
+        if (![HttpdnsUtil isValidString:ip]) {
+            continue;
+        }
         HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
         // Adapt to IPv6-only network.
         [ipObject setIp:[[AlicloudIPv6Adapter getInstance] handleIpv4Address:ip]];
@@ -157,7 +167,8 @@ static NSURLSession *_resolveHOSTSession = nil;
             HttpdnsLogDebug("Network error: %@", error);
             errorStrong = error;
         } else {
-            json = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
+            id jsonValue = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
+            json = [HttpdnsUtil getValidDictionaryFromJson:jsonValue];
             NSInteger statusCode = [(NSHTTPURLResponse *) response statusCode];
             if (statusCode != 200) {
                 HttpdnsLogDebug("ReponseCode %ld.", (long)statusCode);
@@ -167,7 +178,10 @@ static NSURLSession *_resolveHOSTSession = nil;
                                           [NSString stringWithFormat:@"%ld", (long)statusCode], @"ResponseCode", nil];
                     errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10002 userInfo:dict];
                 } else {
-                    NSString *errCode = [json objectForKey:@"code"];
+                    NSString *errCode = @"";
+                    @try {
+                        errCode = [json objectForKey:@"code"];
+                    } @catch (NSException *exception) {}
                     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                           errCode, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
                     errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10003 userInfo:dict];
