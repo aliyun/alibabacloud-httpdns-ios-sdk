@@ -75,7 +75,6 @@
     return requestHost;
 }
 
-<<<<<<< HEAD
 + (void)warnMainThreadIfNecessary {
     if ([NSThread isMainThread]) {
         HttpdnsLogDebug("Warning: A long-running Paas operation is being executed on the main thread.");
@@ -92,7 +91,8 @@
 + (BOOL)isCarrierConnectEnable {
     BOOL isReachableViaWWAN = [[AlicloudReachabilityManager shareInstance] isReachableViaWWAN];
     return isReachableViaWWAN;
-=======
+}
+
 + (BOOL)isAbleToRequest {
     if ([AlicloudReachabilityManager shareInstance].currentNetworkStatus == AlicloudNotReachable) {
         return NO;
@@ -196,7 +196,6 @@
         return NO;
     }
     return YES;
->>>>>>> 31ef7c1... inhance securement to avoid json crash
 }
 
 @end
