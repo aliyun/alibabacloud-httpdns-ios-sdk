@@ -39,15 +39,9 @@ static NSDictionary *HTTPDNS_EXT_INFO = nil;
 
 #pragma mark singleton
 
-<<<<<<< HEAD
-+ (instancetype)sharedInstance {
-=======
-
-#pragma mark init
 static HttpDnsService * _httpDnsClient = nil;
 
 - (instancetype)initWithAccountID:(int)accountID {
->>>>>>> 31ef7c1... inhance securement to avoid json crash
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _httpDnsClient = [super init];
@@ -91,15 +85,9 @@ static HttpDnsService * _httpDnsClient = nil;
     [self shareInit];
 }
 
-<<<<<<< HEAD
-- (instancetype)init {
-    if (self = [super init]) {
-        _requestScheduler = [[HttpdnsRequestScheduler alloc] init];
-=======
 - (HttpdnsRequestScheduler *)requestScheduler {
     if (_requestScheduler) {
         return _requestScheduler;
->>>>>>> 31ef7c1... inhance securement to avoid json crash
     }
     HttpdnsRequestScheduler *requestScheduler = [[HttpdnsRequestScheduler alloc] init];
     _requestScheduler = requestScheduler;

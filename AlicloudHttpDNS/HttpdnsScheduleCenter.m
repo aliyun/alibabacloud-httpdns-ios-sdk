@@ -25,11 +25,8 @@
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsScheduleCenterRequest.h"
 #import "HttpdnsRequest.h"
-<<<<<<< HEAD
-=======
 #import "HttpdnsScheduleCenter_Internal.h"
 #import "HttpdnsUtil.h"
->>>>>>> 31ef7c1... inhance securement to avoid json crash
 
 NSInteger ALICLOUD_HTTPDNS_RESET_IP_LIST_TIME_DAY = 1;
 

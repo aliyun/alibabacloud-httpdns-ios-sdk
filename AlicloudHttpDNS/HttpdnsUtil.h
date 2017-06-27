@@ -34,7 +34,6 @@
  */
 + (NSString *)getRequestHostFromString:(NSString *)string;
 
-<<<<<<< HEAD
 + (void)warnMainThreadIfNecessary;
 
 //wifi是否可用
@@ -42,7 +41,7 @@
 
 //蜂窝移动网络是否可用
 + (BOOL)isCarrierConnectEnable;
-=======
+
 + (BOOL)isAbleToRequest;
 
 + (NSDictionary *)getValidDictionaryFromJson:(id)jsonValue;
@@ -50,6 +49,5 @@
 + (BOOL)isValidArray:(id)notValidArray;
 
 + (BOOL)isValidString:(id)notValidString;
->>>>>>> 31ef7c1... inhance securement to avoid json crash
 
 @end
