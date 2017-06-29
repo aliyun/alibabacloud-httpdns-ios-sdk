@@ -23,7 +23,7 @@
 
 static NSString *const ALICLOUD_HTTPDNS_ROOT_DIR_NAME = @"HTTPDNS";
 static NSString *const ALICLOUD_HTTPDNS_HOST_CACHE_DIR_NAME = @"HostCache";
-//static NSString *const ALICLOUD_HTTPDNS_HOST_IP_CACHE_DIR_NAME = @"HostIPCache";
+
 static dispatch_queue_t _fileCacheQueue = 0;
 
 @implementation HttpdnsPersistenceUtils

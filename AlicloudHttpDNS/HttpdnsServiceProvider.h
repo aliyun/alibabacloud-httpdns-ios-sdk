@@ -19,7 +19,8 @@
 
 #import <Foundation/Foundation.h>
 #import "HttpdnsDegradationDelegate.h"
-#import "HttpdnsConstants.h"
+
+#define ALICLOUD_HTTPDNS_DEPRECATED(explain) __attribute__((deprecated(explain)))
 
 @interface HttpDnsService: NSObject
 
