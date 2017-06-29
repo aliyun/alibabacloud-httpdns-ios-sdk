@@ -212,12 +212,14 @@ static dispatch_queue_t _fileCacheQueue = 0;
     if (![HttpdnsUtil isValidString:path]) {
         return;
     }
-    if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
-        [[NSFileManager defaultManager] createDirectoryAtPath:path
-                                  withIntermediateDirectories:YES
-                                                   attributes:nil
-                                                        error:NULL];
-    }
+    dispatch_sync(_fileCacheQueue, ^{
+        if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
+            [[NSFileManager defaultManager] createDirectoryAtPath:path
+                                      withIntermediateDirectories:YES
+                                                       attributes:nil
+                                                            error:NULL];
+        }
+    });
 }
 
 + (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanDays:(NSInteger)numberOfDays {
