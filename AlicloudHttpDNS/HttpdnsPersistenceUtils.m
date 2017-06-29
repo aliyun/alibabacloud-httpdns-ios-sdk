@@ -19,14 +19,23 @@
 
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsServiceProvider.h"
+#import "HttpdnsUtil.h"
 
 static NSString *const ALICLOUD_HTTPDNS_ROOT_DIR_NAME = @"HTTPDNS";
 static NSString *const ALICLOUD_HTTPDNS_HOST_CACHE_DIR_NAME = @"HostCache";
 //static NSString *const ALICLOUD_HTTPDNS_HOST_IP_CACHE_DIR_NAME = @"HostIPCache";
+static dispatch_queue_t _fileCacheQueue = 0;
 
 @implementation HttpdnsPersistenceUtils
 
 #pragma mark - Base Path
+
++ (void)initialize {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _fileCacheQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.fileCacheQueue", DISPATCH_QUEUE_SERIAL);
+    });
+}
 
 /// Base path, all paths depend it
 + (NSString *)homeDirectoryPath {
@@ -111,25 +120,41 @@ static NSString *const ALICLOUD_HTTPDNS_HOST_CACHE_DIR_NAME = @"HostCache";
 #pragma mark - File Utils
 
 + (BOOL)saveJSON:(id)JSON toPath:(NSString *)path {
-    if ([JSON isKindOfClass:[NSDictionary class]] || [JSON isKindOfClass:[NSArray class]]) {
-        [self removeFile:path];
-        BOOL saveSucceed = [NSKeyedArchiver archiveRootObject:JSON toFile:path];
+    if (![HttpdnsUtil isValidString:path]) {
+        return NO;
+    }
+    BOOL isValid = [HttpdnsUtil isValidJSON:JSON];
+    if (isValid) {
+        __block BOOL saveSucceed = NO;
+        @try {
+            [self removeFile:path];
+            dispatch_sync(_fileCacheQueue, ^{
+                saveSucceed = [NSKeyedArchiver archiveRootObject:JSON toFile:path];
+            });
+            
+        } @catch (NSException *exception) {}
+        
+        
         return saveSucceed;
     }
-    
     return NO;
 }
 
 + (id)getJSONFromPath:(NSString *)path {
-    id JSON = nil;
+    if (![HttpdnsUtil isValidString:path]) {
+        return nil;
+    }
+    __block id JSON = nil;
     @try {
-        JSON = [NSKeyedUnarchiver unarchiveObjectWithFile:path];
+        dispatch_sync(_fileCacheQueue, ^{
+            JSON = [NSKeyedUnarchiver unarchiveObjectWithFile:path];
+        });
+        BOOL isValid = [HttpdnsUtil isValidJSON:JSON];
         
-        if ([JSON isMemberOfClass:[NSDictionary class]] || [JSON isMemberOfClass:[NSArray class]]) {
+        if (isValid) {
             return JSON;
         }
-    }
-    @catch (NSException *exception) {
+    } @catch (NSException *exception) {
         //deal with the previous file version
         if ([[exception name] isEqualToString:NSInvalidArgumentException]) {
             JSON = [NSMutableDictionary dictionaryWithContentsOfFile:path];
@@ -139,7 +164,6 @@ static NSString *const ALICLOUD_HTTPDNS_HOST_CACHE_DIR_NAME = @"HostCache";
             }
         }
     }
-    
     return JSON;
 }
 
@@ -158,21 +182,36 @@ static NSString *const ALICLOUD_HTTPDNS_HOST_CACHE_DIR_NAME = @"HostCache";
 }
 
 + (BOOL)removeFile:(NSString *)path {
-    NSError * error = nil;
-    BOOL ret = [[NSFileManager defaultManager] removeItemAtPath:path error:&error];
+    if (![HttpdnsUtil isValidString:path]) {
+        return NO;
+    }
+    __block NSError * error = nil;
+    __block BOOL ret = NO;
+    dispatch_sync(_fileCacheQueue, ^{
+        ret = [[NSFileManager defaultManager] removeItemAtPath:path error:&error];
+    });
     return ret;
 }
 
 + (BOOL)fileExist:(NSString *)path {
+    if (![HttpdnsUtil isValidString:path]) {
+        return NO;
+    }
     return [[NSFileManager defaultManager] fileExistsAtPath:path];
 }
 
 + (BOOL)createFile:(NSString *)path {
+    if (![HttpdnsUtil isValidString:path]) {
+        return NO;
+    }
     BOOL ret = [[NSFileManager defaultManager] createFileAtPath:path contents:[NSData data] attributes:nil];
     return ret;
 }
 
 + (void)createDirectoryIfNeeded:(NSString *)path {
+    if (![HttpdnsUtil isValidString:path]) {
+        return;
+    }
     if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
         [[NSFileManager defaultManager] createDirectoryAtPath:path
                                   withIntermediateDirectories:YES
@@ -193,7 +232,7 @@ static NSString *const ALICLOUD_HTTPDNS_HOST_CACHE_DIR_NAME = @"HostCache";
     BOOL success = NO;
     
     NSFileManager *fileMgr = [[NSFileManager alloc] init];
-    NSError *error = nil;
+    __block NSError *error = nil;
     NSArray *directoryContents = [fileMgr contentsOfDirectoryAtPath:dirPath error:&error];
     if (error == nil) {
         for (NSString *path in directoryContents) {
@@ -201,8 +240,10 @@ static NSString *const ALICLOUD_HTTPDNS_HOST_CACHE_DIR_NAME = @"HostCache";
             NSTimeInterval timeSinceCreate = [self timeSinceCreateForPath:fullPath];
             if (timeSinceCreate < timeInterval)
                 continue;
-            
-            BOOL removeSuccess = [fileMgr removeItemAtPath:fullPath error:&error];
+            __block BOOL removeSuccess = NO;
+            dispatch_sync(_fileCacheQueue, ^{
+                removeSuccess = [fileMgr removeItemAtPath:fullPath error:&error];
+            });
             if (!removeSuccess) {
                 // NSLog(@"remove error happened");
                 success = NO;

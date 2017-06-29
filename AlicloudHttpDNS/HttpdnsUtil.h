@@ -50,4 +50,6 @@
 
 + (BOOL)isValidString:(id)notValidString;
 
++ (BOOL)isValidJSON:(id)JSON;
+
 @end

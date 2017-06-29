@@ -198,4 +198,12 @@
     return YES;
 }
 
++ (BOOL)isValidJSON:(id)JSON {
+    BOOL isValid;
+    @try {
+        isValid = ([JSON isKindOfClass:[NSDictionary class]] || [JSON isKindOfClass:[NSArray class]]);
+    } @catch (NSException *exception) {}
+    return isValid;
+}
+
 @end

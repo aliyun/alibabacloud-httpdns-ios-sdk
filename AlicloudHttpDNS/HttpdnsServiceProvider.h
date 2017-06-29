@@ -55,6 +55,6 @@
 
 @interface HttpDnsService (HttpdnsDeprecated)
 
-- (void)setAccountID:(int)accountID ALICLOUD_HTTPDNS_DEPRECATED("Deprecated in AVOSCloud SDK 1.5.2. Use -[HttpDnsService initWithAccountID:] instead.");
+- (void)setAccountID:(int)accountID ALICLOUD_HTTPDNS_DEPRECATED("Deprecated in v1.5.2. Use -[HttpDnsService initWithAccountID:] instead.");
 
 @end
