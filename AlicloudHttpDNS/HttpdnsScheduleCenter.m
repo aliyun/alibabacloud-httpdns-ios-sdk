@@ -307,6 +307,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 
 - (void)setScheduleCenterResult:(NSDictionary *)scheduleCenterResult {
     dispatch_async(self.scheduleCenterResultQueue, ^{
+        
         if (_scheduleCenterResult == scheduleCenterResult) {
             return;
         }
@@ -333,9 +334,6 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
             if ([HttpdnsUtil isValidArray:result]) {
                 _IPList = [result copy];
             }
-            //            if ([result isKindOfClass:[NSArray class]] && result && result.count > 0) {
-            //                _IPList = result;
-            //            }
         } @catch (NSException *exception) {}
     });
 }
@@ -364,9 +362,6 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     if (![HttpdnsUtil isValidArray:IPList]) {
         return ALICLOUD_HTTPDNS_SERVER_IP_LIST;
     }
-//    if (![IPList isKindOfClass:[NSArray class]] || !IPList || IPList.count == 0) {
-//        return ALICLOUD_HTTPDNS_SERVER_IP_LIST;
-//    }
     return IPList;
 }
 

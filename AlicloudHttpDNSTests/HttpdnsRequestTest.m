@@ -165,7 +165,7 @@
  * 测试方法：1. 查询某个真实域名并判断是否获取了正常的返回数据；
  */
 - (void)testHTTPSRequestOneHost {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+//    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
     NSString *hostName = @"www.taobao.com";
     HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
     NSError *error;
