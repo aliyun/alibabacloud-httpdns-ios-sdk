@@ -22,13 +22,6 @@
 
 #import <Foundation/Foundation.h>
 
-#pragma mark - Common
-///=============================================================================
-/// @name Common
-///=============================================================================
-
-#define ALICLOUD_HTTPDNS_DEPRECATED(explain) __attribute__((deprecated(explain)))
-
 /*!
  * API 文档：http://gitlab.alibaba-inc.com/alicloud-ams/httpdns-doc/blob/master/v6/sc-proto.md
  */
