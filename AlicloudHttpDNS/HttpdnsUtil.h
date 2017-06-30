@@ -42,4 +42,14 @@
 //蜂窝移动网络是否可用
 + (BOOL)isCarrierConnectEnable;
 
++ (BOOL)isAbleToRequest;
+
++ (NSDictionary *)getValidDictionaryFromJson:(id)jsonValue;
+
++ (BOOL)isValidArray:(id)notValidArray;
+
++ (BOOL)isValidString:(id)notValidString;
+
++ (BOOL)isValidJSON:(id)JSON;
+
 @end

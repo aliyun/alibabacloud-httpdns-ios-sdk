@@ -99,7 +99,8 @@ static NSURLSession *_scheduleCenterSession = nil;
             HttpdnsLogDebug("Network error: %@", error);
             errorStrong = error;
         } else {
-            json = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
+             id jsonValue = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
+            json = [HttpdnsUtil getValidDictionaryFromJson:jsonValue];
             NSInteger statusCode = [(NSHTTPURLResponse *) response statusCode];
             if (statusCode != 200) {
                 HttpdnsLogDebug("ReponseCode %ld.", (long)statusCode);
@@ -109,7 +110,10 @@ static NSURLSession *_scheduleCenterSession = nil;
                                           [NSString stringWithFormat:@"%ld", (long)statusCode], @"ResponseCode", nil];
                     errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10002 userInfo:dict];
                 } else {
-                    NSString *errCode = [json objectForKey:@"code"];
+                    NSString *errCode = @"";
+                    @try {
+                        errCode = [json objectForKey:@"code"];
+                    } @catch (NSException *exception) {}
                     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                           errCode, @"ErrorMessage", nil];
                     errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10003 userInfo:dict];
@@ -122,7 +126,6 @@ static NSURLSession *_scheduleCenterSession = nil;
     }];
     [task resume];
     dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
-    
     if (!errorStrong) {
         return json;
     }
