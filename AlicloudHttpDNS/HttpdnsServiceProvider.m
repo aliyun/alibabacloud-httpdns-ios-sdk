@@ -29,22 +29,30 @@
 
 static NSDictionary *HTTPDNS_EXT_INFO = nil;
 
+@interface HttpDnsService ()
+
+@property (nonatomic, assign) int accountID;
+
+@end
+
 @implementation HttpDnsService
 
 #pragma mark singleton
 
-+ (instancetype)sharedInstance {
+static HttpDnsService * _httpDnsClient = nil;
+
+- (instancetype)initWithAccountID:(int)accountID {
     static dispatch_once_t onceToken;
-    static HttpDnsService * _httpDnsClient = nil;
     dispatch_once(&onceToken, ^{
-        _httpDnsClient = [[super allocWithZone:NULL] init];
-        _httpDnsClient.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
-        HTTPDNS_EXT_INFO = @{
-                             EXT_INFO_KEY_VERSION : HTTPDNS_IOS_SDK_VERSION,
-                             };
-        [self statIfNeeded];
+        _httpDnsClient = [super init];
+        _httpDnsClient.accountID = accountID;
+        [self shareInit];
     });
     return _httpDnsClient;
+}
+
++(instancetype)sharedInstance {
+    return [[self alloc] init];
 }
 
 + (void)statIfNeeded {
@@ -52,20 +60,38 @@ static NSDictionary *HTTPDNS_EXT_INFO = nil;
 }
 
 + (id)allocWithZone:(NSZone *)zone {
-    return [self sharedInstance];
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _httpDnsClient = [super allocWithZone:zone];
+    });
+    return _httpDnsClient;
 }
 
 - (id)copyWithZone:(NSZone *)zone {
     return self;
 }
 
-#pragma mark init
+- (void)shareInit {
+    [_httpDnsClient requestScheduler];
+    _httpDnsClient.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
+    HTTPDNS_EXT_INFO = @{
+                         EXT_INFO_KEY_VERSION : HTTPDNS_IOS_SDK_VERSION,
+                         };
+    [[self class] statIfNeeded];
+}
 
-- (instancetype)init {
-    if (self = [super init]) {
-        _requestScheduler = [[HttpdnsRequestScheduler alloc] init];
+- (void)setAccountID:(int)accountID {
+    _accountID = accountID;
+    [self shareInit];
+}
+
+- (HttpdnsRequestScheduler *)requestScheduler {
+    if (_requestScheduler) {
+        return _requestScheduler;
     }
-    return self;
+    HttpdnsRequestScheduler *requestScheduler = [[HttpdnsRequestScheduler alloc] init];
+    _requestScheduler = requestScheduler;
+    return _requestScheduler;
 }
 
 #pragma mark dnsLookupMethods
@@ -77,17 +103,17 @@ static NSDictionary *HTTPDNS_EXT_INFO = nil;
 - (NSString *)getIpByHost:(NSString *)host {
     NSArray *ips = [self getIpsByHost:host];
     if (ips != nil && ips.count > 0) {
-        return ips[0];
+        NSString *ip;
+        @try {
+            ip = ips[0];
+        } @catch (NSException *exception) {}
+        return ip;
     }
     return nil;
 }
 
 - (NSArray *)getIpsByHost:(NSString *)host {
     if ([self.delegate shouldDegradeHTTPDNS:host]) {
-        return nil;
-    }
-    
-    if (!host) {
         return nil;
     }
     
@@ -107,7 +133,9 @@ static NSDictionary *HTTPDNS_EXT_INFO = nil;
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
         if (ipsObject && [ipsObject count] > 0) {
             for (HttpdnsIpObject *ipObject in ipsObject) {
-                [ipsArray addObject:[ipObject getIpString]];
+                @try {
+                    [ipsArray addObject:[ipObject getIpString]];
+                } @catch (NSException *exception) {}
             }
             return ipsArray;
         }
@@ -127,7 +155,11 @@ static NSDictionary *HTTPDNS_EXT_INFO = nil;
 - (NSString *)getIpByHostAsync:(NSString *)host {
     NSArray *ips = [self getIpsByHostAsync:host];
     if (ips != nil && ips.count > 0) {
-        return ips[0];
+        NSString *ip;
+        @try {
+            ip = ips[0];
+        } @catch (NSException *exception) {}
+        return ip;
     }
     return nil;
 }

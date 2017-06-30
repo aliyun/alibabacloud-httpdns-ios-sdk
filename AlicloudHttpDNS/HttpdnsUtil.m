@@ -22,6 +22,7 @@
 #import "CommonCrypto/CommonCrypto.h"
 #import "arpa/inet.h"
 #import "AlicloudUtils/AlicloudUtils.h"
+#import "HttpdnsServiceProvider_Internal.h"
 
 @implementation HttpdnsUtil
 
@@ -90,6 +91,119 @@
 + (BOOL)isCarrierConnectEnable {
     BOOL isReachableViaWWAN = [[AlicloudReachabilityManager shareInstance] isReachableViaWWAN];
     return isReachableViaWWAN;
+}
+
++ (BOOL)isAbleToRequest {
+    if ([AlicloudReachabilityManager shareInstance].currentNetworkStatus == AlicloudNotReachable) {
+        return NO;
+    }
+    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+    if (!sharedService.accountID || sharedService.accountID == 0) {
+        return NO;
+    }
+    return YES;
+}
+
++ (NSDictionary *)getValidDictionaryFromJson:(id)jsonValue {
+    NSDictionary *dictionaryValueFromJson = nil;
+    if ([jsonValue isKindOfClass:[NSDictionary class]]) {
+        if ([(NSDictionary *)jsonValue allKeys].count > 0) {
+            NSMutableDictionary *mutableDict = [NSMutableDictionary dictionaryWithDictionary:jsonValue];
+            @try {
+                [self removeNSNullValueFromDictionary:mutableDict];
+            } @catch (NSException *exception) {}
+            dictionaryValueFromJson = [jsonValue copy];
+        }
+    }
+    return dictionaryValueFromJson;
+}
+
++ (void)removeNSNullValueFromArray:(NSMutableArray *)array {
+    NSMutableArray *objToRemove = nil;
+    NSMutableIndexSet *indexToReplace = [[NSMutableIndexSet alloc] init];
+    NSMutableArray *objForReplace = [[NSMutableArray alloc] init];
+    for (int i = 0; i < array.count; ++i) {
+        id value = [array objectAtIndex:i];
+        if ([value isKindOfClass:[NSNull class]]) {
+            if (!objToRemove) {
+                objToRemove = [[NSMutableArray alloc] init];
+            }
+            [objToRemove addObject:value];
+        } else if ([value isKindOfClass:[NSDictionary class]]) {
+            NSMutableDictionary *mutableDict = [NSMutableDictionary dictionaryWithDictionary:value];
+            [self removeNSNullValueFromDictionary:mutableDict];
+            [indexToReplace addIndex:i];
+            [objForReplace addObject:mutableDict];
+        } else if ([value isKindOfClass:[NSArray class]]) {
+            NSMutableArray *v = [value mutableCopy];
+            [self removeNSNullValueFromArray:v];
+            [indexToReplace addIndex:i];
+            [objForReplace addObject:v];
+        }
+    }
+    [array replaceObjectsAtIndexes:indexToReplace withObjects:objForReplace];
+    if (objToRemove) {
+        [array removeObjectsInArray:objToRemove];
+    }
+}
+
++ (void)removeNSNullValueFromDictionary:(NSMutableDictionary *)dict {
+    for (id key in [dict allKeys]) {
+        id value = [dict objectForKey:key];
+        if ([value isKindOfClass:[NSNull class]]) {
+            [dict removeObjectForKey:key];
+        } else if ([value isKindOfClass:[NSDictionary class]]) {
+            NSMutableDictionary *mutableDict = [NSMutableDictionary dictionaryWithDictionary:value];
+            [self removeNSNullValueFromDictionary:mutableDict];
+            [dict setObject:mutableDict forKey:key];
+        } else if ([value isKindOfClass:[NSArray class]]) {
+            NSMutableArray *v = [value mutableCopy];
+            [self removeNSNullValueFromArray:v];
+            [dict setObject:v forKey:key];
+        }
+    }
+}
+
++ (BOOL)isValidArray:(id)notValidArray {
+    if (!notValidArray) {
+        return NO;
+    }
+    if (![notValidArray isKindOfClass:[NSArray class]]) {
+        return NO;
+    }
+    NSInteger arrayCount = 0;
+    @try {
+        arrayCount = [(NSArray *)notValidArray count];
+    } @catch (NSException *exception) {}
+    if (arrayCount == 0) {
+        return NO;
+    }
+    return YES;
+}
+
++ (BOOL)isValidString:(id)notValidString {
+    if (!notValidString) {
+        return NO;
+    }
+    if (![notValidString isKindOfClass:[NSString class]]) {
+        return NO;
+    }
+    NSInteger stringLength = 0;
+    @try {
+        stringLength = [notValidString length];
+    } @catch (NSException *exception) {}
+    if (stringLength == 0) {
+        return NO;
+    }
+    return YES;
+}
+
++ (BOOL)isValidJSON:(id)JSON {
+    BOOL isValid;
+    @try {
+        isValid = ([JSON isKindOfClass:[NSDictionary class]] || [JSON isKindOfClass:[NSArray class]]);
+    } @catch (NSException *exception) {}
+    return isValid;
 }
 
 @end

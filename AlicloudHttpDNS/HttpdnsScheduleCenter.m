@@ -25,6 +25,8 @@
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsScheduleCenterRequest.h"
 #import "HttpdnsRequest.h"
+#import "HttpdnsScheduleCenter_Internal.h"
+#import "HttpdnsUtil.h"
 
 NSInteger ALICLOUD_HTTPDNS_RESET_IP_LIST_TIME_DAY = 1;
 
@@ -127,13 +129,15 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 }
 
 - (void)upateIPListIfNeededAsync {
+    if (![HttpdnsUtil isAbleToRequest]) {
+        return;
+    }
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
         if (![self needToFetchFromScheduleCenter]) {
             return;
         }
         [self forceUpdateIpListAsync];
     });
-    
 }
 
 - (void)forceUpdateIpListAsync {
@@ -303,6 +307,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 
 - (void)setScheduleCenterResult:(NSDictionary *)scheduleCenterResult {
     dispatch_async(self.scheduleCenterResultQueue, ^{
+        
         if (_scheduleCenterResult == scheduleCenterResult) {
             return;
         }
@@ -325,7 +330,10 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
             _stopService = ([stopServiceValue isEqualToString:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_DISABLE_VALUE]);
         } @catch (NSException *exception) {}
         @try {
-            _IPList = _scheduleCenterResult[ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IP_KEY];
+            NSArray *result = _scheduleCenterResult[ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IP_KEY];
+            if ([HttpdnsUtil isValidArray:result]) {
+                _IPList = [result copy];
+            }
         } @catch (NSException *exception) {}
     });
 }
@@ -349,17 +357,22 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 - (NSArray *)IPList {
     __block NSArray *IPList = nil;
     dispatch_sync(self.scheduleCenterResultQueue, ^{
-        IPList = _IPList;
+        IPList = [_IPList copy];
     });
-    return IPList ?: ALICLOUD_HTTPDNS_SERVER_IP_LIST;
+    if (![HttpdnsUtil isValidArray:IPList]) {
+        return ALICLOUD_HTTPDNS_SERVER_IP_LIST;
+    }
+    return IPList;
 }
 
 - (NSString *)getActivatedServerIPWithIndex:(NSInteger)index {
-    NSString *serverIP = nil;
+    NSString *serverIP = ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED;
     @try {
         serverIP = self.IPList[index];
     } @catch (NSException *exception) {
-        serverIP = self.IPList[0];
+        @try {
+            serverIP = self.IPList[0];
+        } @catch (NSException *exception) {}
     }
     return serverIP;
 }
