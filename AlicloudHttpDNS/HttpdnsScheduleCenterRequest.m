@@ -114,8 +114,12 @@ static NSURLSession *_scheduleCenterSession = nil;
                     @try {
                         errCode = [json objectForKey:@"code"];
                     } @catch (NSException *exception) {}
-                    NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                          errCode, @"ErrorMessage", nil];
+                    
+                    NSDictionary *dict = nil;
+                    if ([HttpdnsUtil isValidString:errCode]) {
+                        dict = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                errCode, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
+                    }
                     errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10003 userInfo:dict];
                 }
             } else {
