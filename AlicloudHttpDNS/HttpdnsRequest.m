@@ -93,8 +93,7 @@ static NSURLSession *_resolveHOSTSession = nil;
         ips = [json objectForKey:@"ips"];
         ipsCount = [ips count];
     } @catch (NSException *exception) {}
-    
-    if (ips == nil || ipsCount == 0) {
+    if (![HttpdnsUtil isValidArray:ips] || ![HttpdnsUtil isValidString:hostName]) {
         HttpdnsLogDebug("IP list is empty for host %@", hostName);
         return nil;
     }
@@ -181,8 +180,11 @@ static NSURLSession *_resolveHOSTSession = nil;
                     @try {
                         errCode = [json objectForKey:@"code"];
                     } @catch (NSException *exception) {}
-                    NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                          errCode, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
+                    NSDictionary *dict = nil;
+                    if ([HttpdnsUtil isValidString:errCode]) {
+                        dict = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                errCode, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
+                    }
                     errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10003 userInfo:dict];
                 }
             } else {

@@ -23,6 +23,7 @@
 #import "arpa/inet.h"
 #import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsServiceProvider_Internal.h"
+#import "UIApplication+ABSHTTPDNSSetting.h"
 
 @implementation HttpdnsUtil
 
@@ -101,6 +102,12 @@
     if (!sharedService.accountID || sharedService.accountID == 0) {
         return NO;
     }
+    
+    ABSBootingProtectionStatus status = [ABSBootingProtection bootingProtectionStatusWithContext:ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTEXT
+                                                                continuousCrashOnLaunchNeedToFix:ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTINUOUS_CRASH_ON_LAUNCH_NEED_TO_FIX];
+    if (status == ABSBootingProtectionStatusNeedFix || status == ABSBootingProtectionStatusFixing) {
+        return NO;
+    }
     return YES;
 }
 
@@ -168,7 +175,11 @@
     if (!notValidArray) {
         return NO;
     }
-    if (![notValidArray isKindOfClass:[NSArray class]]) {
+    BOOL isKindOf = NO;
+    @try {
+        isKindOf = [notValidArray isKindOfClass:[NSArray class]];
+    } @catch (NSException *exception) {}
+    if (!isKindOf) {
         return NO;
     }
     NSInteger arrayCount = 0;
@@ -185,9 +196,14 @@
     if (!notValidString) {
         return NO;
     }
-    if (![notValidString isKindOfClass:[NSString class]]) {
+    BOOL isKindOf = NO;
+    @try {
+        isKindOf = [notValidString isKindOfClass:[NSString class]];
+    } @catch (NSException *exception) {}
+    if (!isKindOf) {
         return NO;
     }
+
     NSInteger stringLength = 0;
     @try {
         stringLength = [notValidString length];
