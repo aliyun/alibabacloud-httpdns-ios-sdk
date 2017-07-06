@@ -42,6 +42,8 @@
 + (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanHours:(NSInteger)numberOfHours;
 + (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanTimeInterval:(NSTimeInterval)timeInterval;
 
++ (BOOL)deleteAllCacheFiles;
+
 // ~/Library/Caches/HTTPDNS/HostCache/databaseName
 + (NSString *)hostCacheDatabasePathWithName:(NSString *)name;
 + (NSString *)keyValueDatabasePath;

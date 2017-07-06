@@ -37,86 +37,6 @@ static dispatch_queue_t _fileCacheQueue = 0;
     });
 }
 
-/// Base path, all paths depend it
-+ (NSString *)homeDirectoryPath {
-    return NSHomeDirectory();
-}
-
-#pragma mark - ~/Documents
-
-// ~/Documents
-+ (NSString *)appDocumentPath {
-    static NSString *path = nil;
-    
-    if (!path) {
-        path = [[self homeDirectoryPath] stringByAppendingPathComponent:@"Documents"];
-    }
-    
-    return path;
-}
-
-// ~/Documents/HTTPDNS
-+ (NSString *)HttpDnsDocumentPath {
-    NSString *path = [self appDocumentPath];
-    
-    path = [path stringByAppendingPathComponent:ALICLOUD_HTTPDNS_ROOT_DIR_NAME];
-    
-    [self createDirectoryIfNeeded:path];
-    
-    return path;
-}
-
-// ~/Documents/HTTPDNS/keyvalue
-+ (NSString *)keyValueDatabasePath {
-    return [[self HttpDnsDocumentPath] stringByAppendingPathComponent:@"keyvalue"];
-}
-
-// ~/Library/Caches/HTTPDNS/HostCache
-+ (NSString *)hostCachePatch {
-    NSString *path = [self appCachePath];
-    
-    path = [path stringByAppendingPathComponent:ALICLOUD_HTTPDNS_ROOT_DIR_NAME];
-    path = [path stringByAppendingPathComponent:ALICLOUD_HTTPDNS_HOST_CACHE_DIR_NAME];
-    
-    [self createDirectoryIfNeeded:path];
-    
-    return path;
-}
-
-// ~/Library/Caches/HTTPDNS/HostCache/databaseName
-+ (NSString *)hostCacheDatabasePathWithName:(NSString *)name {
-    if (name) {
-        return [[self hostCachePatch] stringByAppendingPathComponent:name];
-    }
-    
-    return nil;
-}
-
-#pragma mark - ~/Library/Caches
-
-// ~/Library/Caches
-+ (NSString *)appCachePath {
-    static NSString *path = nil;
-    
-    if (!path) {
-        path = [[self homeDirectoryPath] stringByAppendingPathComponent:@"Library"];
-        path = [path stringByAppendingPathComponent:@"Caches"];
-    }
-    
-    return path;
-}
-
-#pragma mark - ~/Libraray/Private Documents
-
-// ~/Library
-+ (NSString *)libraryDirectory {
-    static NSString *path = nil;
-    if (!path) {
-        path = [[self homeDirectoryPath] stringByAppendingPathComponent:@"Library"];
-    }
-    return path;
-}
-
 #pragma mark - File Utils
 
 + (BOOL)saveJSON:(id)JSON toPath:(NSString *)path {
@@ -232,11 +152,11 @@ static dispatch_queue_t _fileCacheQueue = 0;
 
 + (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanTimeInterval:(NSTimeInterval)timeInterval {
     BOOL success = NO;
-    
     NSFileManager *fileMgr = [[NSFileManager alloc] init];
     __block NSError *error = nil;
     NSArray *directoryContents = [fileMgr contentsOfDirectoryAtPath:dirPath error:&error];
     if (error == nil) {
+        success = YES;
         for (NSString *path in directoryContents) {
             NSString *fullPath = [dirPath stringByAppendingPathComponent:path];
             NSTimeInterval timeSinceCreate = [self timeSinceCreateForPath:fullPath];
@@ -247,16 +167,19 @@ static dispatch_queue_t _fileCacheQueue = 0;
                 removeSuccess = [fileMgr removeItemAtPath:fullPath error:&error];
             });
             if (!removeSuccess) {
-                // NSLog(@"remove error happened");
+                 NSLog(@"remove error happened %@", error.description);
                 success = NO;
             }
         }
     } else {
-        // NSLog(@"remove error happened");
+        NSLog(@"remove error happened %@", error.description);
         success = NO;
     }
-    
     return success;
+}
+
++ (BOOL)deleteAllCacheFiles {
+   return [self deleteFilesInDirectory:[self privateDocumentsDirectory] moreThanTimeInterval:0];
 }
 
 + (NSDate *)lastModified:(NSString *)fullPath {
@@ -276,6 +199,22 @@ static dispatch_queue_t _fileCacheQueue = 0;
     return timeSinceCreate;
 }
 
+#pragma mark - ~/Libraray/Private Documents
+
+/// Base path, all paths depend it
++ (NSString *)homeDirectoryPath {
+    return NSHomeDirectory();
+}
+
+// ~/Library
++ (NSString *)libraryDirectory {
+    static NSString *path = nil;
+    if (!path) {
+        path = [[self homeDirectoryPath] stringByAppendingPathComponent:@"Library"];
+    }
+    return path;
+}
+
 #pragma mark -  Private Documents Concrete Path
 
 // ~/Library/Private Documents/HTTPDNS
@@ -285,28 +224,54 @@ static dispatch_queue_t _fileCacheQueue = 0;
     return ret;
 }
 
+//Library/Private Documents/HTTPDNS/disableStatus
 + (NSString *)disableStatusPath {
     NSString *ret = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:@"disableStatus"];
     [self createDirectoryIfNeeded:ret];
     return ret;
 }
 
+//Library/Private Documents/HTTPDNS/activatedIPIndex
 + (NSString *)activatedIPIndexPath {
     NSString *ret = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:@"activatedIPIndex"];
     [self createDirectoryIfNeeded:ret];
     return ret;
 }
 
+//Library/Private Documents/HTTPDNS/scheduleCenterResult
 + (NSString *)scheduleCenterResultPath {
     NSString *ret = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:@"scheduleCenterResult"];
     [self createDirectoryIfNeeded:ret];
     return ret;
 }
 
+//Library/Private Documents/HTTPDNS/needFetchFromScheduleCenterStatus
 + (NSString *)needFetchFromScheduleCenterStatusPatch {
     NSString *ret = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:@"needFetchFromScheduleCenterStatus"];
     [self createDirectoryIfNeeded:ret];
     return ret;
+}
+
+//Library/Private Documents/keyvalue
++ (NSString *)keyValueDatabasePath {
+    NSString *ret = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:@"keyvalue"];
+    [self createDirectoryIfNeeded:ret];
+    return ret;
+}
+
+//Library/Private Documents/HTTPDNS/HostCache
++ (NSString *)hostCachePatch {
+    NSString *ret = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:ALICLOUD_HTTPDNS_HOST_CACHE_DIR_NAME];
+    [self createDirectoryIfNeeded:ret];
+    return ret;
+}
+
+//Library/Private Documents/HTTPDNS/HostCache/databaseName
++ (NSString *)hostCacheDatabasePathWithName:(NSString *)name {
+    if ([HttpdnsUtil isValidString:name]) {
+        return [[self hostCachePatch] stringByAppendingPathComponent:name];
+    }
+    return nil;
 }
 
 @end
