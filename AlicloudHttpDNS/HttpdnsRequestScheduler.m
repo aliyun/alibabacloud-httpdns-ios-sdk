@@ -246,7 +246,7 @@ static dispatch_queue_t _hostCacheQueue = NULL;
  */
 - (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     NSDictionary *userInfo = error.userInfo;
-    //403错误强制更新，不触发disable机制。
+    //403 ServiceLevelDeny 错误强制更新，不触发disable机制。
     BOOL isServiceLevelDeny;
     @try {
         NSString *errorMessage = userInfo[ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY];

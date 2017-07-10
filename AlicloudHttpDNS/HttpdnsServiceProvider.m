@@ -28,27 +28,63 @@
 #import "HttpdnsHostCacheStore.h"
 
 static NSDictionary *HTTPDNS_EXT_INFO = nil;
+static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 
 @interface HttpDnsService ()
 
 @property (nonatomic, assign) int accountID;
+@property (nonatomic, copy) NSString *secretKey;
+/**
+ * 每次访问的签名有效期，SDK内部定死，当前不暴露设置接口，有效期定为10分钟。
+*/
+@property (nonatomic, assign) NSUInteger authTimeoutInterval;
 
 @end
 
 @implementation HttpDnsService
+
++ (void)initialize {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _authTimeOffsetSyncDispatchQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.authTimeOffsetSyncDispatchQueue", DISPATCH_QUEUE_SERIAL);
+    });
+}
 
 #pragma mark singleton
 
 static HttpDnsService * _httpDnsClient = nil;
 
 - (instancetype)initWithAccountID:(int)accountID {
+    return [self initWithAccountID:accountID secretKey:nil];
+}
+
+//鉴权控制台：httpdns.console.aliyun.com
+- (instancetype)initWithAccountID:(int)accountID secretKey:(NSString *)secretKey {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _httpDnsClient = [super init];
         _httpDnsClient.accountID = accountID;
+        if ([HttpdnsUtil isValidString:secretKey]) {
+            _httpDnsClient.secretKey = [secretKey copy];
+        }
         [self shareInit];
     });
     return _httpDnsClient;
+}
+
+- (void)setAuthCurrentTime:(NSUInteger)authCurrentTime {
+    dispatch_sync(_authTimeOffsetSyncDispatchQueue, ^{
+        NSUInteger localTimeInterval = (NSUInteger)[[NSDate date] timeIntervalSince1970];
+        _authTimeOffset = authCurrentTime - localTimeInterval;
+    });
+}
+
+- (NSUInteger)authTimeOffset {
+    __block NSUInteger authTimeOffset = 0;
+    dispatch_sync(_authTimeOffsetSyncDispatchQueue, ^{
+        authTimeOffset = _authTimeOffset;
+    });
+    return authTimeOffset;
 }
 
 +(instancetype)sharedInstance {
@@ -77,6 +113,7 @@ static HttpDnsService * _httpDnsClient = nil;
     HTTPDNS_EXT_INFO = @{
                          EXT_INFO_KEY_VERSION : HTTPDNS_IOS_SDK_VERSION,
                          };
+    _httpDnsClient.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
     [[self class] statIfNeeded];
 }
 
@@ -196,7 +233,6 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     HttpdnsLogDebug("No available IP cached for %@", host);
     return nil;
-
 }
 
 - (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host {

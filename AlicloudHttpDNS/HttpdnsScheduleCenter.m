@@ -380,7 +380,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 - (void)changeToNextServerIPIndexFromIPIndex:(NSInteger)IPIndex {
     NSInteger nextServerIPIndex = [self nextServerIPIndexFromIPIndex:IPIndex increase:1];
     self.activatedServerIPIndex = nextServerIPIndex;
-    if (nextServerIPIndex == 0) {
+    if (nextServerIPIndex == 0 && IPIndex != 0) {
         [self forceUpdateIpListAsync];
     }
 }
