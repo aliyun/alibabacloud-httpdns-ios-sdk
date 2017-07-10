@@ -24,6 +24,8 @@
 
 @property (nonatomic, strong) HttpdnsRequestScheduler *requestScheduler;
 
+@property (nonatomic, assign) NSUInteger authTimeOffset;
+
 - (NSString *)getIpByHost:(NSString *)host;
 
 - (NSArray *)getIpsByHost:(NSString *)host;
