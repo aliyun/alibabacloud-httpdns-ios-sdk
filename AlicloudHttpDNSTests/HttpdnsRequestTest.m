@@ -46,7 +46,8 @@
 //    [httpdns setLogEnabled:YES];
 //    [httpdns setAccountID:100000];
     
-    HttpDnsService *httpdns = [[HttpDnsService alloc] initWithAccountID:100000];
+//    HttpDnsService *httpdns = [[HttpDnsService alloc] initWithAccountID:100000];
+    HttpDnsService *httpdns = [[HttpDnsService alloc] initWithAccountID:191863 secretKey:@"060a8e407b623f6aefb3b72d478c2fb4"];
     [httpdns setLogEnabled:YES];
 }
 
@@ -193,7 +194,8 @@
     NSTimeInterval interval = [startDate timeIntervalSinceNow];
     XCTAssert(interval <= customizedTimeoutInterval);
     XCTAssertNil(error);
-    XCTAssertNil(result);
+    //与帐号是否添加baidu.com有关
+//    XCTAssertNil(result);
     
     // HTTPS
     startDate = [NSDate date];
@@ -203,7 +205,8 @@
     
     XCTAssert(interval <= customizedTimeoutInterval);
     XCTAssertNil(error);
-    XCTAssertNil(result);
+    //与帐号是否添加baidu.com有关
+//    XCTAssertNil(result);
 }
 
 //https://aone.alibaba-inc.com/req/10610013
@@ -690,20 +693,20 @@
  *          4. 解析域名,观察日志：1) 发起一次嗅探，且继续按照原有 IP 轮转逻辑进行访问。
  */
 - (void)testScheduleCenterRetry {
-//    [ScheduleCenterTestHelper cancelAutoConnectToScheduleCenter];
-//    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-//    [HttpdnsScheduleCenterTestHelper shortMixConnectToScheduleCenterInterval];
-//    [HttpdnsScheduleCenterTestHelper shortAutoConnectToScheduleCenterInterval];
-//    //超过最小间隔，可以更新。误差为1妙
-//    NSTimeInterval sleepTime = 1;
-//    [HttpdnsScheduleCenterTestHelper setFirstTwoWrongForScheduleCenterIPs];
-//    [scheduleCenter forceUpdateIpListAsyncWithCallback:^(NSDictionary *result) {
-//        sleep(sleepTime);
-//        NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), result);
-//        XCTAssertNotNil(result);
-//        NOTIFY
-//    }];
-//    WAIT_FOREVER
+    [ScheduleCenterTestHelper cancelAutoConnectToScheduleCenter];
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    [HttpdnsScheduleCenterTestHelper shortMixConnectToScheduleCenterInterval];
+    [HttpdnsScheduleCenterTestHelper shortAutoConnectToScheduleCenterInterval];
+    //超过最小间隔，可以更新。误差为1妙
+    NSTimeInterval sleepTime = 1;
+    [HttpdnsScheduleCenterTestHelper setFirstTwoWrongForScheduleCenterIPs];
+    [scheduleCenter forceUpdateIpListAsyncWithCallback:^(NSDictionary *result) {
+        NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), result);
+        NSArray *iplist = result[@"service_ip"];
+        XCTAssertTrue(iplist.count > 0);
+        NOTIFY
+    }];
+    WAIT_60
 }
 
 /**
