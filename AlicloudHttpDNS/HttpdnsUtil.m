@@ -24,6 +24,8 @@
 #import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsServiceProvider_Internal.h"
 #import "UIApplication+ABSHTTPDNSSetting.h"
+#import "HttpdnsConstants.h"
+#import "HttpdnsRequest.h"
 
 @implementation HttpdnsUtil
 
@@ -220,6 +222,49 @@
         isValid = ([JSON isKindOfClass:[NSDictionary class]] || [JSON isKindOfClass:[NSArray class]]);
     } @catch (NSException *exception) {}
     return isValid;
+}
+
++ (NSString *)getMD5StringFrom:(NSString *)originString {
+    const char * pointer = [originString UTF8String];
+    unsigned char md5Buffer[CC_MD5_DIGEST_LENGTH];
+    
+    CC_MD5(pointer, (CC_LONG)strlen(pointer), md5Buffer);
+    
+    NSMutableString *string = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
+    for (int i = 0; i < CC_MD5_DIGEST_LENGTH; i++)
+        [string appendFormat:@"%02x",md5Buffer[i]];
+    
+    return [string copy];
+}
+
++ (NSError *)getErrorFromError:(NSError *)error statusCode:(NSInteger)statusCode json:(NSDictionary *)json isHTTPS:(BOOL)isHTTPS {
+    NSError *errorStrong = [error copy];
+    if (statusCode != 200) {
+        HttpdnsLogDebug("ReponseCode %ld.", (long)statusCode);
+        if (errorStrong) {
+            NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                  @"Response code not 200, and parse response message error", ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY,
+                                  [NSString stringWithFormat:@"%ld", (long)statusCode], @"ResponseCode", nil];
+            errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10002 userInfo:dict];
+        } else {
+            NSString *errCode = @"";
+            @try {
+                errCode = [json objectForKey:@"code"];
+            } @catch (NSException *exception) {}
+            NSDictionary *dict = nil;
+            if ([HttpdnsUtil isValidString:errCode]) {
+                dict = [[NSDictionary alloc] initWithObjectsAndKeys:
+                        errCode, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
+            }
+         
+            NSString *domainString = [NSString stringWithFormat:@"httpdns.request.lookupAllHostsFromServer-%@", isHTTPS? @"HTTPS": @"HTTP"];
+            NSInteger code = isHTTPS ? ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE : ALICLOUD_HTTPDNS_HTTP_COMMON_ERROR_CODE;
+            errorStrong = [NSError errorWithDomain:domainString code:code userInfo:dict];
+        }
+    } else {
+        HttpdnsLogDebug("Response code 200.");
+    }
+    return errorStrong;
 }
 
 @end

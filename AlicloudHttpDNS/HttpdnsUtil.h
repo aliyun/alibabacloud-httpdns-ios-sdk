@@ -52,4 +52,8 @@
 
 + (BOOL)isValidJSON:(id)JSON;
 
++ (NSString *)getMD5StringFrom:(NSString *)originString;
+
++ (NSError *)getErrorFromError:(NSError *)error statusCode:(NSInteger)statusCode json:(NSDictionary *)json isHTTPS:(BOOL)isHTTPS;
+
 @end

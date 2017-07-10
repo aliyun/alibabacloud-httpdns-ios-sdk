@@ -31,6 +31,8 @@
 #import "HttpdnsConstants.h"
 #import "AlicloudHttpDNS.h"
 
+NSInteger const ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE = 10003;
+NSInteger const ALICLOUD_HTTPDNS_HTTP_COMMON_ERROR_CODE = 10004;
 NSInteger const ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE = 10005;
 NSInteger const ALICLOUD_HTTPDNS_HTTP_STREAM_READ_ERROR_CODE = 10006;
 NSInteger const ALICLOUD_HTTPDNS_HTTPS_TIMEOUT_ERROR_CODE = -1001;
@@ -55,6 +57,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     BOOL _responseResolved;
     BOOL _compeleted;
     NSTimer *_timeoutTimer;
+    NSDictionary *_httpJSONDict;
 }
 
 #pragma mark init
@@ -74,6 +77,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 - (void)resetRequestConfigure {
     _sem = dispatch_semaphore_create(0);
     _resultData = [NSMutableData data];
+    _httpJSONDict = nil;
     _networkError = nil;
     _responseResolved = NO;
     _compeleted = NO;
@@ -124,11 +128,36 @@ static NSURLSession *_resolveHOSTSession = nil;
     if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
         serverIp = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:serverIp]];
     }
+    NSString *requestType = @"d";
+    NSString *signatureRequestString = nil;
+    
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    NSString *versionInfo = [NSString stringWithFormat:@"ios_%@", HTTPDNS_IOS_SDK_VERSION];
+
+    NSString *secretKey = sharedService.secretKey;
+    NSUInteger localTimestampOffset = sharedService.authTimeOffset;
+    if ([HttpdnsUtil isValidString:secretKey ]) {
+        requestType = @"sign_d";
+        NSUInteger localTimestamp = (NSUInteger)[[NSDate date] timeIntervalSince1970] ;
+        if (localTimestampOffset != 0) {
+            localTimestamp = localTimestamp + localTimestampOffset;
+        }
+        NSUInteger expiredTimestamp = localTimestamp + HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
+        NSString *expiredTimestampString = [NSString stringWithFormat:@"%@", @(expiredTimestamp)];
+        NSString *signOriginString = [NSString stringWithFormat:@"%@-%@-%@", hostsString, secretKey, expiredTimestampString];
+        
+        NSString *sign = [HttpdnsUtil getMD5StringFrom:signOriginString];
+        signatureRequestString = [NSString stringWithFormat:@"&t=%@&s=%@", expiredTimestampString, sign];
+    }
+    
     NSString *port = HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED ? ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT : ALICLOUD_HTTPDNS_HTTP_SERVER_PORT;
-    NSString *url = [NSString stringWithFormat:@"%@:%@/%d/d?host=%@&sdk=%@",
-                     serverIp, port, sharedService.accountID, hostsString, versionInfo];
+    NSString *url = [NSString stringWithFormat:@"%@:%@/%d/%@?host=%@",
+                     serverIp, port, sharedService.accountID, requestType, hostsString];
+    
+    if ([HttpdnsUtil isValidString:signatureRequestString]) {
+        url = [NSString stringWithFormat:@"%@%@", url, signatureRequestString];
+    }
+    NSString *versionInfo = [NSString stringWithFormat:@"ios_%@", HTTPDNS_IOS_SDK_VERSION];
+    url = [NSString stringWithFormat:@"%@&sdk=%@", url, versionInfo];
     return url;
 }
 
@@ -168,28 +197,7 @@ static NSURLSession *_resolveHOSTSession = nil;
             id jsonValue = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
             json = [HttpdnsUtil getValidDictionaryFromJson:jsonValue];
             NSInteger statusCode = [(NSHTTPURLResponse *) response statusCode];
-            if (statusCode != 200) {
-                HttpdnsLogDebug("ReponseCode %ld.", (long)statusCode);
-                if (errorStrong) {
-                    NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                          @"Response code not 200, and parse response message error", ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY,
-                                          [NSString stringWithFormat:@"%ld", (long)statusCode], @"ResponseCode", nil];
-                    errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10002 userInfo:dict];
-                } else {
-                    NSString *errCode = @"";
-                    @try {
-                        errCode = [json objectForKey:@"code"];
-                    } @catch (NSException *exception) {}
-                    NSDictionary *dict = nil;
-                    if ([HttpdnsUtil isValidString:errCode]) {
-                        dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                errCode, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
-                    }
-                    errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10003 userInfo:dict];
-                }
-            } else {
-                HttpdnsLogDebug("Response code 200.");
-            }
+            errorStrong = [HttpdnsUtil getErrorFromError:errorStrong statusCode:statusCode json:json isHTTPS:YES];
         }
         dispatch_semaphore_signal(_sem);
     }];
@@ -240,14 +248,8 @@ static NSURLSession *_resolveHOSTSession = nil;
     [self.requestScheduler changeToNextServerIPIfNeededWithError:_networkError
                                                      fromIPIndex:activatedServerIPIndex
                                                          isHTTPS:NO];
-    
-    NSDictionary *json;
-    if (*error == nil) {
-        json = [NSJSONSerialization JSONObjectWithData:_resultData options:kNilOptions error:error];
-    }
-    
-    if (json) {
-        return [self parseHostInfoFromHttpResponse:json];
+    if (*error == nil && _httpJSONDict) {
+        return [self parseHostInfoFromHttpResponse:_httpJSONDict];
     }
     return nil;
 }
@@ -326,19 +328,34 @@ static NSURLSession *_resolveHOSTSession = nil;
                     return;
                 }
                 _responseResolved = YES;
+                
+                //先处理JSON
                 CFIndex statusCode = CFHTTPMessageGetResponseStatusCode(message);
                 CFRelease(message);
-                if (statusCode != 200) {
-                    //403错误需要强制更新SC
-                    NSString *errorMessage;
-                    if (statusCode == 403) {
-                        errorMessage = ALICLOUD_HTTPDNS_ERROR_SERVICE_LEVEL_DENY;
-                    } else {
-                        errorMessage = @"status code not 200";
+ 
+                UInt8 buffer[16 * 1024];
+                NSInteger numBytesRead = 0;
+                // Read data
+                if (!_resultData) {
+                    _resultData = [NSMutableData data];
+                }
+                do {
+                    numBytesRead = [_inputStream read:buffer maxLength:sizeof(buffer)];
+                    if (numBytesRead > 0) {
+                        [_resultData appendBytes:buffer length:numBytesRead];
                     }
-                    NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                          errorMessage, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
-                    _networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:10004 userInfo:dict];
+                } while (numBytesRead > 0);
+                
+                NSDictionary *json;
+                NSError *errorStrong = nil;
+                if (_resultData) {
+                    id jsonValue = [NSJSONSerialization JSONObjectWithData:_resultData options:kNilOptions error:&errorStrong];
+                    json = [HttpdnsUtil getValidDictionaryFromJson:jsonValue];
+                    _httpJSONDict = json;
+                }
+                if (statusCode != 200) {
+                    errorStrong = [HttpdnsUtil getErrorFromError:errorStrong statusCode:statusCode json:json isHTTPS:NO];
+                    _networkError = errorStrong;
                     _compeleted = YES;
                     [self stopTimer];
                     [self closeInputStream];
@@ -347,18 +364,7 @@ static NSURLSession *_resolveHOSTSession = nil;
                 }
                 HttpdnsLogDebug("Response code 200.");
             }
-            UInt8 buffer[16 * 1024];
-            NSInteger numBytesRead = 0;
-            // Read data
-            if (!_resultData) {
-                _resultData = [NSMutableData data];
-            }
-            do {
-                numBytesRead = [_inputStream read:buffer maxLength:sizeof(buffer)];
-                if (numBytesRead > 0) {
-                    [_resultData appendBytes:buffer length:numBytesRead];
-                }
-            } while (numBytesRead > 0);
+            
         }
             break;
         case NSStreamEventErrorOccurred:
