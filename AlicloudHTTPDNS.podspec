@@ -9,6 +9,7 @@ Pod::Spec.new do |s|
   s.source       = { :http => "framework_url" }
   s.vendored_frameworks = 'httpdns/AlicloudHttpDNS.framework'
   s.library = 'sqlite3.0'
+  s.xcconfig = { 'OTHER_LDFLAGS' => '$(inherited) -ObjC' }
   s.dependency "AlicloudUtils"
 
 end
