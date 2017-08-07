@@ -42,25 +42,68 @@ NSInteger const ALICLOUD_HTTPDNS_HTTP_USER_LEVEL_CHANGED_ERROR_CODE = 403;
 NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_KEY = @"activated_IP_index_key";
 NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_CACHE_FILE_NAME = @"activated_IP_index";
 
+static dispatch_queue_t _runloopOperateQueue = 0;
+static dispatch_queue_t _errorOperateQueue = 0;
+
 static NSURLSession *_resolveHOSTSession = nil;
 
 @interface HttpdnsRequest () <NSStreamDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
+
+@property (nonatomic, strong) NSRunLoop *runloop;
+@property (nonatomic, strong) NSError *networkError;
+
 @end
 
 @implementation HttpdnsRequest
 {
     NSMutableData *_resultData;
     dispatch_semaphore_t _sem;
-    NSRunLoop *_runloop;
     NSInputStream *_inputStream;
-    NSError *_networkError;
     BOOL _responseResolved;
     BOOL _compeleted;
     NSTimer *_timeoutTimer;
     NSDictionary *_httpJSONDict;
 }
+@synthesize runloop = _runloop;
+@synthesize networkError = _networkError;
 
 #pragma mark init
+
++ (void)initialize {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _runloopOperateQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.runloopOperateQueue.HttpdnsRequest", DISPATCH_QUEUE_SERIAL);
+        _errorOperateQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.errorOperateQueue.HttpdnsRequest", DISPATCH_QUEUE_SERIAL);
+    });
+}
+
+- (NSRunLoop *)runloop {
+    __block NSRunLoop *runloop = nil;
+    dispatch_sync(_runloopOperateQueue, ^{
+        runloop = _runloop;
+    });
+    return runloop;
+}
+
+- (void)setRunloop:(NSRunLoop *)runloop {
+    dispatch_sync(_runloopOperateQueue, ^{
+        _runloop = runloop;
+    });
+};
+
+- (NSError *)networkError {
+    __block NSError *networkError = nil;
+    dispatch_sync(_errorOperateQueue, ^{
+        networkError = _networkError;
+    });
+    return networkError;
+}
+
+- (void)setNetworkError:(NSError *)networkError {
+    dispatch_sync(_errorOperateQueue, ^{
+        _networkError = networkError;
+    });
+}
 
 - (instancetype)init {
     if (self = [super init]) {
@@ -78,7 +121,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     _sem = dispatch_semaphore_create(0);
     _resultData = [NSMutableData data];
     _httpJSONDict = nil;
-    _networkError = nil;
+    self.networkError = nil;
     _responseResolved = NO;
     _compeleted = NO;
 }
@@ -243,9 +286,9 @@ static NSURLSession *_resolveHOSTSession = nil;
     
     dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
     
-    *error = _networkError;
+    *error = self.networkError;
     
-    [self.requestScheduler changeToNextServerIPIfNeededWithError:_networkError
+    [self.requestScheduler changeToNextServerIPIfNeededWithError:self.networkError
                                                      fromIPIndex:activatedServerIPIndex
                                                          isHTTPS:NO];
     if (*error == nil && _httpJSONDict) {
@@ -256,7 +299,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 
 - (void)networkRequestThreadEntryPoint:(id)__unused object {
     @autoreleasepool {
-        _runloop = [NSRunLoop currentRunLoop];
+        self.runloop = [NSRunLoop currentRunLoop];
         [self openInputStream];
         [self startTimer];
         /*
@@ -265,32 +308,30 @@ static NSURLSession *_resolveHOSTSession = nil;
          *  此处不再调用[runloop run]，改为[runloop runUtilDate:]，确保RunLoop正确退出。
          *  且NSRunLoop为非线程安全的。
          */
-        [_runloop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:([HttpDnsService sharedInstance].timeoutInterval + 5)]];
+        [self.runloop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:([HttpDnsService sharedInstance].timeoutInterval + 5)]];
     }
 }
 
 - (void)openInputStream {
-    // 防止循环引用
-    __weak typeof(self) weakSelf = self;
-    [_inputStream setDelegate:weakSelf];
-    [_inputStream scheduleInRunLoop:_runloop forMode:NSRunLoopCommonModes];
+    [_inputStream setDelegate:self];
+    [_inputStream scheduleInRunLoop:self.runloop forMode:NSRunLoopCommonModes];
     [_inputStream open];
 }
 
 - (void)closeInputStream {
     if (_inputStream) {
         [_inputStream close];
-        [_inputStream removeFromRunLoop:_runloop forMode:NSRunLoopCommonModes];
+        [_inputStream removeFromRunLoop:self.runloop forMode:NSRunLoopCommonModes];
         [_inputStream setDelegate:nil];
         _inputStream = nil;
-        CFRunLoopStop([_runloop getCFRunLoop]);
+        CFRunLoopStop([self.runloop getCFRunLoop]);
     }
 }
 
 - (void)startTimer {
     if (!_timeoutTimer) {
         _timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:[HttpDnsService sharedInstance].timeoutInterval target:self selector:@selector(checkRequestStatus) userInfo:nil repeats:NO];
-        [_runloop addTimer:_timeoutTimer forMode:NSRunLoopCommonModes];
+        [self.runloop addTimer:_timeoutTimer forMode:NSRunLoopCommonModes];
     }
 }
 
@@ -307,8 +348,8 @@ static NSURLSession *_resolveHOSTSession = nil;
     if (!_compeleted) {
         _compeleted = YES;
         NSDictionary *dic = [[NSDictionary alloc] initWithObjectsAndKeys:
-                             @"Request timeout.", ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
-        _networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE userInfo:dic];
+                             @"Request timeout.", @"ErrorMessage", nil];
+        self.networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE userInfo:dic];
         dispatch_semaphore_signal(_sem);
     }
 }
@@ -355,7 +396,7 @@ static NSURLSession *_resolveHOSTSession = nil;
                 }
                 if (statusCode != 200) {
                     errorStrong = [HttpdnsUtil getErrorFromError:errorStrong statusCode:statusCode json:json isHTTPS:NO];
-                    _networkError = errorStrong;
+                    self.networkError = errorStrong;
                     _compeleted = YES;
                     [self stopTimer];
                     [self closeInputStream];
@@ -370,8 +411,8 @@ static NSURLSession *_resolveHOSTSession = nil;
         case NSStreamEventErrorOccurred:
         {
             NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                  [NSString stringWithFormat:@"read stream error: %@", [aStream streamError].userInfo], ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
-            _networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:ALICLOUD_HTTPDNS_HTTP_STREAM_READ_ERROR_CODE userInfo:dict];
+                                  [NSString stringWithFormat:@"read stream error: %@", [aStream streamError].userInfo], @"ErrorMessage", nil];
+            self.networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:ALICLOUD_HTTPDNS_HTTP_STREAM_READ_ERROR_CODE userInfo:dict];
         }
         case NSStreamEventEndEncountered:
             [self stopTimer];

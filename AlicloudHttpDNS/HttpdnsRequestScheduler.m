@@ -201,8 +201,11 @@ static dispatch_queue_t _hostCacheQueue = NULL;
         }
     });
     if (needToQuery) {
-        if (sync) return [self executeRequest:host synchronously:YES retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
-        else [self executeRequest:host synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
+        if (sync) {
+            return [self executeRequest:host synchronously:YES retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
+        } else {
+            [self executeRequest:host synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
+        }
     }
     return result;
 }
@@ -315,8 +318,6 @@ static dispatch_queue_t _hostCacheQueue = NULL;
      * 我们可以总结出来：以下方法的情况中，除了同步且网络正常的情况，其余都需要走异步请求，且异步中，唯一的区别在于，是否需要重试。
      */
     
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
-
     NSInteger newActivatedServerIPIndex = [scheduleCenter nextServerIPIndexFromIPIndex:activatedServerIPIndex increase:hasRetryedCount];
     
     BOOL shouldRetry = !self.isServerDisable;
@@ -324,7 +325,7 @@ static dispatch_queue_t _hostCacheQueue = NULL;
     if (sync && shouldRetry) {
         NSError *error;
         HttpdnsLogDebug("Sync request for %@ starts.", host);
-        HttpdnsHostObject *result = [request lookupHostFromServer:host
+        HttpdnsHostObject *result = [[HttpdnsRequest new] lookupHostFromServer:host
                                                             error:&error
                                            activatedServerIPIndex:newActivatedServerIPIndex];
         if (error) {
@@ -349,7 +350,7 @@ static dispatch_queue_t _hostCacheQueue = NULL;
         }
         NSError *error;
         HttpdnsLogDebug("Async request for %@ starts...", host);
-        HttpdnsHostObject *result = [request lookupHostFromServer:host
+        HttpdnsHostObject *result = [[HttpdnsRequest new] lookupHostFromServer:host
                                                             error:&error
                                            activatedServerIPIndex:newActivatedServerIPIndex];
         if (error) {
