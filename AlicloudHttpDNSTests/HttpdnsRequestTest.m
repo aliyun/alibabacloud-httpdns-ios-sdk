@@ -778,6 +778,35 @@
     XCTAssertNotNil([service getIpByHostAsync:hostName]);
 }
 
+- (void)testLoadIPsFromCacheSyncIfNeeded {
+    NSString *hostName = @"www.taobao.com";
+    HttpDnsService *service = [HttpDnsService sharedInstance];
+    HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
+    //内部缓存开关，不触发加载DB到内存的操作
+    [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
+    [service getIpByHostAsync:@"www.aliyun.com"];
+    sleep(2);
+    
+    int n = 10000;
+    for (int i = 0; i < n; i++) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+            
+            [requestScheduler loadIPsFromCacheSyncIfNeeded];
+            if (i == n -1) {
+                NOTIFY
+            }
+        });
+        
+    }
+    //
+    
+    WAIT
+    
+    
+    //FIXME:error
+    XCTAssertNotNil([service getIpByHostAsync:hostName]);
+}
+
 /**
  * 测试目的：持久化缓存载入内存缓存后是否按预期TTL失效
  * 测试方法：

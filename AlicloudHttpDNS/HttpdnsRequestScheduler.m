@@ -31,6 +31,7 @@
 #import "HttpdnsHostCacheStore.h"
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsIPRecord.h"
+#import "HttpdnsUtil.h"
 
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS = @"disable_status_key";
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME = @"disable_status";
@@ -46,6 +47,7 @@ NSString *const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 NSArray *ALICLOUD_HTTPDNS_SERVER_IP_LIST = nil;
 NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0;
 static dispatch_queue_t _hostCacheQueue = NULL;
+static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 @interface HttpdnsRequestScheduler()
 
@@ -74,6 +76,7 @@ static dispatch_queue_t _hostCacheQueue = NULL;
     
     dispatch_once(&onceToken, ^{
         _hostCacheQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.hostCacheQueue", DISPATCH_QUEUE_SERIAL);
+        _syncLoadCacheQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.syncLoadCacheQueue", DISPATCH_QUEUE_SERIAL);
     });
     
     [self configureServerIPsAndResetActivatedIPTime];
@@ -586,18 +589,23 @@ static dispatch_queue_t _hostCacheQueue = NULL;
 }
 
 - (void)loadIPsFromCacheSyncIfNeeded {
-    if (!_cachedIPEnabled) {
-        return;
-    }
-    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
-    NSArray<HttpdnsHostRecord *> *hostRecords = [hostCacheStore hostRecordsForCurrentCarrier];
-    for (HttpdnsHostRecord *hostRecord in hostRecords) {
-        NSString *host = hostRecord.host;
-        HttpdnsHostObject *hostObject = [HttpdnsHostObject hostObjectWithHostRecord:hostRecord];
-        //从DB缓存中加载到内存里的数据，此时不会出现过期的情况，TTL时间后过期。
-        [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
-        [_hostManagerDict setObject:hostObject forKey:host];
-    }
+    dispatch_sync(_syncLoadCacheQueue, ^{
+        if (!_cachedIPEnabled) {
+            return;
+        }
+        HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+        NSArray<HttpdnsHostRecord *> *hostRecords = [hostCacheStore hostRecordsForCurrentCarrier];
+        if (![HttpdnsUtil isValidArray:hostRecords]) {
+            return;
+        }
+        for (HttpdnsHostRecord *hostRecord in hostRecords) {
+            NSString *host = hostRecord.host;
+            HttpdnsHostObject *hostObject = [HttpdnsHostObject hostObjectWithHostRecord:hostRecord];
+            //从DB缓存中加载到内存里的数据，此时不会出现过期的情况，TTL时间后过期。
+            [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
+            [_hostManagerDict setObject:hostObject forKey:host];
+        }
+    });
 }
 
 - (void)cacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs TTL:(int64_t)TTL {
