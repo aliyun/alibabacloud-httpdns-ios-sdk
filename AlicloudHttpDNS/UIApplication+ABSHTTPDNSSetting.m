@@ -37,11 +37,6 @@ static NSTimeInterval const ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CRASH_ON_LAUNCH_
     [self abs_setDelegate:delegate];
     /* ------- 启动连续闪退保护 ------- */
     [self onBeforeBootingProtection];
-    
-    ABSUncaughtExceptionCallback callback = ^(NSException *exception) {
-        [self onBootingProtectionSync];
-    };
-    [ABSUncaughtExceptionHandler registerExceptionHandlerWithCallback:callback];
 }
 
 #pragma mark - private method
