@@ -26,6 +26,9 @@
 #import <AlicloudUtils/AlicloudUtils.h>
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsHostCacheStore.h"
+#import <AlicloudBeacon/AlicloudBeacon.h>
+#import "HttpDnsHitService.h"
+#import "HttpdnsConstants.h"
 
 static NSDictionary *HTTPDNS_EXT_INFO = nil;
 static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
@@ -36,7 +39,7 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 @property (nonatomic, copy) NSString *secretKey;
 /**
  * 每次访问的签名有效期，SDK内部定死，当前不暴露设置接口，有效期定为10分钟。
-*/
+ */
 @property (nonatomic, assign) NSUInteger authTimeoutInterval;
 
 @end
@@ -114,7 +117,34 @@ static HttpDnsService * _httpDnsClient = nil;
                          EXT_INFO_KEY_VERSION : HTTPDNS_IOS_SDK_VERSION,
                          };
     _httpDnsClient.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
-    [[self class] statIfNeeded];
+    
+    
+
+    
+    /* 日活打点 */
+    [[self class] statIfNeeded];//旧版日活打点
+    [HttpDnsHitService setGlobalProperty];
+    [HttpDnsHitService bizActiveHit];//新版日活打点
+
+    /* beacon */
+    AlicloudBeaconService *beaconService =  [[AlicloudBeaconService alloc] initWithAppKey:HTTPDNS_BEACON_APPKEY appSecret:HTTPDNS_BEACON_APPSECRECT SDKVersion:HTTPDNS_IOS_SDK_VERSION SDKID:@"httpdns"];
+    [beaconService enableLog:YES];
+    [beaconService getBeaconConfigStringByKey:@"___httpdns_service___" completionHandler:^(NSString *result, NSError *error) {
+        if ([HttpdnsUtil isValidString:result]) {
+            HttpdnsLogDebug("%@", result);
+            id jsonObj = [HttpdnsUtil convertJsonStringToObject:result];
+            if ([HttpdnsUtil isValidDictionary:jsonObj]) {
+                NSDictionary *serviceStatus = jsonObj;
+                /* 检查打点开关 */
+                NSString *utStatus = [serviceStatus objectForKey:@"ut"];
+                if ([HttpdnsUtil isValidString:utStatus] && [utStatus isEqualToString:@"disabled"]) {
+                    HttpdnsLogDebug(@"Beacon [___httpdns_service___] - [ut] is disabled, disable hit service.");
+                    [HttpDnsHitService disableHitService];
+                }
+            }
+        }
+    }];
+
 }
 
 - (void)setAccountID:(int)accountID {
@@ -178,7 +208,7 @@ static HttpDnsService * _httpDnsClient = nil;
         }
     }
     return nil;
-
+    
 }
 
 - (NSString *)getIpByHostInURLFormat:(NSString *)host {
@@ -205,7 +235,7 @@ static HttpDnsService * _httpDnsClient = nil;
     if ([self.delegate shouldDegradeHTTPDNS:host]) {
         return nil;
     }
-
+    
     if (!host) {
         return nil;
     }
@@ -249,10 +279,12 @@ static HttpDnsService * _httpDnsClient = nil;
 
 - (void)setCachedIPEnabled:(BOOL)enable {
     [_requestScheduler setCachedIPEnabled:enable];
+    [HttpDnsHitService bizCacheEnable:enable];
 }
 
 - (void)setExpiredIPEnabled:(BOOL)enable {
     [_requestScheduler setExpiredIPEnabled:enable];
+    [HttpDnsHitService bizExpiredIpEnable:enable];
 }
 
 - (void)setLogEnabled:(BOOL)enable {

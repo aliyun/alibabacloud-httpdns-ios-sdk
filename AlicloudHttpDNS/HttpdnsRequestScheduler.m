@@ -32,6 +32,7 @@
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsIPRecord.h"
 #import "HttpdnsUtil.h"
+#import "HttpDnsHitService.h"
 
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS = @"disable_status_key";
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME = @"disable_status";
@@ -252,6 +253,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
  */
 - (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     NSDictionary *userInfo = error.userInfo;
+    [HttpDnsHitService bizErrSrvWithSrvAddrIndex:activatedServerIPIndex errCode:error.code errMsg:error.description];
     //403 ServiceLevelDeny 错误强制更新，不触发disable机制。
     BOOL isServiceLevelDeny;
     @try {
@@ -266,6 +268,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     
     BOOL isTimeoutError = [self isTimeoutError:error isHTTPS:HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED];
     if (isRetry && isTimeoutError) {
+        [HttpDnsHitService bizLocalDisableWithHost:host srvAddrIndex:activatedServerIPIndex];
         [self setServerDisable:YES host:host activatedServerIPIndex:activatedServerIPIndex];
     }
     [self mergeLookupResultToManager:nil forHost:host];
@@ -401,6 +404,11 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 - (void)_setCachedIPEnabled:(BOOL)enable {
     _cachedIPEnabled = enable;
 }
+
+- (BOOL)_getCachedIPEnabled {
+    return _cachedIPEnabled;
+}
+
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable {
     _isPreResolveAfterNetworkChangedEnabled = enable;
 }
@@ -456,6 +464,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (!_serverDisable) {
         return;
     }
+    [HttpDnsHitService bizSnifferWithHost:host
+                         srvAddrIndex:activatedServerIPIndex];
     [self executeRequest:host synchronously:NO retryCount:0 activatedServerIPIndex:activatedServerIPIndex];
 }
 
