@@ -28,6 +28,9 @@
 
 //http://106.11.90.200/sc/httpdns_config?account_id=153519&platform=ios&sdk_version=1.6.1
 
+static NSString *const HTTPDNS_BEACON_APPKEY  = @"24657847";
+static NSString *const HTTPDNS_BEACON_APPSECRECT = @"f30fc0937f2b1e9e50a1b7134f1ddb10";
+
 #pragma mark - Schedule Center
 ///=============================================================================
 /// @name Schedule Center

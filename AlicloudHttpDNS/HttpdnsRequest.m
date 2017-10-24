@@ -26,10 +26,11 @@
 #import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsServiceProvider_Internal.h"
-#import "HttpdnsRequestScheduler.h"
+#import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsConstants.h"
 #import "AlicloudHttpDNS.h"
+#import "HttpDnsHitService.h"
 
 NSInteger const ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE = 10003;
 NSInteger const ALICLOUD_HTTPDNS_HTTP_COMMON_ERROR_CODE = 10004;
@@ -212,13 +213,25 @@ static NSURLSession *_resolveHOSTSession = nil;
 - (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     [self resetRequestConfigure];
     HttpdnsLogDebug("Resolve host(%@) over network.", hostString);
+    HttpdnsHostObject *hostObject = nil;
     NSString *url = [self constructRequestURLWith:hostString activatedServerIPIndex:activatedServerIPIndex];
+    
+    CFAbsoluteTime methodStart = CFAbsoluteTimeGetCurrent();
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
-        return [self sendHTTPSRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
+        hostObject = [self sendHTTPSRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
     } else {
-        return [self sendHTTPRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
+        hostObject = [self sendHTTPRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
     }
-    return nil;
+    CFAbsoluteTime methodFinish = CFAbsoluteTimeGetCurrent();
+    if (hostObject) {
+        //只在请求成功时统计耗时
+        NSString *time = [NSString stringWithFormat:@"%@", @((methodFinish - methodStart) * 1000)];
+        HttpdnsLogDebug("Resolve host(%@) over network use time %@ ms.", hostString, time);
+        [HttpDnsHitService bizPerfSrcWithScAddr:url cost:time];
+    }
+    BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
+    [HttpDnsHitService bizPerfGetIPWithHost:hostString success:(hostObject ? YES : NO) cacheOpen:cachedIPEnabled];
+    return hostObject;
 }
 
 // 基于URLSession发送HTTPS请求
@@ -252,7 +265,8 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     
     if (pError != NULL) {
-        *pError = errorStrong;        
+        *pError = errorStrong;
+//        [HttpDnsHitService bizErrSrvWithScAddr:fullUrlStr errCode:errorStrong.code errMsg:errorStrong.description];
         [self.requestScheduler changeToNextServerIPIfNeededWithError:errorStrong
                                                          fromIPIndex:activatedServerIPIndex
                                                              isHTTPS:YES];
@@ -294,6 +308,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     if (*error == nil && _httpJSONDict) {
         return [self parseHostInfoFromHttpResponse:_httpJSONDict];
     }
+//    [HttpDnsHitService bizErrSrvWithScAddr:fullUrlStr errCode:self.networkError.code errMsg:self.networkError.description];
     return nil;
 }
 

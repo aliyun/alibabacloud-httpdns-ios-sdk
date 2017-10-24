@@ -19,8 +19,6 @@
 
 + (BOOL)isWhiteListClass:(Class)class;
 
-+ (void)deleteAllFilesUnderDocumentsLibraryCaches;
-
 + (void)deleteCacheWithfilePathsToRemove:(NSArray *)filePathsToRemove;
 
 @end

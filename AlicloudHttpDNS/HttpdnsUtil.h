@@ -46,11 +46,15 @@
 
 + (NSDictionary *)getValidDictionaryFromJson:(id)jsonValue;
 
++ (id)convertJsonStringToObject:(NSString *)jsonStr;
+
 + (BOOL)isValidArray:(id)notValidArray;
 
 + (BOOL)isValidString:(id)notValidString;
 
 + (BOOL)isValidJSON:(id)JSON;
+
++ (BOOL)isValidDictionary:(id)obj;
 
 + (NSString *)getMD5StringFrom:(NSString *)originString;
 
