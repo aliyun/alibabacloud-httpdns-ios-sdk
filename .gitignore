@@ -26,6 +26,7 @@ xcuserdata
 ######################
 build
 Products/
+infer-out/
 
 # Stuff that can't be committed #
 ######################

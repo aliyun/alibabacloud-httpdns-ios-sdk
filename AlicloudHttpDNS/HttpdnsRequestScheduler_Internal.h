@@ -47,6 +47,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 
 //内部缓存开关，不触发加载DB到内存的操作
 - (void)_setCachedIPEnabled:(BOOL)enable;
+- (BOOL)_getCachedIPEnabled;
 
 + (void)configureServerIPsAndResetActivatedIPTime;
 
