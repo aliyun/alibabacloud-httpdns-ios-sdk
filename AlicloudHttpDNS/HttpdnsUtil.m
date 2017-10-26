@@ -223,6 +223,31 @@
     } @catch (NSException *exception) {}
     return isValid;
 }
++ (BOOL)isValidDictionary:(id)obj {
+    if ((obj != nil) && ([obj isKindOfClass:[NSDictionary class]])) {
+        NSDictionary *dic = obj;
+        return (dic.count > 0);
+    }
+    return NO;
+}
+
++ (id)convertJsonStringToObject:(NSString *)jsonStr {
+    if ([self isValidString:jsonStr]) {
+        return [self convertJsonDataToObject:[jsonStr dataUsingEncoding:NSUTF8StringEncoding]];
+    }
+    return nil;
+}
+
++ (id)convertJsonDataToObject:(NSData *)jsonData {
+    if (jsonData) {
+        NSError *error;
+        id jsonObj = [NSJSONSerialization JSONObjectWithData:jsonData options:kNilOptions error:&error];
+        if (!error) {
+            return jsonObj;
+        }
+    }
+    return nil;
+}
 
 + (NSString *)getMD5StringFrom:(NSString *)originString {
     const char * pointer = [originString UTF8String];

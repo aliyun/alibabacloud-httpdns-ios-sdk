@@ -15,6 +15,7 @@
 #import "HttpdnsUtil.h"
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsScheduleCenter.h"
+#import "HttpDnsHitService.h"
 
 static NSURLSession *_scheduleCenterSession = nil;
 
@@ -52,10 +53,18 @@ static NSURLSession *_scheduleCenterSession = nil;
         return nil;
     }
     NSError *error = nil;
+    CFAbsoluteTime methodStart = CFAbsoluteTimeGetCurrent();
     scheduleCenterRecord = [self queryScheduleCenterRecordFromServerWithHostIndex:hostIndex error:&error];
     if (!scheduleCenterRecord && error) {
         return [self queryScheduleCenterRecordFromServerSyncWithHostIndex:(hostIndex + 1)];
     }
+    //scheduleCenterRecord && !error
+    //只在请求成功时统计耗时
+    CFAbsoluteTime methodFinish = CFAbsoluteTimeGetCurrent();
+    NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
+    NSString *time = [NSString stringWithFormat:@"%@", @((methodFinish - methodStart) * 1000)];
+    HttpdnsLogDebug("SC (%@) use time %@ ms.", serverIpOrHost, time);
+    [HttpDnsHitService bizPerfScWithScAddr:serverIpOrHost cost:time];
     return scheduleCenterRecord;
 }
 
@@ -63,7 +72,7 @@ static NSURLSession *_scheduleCenterSession = nil;
     NSString *serverHostOrIP = nil;
     NSArray *hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
     index = index % hostArray.count;
-    
+
     @try {
         serverHostOrIP = hostArray[index];
     } @catch (NSException *exception) {
@@ -136,6 +145,7 @@ static NSURLSession *_scheduleCenterSession = nil;
     
     if (pError != NULL) {
         *pError = errorStrong;
+        [HttpDnsHitService bizhErrScWithScAddr:fullUrlStr errCode:errorStrong.code errMsg:errorStrong.description];
     }
     return nil;
 }

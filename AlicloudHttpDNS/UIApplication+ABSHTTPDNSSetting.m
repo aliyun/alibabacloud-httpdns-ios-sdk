@@ -11,6 +11,7 @@
 #import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsLog.h"
+#import "HttpDnsHitService.h"
 
 NSString *const ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTEXT = @"ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTEXT";
 NSUInteger const ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTINUOUS_CRASH_ON_LAUNCH_NEED_TO_FIX = 2;
@@ -37,11 +38,6 @@ static NSTimeInterval const ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CRASH_ON_LAUNCH_
     [self abs_setDelegate:delegate];
     /* ------- 启动连续闪退保护 ------- */
     [self onBeforeBootingProtection];
-    
-    ABSUncaughtExceptionCallback callback = ^(NSException *exception) {
-        [self onBootingProtectionSync];
-    };
-    [ABSUncaughtExceptionHandler registerExceptionHandlerWithCallback:callback];
 }
 
 #pragma mark - private method
@@ -76,6 +72,8 @@ BOOL abs_httpdns_classMethodSwizzle(Class aClass, SEL originalSelector, SEL swiz
                                                                                                                 context:ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTEXT
                                               ];
     [bootingProtection setRepairBlock:^(ABSBoolCompletionHandler completionHandler) {
+        NSString *log = [NSString stringWithFormat:@"booting protection"];
+        [HttpDnsHitService bizContinuousBootingCrashWithLog:log];
         [self onBootingProtectionWithCompletion:completionHandler];
     }];
     

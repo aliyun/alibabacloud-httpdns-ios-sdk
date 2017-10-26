@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "AlicloudHTTPDNS"
-  s.version      = "1.6.4"
+  s.version      = "1.6.7"
   s.summary      = "Aliyun Mobile Service HTTPDNS iOS SDK."
   s.homepage     = "https://www.aliyun.com/product/httpdns?spm=5176.8142029.388261.87.WDYRC6"
   s.author       = { "junmo" => "lingkun.lk@alibaba-inc.com" }
@@ -11,5 +11,6 @@ Pod::Spec.new do |s|
   s.library = 'sqlite3.0'
   s.xcconfig = { 'OTHER_LDFLAGS' => '$(inherited) -ObjC' }
   s.dependency "AlicloudUtils"
-
+  s.dependency "AlicloudBeacon"
+  
 end
