@@ -61,10 +61,13 @@ static NSURLSession *_scheduleCenterSession = nil;
     //scheduleCenterRecord && !error
     //只在请求成功时统计耗时
     CFAbsoluteTime methodFinish = CFAbsoluteTimeGetCurrent();
-    NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
-    NSString *time = [NSString stringWithFormat:@"%@", @((methodFinish - methodStart) * 1000)];
-    HttpdnsLogDebug("SC (%@) use time %@ ms.", serverIpOrHost, time);
-    [HttpDnsHitService bizPerfScWithScAddr:serverIpOrHost cost:time];
+    CFAbsoluteTime timeValid = (methodFinish - methodStart) > 0;
+    if (timeValid) {
+        NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
+        NSString *time = [NSString stringWithFormat:@"%@", @((methodFinish - methodStart) * 1000)];
+        HttpdnsLogDebug("SC (%@) use time %@ ms.", serverIpOrHost, time);
+        [HttpDnsHitService bizPerfScWithScAddr:serverIpOrHost cost:time];
+    }
     return scheduleCenterRecord;
 }
 
@@ -145,7 +148,9 @@ static NSURLSession *_scheduleCenterSession = nil;
     
     if (pError != NULL) {
         *pError = errorStrong;
-        [HttpDnsHitService bizhErrScWithScAddr:fullUrlStr errCode:errorStrong.code errMsg:errorStrong.description];
+        NSURL *scAddrURL = [NSURL URLWithString:fullUrlStr];
+        NSString *scAddrURLString = scAddrURL.host;
+        [HttpDnsHitService bizhErrScWithScAddr:scAddrURLString errCode:errorStrong.code errMsg:errorStrong.description];
     }
     return nil;
 }

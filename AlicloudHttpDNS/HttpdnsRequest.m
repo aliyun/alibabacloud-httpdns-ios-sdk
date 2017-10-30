@@ -223,11 +223,14 @@ static NSURLSession *_resolveHOSTSession = nil;
         hostObject = [self sendHTTPRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
     }
     CFAbsoluteTime methodFinish = CFAbsoluteTimeGetCurrent();
-    if (hostObject) {
+   CFAbsoluteTime timeValid = (methodFinish - methodStart) > 0;
+    if (hostObject && timeValid) {
         //只在请求成功时统计耗时
         NSString *time = [NSString stringWithFormat:@"%@", @((methodFinish - methodStart) * 1000)];
+        NSURL *scAddrURL = [NSURL URLWithString:url];
+        NSString *scAddrURLString = scAddrURL.host;
         HttpdnsLogDebug("Resolve host(%@) over network use time %@ ms.", hostString, time);
-        [HttpDnsHitService bizPerfSrcWithScAddr:url cost:time];
+        [HttpDnsHitService bizPerfSrcWithScAddr:scAddrURLString cost:time];
     }
     BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
     [HttpDnsHitService bizPerfGetIPWithHost:hostString success:(hostObject ? YES : NO) cacheOpen:cachedIPEnabled];

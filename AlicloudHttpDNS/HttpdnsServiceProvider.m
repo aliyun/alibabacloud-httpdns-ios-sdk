@@ -70,7 +70,8 @@ static HttpDnsService * _httpDnsClient = nil;
         if ([HttpdnsUtil isValidString:secretKey]) {
             _httpDnsClient.secretKey = [secretKey copy];
         }
-        [self shareInit];
+        NSString *accountIdString = [NSString stringWithFormat:@"%@", @(accountID)];
+        [self shareInitWithAccountId:accountIdString];
     });
     return _httpDnsClient;
 }
@@ -110,7 +111,7 @@ static HttpDnsService * _httpDnsClient = nil;
     return self;
 }
 
-- (void)shareInit {
+- (void)shareInitWithAccountId:(NSString *)accountId {
     [_httpDnsClient requestScheduler];
     _httpDnsClient.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
     HTTPDNS_EXT_INFO = @{
@@ -123,7 +124,7 @@ static HttpDnsService * _httpDnsClient = nil;
     
     /* 日活打点 */
     [[self class] statIfNeeded];//旧版日活打点
-    [HttpDnsHitService setGlobalProperty];
+    [HttpDnsHitService setGlobalPropertyWithAccountId:accountId];
     [HttpDnsHitService bizActiveHit];//新版日活打点
 
     /* beacon */
@@ -149,7 +150,8 @@ static HttpDnsService * _httpDnsClient = nil;
 
 - (void)setAccountID:(int)accountID {
     _accountID = accountID;
-    [self shareInit];
+    NSString *accountIdString = [NSString stringWithFormat:@"%@", @(accountID)];
+    [self shareInitWithAccountId:accountIdString];
 }
 
 - (HttpdnsRequestScheduler *)requestScheduler {

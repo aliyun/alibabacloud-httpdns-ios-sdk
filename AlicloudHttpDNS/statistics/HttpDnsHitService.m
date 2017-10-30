@@ -15,60 +15,61 @@
 #import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsConstants.h"
 #import "HttpdnsScheduleCenter.h"
+#import "HttpdnsUtil.h"
 
-static NSString *const HTTPDNS_BIZ_ACTIVE = @"httpdns_biz_active";
+static NSString *const HTTPDNS_BIZ_ACTIVE = @"biz_active";
 
-static NSString *const HTTPDNS_BIZ_SNIFFER = @"httpdns_biz_sniffer";
+static NSString *const HTTPDNS_BIZ_SNIFFER = @"biz_sniffer";
 static NSString *const HTTPDNS_HIT_PARAM_HOST = @"host" ;//查询的HOST
 static NSString *const HTTPDNS_HIT_PARAM_SCADDR = @"scAddr" ;//当前SC服务器地址
 static NSString *const HTTPDNS_HIT_PARAM_SRVADDR = @"srvAddr" ;//当前嗅探的HTTPDNS服务器地址
 
-static NSString *const HTTPDNS_BIZ_LOCAL_DISABLE = @"httpdns_biz_local_disable";
+static NSString *const HTTPDNS_BIZ_LOCAL_DISABLE = @"biz_local_disable";
 //HOST" ;//查询的HOST
 //scAddr" ;//当前SC服务器地址
 //SRVADDR" ;//当前嗅探的HTTPDNS服务器地址
 
-static NSString *const HTTPDNS_BIZ_CACHE = @"httpdns_biz_cache";
+static NSString *const HTTPDNS_BIZ_CACHE = @"biz_cache";
 static NSString *const HTTPDNS_HIT_PARAM_ENABLE = @"enable" ;//是否启用持久环缓存，0为关闭，1为启用
 
-static NSString *const HTTPDNS_BIZ_EXPIRED_IP = @"httpdns_biz_expired_ip";
+static NSString *const HTTPDNS_BIZ_EXPIRED_IP = @"biz_expired_ip";
 //enable" ;//是否允许过期ip，0为不允许，1为允许
 
-static NSString *const HTTPDNS_ERR_SC = @"httpdns_err_sc";
+static NSString *const HTTPDNS_ERR_SC = @"err_sc";
 //scAddr" ;//SC服务器ip/host
 static NSString *const HTTPDNS_HIT_PARAM_ERRCODE = @"errCode" ;//错误码
 static NSString *const HTTPDNS_HIT_PARAM_ERRMSG = @"errMsg" ;//错误信息
 static NSString *const HTTPDNS_HIT_PARAM_IPV6 = @"ipv6" ;//是否ipv6，0为否，1位是
 
 
-static NSString *const HTTPDNS_ERR_SRV = @"httpdns_err_srv";
+static NSString *const HTTPDNS_ERR_SRV = @"err_srv";
 //srvAddr" ;//httpdns服务器地址
 //errCode" ;//错误码
 //errMsg" ;//错误信息
 //ipv6" ;//是否ipv6，0为否，1位是
 
-static NSString *const HTTPDNS_ERR_CONTINUOUS_BOOTING_CRASH = @"httpdns_err_continuous_booting_crash";
+static NSString *const HTTPDNS_ERR_CONTINUOUS_BOOTING_CRASH = @"err_continuous_booting_crash";
 static NSString *const HTTPDNS_HIT_PARAM_LOG = @"log" ;//异常日志
 //ipv6" ;//是否ipv6，0为否，1位是
 
-static NSString *const HTTPDNS_ERR_CONTINUOUS_RUNNING_CRASH = @"httpdns_err_continuous_running_crash";
+static NSString *const HTTPDNS_ERR_CONTINUOUS_RUNNING_CRASH = @"err_continuous_running_crash";
 //log	 ;//异常日志，exception信息
 //ipv6" ;//是否ipv6，0为否，1位是
 
-static NSString *const HTTPDNS_ERR_UNCAUGHT_EXCEPTION = @"httpdns_err_uncaught_exception";
+static NSString *const HTTPDNS_ERR_UNCAUGHT_EXCEPTION = @"err_uncaught_exception";
 static NSString *const HTTPDNS_HIT_PARAM_EXCEPTION = @"exception" ;//异常信息
 
-static NSString *const HTTPDNS_PERF_SC = @"httpdns_perf_sc";
+static NSString *const HTTPDNS_PERF_SC = @"perf_sc";
 //scAddr" ;//SC服务器地址
 static NSString *const HTTPDNS_HIT_PARAM_COST = @"cost" ;//请求耗时(ms)
 //ipv6" ;//是否ipv6，0为否，1位是
 
-static NSString *const HTTPDNS_PERF_SRV = @"httpdns_perf_srv";
+static NSString *const HTTPDNS_PERF_SRV = @"perf_srv";
 //srvAddr" ;//httpdns服务器地址
 //cost" ;//请求耗时(ms)
 //ipv6" ;//是否ipv6，0为否，1位是
 
-static NSString *const HTTPDNS_PERF_GETIP = @"httpdns_perf_getip";
+static NSString *const HTTPDNS_PERF_GETIP = @"perf_getip";
 //"host";//查询的host
 static NSString *const HTTPDNS_HIT_PARAM_SUCCESS = @"success" ;//返回的ip是否为空（成功=1，失败=0）
 //ipv6" ;//是否ipv6，0为否，1位是
@@ -91,10 +92,11 @@ static BOOL _disableStatus = NO;
     });
 }
 
-+ (void)setGlobalProperty {
++ (void)setGlobalPropertyWithAccountId:(NSString *)accountId {
     /* set global property */
-    [_tracker setGlobalProperty:@"appKey" value:HTTPDNS_BEACON_APPKEY];
-    [_tracker setGlobalProperty:@"appVersion" value:HTTPDNS_BEACON_APPSECRECT];
+    if ([HttpdnsUtil isValidString:accountId]) {
+        [_tracker setGlobalProperty:@"accountId" value:accountId];
+    }
 }
 
 + (void)disableHitService {
