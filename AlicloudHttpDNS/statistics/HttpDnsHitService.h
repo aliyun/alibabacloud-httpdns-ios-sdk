@@ -11,7 +11,7 @@
 
 @interface HttpDnsHitService : NSObject
 //
-+ (void)setGlobalProperty;
++ (void)setGlobalPropertyWithAccountId:(NSString *)accountId;
 //
 + (void)disableHitService;
 //
