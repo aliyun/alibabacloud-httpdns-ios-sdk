@@ -112,6 +112,9 @@ static BOOL _disableStatus = NO;
 
 + (void)bizSnifferWithHost:(NSString *)host
               srvAddrIndex:(NSInteger)srvAddrIndex {
+    if (![HttpdnsUtil isValidString:host]) {
+        return;
+    }
     [self bizSnifferWithHost:host scAddr:[self scAddress] srvAddrIndex:srvAddrIndex];
 }
 
@@ -119,6 +122,12 @@ static BOOL _disableStatus = NO;
                     scAddr:(NSString *)scAddr
                    srvAddrIndex:(NSInteger)srvAddrIndex {
     if (_disableStatus) {
+        return;
+    }
+    if (![HttpdnsUtil isValidString:host]) {
+        return;
+    }
+    if (![HttpdnsUtil isValidString:scAddr]) {
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
@@ -132,6 +141,9 @@ static BOOL _disableStatus = NO;
 
 + (void)bizLocalDisableWithHost:(NSString *)host
                    srvAddrIndex:(NSInteger)srvAddrIndex {
+    if (![HttpdnsUtil isValidString:host]) {
+        return;
+    }
     [self bizLocalDisableWithHost:host scAddr:[self scAddress] srvAddrIndex:srvAddrIndex];
 }
 
@@ -139,6 +151,12 @@ static BOOL _disableStatus = NO;
                     scAddr:(NSString *)scAddr
                    srvAddrIndex:(NSInteger)srvAddrIndex {
     if (_disableStatus) {
+        return;
+    }
+    if (![HttpdnsUtil isValidString:host]) {
+        return;
+    }
+    if (![HttpdnsUtil isValidString:scAddr]) {
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
@@ -183,6 +201,12 @@ static BOOL _disableStatus = NO;
     if (_disableStatus) {
         return;
     }
+    if (![HttpdnsUtil isValidString:errMsg]) {
+        return;
+    }
+    if (![HttpdnsUtil isValidString:scAddr]) {
+        return;
+    }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
     @try {
         [extProperties setObject:scAddr forKey:HTTPDNS_HIT_PARAM_SCADDR];
@@ -197,6 +221,9 @@ static BOOL _disableStatus = NO;
                           errCode:(NSInteger)errCode
                            errMsg:(NSString *)errMsg {
     if (_disableStatus) {
+        return;
+    }
+    if (![HttpdnsUtil isValidString:errMsg]) {
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
@@ -214,6 +241,9 @@ static BOOL _disableStatus = NO;
     if (_disableStatus) {
         return;
     }
+    if (![HttpdnsUtil isValidString:log]) {
+        return;
+    }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
     @try {
         [extProperties setObject:log forKey:HTTPDNS_HIT_PARAM_LOG];
@@ -226,6 +256,10 @@ static BOOL _disableStatus = NO;
     if (_disableStatus) {
         return;
     }
+    if (![HttpdnsUtil isValidString:log]) {
+        return;
+    }
+
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
     @try {
         [extProperties setObject:log forKey:HTTPDNS_HIT_PARAM_LOG];
@@ -238,6 +272,9 @@ static BOOL _disableStatus = NO;
     if (_disableStatus) {
         return;
     }
+    if (![HttpdnsUtil isValidString:exception]) {
+        return;
+    }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
     @try {
         [extProperties setObject:exception forKey:HTTPDNS_HIT_PARAM_EXCEPTION];
@@ -248,6 +285,12 @@ static BOOL _disableStatus = NO;
 + (void)bizPerfScWithScAddr:(NSString *)scAddr
                     cost:(NSString *)cost {
     if (_disableStatus) {
+        return;
+    }
+    if (![HttpdnsUtil isValidString:cost]) {
+        return;
+    }
+    if (![HttpdnsUtil isValidString:scAddr]) {
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
@@ -264,6 +307,12 @@ static BOOL _disableStatus = NO;
     if (_disableStatus) {
         return;
     }
+    if (![HttpdnsUtil isValidString:cost]) {
+        return;
+    }
+    if (![HttpdnsUtil isValidString:scAddr]) {
+        return;
+    }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
     @try {
         [extProperties setObject:scAddr forKey:HTTPDNS_HIT_PARAM_SCADDR];
@@ -277,6 +326,9 @@ static BOOL _disableStatus = NO;
                      success:(BOOL)success
                    cacheOpen:(BOOL)cacheOpen {
     if (_disableStatus) {
+        return;
+    }
+    if (![HttpdnsUtil isValidString:host]) {
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
