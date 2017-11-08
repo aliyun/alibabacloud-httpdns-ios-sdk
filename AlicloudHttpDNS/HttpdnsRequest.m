@@ -227,10 +227,8 @@ static NSURLSession *_resolveHOSTSession = nil;
     if (hostObject && timeValid) {
         //只在请求成功时统计耗时
         NSString *time = [NSString stringWithFormat:@"%@", @((methodFinish - methodStart) * 1000)];
-        NSURL *scAddrURL = [NSURL URLWithString:url];
-        NSString *scAddrURLString = scAddrURL.host;
-        HttpdnsLogDebug("Resolve host(%@) over network use time %@ ms.", hostString, time);
-        [HttpDnsHitService bizPerfSrcWithScAddr:scAddrURLString cost:time];
+        HttpdnsLogDebug("Resolve host(%@) over network use time %@ ms.", url, time);
+        [HttpDnsHitService bizPerfSrcWithSrvAddr:url cost:time];
     }
     BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
     [HttpDnsHitService bizPerfGetIPWithHost:hostString success:(hostObject ? YES : NO) cacheOpen:cachedIPEnabled];
