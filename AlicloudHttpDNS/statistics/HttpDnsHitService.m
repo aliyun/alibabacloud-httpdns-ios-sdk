@@ -281,7 +281,9 @@ static BOOL _disableStatus = NO;
     } @catch (NSException *e) {}
     [_tracker sendCustomHit:HTTPDNS_ERR_UNCAUGHT_EXCEPTION duration:0 properties:extProperties];
 }
-
+/*
+* 只在成功时上报耗时数据
+*/
 + (void)bizPerfScWithScAddr:(NSString *)scAddr
                     cost:(NSString *)cost {
     if (_disableStatus) {
@@ -298,11 +300,15 @@ static BOOL _disableStatus = NO;
         [extProperties setObject:scAddr forKey:HTTPDNS_HIT_PARAM_SCADDR];
         [extProperties setObject:cost forKey:HTTPDNS_HIT_PARAM_COST];
         [extProperties setObject:[self isIPV6Object] forKey:HTTPDNS_HIT_PARAM_IPV6];
+        [extProperties setObject:@(YES) forKey:HTTPDNS_HIT_PARAM_SUCCESS];
     } @catch (NSException *e) {}
     [_tracker sendCustomHit:HTTPDNS_PERF_SC duration:0 properties:extProperties];
 }
 
-+ (void)bizPerfSrcWithScAddr:(NSString *)scAddr
+/*
+ * 只在成功时上报耗时数据
+ */
++ (void)bizPerfSrcWithSrvAddr:(NSString *)srvAddr
                        cost:(NSString *)cost {
     if (_disableStatus) {
         return;
@@ -310,14 +316,15 @@ static BOOL _disableStatus = NO;
     if (![HttpdnsUtil isValidString:cost]) {
         return;
     }
-    if (![HttpdnsUtil isValidString:scAddr]) {
+    if (![HttpdnsUtil isValidString:srvAddr]) {
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
     @try {
-        [extProperties setObject:scAddr forKey:HTTPDNS_HIT_PARAM_SCADDR];
+        [extProperties setObject:srvAddr forKey:HTTPDNS_HIT_PARAM_SRVADDR];
         [extProperties setObject:cost forKey:HTTPDNS_HIT_PARAM_COST];
         [extProperties setObject:[self isIPV6Object] forKey:HTTPDNS_HIT_PARAM_IPV6];
+        [extProperties setObject:@(YES) forKey:HTTPDNS_HIT_PARAM_SUCCESS];
     } @catch (NSException *e) {}
     [_tracker sendCustomHit:HTTPDNS_PERF_SRV duration:0 properties:extProperties];
 }

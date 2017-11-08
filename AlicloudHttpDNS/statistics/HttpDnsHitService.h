@@ -47,7 +47,7 @@
 + (void)bizPerfScWithScAddr:(NSString *)scAddr
                        cost:(NSString *)cost;
 //
-+ (void)bizPerfSrcWithScAddr:(NSString *)scAddr
++ (void)bizPerfSrcWithSrvAddr:(NSString *)srvAddr
                         cost:(NSString *)cost;
 
 //
