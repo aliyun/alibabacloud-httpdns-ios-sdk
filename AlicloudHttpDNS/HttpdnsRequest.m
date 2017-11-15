@@ -231,7 +231,12 @@ static NSURLSession *_resolveHOSTSession = nil;
         [HttpDnsHitService bizPerfSrcWithSrvAddr:url cost:time];
     }
     BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
-    [HttpDnsHitService bizPerfGetIPWithHost:hostString success:(hostObject ? YES : NO) cacheOpen:cachedIPEnabled];
+    NSError *outError = nil;
+    if (error != NULL) {
+       outError = (*error);
+    }
+    BOOL success = (hostObject && !outError);
+    [HttpDnsHitService bizPerfGetIPWithHost:hostString success:success cacheOpen:cachedIPEnabled];
     return hostObject;
 }
 
