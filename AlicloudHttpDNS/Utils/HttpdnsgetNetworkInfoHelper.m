@@ -82,35 +82,8 @@ typedef NS_ENUM(NSInteger, HttpdnsCarrierType) {
     CTCarrier *carrier = info.subscriberCellularProvider;
     NSString *mobileCountryCode = carrier.mobileCountryCode;// 运营商国家编号
     NSString *mobileNetworkCode = carrier.mobileNetworkCode;// 运营商编号
-    //没有装SIM卡
-    if (!carrier.isoCountryCode) {
-        return [self statusBarCheckMobileOperator];
-    }
-    //装了SIM卡
     if (mobileCountryCode && mobileCountryCode.length > 0 && mobileNetworkCode && mobileNetworkCode.length > 0) {
         return ALICLOUD_HTTPDNS_NETWORK_FROME_COUNTRY_NETWORK(HttpdnsCarrierTypeWWAN, mobileCountryCode, mobileNetworkCode);
-    }
-    return ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeUnknown);//查询不到运营商
-}
-
-/**
- *  对于美版或者日版卡贴iPhone，检测到的CTCarrier并非sim卡信息，此时就需要通过StatusBar实时检测当前网络运行商
- */
-+ (NSString *)statusBarCheckMobileOperator {
-    NSArray *subviews = [[[[UIApplication sharedApplication] valueForKey:@"statusBar"] valueForKey:@"foregroundView"] subviews];
-    UIView *serviceView = nil;
-    Class serviceClass = NSClassFromString([NSString stringWithFormat:@"UIStat%@Serv%@%@", @"usBar", @"ice", @"ItemView"]);
-    for (UIView *subview in subviews) {
-        if([subview isKindOfClass:[serviceClass class]]) {
-            serviceView = subview;
-            break;
-        }
-    }
-    if (serviceView) {
-        NSString *carrierName = [serviceView valueForKey:[@"service" stringByAppendingString:@"String"]];
-        if (carrierName && carrierName.length > 0) {
-            return carrierName;
-        }
     }
     return ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeUnknown);//查询不到运营商
 }
