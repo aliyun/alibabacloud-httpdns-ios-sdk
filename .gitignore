@@ -27,7 +27,8 @@ xcuserdata
 build
 Products/
 infer-out/
-*.properties
+#*.properties
+
 # Stuff that can't be committed #
 ######################
 credentials.json
