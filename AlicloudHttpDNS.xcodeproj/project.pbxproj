@@ -498,7 +498,6 @@
 					};
 					2197CA401BC79A4500BDB65B = {
 						CreatedOnToolsVersion = 7.0.1;
-						DevelopmentTeam = QBMN2BBW3K;
 					};
 				};
 			};
@@ -762,7 +761,6 @@
 		2197CA4F1BC79A4500BDB65B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = QBMN2BBW3K;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -772,7 +770,10 @@
 				INFOPLIST_FILE = AlicloudHttpDNSTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				OTHER_LDFLAGS = "-ObjC";
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-lz",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.alibaba.sdk.ios.AlicloudHttpDNSTests;
 				PRODUCT_NAME = AlicloudHttpDNS;
 			};
@@ -781,7 +782,6 @@
 		2197CA501BC79A4500BDB65B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = QBMN2BBW3K;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -791,7 +791,10 @@
 				INFOPLIST_FILE = AlicloudHttpDNSTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				OTHER_LDFLAGS = "-ObjC";
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-lz",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.alibaba.sdk.ios.AlicloudHttpDNSTests;
 				PRODUCT_NAME = AlicloudHttpDNS;
 			};
