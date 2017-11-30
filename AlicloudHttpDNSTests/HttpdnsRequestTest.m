@@ -84,45 +84,45 @@
     XCTAssertNotNil(result);
     XCTAssertNotEqual([[result getIps] count], 0);
 }
-
-- (void)testRequestRunloopCreate {
-    for (int i = 0; i < 300 ; i++) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
-            [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
-            NSString *hostName = @"www.taobao.com";
-            HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
-            NSError *error;
-            HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
-            XCTAssertNil(error);
-            XCTAssertNotNil(result);
-            XCTAssertNotEqual([[result getIps] count], 0);
-            if (i == 299) {
-                NOTIFY
-            }
-        });
-    }
-    WAIT
-}
-
-/**
- * 测试目的：测试基于CFNetwork正确发送HTTPDNS解析请求时，RunLoop是否正确退出；[M]
- * 测试方法：1. [runloop runUtilDate:]后添加日志打印；
- *         2. 并发异步解析几个域名，解析成功后等待并暂停运行，通过查看日志和堆栈信息查看解析线程是否正确退出；
- */
-- (void)testSuccessHTTPRequestRunLoop {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
-    NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
-    [[HttpDnsService sharedInstance] setPreResolveHosts:array];
-    [NSThread sleepForTimeInterval:60];
-}
-
-- (void)testSuccessHTTPSRequestRunLoop0 {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
-    NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
-    [[HttpDnsService sharedInstance] setPreResolveHosts:array];
-    [NSThread sleepForTimeInterval:60];
-}
-
+//
+//- (void)testRequestRunloopCreate {
+//    for (int i = 0; i < 300 ; i++) {
+//        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+//            [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
+//            NSString *hostName = @"www.taobao.com";
+//            HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
+//            NSError *error;
+//            HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
+//            XCTAssertNil(error);
+//            XCTAssertNotNil(result);
+//            XCTAssertNotEqual([[result getIps] count], 0);
+//            if (i == 299) {
+//                NOTIFY
+//            }
+//        });
+//    }
+//    WAIT
+//}
+//
+///**
+// * 测试目的：测试基于CFNetwork正确发送HTTPDNS解析请求时，RunLoop是否正确退出；[M]
+// * 测试方法：1. [runloop runUtilDate:]后添加日志打印；
+// *         2. 并发异步解析几个域名，解析成功后等待并暂停运行，通过查看日志和堆栈信息查看解析线程是否正确退出；
+// */
+//- (void)testSuccessHTTPRequestRunLoop {
+//    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
+//    NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
+//    [[HttpDnsService sharedInstance] setPreResolveHosts:array];
+//    [NSThread sleepForTimeInterval:60];
+//}
+//
+//- (void)testSuccessHTTPSRequestRunLoop0 {
+//    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+//    NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
+//    [[HttpDnsService sharedInstance] setPreResolveHosts:array];
+//    [NSThread sleepForTimeInterval:60];
+//}
+//
 //- (void)testSuccessHTTPSRequestRunLoop1 {
 //    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
 //    NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
