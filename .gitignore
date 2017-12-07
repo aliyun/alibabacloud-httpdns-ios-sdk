@@ -27,6 +27,15 @@ xcuserdata
 build
 Products/
 infer-out/
+#*.properties
+.sonar/
+compile_commands.json
+oclint.xml
+run-sonar.sh
+sonar-reports/
+tmpFileRunSonarSh
+xcodebuild.log
+
 
 # Stuff that can't be committed #
 ######################
