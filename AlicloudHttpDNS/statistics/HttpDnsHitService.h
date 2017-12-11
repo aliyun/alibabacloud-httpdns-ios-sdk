@@ -42,14 +42,22 @@
 + (void)bizRunningCrashWithLog:(NSString *)log;
 //
 + (void)bizUncaughtExceptionWithException:(NSString *)exception;
-
 //
-+ (void)bizPerfScWithScAddr:(NSString *)scAddr
-                       cost:(NSString *)cost;
-//
-+ (void)bizPerfSrcWithSrvAddr:(NSString *)srvAddr
-                        cost:(NSString *)cost;
 
++ (void)hitSCTimeWithSuccess:(BOOL)success
+                 methodStart:(NSDate *)methodStart
+                         url:(NSString *)url;
+
+//+ (void)bizPerfScWithScAddr:(NSString *)scAddr
+//                       cost:(NSString *)cost;
+//
+//+ (void)bizPerfSrcWithSrvAddr:(NSString *)srvAddr
+//                        cost:(NSString *)cost;
++ (void)hitSRVTimeWithSuccess:(BOOL)success
+                  methodStart:(NSDate *)methodStart
+                          url:(NSString *)url;
+
+    
 //
 + (void)bizPerfGetIPWithHost:(NSString *)host
                      success:(BOOL)success

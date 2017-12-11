@@ -73,7 +73,7 @@
  * 测试方法：1. 查询某个真实域名并判断是否获取了正常的返回数据；
  */
 - (void)testHTTPRequestOneHost {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     NSString *hostName = @"www.taobao.com";
     HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
     NSError *error;
@@ -117,21 +117,21 @@
 }
 
 - (void)testSuccessHTTPSRequestRunLoop0 {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
     [[HttpDnsService sharedInstance] setPreResolveHosts:array];
     [NSThread sleepForTimeInterval:60];
 }
 
 - (void)testSuccessHTTPSRequestRunLoop1 {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
     [[HttpDnsService sharedInstance] setPreResolveHosts:array];
     [NSThread sleepForTimeInterval:60];
 }
 
 - (void)testSuccessHTTPSRequestRunLoop2 {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
     [[HttpDnsService sharedInstance] setPreResolveHosts:array];
     [NSThread sleepForTimeInterval:60];
@@ -144,7 +144,7 @@
  *         3. 并发异步解析几个域名，解析后等待并暂停运行，通过查看日志和堆栈信息查看解析线程是否正确退出；
  */
 - (void)testFailedHTTPRequestRunLoop {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     
     NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
     [[HttpDnsService sharedInstance] setPreResolveHosts:array];
@@ -166,7 +166,7 @@
  * 测试方法：1. 查询某个真实域名并判断是否获取了正常的返回数据；
  */
 - (void)testHTTPSRequestOneHost {
-//    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+//    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     NSString *hostName = @"www.taobao.com";
     HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
     NSError *error;
@@ -187,7 +187,7 @@
     NSDate *startDate = [NSDate date];
     // HTTP
     startDate = [NSDate date];
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     [HttpDnsService sharedInstance].timeoutInterval = 3;
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
     HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
@@ -199,7 +199,7 @@
     
     // HTTPS
     startDate = [NSDate date];
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     result = [request lookupHostFromServer:hostName error:&error];
     interval = [startDate timeIntervalSinceNow];
     
@@ -319,7 +319,7 @@
  disable降级机制功能验证
  */
 - (void)testDisable {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     [HttpDnsService sharedInstance].timeoutInterval = 5;
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
     
@@ -362,7 +362,7 @@
  * 并发访问相同的错误IP，activatedServerIPIndex应该是唯一的，应该是错误IP的下一个。
  */
 - (void)testComplicatedlyAccessSameWrongHostIP {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
@@ -395,7 +395,7 @@
  * 并发嗅探，结果一致，不会导致叠加
  */
 - (void)testComplicatedlyAccessSameTwoWrongHostIP {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
@@ -435,7 +435,7 @@
  4 right
  */
 - (void)testComplicatedlyAccessSameFourWrongHostIP {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
@@ -477,7 +477,7 @@
  4 right
  */
 - (void)testComplicatedlyAccessSameFourWrongHostIPWithDisableStatus {
-    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:YES];
+    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];

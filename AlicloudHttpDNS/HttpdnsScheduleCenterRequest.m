@@ -53,21 +53,16 @@ static NSURLSession *_scheduleCenterSession = nil;
         return nil;
     }
     NSError *error = nil;
-    CFAbsoluteTime methodStart = CFAbsoluteTimeGetCurrent();
+//    CFAbsoluteTime methodStart = CFAbsoluteTimeGetCurrent();
+    NSDate *methodStart = [NSDate date];
     scheduleCenterRecord = [self queryScheduleCenterRecordFromServerWithHostIndex:hostIndex error:&error];
     if (!scheduleCenterRecord && error) {
         return [self queryScheduleCenterRecordFromServerSyncWithHostIndex:(hostIndex + 1)];
     }
     //scheduleCenterRecord && !error
-    //只在请求成功时统计耗时
-    CFAbsoluteTime methodFinish = CFAbsoluteTimeGetCurrent();
-    CFAbsoluteTime timeValid = (methodFinish - methodStart) > 0;
-    if (timeValid) {
-        NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
-        NSString *time = [NSString stringWithFormat:@"%@", @((methodFinish - methodStart) * 1000)];
-        HttpdnsLogDebug("SC (%@) use time %@ ms.", serverIpOrHost, time);
-        [HttpDnsHitService bizPerfScWithScAddr:serverIpOrHost cost:time];
-    }
+    BOOL success = (scheduleCenterRecord && !error);
+    NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
+    [HttpDnsHitService hitSCTimeWithSuccess:success methodStart:methodStart url:serverIpOrHost];
     return scheduleCenterRecord;
 }
 
