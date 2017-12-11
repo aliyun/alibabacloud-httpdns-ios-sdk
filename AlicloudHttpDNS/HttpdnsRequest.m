@@ -215,27 +215,17 @@ static NSURLSession *_resolveHOSTSession = nil;
     HttpdnsLogDebug("Resolve host(%@) over network.", hostString);
     HttpdnsHostObject *hostObject = nil;
     NSString *url = [self constructRequestURLWith:hostString activatedServerIPIndex:activatedServerIPIndex];
-    
-    CFAbsoluteTime methodStart = CFAbsoluteTimeGetCurrent();
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
         hostObject = [self sendHTTPSRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
     } else {
         hostObject = [self sendHTTPRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
     }
-    CFAbsoluteTime methodFinish = CFAbsoluteTimeGetCurrent();
-   CFAbsoluteTime timeValid = (methodFinish - methodStart) > 0;
-    if (hostObject && timeValid) {
-        //只在请求成功时统计耗时
-        NSString *time = [NSString stringWithFormat:@"%@", @((methodFinish - methodStart) * 1000)];
-        HttpdnsLogDebug("Resolve host(%@) over network use time %@ ms.", url, time);
-        [HttpDnsHitService bizPerfSrcWithSrvAddr:url cost:time];
-    }
-    BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
     NSError *outError = nil;
     if (error != NULL) {
        outError = (*error);
     }
-    BOOL success = (hostObject && !outError);
+    BOOL success = !outError;
+    BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
     [HttpDnsHitService bizPerfGetIPWithHost:hostString success:success cacheOpen:cachedIPEnabled];
     return hostObject;
 }
@@ -243,7 +233,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 // 基于URLSession发送HTTPS请求
 - (HttpdnsHostObject *)sendHTTPSRequest:(NSString *)urlStr
                                   error:(NSError **)pError
- activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
+                 activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     NSString *fullUrlStr = [NSString stringWithFormat:@"https://%@", urlStr];
     HttpdnsLogDebug("Request URL: %@", fullUrlStr);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
@@ -265,14 +255,13 @@ static NSURLSession *_resolveHOSTSession = nil;
     }];
     [task resume];
     dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
-    
     if (!errorStrong) {
         return [self parseHostInfoFromHttpResponse:json];
     }
     
     if (pError != NULL) {
         *pError = errorStrong;
-//        [HttpDnsHitService bizErrSrvWithScAddr:fullUrlStr errCode:errorStrong.code errMsg:errorStrong.description];
+        //[HttpDnsHitService bizErrSrvWithScAddr:fullUrlStr errCode:errorStrong.code errMsg:errorStrong.description];
         [self.requestScheduler changeToNextServerIPIfNeededWithError:errorStrong
                                                          fromIPIndex:activatedServerIPIndex
                                                              isHTTPS:YES];
@@ -303,18 +292,18 @@ static NSURLSession *_resolveHOSTSession = nil;
     CFRelease(request);
     CFRelease(requestMethod);
     request = NULL;
-    
+    NSDate *methodStart = [NSDate date];
     dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
-    
     *error = self.networkError;
-    
+    if (!self.networkError) {
+        [HttpDnsHitService hitSRVTimeWithSuccess:YES methodStart:methodStart url:fullUrlStr];
+    }
     [self.requestScheduler changeToNextServerIPIfNeededWithError:self.networkError
                                                      fromIPIndex:activatedServerIPIndex
                                                          isHTTPS:NO];
     if (*error == nil && _httpJSONDict) {
         return [self parseHostInfoFromHttpResponse:_httpJSONDict];
     }
-//    [HttpDnsHitService bizErrSrvWithScAddr:fullUrlStr errCode:self.networkError.code errMsg:self.networkError.description];
     return nil;
 }
 

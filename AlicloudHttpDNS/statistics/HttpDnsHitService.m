@@ -16,6 +16,7 @@
 #import "HttpdnsConstants.h"
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsUtil.h"
+#import "HttpdnsLog.h"
 
 static NSString *const HTTPDNS_BIZ_ACTIVE = @"biz_active";
 
@@ -295,6 +296,9 @@ static BOOL _disableStatus = NO;
     if (![HttpdnsUtil isValidString:scAddr]) {
         return;
     }
+    if ([self isIPV6Object]) {
+        return;
+    }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
     @try {
         [extProperties setObject:scAddr forKey:HTTPDNS_HIT_PARAM_SCADDR];
@@ -303,6 +307,40 @@ static BOOL _disableStatus = NO;
         [extProperties setObject:@(YES) forKey:HTTPDNS_HIT_PARAM_SUCCESS];
     } @catch (NSException *e) {}
     [_tracker sendCustomHit:HTTPDNS_PERF_SC duration:0 properties:extProperties];
+}
+
++ (void)hitSRVTimeWithSuccess:(BOOL)success methodStart:(NSDate *)methodStart url:(NSString *)url {
+//    CFAbsoluteTime methodFinish = CFAbsoluteTimeGetCurrent();
+//    CFAbsoluteTime costTime = (methodFinish - methodStart);
+    NSTimeInterval costTime = -([methodStart timeIntervalSinceNow] * 1000);
+    BOOL timeValid = [self isValidForCostTime:costTime];
+    if (timeValid && success) {
+        //只在请求成功时统计耗时
+        NSString *time = [NSString stringWithFormat:@"%@", @(costTime)];
+        HttpdnsLogDebug("Resolve host(%@) over network use time %@ ms.", url, time);
+        [HttpDnsHitService bizPerfSrcWithSrvAddr:url cost:time];
+    }
+}
+
++ (void)hitSCTimeWithSuccess:(BOOL)success methodStart:(NSDate *)methodStart url:(NSString *)url {
+    //只在请求成功时统计耗时
+    NSTimeInterval costTime = -([methodStart timeIntervalSinceNow] * 1000);
+//    CFAbsoluteTime methodFinish = CFAbsoluteTimeGetCurrent();
+//    CFAbsoluteTime costTime = (methodFinish - methodStart);
+    BOOL timeValid = [self isValidForCostTime:costTime];
+    if (timeValid && success) {
+        NSString *serverIpOrHost = url;
+        NSString *time = [NSString stringWithFormat:@"%@", @(costTime)];
+        HttpdnsLogDebug("SC (%@) use time %@ ms.", serverIpOrHost, time);
+        [HttpDnsHitService bizPerfScWithScAddr:serverIpOrHost cost:time];
+    }
+}
+
++ (BOOL)isValidForCostTime:(NSTimeInterval)costTime {
+    //只在请求成功时统计耗时
+    NSTimeInterval timeout = (([HttpDnsService sharedInstance].timeoutInterval > 0) ?: 15.0 ) * 1000;
+    BOOL timeValid = ((costTime > 0) && (costTime < timeout));
+    return timeValid;
 }
 
 /*
@@ -317,6 +355,9 @@ static BOOL _disableStatus = NO;
         return;
     }
     if (![HttpdnsUtil isValidString:srvAddr]) {
+        return;
+    }
+    if ([self isIPV6Object]) {
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
@@ -336,6 +377,9 @@ static BOOL _disableStatus = NO;
         return;
     }
     if (![HttpdnsUtil isValidString:host]) {
+        return;
+    }
+    if ([self isIPV6Object]) {
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
