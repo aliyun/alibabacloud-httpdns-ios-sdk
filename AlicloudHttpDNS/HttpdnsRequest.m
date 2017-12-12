@@ -261,7 +261,6 @@ static NSURLSession *_resolveHOSTSession = nil;
     
     if (pError != NULL) {
         *pError = errorStrong;
-        //[HttpDnsHitService bizErrSrvWithScAddr:fullUrlStr errCode:errorStrong.code errMsg:errorStrong.description];
         [self.requestScheduler changeToNextServerIPIfNeededWithError:errorStrong
                                                          fromIPIndex:activatedServerIPIndex
                                                              isHTTPS:YES];

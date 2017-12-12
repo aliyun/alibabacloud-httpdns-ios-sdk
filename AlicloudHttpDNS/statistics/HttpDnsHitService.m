@@ -17,6 +17,8 @@
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
+#import "HttpdnsConstants.h"
+#import "UIApplication+ABSHTTPDNSSetting.h"
 
 static NSString *const HTTPDNS_BIZ_ACTIVE = @"biz_active";
 
@@ -192,6 +194,10 @@ static BOOL _disableStatus = NO;
     [_tracker sendCustomHit:HTTPDNS_BIZ_EXPIRED_IP duration:0 properties:extProperties];
 }
 
++ (BOOL)isIPv6OnlyNetwork {
+    return [[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork];
+}
+
 + (NSNumber *)isIPV6Object {
     return @([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]);
 }
@@ -282,6 +288,7 @@ static BOOL _disableStatus = NO;
     } @catch (NSException *e) {}
     [_tracker sendCustomHit:HTTPDNS_ERR_UNCAUGHT_EXCEPTION duration:0 properties:extProperties];
 }
+
 /*
 * 只在成功时上报耗时数据
 */
@@ -296,7 +303,10 @@ static BOOL _disableStatus = NO;
     if (![HttpdnsUtil isValidString:scAddr]) {
         return;
     }
-    if ([self isIPV6Object]) {
+    if ([self isIPv6OnlyNetwork]) {
+        return;
+    }
+    if (![self isAbleToHit]) {
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
@@ -310,8 +320,6 @@ static BOOL _disableStatus = NO;
 }
 
 + (void)hitSRVTimeWithSuccess:(BOOL)success methodStart:(NSDate *)methodStart url:(NSString *)url {
-//    CFAbsoluteTime methodFinish = CFAbsoluteTimeGetCurrent();
-//    CFAbsoluteTime costTime = (methodFinish - methodStart);
     NSTimeInterval costTime = -([methodStart timeIntervalSinceNow] * 1000);
     BOOL timeValid = [self isValidForCostTime:costTime];
     if (timeValid && success) {
@@ -325,8 +333,6 @@ static BOOL _disableStatus = NO;
 + (void)hitSCTimeWithSuccess:(BOOL)success methodStart:(NSDate *)methodStart url:(NSString *)url {
     //只在请求成功时统计耗时
     NSTimeInterval costTime = -([methodStart timeIntervalSinceNow] * 1000);
-//    CFAbsoluteTime methodFinish = CFAbsoluteTimeGetCurrent();
-//    CFAbsoluteTime costTime = (methodFinish - methodStart);
     BOOL timeValid = [self isValidForCostTime:costTime];
     if (timeValid && success) {
         NSString *serverIpOrHost = url;
@@ -357,7 +363,10 @@ static BOOL _disableStatus = NO;
     if (![HttpdnsUtil isValidString:srvAddr]) {
         return;
     }
-    if ([self isIPV6Object]) {
+    if ([self isIPv6OnlyNetwork]) {
+        return;
+    }
+    if (![self isAbleToHit]) {
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
@@ -400,6 +409,22 @@ static BOOL _disableStatus = NO;
 
 + (NSString *)scAddress {
     return ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP;
+}
+
++ (BOOL)isAbleToHit {
+    if ([AlicloudReachabilityManager shareInstance].currentNetworkStatus != AlicloudReachableViaWiFi) {
+        return NO;
+    }
+    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+    if (!sharedService.accountID || sharedService.accountID == 0) {
+        return NO;
+    }
+    ABSBootingProtectionStatus status = [ABSBootingProtection bootingProtectionStatusWithContext:ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTEXT
+                                                                continuousCrashOnLaunchNeedToFix:ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTINUOUS_CRASH_ON_LAUNCH_NEED_TO_FIX];
+    if (status != ABSBootingProtectionStatusNormal) {
+        return NO;
+    }
+    return YES;
 }
 
 @end
