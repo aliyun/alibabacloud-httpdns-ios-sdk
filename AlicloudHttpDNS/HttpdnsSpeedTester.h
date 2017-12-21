@@ -17,24 +17,12 @@
  * under the License.
  */
 
-#import "HttpdnsServiceProvider.h"
-#import "HttpdnsRequestScheduler_Internal.h"
+@protocol HttpdnsSpeedTester <NSObject>
 
-@interface HttpDnsService()
+- (int)testSpeedOf:(NSString *)ip;
 
-@property (nonatomic, strong) HttpdnsRequestScheduler *requestScheduler;
-
-@property (nonatomic, assign) NSUInteger authTimeOffset;
-
-@property (nonatomic, copy) NSDictionary *IPRankingDataSource;
-
-- (NSString *)getIpByHost:(NSString *)host;
-
-- (NSArray *)getIpsByHost:(NSString *)host;
-
-- (NSString *)getIpByHostInURLFormat:(NSString *)host;
-
-+ (void)statIfNeeded;
+- (int)testSpeedOf:(NSString *)ip port:(int16_t)port;
+- (NSArray<NSString *> *)ipRankingWithIPs:(NSArray<NSString *> *)IPs host:(NSString *)host;
 
 @end
 

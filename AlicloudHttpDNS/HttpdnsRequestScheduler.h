@@ -43,5 +43,4 @@ FOUNDATION_EXTERN NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TI
                                   fromIPIndex:(NSInteger)IPIndex
                                       isHTTPS:(BOOL)isHTTPS;
 
-
 @end
