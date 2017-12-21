@@ -63,6 +63,11 @@
                      success:(BOOL)success
                    cacheOpen:(BOOL)cacheOpen;
 
++ (void)bizIPSelectionWithHost:(NSString *)host
+                     defaultIp:(NSString *)defaultIp
+                    selectedIp:(NSString *)selectedIp
+                 defaultIpCost:(NSNumber *)defaultIpCost
+                selectedIpCost:(NSNumber *)selectedIpCost;
 @end
 
 #endif /* HttpDnsHitService_h */

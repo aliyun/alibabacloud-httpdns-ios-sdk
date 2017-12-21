@@ -45,6 +45,7 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 @end
 
 @implementation HttpDnsService
+@synthesize IPRankingDataSource = _IPRankingDataSource;
 
 + (void)initialize {
     static dispatch_once_t onceToken;
@@ -299,6 +300,21 @@ static HttpDnsService * _httpDnsClient = nil;
 
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable {
     [_requestScheduler setPreResolveAfterNetworkChanged:enable];
+}
+
+- (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource {
+    NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), @"");
+    _IPRankingDataSource = IPRankingDatasource;
+}
+
+- (NSDictionary *)IPRankingDataSource {
+    NSDictionary *IPRankingDataSource = nil;
+    @synchronized(self) {
+        if ([HttpdnsUtil isValidDictionary:_IPRankingDataSource]) {
+            IPRankingDataSource = _IPRankingDataSource;
+        }
+    }
+    return IPRankingDataSource;
 }
 
 @end

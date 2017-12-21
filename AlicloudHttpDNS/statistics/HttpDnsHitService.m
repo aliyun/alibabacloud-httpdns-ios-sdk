@@ -83,6 +83,12 @@ static NSString *const TRACKER_ID = @"httpdns";
 //static NSString *const DEFAULT_LOAD_TYPE_VALUE = @"iOS";
 
 
+static NSString *const HTTPDNS_HIT_PARAM_DEFAULTIP = @"defaultIp";
+static NSString *const HTTPDNS_HIT_PARAM_SELECTEDIP = @"selectedIp";
+static NSString *const HTTPDNS_HIT_PARAM_DEFAULTIPCOST = @"defaultIpCost";
+static NSString *const HTTPDNS_HIT_PARAM_SELECTEDIPCOST = @"selectedIpCost";
+static NSString *const HTTPDNS_PERF_IPSELECTION = @"perf_ipselection";
+
 static AlicloudTracker *_tracker;
 static BOOL _disableStatus = NO;
 
@@ -401,6 +407,40 @@ static BOOL _disableStatus = NO;
     [_tracker sendCustomHit:HTTPDNS_PERF_GETIP duration:0 properties:extProperties];
 }
 
++ (void)bizIPSelectionWithHost:(NSString *)host
+                     defaultIp:(NSString *)defaultIp
+                   selectedIp:(NSString *)selectedIp
+                defaultIpCost:(NSNumber *)defaultIpCost
+               selectedIpCost:(NSNumber *)selectedIpCost {
+    if (_disableStatus) {
+        return;
+    }
+    if (![HttpdnsUtil isValidString:host]) {
+        return;
+    }
+    if (![HttpdnsUtil isValidString:defaultIp]) {
+        return;
+    }
+    if (![HttpdnsUtil isValidString:selectedIp]) {
+        return;
+    }
+    if ([defaultIpCost integerValue] <= [selectedIpCost integerValue]) {
+        return;
+    }
+    if ([self isIPV6Object]) {
+        return;
+    }
+    NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
+    @try {
+        [extProperties setObject:host forKey:HTTPDNS_HIT_PARAM_HOST];
+        [extProperties setObject:defaultIp forKey:HTTPDNS_HIT_PARAM_DEFAULTIP];
+        [extProperties setObject:selectedIp forKey:HTTPDNS_HIT_PARAM_SELECTEDIP];
+        [extProperties setObject:defaultIpCost forKey:HTTPDNS_HIT_PARAM_DEFAULTIPCOST];
+        [extProperties setObject:selectedIpCost forKey:HTTPDNS_HIT_PARAM_SELECTEDIPCOST];
+    } @catch (NSException *e) {}
+    [_tracker sendCustomHit:HTTPDNS_PERF_IPSELECTION duration:0 properties:extProperties];
+    
+}
 + (NSString *)srvAddrFromIndex:(NSInteger)index {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *srv = [scheduleCenter getActivatedServerIPWithIndex:index];

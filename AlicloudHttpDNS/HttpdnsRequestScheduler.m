@@ -33,6 +33,7 @@
 #import "HttpdnsIPRecord.h"
 #import "HttpdnsUtil.h"
 #import "HttpDnsHitService.h"
+#import "HttpdnsTCPSpeedTester.h"
 
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS = @"disable_status_key";
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME = @"disable_status";
@@ -241,9 +242,31 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [_hostManagerDict setObject:hostObject forKey:host];
         }
         [self cacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings TTL:TTL];
+        //TODO:
+        [self aysncUpdateIPRankingWithResult:result forHost:host];
     } else {
         HttpdnsLogDebug("Can't resolve %@", host);
     }
+}
+
+//TODO:
+- (void)aysncUpdateIPRankingWithResult:(HttpdnsHostObject *)result forHost:(NSString *)host {
+    NSString *hostName = [result getHostName];
+    NSArray<NSString *> *IPStrings = [result getIPStrings];
+    //[self ];
+     NSArray *sortedIps = [[HttpdnsTCPSpeedTester new] ipRankingWithIPs:IPStrings host:hostName];
+    //TODO:  只在缓存中还保留着的的时候，再更新，防止ttl过期后，已经删除了，反而却更新了。
+    [self updateHostManagerDictWithIPs:sortedIps host:host];
+}
+
+//TODO:  只在缓存中还保留着的的时候，再更新，防止ttl过期后，已经删除了，反而却更新了。
+- (void)updateHostManagerDictWithIPs:(NSArray *)IPs host:(NSString *)host {
+    HttpdnsHostObject *hostObject = [_hostManagerDict objectForKey:host];
+    if (!hostObject) {
+        return;
+    }
+    [hostObject setIps:IPs];
+    [_hostManagerDict setObject:hostObject forKey:host];
 }
 
 /*!
@@ -614,6 +637,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             //从DB缓存中加载到内存里的数据，此时不会出现过期的情况，TTL时间后过期。
             [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
             [_hostManagerDict setObject:hostObject forKey:host];
+            
+            //TODO:  IP 优选排序
+            [self aysncUpdateIPRankingWithResult:hostObject forHost:host];
         }
     });
 }
