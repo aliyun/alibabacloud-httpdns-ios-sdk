@@ -143,10 +143,18 @@ static HttpDnsService * _httpDnsClient = nil;
                     HttpdnsLogDebug(@"Beacon [___httpdns_service___] - [ut] is disabled, disable hit service.");
                     [HttpDnsHitService disableHitService];
                 }
+                
+                NSString *ipRankingStatus = [serviceStatus objectForKey:@"ip-ranking"];
+                if ([HttpdnsUtil isValidString:ipRankingStatus] && [ipRankingStatus isEqualToString:@"enable"]) {
+                    self.requestScheduler.IPRankingEnabled = YES;
+                } else {
+                    HttpdnsLogDebug(@"Beacon [___httpdns_service___] - [ip-ranking] is disabled, disable ip-ranking feature.");
+                    self.requestScheduler.IPRankingEnabled = NO;
+                }
             }
         }
     }];
-
+    
 }
 
 - (void)setAccountID:(int)accountID {
@@ -261,11 +269,19 @@ static HttpDnsService * _httpDnsClient = nil;
             for (HttpdnsIpObject *ipObject in ipsObject) {
                 [ipsArray addObject:[ipObject getIpString]];
             }
+            [self bizPerfUserGetIPWithHost:host success:YES];
             return ipsArray;
         }
     }
+    [self bizPerfUserGetIPWithHost:host success:NO];
     HttpdnsLogDebug("No available IP cached for %@", host);
     return nil;
+}
+
+- (void)bizPerfUserGetIPWithHost:(NSString *)host
+                         success:(BOOL)success {
+    BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
+    [HttpDnsHitService bizPerfUserGetIPWithHost:host success:YES cacheOpen:cachedIPEnabled];
 }
 
 - (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host {
@@ -303,7 +319,6 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource {
-    NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), @"");
     _IPRankingDataSource = IPRankingDatasource;
 }
 

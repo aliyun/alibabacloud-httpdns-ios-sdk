@@ -73,10 +73,16 @@ static NSString *const HTTPDNS_PERF_SRV = @"perf_srv";
 //ipv6" ;//是否ipv6，0为否，1位是
 
 static NSString *const HTTPDNS_PERF_GETIP = @"perf_getip";
+static NSString *const HTTPDNS_PERF_USER_GETIP = @"perf_user_getip";
+
 //"host";//查询的host
 static NSString *const HTTPDNS_HIT_PARAM_SUCCESS = @"success" ;//返回的ip是否为空（成功=1，失败=0）
 //ipv6" ;//是否ipv6，0为否，1位是
 static NSString *const HTTPDNS_HIT_PARAM_CACHEOPEN = @"cacheOpen" ;//是否启用持久环缓存，0为关闭，1为启用
+
+
+
+
 
 static NSString *const TRACKER_ID = @"httpdns";
 
@@ -87,6 +93,7 @@ static NSString *const HTTPDNS_HIT_PARAM_DEFAULTIP = @"defaultIp";
 static NSString *const HTTPDNS_HIT_PARAM_SELECTEDIP = @"selectedIp";
 static NSString *const HTTPDNS_HIT_PARAM_DEFAULTIPCOST = @"defaultIpCost";
 static NSString *const HTTPDNS_HIT_PARAM_SELECTEDIPCOST = @"selectedIpCost";
+static NSString *const HTTPDNS_HIT_PARAM_IPCOUNT = @"ipCount";
 static NSString *const HTTPDNS_PERF_IPSELECTION = @"perf_ipselection";
 
 static AlicloudTracker *_tracker;
@@ -407,11 +414,34 @@ static BOOL _disableStatus = NO;
     [_tracker sendCustomHit:HTTPDNS_PERF_GETIP duration:0 properties:extProperties];
 }
 
++ (void)bizPerfUserGetIPWithHost:(NSString *)host
+                     success:(BOOL)success
+                   cacheOpen:(BOOL)cacheOpen {
+    if (_disableStatus) {
+        return;
+    }
+    if (![HttpdnsUtil isValidString:host]) {
+        return;
+    }
+    if ([self isIPV6Object]) {
+        return;
+    }
+    NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
+    @try {
+        [extProperties setObject:host forKey:HTTPDNS_HIT_PARAM_HOST];
+        [extProperties setObject:@(success) forKey:HTTPDNS_HIT_PARAM_SUCCESS];
+        [extProperties setObject:@(cacheOpen) forKey:HTTPDNS_HIT_PARAM_CACHEOPEN];
+        [extProperties setObject:[self isIPV6Object] forKey:HTTPDNS_HIT_PARAM_IPV6];
+    } @catch (NSException *e) {}
+    [_tracker sendCustomHit:HTTPDNS_PERF_USER_GETIP duration:0 properties:extProperties];
+}
+
 + (void)bizIPSelectionWithHost:(NSString *)host
                      defaultIp:(NSString *)defaultIp
                    selectedIp:(NSString *)selectedIp
                 defaultIpCost:(NSNumber *)defaultIpCost
-               selectedIpCost:(NSNumber *)selectedIpCost {
+               selectedIpCost:(NSNumber *)selectedIpCost
+                       ipCount:(NSNumber *)ipCount {
     if (_disableStatus) {
         return;
     }
@@ -437,6 +467,8 @@ static BOOL _disableStatus = NO;
         [extProperties setObject:selectedIp forKey:HTTPDNS_HIT_PARAM_SELECTEDIP];
         [extProperties setObject:defaultIpCost forKey:HTTPDNS_HIT_PARAM_DEFAULTIPCOST];
         [extProperties setObject:selectedIpCost forKey:HTTPDNS_HIT_PARAM_SELECTEDIPCOST];
+        [extProperties setObject:ipCount forKey:HTTPDNS_HIT_PARAM_IPCOUNT];
+        
     } @catch (NSException *e) {}
     [_tracker sendCustomHit:HTTPDNS_PERF_IPSELECTION duration:0 properties:extProperties];
     

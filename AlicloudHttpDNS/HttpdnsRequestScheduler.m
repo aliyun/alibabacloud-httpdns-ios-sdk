@@ -88,6 +88,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (self = [super init]) {
         _lastNetworkStatus = 0;
         _isExpiredIPEnabled = NO;
+        _IPRankingEnabled = NO;
         _isPreResolveAfterNetworkChangedEnabled = NO;
         _syncDispatchQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.sync", DISPATCH_QUEUE_SERIAL);
         _asyncOperationQueue = [[NSOperationQueue alloc] init];
@@ -211,8 +212,16 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         } else {
             [self executeRequest:host synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
         }
+    } else {
+        [self bizPerfGetIPWithHost:host success:YES];
     }
     return result;
+}
+
+- (void)bizPerfGetIPWithHost:(NSString *)host
+                         success:(BOOL)success {
+    BOOL cachedIPEnabled = [self _getCachedIPEnabled];
+    [HttpDnsHitService bizPerfUserGetIPWithHost:host success:YES cacheOpen:cachedIPEnabled];
 }
 
 - (void)mergeLookupResultToManager:(HttpdnsHostObject *)result forHost:(NSString *)host {
@@ -251,22 +260,47 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 //TODO:
 - (void)aysncUpdateIPRankingWithResult:(HttpdnsHostObject *)result forHost:(NSString *)host {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+        [self syncUpdateIPRankingWithResult:result forHost:host];
+    });
+}
+
+- (void)syncUpdateIPRankingWithResult:(HttpdnsHostObject *)result forHost:(NSString *)host {
+    if (!self.IPRankingEnabled) {
+        return;
+    }
     NSString *hostName = [result getHostName];
     NSArray<NSString *> *IPStrings = [result getIPStrings];
-    //[self ];
-     NSArray *sortedIps = [[HttpdnsTCPSpeedTester new] ipRankingWithIPs:IPStrings host:hostName];
-    //TODO:  只在缓存中还保留着的的时候，再更新，防止ttl过期后，已经删除了，反而却更新了。
+    NSArray *sortedIps = [[HttpdnsTCPSpeedTester new] ipRankingWithIPs:IPStrings host:hostName];
     [self updateHostManagerDictWithIPs:sortedIps host:host];
 }
 
-//TODO:  只在缓存中还保留着的的时候，再更新，防止ttl过期后，已经删除了，反而却更新了。
 - (void)updateHostManagerDictWithIPs:(NSArray *)IPs host:(NSString *)host {
+    if (!self.IPRankingEnabled) {
+        return;
+    }
     HttpdnsHostObject *hostObject = [_hostManagerDict objectForKey:host];
     if (!hostObject) {
         return;
     }
-    [hostObject setIps:IPs];
-    [_hostManagerDict setObject:hostObject forKey:host];
+    if (![HttpdnsUtil isValidArray:IPs] || ![HttpdnsUtil isValidString:host]) {
+        return;
+    }
+    @synchronized(self) {
+        //FIXME:
+        NSMutableArray *ipArray = [[NSMutableArray alloc] init];
+        for (NSString *ip in IPs) {
+            if (![HttpdnsUtil isValidString:ip]) {
+                continue;
+            }
+            HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
+            // Adapt to IPv6-only network.
+            [ipObject setIp:[[AlicloudIPv6Adapter getInstance] handleIpv4Address:ip]];
+            [ipArray addObject:ipObject];
+        }
+        [hostObject setIps:ipArray];
+        [_hostManagerDict setObject:hostObject forKey:host];
+    }
 }
 
 /*!
@@ -638,7 +672,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
             [_hostManagerDict setObject:hostObject forKey:host];
             
-            //TODO:  IP 优选排序
             [self aysncUpdateIPRankingWithResult:hostObject forHost:host];
         }
     });
