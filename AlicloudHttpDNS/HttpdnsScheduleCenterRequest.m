@@ -53,7 +53,6 @@ static NSURLSession *_scheduleCenterSession = nil;
         return nil;
     }
     NSError *error = nil;
-//    CFAbsoluteTime methodStart = CFAbsoluteTimeGetCurrent();
     NSDate *methodStart = [NSDate date];
     scheduleCenterRecord = [self queryScheduleCenterRecordFromServerWithHostIndex:hostIndex error:&error];
     if (!scheduleCenterRecord && error) {

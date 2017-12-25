@@ -57,17 +57,22 @@
                   methodStart:(NSDate *)methodStart
                           url:(NSString *)url;
 
-    
 //
 + (void)bizPerfGetIPWithHost:(NSString *)host
                      success:(BOOL)success
                    cacheOpen:(BOOL)cacheOpen;
 
++ (void)bizPerfUserGetIPWithHost:(NSString *)host
+                         success:(BOOL)success
+                       cacheOpen:(BOOL)cacheOpen;
+
 + (void)bizIPSelectionWithHost:(NSString *)host
                      defaultIp:(NSString *)defaultIp
                     selectedIp:(NSString *)selectedIp
                  defaultIpCost:(NSNumber *)defaultIpCost
-                selectedIpCost:(NSNumber *)selectedIpCost;
+                selectedIpCost:(NSNumber *)selectedIpCost
+                       ipCount:(NSNumber *)ipCount;
+
 @end
 
 #endif /* HttpDnsHitService_h */

@@ -28,6 +28,7 @@
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsUtil.h"
 #import "HttpDnsHitService.h"
+#import "HttpdnsLog.h"
 
 static NSString *const testSpeedKey = @"testSpeed";
 static NSString *const ipKey = @"ip";
@@ -47,13 +48,10 @@ static NSString *const ipKey = @"ip";
 - (int)testSpeedOf:(NSString *)ip {
     return [self testSpeedOf:ip port:80];
 }
+
 /*!
  * 如果用户对域名提供多个端口，取任意一个端口。
- 
  假设：同一个域名，不同端口到达速度一致。
- 
- 
- 
  让优选逻辑，尽量少de
  15s 100s
  
@@ -67,7 +65,6 @@ static NSString *const ipKey = @"ip";
  -
  */
 - (NSArray<NSString *> *)ipRankingWithIPs:(NSArray<NSString *> *)IPs host:(NSString *)host {
-    NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@, \n %@", @(__PRETTY_FUNCTION__), @(__LINE__), IPs, host);
     if ([[self class] isIPv6OnlyNetwork]) {
         return nil;
     }
@@ -81,7 +78,6 @@ static NSString *const ipKey = @"ip";
         return nil;
     }
     
-    //TODO:  如何 host不在IP排序列表中。
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
     NSDictionary<NSString *, NSString *> *dataSource = sharedService.IPRankingDataSource;
     NSArray *allHost = [dataSource allKeys];
@@ -92,18 +88,15 @@ static NSString *const ipKey = @"ip";
         return nil;
     }
     
-    //TODO:  添加port查询
     int16_t port = 80;//
     @try {
         id port_ = dataSource[host];
         port = [port_ integerValue];
     } @catch (NSException *exception) {}
-    //TODO:  port 正则匹配
     
     NSMutableArray<NSDictionary *> *IPSpeeds = [NSMutableArray arrayWithCapacity:IPs.count];
     for (NSString *ip in IPs) {
         int testSpeed =  [self testSpeedOf:ip port:port];
-        NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@, %@ms", @(__PRETTY_FUNCTION__), @(__LINE__), ip, @(testSpeed));
         NSMutableDictionary *IPSpeed = [NSMutableDictionary dictionaryWithCapacity:2];
         [IPSpeed setObject:@(testSpeed) forKey:testSpeedKey];
         [IPSpeed setObject:ip forKey:ipKey];
@@ -124,7 +117,7 @@ static NSString *const ipKey = @"ip";
     //保证数量一致，
     if (sortedArrayIPs.count == IPs.count) {
         [self asyncHitWithDefaultIps:IPs sortedIPSpeedsArray:sortedIPSpeedsArray host:host];
-        NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@, %@", @(__PRETTY_FUNCTION__), @(__LINE__),IPs,  sortedIPSpeedsArray);
+        HttpdnsLogDebug("IP ranking result: \ntest host: %@ ,\nport:%@,\nIP list : %@,\nIP ranking: %@\n ", host, @(port), IPs,  sortedIPSpeedsArray);
         return [sortedArrayIPs copy];
     }
     return nil;
@@ -141,61 +134,47 @@ static NSString *const ipKey = @"ip";
     NSString *defaultIp;
     NSNumber *defaultIpCost;
     NSNumber *selectedIpCost;
-    //TODO:  add try catch
-//    @try {
+    NSInteger ipCount = 0;
+    @try {
         defaultIp = defaultIps[0];
-//    } @catch (NSException *exception) {}
+        ipCount = [defaultIps count];
+    } @catch (NSException *exception) {}
     
     NSString *selectedIp;
     
-    //TODO:  add try catch
-//    @try {
+    @try {
         NSDictionary *sortedIPSpeed = sortedIPSpeedsArray[0];
         selectedIp = sortedIPSpeed[ipKey];
         selectedIpCost = sortedIPSpeed[testSpeedKey];
-//    } @catch (NSException *exception) {}
+    } @catch (NSException *exception) {}
     
-//    //构造元素需要使用两个空格来进行缩进，右括号]或者}写在新的一行，并且与调用语法糖那行代码的第一个非空字符对齐：
-//    NSArray *array =
-//    @[
-//      @{
-//          ipKey : @"a",
-//          testSpeedKey : @(1)
-//          },
-//      @{
-//          ipKey : @"b",
-//          testSpeedKey : @(2)
-//          },
-//      @{
-//          ipKey : @"c",
-//          testSpeedKey : @(3)
-//          }
-//      ];
    NSPredicate *defaultIpCostPredicate = [NSPredicate predicateWithFormat:@"%@ = '%@'", ipKey, defaultIp];
    NSArray *defaultIpCostArray = [sortedIPSpeedsArray filteredArrayUsingPredicate:defaultIpCostPredicate];
-    
     if (defaultIpCostArray.count > 0) {
         NSDictionary *defaultIpCostDict = defaultIpCostArray[0];
         defaultIpCost = defaultIpCostDict[testSpeedKey];
     }
     [self asyncHitWithHost:host
                  defaultIp:defaultIp
-                     selectedIp:selectedIp
-                  defaultIpCost:defaultIpCost
-                 selectedIpCost:selectedIpCost];
+                selectedIp:selectedIp
+             defaultIpCost:defaultIpCost
+            selectedIpCost:selectedIpCost
+                   ipCount:@(ipCount)];
 }
 
 - (void)asyncHitWithHost:(NSString *)host
-defaultIp:(NSString *)defaultIp
-                   selectedIp:(NSString *)selectedIp
-                defaultIpCost:(NSNumber *)defaultIpCost
-               selectedIpCost:(NSNumber *)selectedIpCost {
-//TODO: 上传日志
+               defaultIp:(NSString *)defaultIp
+              selectedIp:(NSString *)selectedIp
+           defaultIpCost:(NSNumber *)defaultIpCost
+          selectedIpCost:(NSNumber *)selectedIpCost
+                 ipCount:(NSNumber *)ipCount {
+    //TODO: 上传日志
     [HttpDnsHitService bizIPSelectionWithHost:host
                                     defaultIp:defaultIp
                                    selectedIp:selectedIp
                                 defaultIpCost:defaultIpCost
-                               selectedIpCost:selectedIpCost];
+                               selectedIpCost:selectedIpCost
+                                    ipCount:ipCount];
 }
 
 + (BOOL)isIPv6OnlyNetwork {
@@ -204,17 +183,6 @@ defaultIp:(NSString *)defaultIp
 
 - (int)testSpeedOf:(NSString *)ip port:(int16_t)port {
     NSString *oldIp = ip;
-    //TODO:  IPv6 不考虑
-    //    if (![HttpdnsTools isIpV4Address:ip]) {
-    //        //TODO:  从 HTTPDNS 中获取到IP数组
-    //        //TODO:  这里会有
-    //        //TODO:  但是不能触发计费请求
-    //        ip = [self getHostByName:ip];
-    //        if (!ip) {
-    //            NSLog(@"ERROR:%s:%d, params(%@) is invalid.",__FUNCTION__,__LINE__, oldIp);
-    //            return 0;
-    //        }
-    //    }
     //request time out
     float rtt = 0.0;
     //sock：将要被设置或者获取选项的套接字。
@@ -249,7 +217,6 @@ defaultIp:(NSString *)defaultIp
     tv.tv_sec = HTTPDNS_SOCKET_CONNECT_TIMEOUT;
     tv.tv_usec = 0;
     
-    //TODO:  myset ?
     fd_set myset;
     FD_ZERO(&myset);
     FD_SET(s, &myset);
@@ -281,7 +248,6 @@ defaultIp:(NSString *)defaultIp
      对于select和非阻塞connect，注意两点：
      [1] 当连接成功建立时，描述符变成可写； [2] 当连接建立遇到错误时，描述符变为即可读，也可写，遇到这种情况，可调用getsockopt函数。
      **/
-    //    if (j > 0) {
     lon = sizeof(int);
     //valopt 表示错误信息。
     // MARK: - 测试核心逻辑，连接后，获取错误信息，如果没有错误信息就是访问成功
@@ -298,7 +264,6 @@ defaultIp:(NSString *)defaultIp
         endTime = [NSDate date];
         rtt = [endTime timeIntervalSinceDate:startTime] * 1000;
     }
-    //    }
     close(s);
     return rtt;
 }
