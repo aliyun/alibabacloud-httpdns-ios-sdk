@@ -84,6 +84,7 @@
 }
 
 + (void)resetAllThreeRightForTest {
+    @synchronized(self) {
     NSArray *IPList = @[
                         ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED,
                         ALICLOUD_HTTPDNS_SERVER_IP_1,
@@ -92,6 +93,7 @@
                         ALICLOUD_HTTPDNS_SERVER_IP_4
                         ];
     [self resetIPResultWithIPList:IPList];
+    }
 }
 
 + (void)resetIPResultWithIPList:(NSArray *)IPList {
