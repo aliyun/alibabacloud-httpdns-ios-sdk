@@ -30,6 +30,7 @@
 		9479DFE21CD361EE00C49B32 /* UTDID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9479DFE11CD361EE00C49B32 /* UTDID.framework */; };
 		9479DFE31CD361FD00C49B32 /* UTDID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9479DFE11CD361EE00C49B32 /* UTDID.framework */; };
 		9A0903791EA07C0C007B6821 /* HttpdnsScheduleCenterRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A5D5E281E9CB4D400CAC3A6 /* HttpdnsScheduleCenterRequest.m */; };
+		9A09D7821FF2033200585632 /* HttpdnsTCPSpeedTester.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC27F021FDFCB4800DF016A /* HttpdnsTCPSpeedTester.m */; };
 		9A24A85C1F179CEB00BDA719 /* UIApplication+ABSHTTPDNSSetting.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC200361F0E169400754CC2 /* UIApplication+ABSHTTPDNSSetting.m */; };
 		9A4D181A1E8F8FE1001E45B4 /* HttpdnsConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A4D18191E8F8FE1001E45B4 /* HttpdnsConstants.h */; };
 		9A4D181D1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A4D181B1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.h */; };
@@ -615,6 +616,7 @@
 				9A5914901EA0C26200A7ED28 /* XCTestCase+AsyncTesting.m in Sources */,
 				2197CA9E1BC7AB9B00BDB65B /* HttpdnsUtilTest.m in Sources */,
 				9AF9A6011EC4CFE20018063B /* HttpdnsHostCacheStore.m in Sources */,
+				9A09D7821FF2033200585632 /* HttpdnsTCPSpeedTester.m in Sources */,
 				9AE63A091ECDAB3A00F9C723 /* HttpdnsDatabaseQueue.m in Sources */,
 				9AF9A5FD1EC4CFCA0018063B /* HttpdnsModel.m in Sources */,
 				9A24A85C1F179CEB00BDA719 /* UIApplication+ABSHTTPDNSSetting.m in Sources */,
