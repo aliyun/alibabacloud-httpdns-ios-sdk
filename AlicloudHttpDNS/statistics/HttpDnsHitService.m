@@ -401,7 +401,7 @@ static BOOL _disableStatus = NO;
     if (![HttpdnsUtil isValidString:host]) {
         return;
     }
-    if ([self isIPV6Object]) {
+    if ([[self isIPV6Object] boolValue]) {
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
@@ -423,7 +423,7 @@ static BOOL _disableStatus = NO;
     if (![HttpdnsUtil isValidString:host]) {
         return;
     }
-    if ([self isIPV6Object]) {
+    if ([[self isIPV6Object] boolValue]) {
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
@@ -457,7 +457,7 @@ static BOOL _disableStatus = NO;
     if ([defaultIpCost integerValue] <= [selectedIpCost integerValue]) {
         return;
     }
-    if ([self isIPV6Object]) {
+    if ([[self isIPV6Object] boolValue]) {
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
