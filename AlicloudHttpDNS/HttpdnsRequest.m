@@ -471,6 +471,11 @@ static NSURLSession *_resolveHOSTSession = nil;
     SecTrustSetPolicies(serverTrust, (__bridge CFArrayRef) policies);
     SecTrustResultType result;
     SecTrustEvaluate(serverTrust, &result);
+    if (result == kSecTrustResultRecoverableTrustFailure) {
+        CFDataRef errDataRef = SecTrustCopyExceptions(serverTrust);
+        SecTrustSetExceptions(serverTrust, errDataRef);
+        SecTrustEvaluate(serverTrust, &result);
+    }
     return (result == kSecTrustResultUnspecified || result == kSecTrustResultProceed);
 }
 
