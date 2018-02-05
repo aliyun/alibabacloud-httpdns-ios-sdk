@@ -195,7 +195,7 @@ static NSString *const ipKey = @"ip";
     //saddr.sin_addr.s_addr = inet_addr("1.1.1.123");
     if( (s=socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         NSLog(@"ERROR:%s:%d, create socket failed.",__FUNCTION__,__LINE__);
-        return 0;
+        return (int)MAXFLOAT;
     }
     NSDate *startTime = [NSDate date];
     NSDate *endTime;
