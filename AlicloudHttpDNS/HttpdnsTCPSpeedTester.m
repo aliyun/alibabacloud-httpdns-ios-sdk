@@ -97,6 +97,9 @@ static NSString *const ipKey = @"ip";
     NSMutableArray<NSDictionary *> *IPSpeeds = [NSMutableArray arrayWithCapacity:IPs.count];
     for (NSString *ip in IPs) {
         int testSpeed =  [self testSpeedOf:ip port:port];
+        if (testSpeed == 0) {
+            testSpeed = HTTPDNS_SOCKET_CONNECT_TIMEOUT_RTT;
+        }
         NSMutableDictionary *IPSpeed = [NSMutableDictionary dictionaryWithCapacity:2];
         [IPSpeed setObject:@(testSpeed) forKey:testSpeedKey];
         [IPSpeed setObject:ip forKey:ipKey];
@@ -117,7 +120,7 @@ static NSString *const ipKey = @"ip";
     //保证数量一致，
     if (sortedArrayIPs.count == IPs.count) {
         [self asyncHitWithDefaultIps:IPs sortedIPSpeedsArray:sortedIPSpeedsArray host:host];
-        HttpdnsLogDebug("IP ranking result: \ntest host: %@ ,\nport:%@,\nIP list : %@,\nIP ranking: %@\n ", host, @(port), IPs,  sortedIPSpeedsArray);
+        HttpdnsLogDebug("IP ranking result: \ntest host: %@ ,\nport:%@,\nIP list : %@,\nIP ranking result: %@\n ", host, @(port), IPs,  sortedIPSpeedsArray);
         return [sortedArrayIPs copy];
     }
     return nil;
@@ -195,7 +198,7 @@ static NSString *const ipKey = @"ip";
     //saddr.sin_addr.s_addr = inet_addr("1.1.1.123");
     if( (s=socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         NSLog(@"ERROR:%s:%d, create socket failed.",__FUNCTION__,__LINE__);
-        return (int)MAXFLOAT;
+        return 0;
     }
     NSDate *startTime = [NSDate date];
     NSDate *endTime;
