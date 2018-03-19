@@ -31,7 +31,6 @@ infer-out/
 .sonar/
 compile_commands.json
 oclint.xml
-run-sonar.sh
 sonar-reports/
 tmpFileRunSonarSh
 xcodebuild.log
