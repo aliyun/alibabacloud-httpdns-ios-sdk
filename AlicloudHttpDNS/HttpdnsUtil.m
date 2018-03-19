@@ -104,12 +104,6 @@
     if (!sharedService.accountID || sharedService.accountID == 0) {
         return NO;
     }
-    
-    ABSBootingProtectionStatus status = [ABSBootingProtection bootingProtectionStatusWithContext:ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTEXT
-                                                                continuousCrashOnLaunchNeedToFix:ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTINUOUS_CRASH_ON_LAUNCH_NEED_TO_FIX];
-    if (status == ABSBootingProtectionStatusNeedFix || status == ABSBootingProtectionStatusFixing) {
-        return NO;
-    }
     return YES;
 }
 

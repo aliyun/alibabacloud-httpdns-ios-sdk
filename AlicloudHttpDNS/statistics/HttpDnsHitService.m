@@ -86,9 +86,6 @@ static NSString *const HTTPDNS_HIT_PARAM_CACHEOPEN = @"cacheOpen" ;//是否启�
 
 static NSString *const TRACKER_ID = @"httpdns";
 
-//static NSString *const DEFAULT_LOAD_TYPE_VALUE = @"iOS";
-
-
 static NSString *const HTTPDNS_HIT_PARAM_DEFAULTIP = @"defaultIp";
 static NSString *const HTTPDNS_HIT_PARAM_SELECTEDIP = @"selectedIp";
 static NSString *const HTTPDNS_HIT_PARAM_DEFAULTIPCOST = @"defaultIpCost";
@@ -468,7 +465,6 @@ static BOOL _disableStatus = NO;
         [extProperties setObject:defaultIpCost forKey:HTTPDNS_HIT_PARAM_DEFAULTIPCOST];
         [extProperties setObject:selectedIpCost forKey:HTTPDNS_HIT_PARAM_SELECTEDIPCOST];
         [extProperties setObject:ipCount forKey:HTTPDNS_HIT_PARAM_IPCOUNT];
-        
     } @catch (NSException *e) {}
     [_tracker sendCustomHit:HTTPDNS_PERF_IPSELECTION duration:0 properties:extProperties];
     
@@ -489,11 +485,6 @@ static BOOL _disableStatus = NO;
     }
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
     if (!sharedService.accountID || sharedService.accountID == 0) {
-        return NO;
-    }
-    ABSBootingProtectionStatus status = [ABSBootingProtection bootingProtectionStatusWithContext:ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTEXT
-                                                                continuousCrashOnLaunchNeedToFix:ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTINUOUS_CRASH_ON_LAUNCH_NEED_TO_FIX];
-    if (status != ABSBootingProtectionStatusNormal) {
         return NO;
     }
     return YES;
