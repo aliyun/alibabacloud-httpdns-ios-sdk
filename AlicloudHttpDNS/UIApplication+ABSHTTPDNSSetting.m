@@ -12,6 +12,8 @@
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsLog.h"
 #import "HttpDnsHitService.h"
+#import "HttpdnsConstants.h"
+#import "AlicloudHttpDNS.h"
 
 NSString *const ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTEXT = @"ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTEXT";
 NSUInteger const ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTINUOUS_CRASH_ON_LAUNCH_NEED_TO_FIX = 2;
@@ -65,54 +67,20 @@ BOOL abs_httpdns_classMethodSwizzle(Class aClass, SEL originalSelector, SEL swiz
  * 连续闪退检测前需要执行的逻辑，如上报统计初始化
  */
 - (void)onBeforeBootingProtection {
-    ABSBootingProtection *bootingProtection = [[ABSBootingProtection alloc]
-                                               initWithContinuousCrashOnLaunchNeedToReport:ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTINUOUS_CRASH_ON_LAUNCH_NEED_TO_REPORT
-                                                                                     continuousCrashOnLaunchNeedToFix:ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTINUOUS_CRASH_ON_LAUNCH_NEED_TO_FIX
-                                                                                   crashOnLaunchTimeIntervalThreshold:ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CRASH_ON_LAUNCH_TIMEINTERVAL_THRESHOLD
-                                                                                                                context:ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTEXT
-                                              ];
-    [bootingProtection setRepairBlock:^(ABSBoolCompletionHandler completionHandler) {
-        NSString *log = [NSString stringWithFormat:@"booting protection"];
-        [HttpDnsHitService bizContinuousBootingCrashWithLog:log];
-        [self onBootingProtectionWithCompletion:completionHandler];
-    }];
-    
-    [ABSUtil setLogger:^(NSString *msg) {
-        // 设置Logger
-        HttpdnsLogDebug("Alibaba ABS : %@", msg);
-    }];
-    [bootingProtection launchContinuousCrashProtect];
-}
-
-/*
- * 修复逻辑：删除文件
- */
-- (BOOL)onBootingProtectionSync {
-   return [HttpdnsPersistenceUtils deleteAllCacheFiles];
-}
-
-- (void)deleteAllCacheFilesSync:(ABSBoolCompletionHandler)completion {
-    @autoreleasepool {
-        // 删除缓存文件
-        BOOL success = [self onBootingProtectionSync];
-        NSInteger code = 0;
-        NSString *errorReasonText = @"Booting Protection Operation failed";
-        NSDictionary *errorInfo = @{
-                                    @"code" : @(code),
-                                      NSLocalizedDescriptionKey : errorReasonText,
-                                      };
-        NSError *error = [NSError errorWithDomain:NSStringFromClass([self class])
-                                             code:code
-                                         userInfo:errorInfo];
-        //在所有操作都结束时调用
-        if (completion) completion(success, success ? nil : error);
-    }
-}
-
-#pragma mark - 修复启动连续 Crash 逻辑
-- (void)onBootingProtectionWithCompletion:(ABSBoolCompletionHandler)completion {
-    NSThread *onBootingProtectionAsyncThread = [[NSThread alloc] initWithTarget:self selector:@selector(deleteAllCacheFilesSync:) object:completion];
-    [onBootingProtectionAsyncThread start];
+    [[EMASSecurityModeManager sharedInstance] registerSDKComponentAndStartCheck:@"httpdns"
+                                                                     sdkVersion:HTTPDNS_IOS_SDK_VERSION
+                                                                         appKey:HTTPDNS_BEACON_APPKEY
+                                                                      appSecret:HTTPDNS_BEACON_APPSECRECT
+                                                              sdkCrashThreshold:ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTINUOUS_CRASH_ON_LAUNCH_NEED_TO_FIX
+                                                                      onSuccess:^{
+                                                                          //成功情况暂不处理
+                                                                      } onCrash:^(NSUInteger crashCount) {
+                                                                          if (crashCount >= ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTINUOUS_CRASH_ON_LAUNCH_NEED_TO_FIX ) {
+                                                                              NSString *log = [NSString stringWithFormat:@"booting protection"];
+                                                                              [HttpDnsHitService bizContinuousBootingCrashWithLog:log];
+                                                                              [HttpdnsPersistenceUtils deleteAllCacheFiles];
+                                                                          }
+                                                                      }];
 }
 
 @end

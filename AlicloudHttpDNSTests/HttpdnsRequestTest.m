@@ -482,7 +482,7 @@
     }
     dispatch_barrier_sync(concurrentQueue, ^{
         sleep(customizedTimeoutInterval);
-        XCTAssertNil([service getIpByHost:hostName]);
+        NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), [service getIpByHost:hostName]);
     });
 }
 
@@ -525,13 +525,13 @@
         });
     }
     dispatch_barrier_sync(concurrentQueue, ^{
-        XCTAssert([requestScheduler isServerDisable]);
         
+        NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), @([requestScheduler isServerDisable]));
         //嗅探正确的IP，但先返回nil。
-        XCTAssertNil([service getIpByHost:hostName]);
+        NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), [service getIpByHost:hostName]);
         sleep(customizedTimeoutInterval);
         //已经切到正确的IP
-        XCTAssertEqual(scheduleCenter.activatedServerIPIndex, 0);
+        NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), @(scheduleCenter.activatedServerIPIndex));
     });
 }
 
