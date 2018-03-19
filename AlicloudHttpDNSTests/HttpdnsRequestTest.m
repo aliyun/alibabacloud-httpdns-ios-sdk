@@ -49,7 +49,6 @@
 //    HttpDnsService *httpdns = [[HttpDnsService alloc] initWithAccountID:100000];
     HttpDnsService *httpdns = [[HttpDnsService alloc] initWithAccountID:191863];
     [httpdns setLogEnabled:YES];
-    NSArray *preResolveHosts = @[ @"www.aliyun.com", @"www.taobao.com", @"gw.alicdn.com", @"www.tmall.com", @"dou.bz"];
     NSDictionary *IPRankingDatasource = @{
                                           @"www.aliyun.com" : @80,
                                           @"www.taobao.com" : @80,
@@ -292,13 +291,10 @@
     [ScheduleCenterTestHelper setTwoFirstIPWrongForTest];
     [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
     
-    NSDate *startDate = [NSDate date];
     XCTAssert(![requestScheduler isServerDisable]);
     [[HttpDnsService sharedInstance] getIpByHost:hostName];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
-    NSTimeInterval interval = [startDate timeIntervalSinceNow];
     sleep(0.02);//嗅探前
-    
     //嗅探中
     sleep(customizedTimeoutInterval);
     //重试2次
@@ -682,7 +678,6 @@
     [HttpdnsScheduleCenterTestHelper shortMixConnectToScheduleCenterInterval];
     [HttpdnsScheduleCenterTestHelper shortAutoConnectToScheduleCenterInterval];
     //超过最小间隔，可以更新。误差为1妙
-    NSTimeInterval sleepTime = 1;
     [HttpdnsScheduleCenterTestHelper setFirstTwoWrongForScheduleCenterIPs];
     [scheduleCenter forceUpdateIpListAsyncWithCallback:^(NSDictionary *result) {
         NSArray *iplist;
@@ -748,7 +743,6 @@
 
  */
 - (void)testDBEnableSwitch {
-    NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
 
@@ -758,7 +752,6 @@
 }
 
 - (void)testLoadIPsFromCacheSyncIfNeeded {
-    NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
     //内部缓存开关，不触发加载DB到内存的操作
@@ -807,7 +800,7 @@
     NSArray<HttpdnsIPRecord *> *IPRecords = [IPCacheStore IPRecordsForHostID:hostRecord.hostRecordId];
     HttpdnsIPRecord *IPRecord = IPRecords[0];
     //    XCTAssertNotNil([service getIpByHost:hostName]);
-    sleep(IPRecord.TTL);
+    sleep((unsigned int)IPRecord.TTL);
     XCTAssertNil([service getIpByHostAsync:hostName]);
     [requestScheduler loadIPsFromCacheSyncIfNeeded];
     XCTAssertNotNil([service getIpByHostAsync:hostName]);
@@ -889,7 +882,7 @@
     NSArray<HttpdnsIPRecord *> *IPRecords = [IPCacheStore IPRecordsForHostID:hostRecord.hostRecordId];
     HttpdnsIPRecord *IPRecord = IPRecords[0];
     //    XCTAssertNotNil([service getIpByHost:hostName]);
-    sleep(IPRecord.TTL);
+    sleep((unsigned int)IPRecord.TTL);
     
     for (int i = 0; i < 10; i++) {
         NSString *IP1 = [service getIpByHostAsync:hostName];
