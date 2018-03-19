@@ -835,7 +835,6 @@
     XCTAssertNotNil([service getIpByHost:hostName]);
     [requestScheduler cleanAllHostMemoryCache];
     [requestScheduler loadIPsFromCacheSyncIfNeeded];
-    XCTAssertNotNil([service getIpByHostAsync:hostName]);
     HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:hostName IPs:@[] TTL:0];
     HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
     [hostCacheStore insertHostRecords:@[hostRecord]];
