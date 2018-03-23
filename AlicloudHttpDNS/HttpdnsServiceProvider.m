@@ -69,19 +69,16 @@ static HttpDnsService * _httpDnsClient = nil;
     
     EMASOptions *defaultOptions = [EMASOptions defaultOptions];
     // Get config
-//    appKey = defaultOptions.emasAppKey; appSecret = defaultOptions.emasAppSecret;
-       NSString * bundleId = defaultOptions.emasBundleId;
     accountID = defaultOptions.httpdnsAccountId;
     secretKey = defaultOptions.httpdnsSecretKey;
     // Get push(cps) service
-    EMASOptionSDKServiceItem *sdkItem = [defaultOptions sdkServiceItemForSdkId:@"httpdns"]; if (sdkItem) {
+    EMASOptionSDKServiceItem *sdkItem = [defaultOptions sdkServiceItemForSdkId:sdkId]; if (sdkItem) {
         sdkVersion = sdkItem.version;
         sdkStatus = sdkItem.status; }
-    NSLog(@"Get emas options, appKey: %@, appSecret: %@, bundleId: %@, sdkId: %@, sdkVersion: %@, sdkStatus: %@",
-          accountID, secretKey, bundleId, sdkId, sdkVersion, sdkStatus);
     if ([EMASTools isValidString:accountID]) {
         return [self initWithAccountID:[accountID intValue] secretKey:secretKey];
     }
+    NSLog(@"Auto init fail, can not get accountId / secretKey, please check the file named :AliyunEmasServices-Info.plist.");
     return nil;
 }
 
