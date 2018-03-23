@@ -24,6 +24,7 @@
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
 #import <AlicloudUtils/AlicloudUtils.h>
+//#import <AlicloudUtils/EMASOptions.h>
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsHostCacheStore.h"
 #import <AlicloudBeacon/AlicloudBeacon.h>
@@ -57,6 +58,32 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 #pragma mark singleton
 
 static HttpDnsService * _httpDnsClient = nil;
+
+- (instancetype)autoInit {
+    NSString *sdkVersion;//= HTTPDNS_IOS_SDK_VERSION;
+    NSNumber *sdkStatus;
+    NSString *sdkId = @"httpdns";
+
+    NSString *accountID;
+    NSString *secretKey;
+    
+    EMASOptions *defaultOptions = [EMASOptions defaultOptions];
+    // Get config
+//    appKey = defaultOptions.emasAppKey; appSecret = defaultOptions.emasAppSecret;
+       NSString * bundleId = defaultOptions.emasBundleId;
+    accountID = defaultOptions.httpdnsAccountId;
+    secretKey = defaultOptions.httpdnsSecretKey;
+    // Get push(cps) service
+    EMASOptionSDKServiceItem *sdkItem = [defaultOptions sdkServiceItemForSdkId:@"httpdns"]; if (sdkItem) {
+        sdkVersion = sdkItem.version;
+        sdkStatus = sdkItem.status; }
+    NSLog(@"Get emas options, appKey: %@, appSecret: %@, bundleId: %@, sdkId: %@, sdkVersion: %@, sdkStatus: %@",
+          accountID, secretKey, bundleId, sdkId, sdkVersion, sdkStatus);
+    if ([EMASTools isValidString:accountID]) {
+        return [self initWithAccountID:[accountID intValue] secretKey:secretKey];
+    }
+    return nil;
+}
 
 - (instancetype)initWithAccountID:(int)accountID {
     return [self initWithAccountID:accountID secretKey:nil];
