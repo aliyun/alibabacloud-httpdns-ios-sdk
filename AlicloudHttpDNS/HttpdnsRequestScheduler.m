@@ -149,17 +149,17 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 break;
             }
             HttpdnsHostObject *hostObject = [self hostObjectFromCacheForHostName:hostName];
-            if (hostObject) {
-                if ([hostObject isExpired] && ![hostObject isQuerying]) {
+            if (!hostObject) {
+                [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
+                HttpdnsLogDebug("Pre resolve host %@ by async lookup.", hostName);
+            } else if (![hostObject isQuerying]) {
+                if ([hostObject isExpired]) {
                     HttpdnsLogDebug("%@ is expired, pre fetch again.", hostName);
                     [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
                 } else {
                     HttpdnsLogDebug(@"%@ is omitted, expired: %d querying: %d", hostName, [hostObject isExpired], [hostObject isQuerying]);
                     continue;
                 }
-            } else {
-                [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
-                HttpdnsLogDebug("Pre resolve host %@ by async lookup.", hostName);
             }
         }
     });
@@ -178,16 +178,25 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     __block HttpdnsHostObject *result = nil;
     __block BOOL needToQuery = NO;
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-    dispatch_sync(_syncDispatchQueue, ^{
+    @synchronized(self) {
         result = [self hostObjectFromCacheForHostName:host];
         HttpdnsLogDebug(@"Get from cache: %@", result);
         if (result == nil) {
             HttpdnsLogDebug("No available cache for %@ yet.", host);
             if ([self isHostsNumberLimitReached]) {
-                return;
+                return nil;
             }
             needToQuery = YES;
-        } else if ([result isExpired]) {
+            HttpdnsHostObject *result =  [HttpdnsHostObject new];
+            result.hostName = host;
+            result.ips = @[];
+            [result setQueryingState:YES];
+            [_hostManagerDict setObject:result forKey:host];
+        } else if (([result getIps].count == 0) && result.isQuerying ) {
+            HttpdnsLogDebug("%@ queryingState: %d", host, [result isQuerying]);
+            return nil;
+        }
+        else if ([result isExpired]) {
             HttpdnsLogDebug("%@ is expired, queryingState: %d", host, [result isQuerying]);
             if (_isExpiredIPEnabled) {
                 needToQuery = NO;
@@ -202,15 +211,15 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 result = nil;
             }
         }
-        if (needToQuery) {
-            [result setQueryingState:YES];
-        }
-    });
+    }
     if (needToQuery) {
-        if (sync) {
-            return [self executeRequest:host synchronously:YES retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
-        } else {
-            [self executeRequest:host synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
+        if (![result isQuerying]) {
+            [result setQueryingState:YES];
+            if (sync) {
+                return [self executeRequest:host synchronously:YES retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
+            } else {
+                [self executeRequest:host synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
+            }
         }
     } else {
         [self bizPerfGetIPWithHost:host success:YES];
