@@ -237,7 +237,10 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (result) {
         [self setServerDisable:NO host:host];
         NSString *hostName = [result getHostName];
-        HttpdnsHostObject *old = [_hostManagerDict objectForKey:hostName];
+        HttpdnsHostObject *old;
+        @synchronized(self) {
+          old  = [_hostManagerDict objectForKey:hostName];
+        }
         
         int64_t TTL = [result getTTL];
         int64_t lastLookupTime = [result getLastLookupTime];
@@ -257,7 +260,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [hostObject setIps:IPObjects];
             [hostObject setQueryingState:NO];
             HttpdnsLogDebug("New resolved item: %@: %@", host, result);
-            [_hostManagerDict setObject:hostObject forKey:host];
+            @synchronized(self) {
+                [_hostManagerDict setObject:hostObject forKey:host];
+            }
         }
         [self cacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings TTL:TTL];
         //TODO:
@@ -288,7 +293,10 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (!self.IPRankingEnabled) {
         return;
     }
-    HttpdnsHostObject *hostObject = [_hostManagerDict objectForKey:host];
+    HttpdnsHostObject *hostObject;
+    @synchronized(self) {
+     hostObject = [_hostManagerDict objectForKey:host];
+    }
     if (!hostObject) {
         return;
     }
@@ -581,12 +589,14 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 - (NSString *)disableStatusPath {
-    if (_disableStatusPath) {
-        return _disableStatusPath;
+    @synchronized(self) {
+        if (_disableStatusPath) {
+            return _disableStatusPath;
+        }
+        NSString *fileName = ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME;
+        NSString *fullPath = [[HttpdnsPersistenceUtils disableStatusPath] stringByAppendingPathComponent:fileName];
+        _disableStatusPath = fullPath;
     }
-    NSString *fileName = ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME;
-    NSString *fullPath = [[HttpdnsPersistenceUtils disableStatusPath] stringByAppendingPathComponent:fileName];
-    _disableStatusPath = fullPath;
     return _disableStatusPath;
 }
 
@@ -650,7 +660,10 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (self.isServerDisable) {
         return nil;
     }
-    HttpdnsHostObject *hostObject = [_hostManagerDict objectForKey:hostName];
+    HttpdnsHostObject *hostObject;
+    @synchronized(self) {
+        hostObject = [_hostManagerDict objectForKey:hostName];
+    }
     return hostObject;
 }
 
@@ -661,7 +674,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 - (void)cleanAllHostMemoryCache {
+    @synchronized(self) {
     [_hostManagerDict removeAllObjects];
+    }
 }
 
 - (void)loadIPsFromCacheSyncIfNeeded {
