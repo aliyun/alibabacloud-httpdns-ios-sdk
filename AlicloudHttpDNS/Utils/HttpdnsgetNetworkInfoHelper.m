@@ -93,28 +93,30 @@ static NSString *sWifiBssid = @"unknown";
 }
 
 + (void)updateNetworkStatus:(AlicloudNetworkStatus)status {
-    switch (status) {
-        case AlicloudReachableViaWiFi:
-            sNetworkType = @"wifi";
-            [self updateWifiBssid];
-            break;
-        case AlicloudReachableVia2G:
-            sNetworkType = @"2g";
-            break;
-        case AlicloudReachableVia3G:
-            sNetworkType = @"3g";
-            break;
-        case AlicloudReachableVia4G:
-            sNetworkType = @"4g";
-            break;
-        case AlicloudNotReachable:
-            sNetworkType = @"unknown";
-            break;
-        default:
-            sNetworkType = @"unknown";
-            break;
+    @synchronized(self) {
+        switch (status) {
+            case AlicloudReachableViaWiFi:
+                sNetworkType = @"wifi";
+                [self updateWifiBssid];
+                break;
+            case AlicloudReachableVia2G:
+                sNetworkType = @"2g";
+                break;
+            case AlicloudReachableVia3G:
+                sNetworkType = @"3g";
+                break;
+            case AlicloudReachableVia4G:
+                sNetworkType = @"4g";
+                break;
+            case AlicloudNotReachable:
+                sNetworkType = @"unknown";
+                break;
+            default:
+                sNetworkType = @"unknown";
+                break;
+        }
+        HttpdnsLogDebug(@"Update network status: %d, network type: %@", status, sNetworkType);
     }
-    HttpdnsLogDebug(@"Update network status: %d, network type: %@", status, sNetworkType);
 }
 
 + (NSString *)getNetworkType {
@@ -126,9 +128,18 @@ static NSString *sWifiBssid = @"unknown";
 }
 
 + (void)updateWifiBssid {
-    NSString *wifiBssId = [self getCurrentWifiHotSpotName];
-    if ([HttpdnsUtil isValidString:wifiBssId]) {
-        sWifiBssid = wifiBssId;
+    NSString *wifiBssid = nil;
+    NSArray *ifs = (id)CFBridgingRelease(CNCopySupportedInterfaces());
+    for (NSString *ifnam in ifs) {
+        id info = (id)CFBridgingRelease(CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifnam));
+        wifiBssid = [info objectForKey:(NSString*)kCNNetworkInfoKeyBSSID];
+        if (wifiBssid.length <= 0) {
+            continue;
+        }
+    }
+    
+    if ([HttpdnsUtil isValidString:wifiBssid]) {
+        sWifiBssid = wifiBssid;
     }
 }
 

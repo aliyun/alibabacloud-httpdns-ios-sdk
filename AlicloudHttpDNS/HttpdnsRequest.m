@@ -32,6 +32,7 @@
 #import "AlicloudHttpDNS.h"
 #import "HttpDnsHitService.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
+#import <AlicloudUtils/EMASTools.h>
 
 NSInteger const ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE = 10003;
 NSInteger const ALICLOUD_HTTPDNS_HTTP_COMMON_ERROR_CODE = 10004;
@@ -218,7 +219,7 @@ static NSURLSession *_resolveHOSTSession = nil;
         if ([HttpdnsgetNetworkInfoHelper isWifiNetwork]) {
             NSString *bssid = [HttpdnsgetNetworkInfoHelper getWifiBssid];
             if ([HttpdnsUtil isValidString:bssid]) {
-                url = [NSString stringWithFormat:@"%@&ssid=%@", url, bssid];
+                url = [NSString stringWithFormat:@"%@&bssid=%@", url, [EMASTools URLEncodedString:bssid]];
             }
         }
     }
@@ -236,7 +237,6 @@ static NSURLSession *_resolveHOSTSession = nil;
     HttpdnsLogDebug("Resolve host(%@) over network.", hostString);
     HttpdnsHostObject *hostObject = nil;
     NSString *url = [self constructRequestURLWith:hostString activatedServerIPIndex:activatedServerIPIndex];
-    NSLog(@"url: %@", url);
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
         hostObject = [self sendHTTPSRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
     } else {
