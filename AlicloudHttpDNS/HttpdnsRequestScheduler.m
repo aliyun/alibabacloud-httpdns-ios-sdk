@@ -34,6 +34,7 @@
 #import "HttpdnsUtil.h"
 #import "HttpDnsHitService.h"
 #import "HttpdnsTCPSpeedTester.h"
+#import "HttpdnsgetNetworkInfoHelper.h"
 
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS = @"disable_status_key";
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME = @"disable_status";
@@ -489,6 +490,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 - (void)networkChanged:(NSNotification *)notification {
     NSNumber *networkStatus = [notification object];
+    
+    [HttpdnsgetNetworkInfoHelper updateNetworkStatus:(AlicloudNetworkStatus)[networkStatus intValue]];
+    
     __block NSString *statusString = nil;
     switch ([networkStatus longValue]) {
         case 0:

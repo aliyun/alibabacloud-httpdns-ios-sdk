@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreTelephony/CTCarrier.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
+#import <AlicloudUtils/AlicloudReachabilityManager.h>
 
 @interface HttpdnsgetNetworkInfoHelper : NSObject
 
@@ -16,5 +17,10 @@
  * 当前网络运营商名字，或者wifi名字
  */
 + (NSString *)getNetworkName;
+
++ (void)updateNetworkStatus:(AlicloudNetworkStatus)status;
++ (NSString *)getNetworkType;
++ (BOOL)isWifiNetwork;
++ (NSString *)getWifiBssid;
 
 @end

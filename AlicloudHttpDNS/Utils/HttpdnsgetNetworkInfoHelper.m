@@ -17,6 +17,10 @@ typedef NS_ENUM(NSInteger, HttpdnsCarrierType) {
     HttpdnsCarrierTypeWWAN,   /**< 移动运营商 */
     HttpdnsCarrierTypeWifi    /**< Wifi */
 };
+
+static NSString *sNetworkType = @"unknown";
+static NSString *sWifiBssid = @"unknown";
+
 @implementation HttpdnsgetNetworkInfoHelper
 
 #define ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(type) [NSString stringWithFormat:@"%@", @(type)]
@@ -86,6 +90,50 @@ typedef NS_ENUM(NSInteger, HttpdnsCarrierType) {
         return ALICLOUD_HTTPDNS_NETWORK_FROME_COUNTRY_NETWORK(HttpdnsCarrierTypeWWAN, mobileCountryCode, mobileNetworkCode);
     }
     return ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeUnknown);//查询不到运营商
+}
+
++ (void)updateNetworkStatus:(AlicloudNetworkStatus)status {
+    switch (status) {
+        case AlicloudReachableViaWiFi:
+            sNetworkType = @"wifi";
+            [self updateWifiBssid];
+            break;
+        case AlicloudReachableVia2G:
+            sNetworkType = @"2g";
+            break;
+        case AlicloudReachableVia3G:
+            sNetworkType = @"3g";
+            break;
+        case AlicloudReachableVia4G:
+            sNetworkType = @"4g";
+            break;
+        case AlicloudNotReachable:
+            sNetworkType = @"unknown";
+            break;
+        default:
+            sNetworkType = @"unknown";
+            break;
+    }
+    HttpdnsLogDebug(@"Update network status: %d, network type: %@", status, sNetworkType);
+}
+
++ (NSString *)getNetworkType {
+    return sNetworkType;
+}
+
++ (BOOL)isWifiNetwork {
+    return [sNetworkType isEqualToString:@"wifi"];
+}
+
++ (void)updateWifiBssid {
+    NSString *wifiBssId = [self getCurrentWifiHotSpotName];
+    if ([HttpdnsUtil isValidString:wifiBssId]) {
+        sWifiBssid = wifiBssId;
+    }
+}
+
++ (NSString *)getWifiBssid {
+    return sWifiBssid;
 }
 
 @end

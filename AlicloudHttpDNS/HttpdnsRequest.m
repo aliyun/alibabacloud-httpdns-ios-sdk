@@ -31,6 +31,7 @@
 #import "HttpdnsConstants.h"
 #import "AlicloudHttpDNS.h"
 #import "HttpDnsHitService.h"
+#import "HttpdnsgetNetworkInfoHelper.h"
 
 NSInteger const ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE = 10003;
 NSInteger const ALICLOUD_HTTPDNS_HTTP_COMMON_ERROR_CODE = 10004;
@@ -194,6 +195,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     
     NSString *port = HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED ? ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT : ALICLOUD_HTTPDNS_HTTP_SERVER_PORT;
+    
     NSString *url = [NSString stringWithFormat:@"%@:%@/%d/%@?host=%@",
                      serverIp, port, sharedService.accountID, requestType, hostsString];
     
@@ -202,6 +204,25 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     NSString *versionInfo = [NSString stringWithFormat:@"ios_%@", HTTPDNS_IOS_SDK_VERSION];
     url = [NSString stringWithFormat:@"%@&sdk=%@", url, versionInfo];
+    
+    // sessionId
+    NSString *sessionId = [HttpdnsUtil generateSessionID];
+    if ([HttpdnsUtil isValidString:sessionId]) {
+        url = [NSString stringWithFormat:@"%@&sid=%@", url, sessionId];
+    }
+    
+    // 添加net和bssid(wifi)
+    NSString *netType = [HttpdnsgetNetworkInfoHelper getNetworkType];
+    if ([HttpdnsUtil isValidString:netType]) {
+        url = [NSString stringWithFormat:@"%@&net=%@", url, netType];
+        if ([HttpdnsgetNetworkInfoHelper isWifiNetwork]) {
+            NSString *bssid = [HttpdnsgetNetworkInfoHelper getWifiBssid];
+            if ([HttpdnsUtil isValidString:bssid]) {
+                url = [NSString stringWithFormat:@"%@&ssid=%@", url, bssid];
+            }
+        }
+    }
+    
     return url;
 }
 
@@ -215,6 +236,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     HttpdnsLogDebug("Resolve host(%@) over network.", hostString);
     HttpdnsHostObject *hostObject = nil;
     NSString *url = [self constructRequestURLWith:hostString activatedServerIPIndex:activatedServerIPIndex];
+    NSLog(@"url: %@", url);
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
         hostObject = [self sendHTTPSRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
     } else {

@@ -97,9 +97,6 @@
 }
 
 + (BOOL)isAbleToRequest {
-    if ([AlicloudReachabilityManager shareInstance].currentNetworkStatus == AlicloudNotReachable) {
-        return NO;
-    }
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
     if (!sharedService.accountID || sharedService.accountID == 0) {
         return NO;
@@ -284,6 +281,27 @@
         HttpdnsLogDebug("Response code 200.");
     }
     return errorStrong;
+}
+
+/**
+ 生成sessionId
+ App打开生命周期只生成一次，不做持久化
+ sessionId为12位，采用base62编码
+
+ @return 返回sessionId
+ */
++ (NSString *)generateSessionID {
+    static NSString *sessionId = nil;
+    NSString *alphabet = @"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    NSUInteger length = alphabet.length;
+    if (![HttpdnsUtil isValidString:sessionId]) {
+        NSMutableString *mSessionId = [NSMutableString string];
+        for (int i = 0; i < 12; i++) {
+            [mSessionId appendFormat:@"%@", [alphabet substringWithRange:NSMakeRange(arc4random() % length, 1)]];
+        }
+        sessionId = [mSessionId copy];
+    }
+    return sessionId;
 }
 
 @end
