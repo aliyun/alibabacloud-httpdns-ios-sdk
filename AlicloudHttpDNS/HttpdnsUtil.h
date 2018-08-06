@@ -60,4 +60,6 @@
 
 + (NSError *)getErrorFromError:(NSError *)error statusCode:(NSInteger)statusCode json:(NSDictionary *)json isHTTPS:(BOOL)isHTTPS;
 
++ (NSString *)generateSessionID;
+
 @end
