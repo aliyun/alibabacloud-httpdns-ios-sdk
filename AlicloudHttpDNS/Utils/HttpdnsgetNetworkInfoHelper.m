@@ -20,12 +20,19 @@ typedef NS_ENUM(NSInteger, HttpdnsCarrierType) {
 
 static NSString *sNetworkType = @"unknown";
 static NSString *sWifiBssid = @"unknown";
+static dispatch_queue_t sNetworkTypeQueue = 0;
+static dispatch_queue_t sWifiBssidQueue = 0;
 
 @implementation HttpdnsgetNetworkInfoHelper
 
 #define ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(type) [NSString stringWithFormat:@"%@", @(type)]
 #define ALICLOUD_HTTPDNS_NETWORK_FROME_COUNTRY_NETWORK(type, mobileCountryCode, mobileNetworkCode) [NSString stringWithFormat:@"%@-%@-%@", @(type), mobileCountryCode, mobileNetworkCode]
 #define ALICLOUD_HTTPDNS_NETWORK_FROME_WIFI_SSID(type, SSID) [NSString stringWithFormat:@"%@-%@", @(type), SSID]
+
++ (void)initialize {
+    sNetworkTypeQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.networkTypeQueue", DISPATCH_QUEUE_SERIAL);
+    sWifiBssidQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.wifiBssidQueue", DISPATCH_QUEUE_SERIAL);
+}
 
 /**
  *  获取运营商名称
@@ -93,7 +100,7 @@ static NSString *sWifiBssid = @"unknown";
 }
 
 + (void)updateNetworkStatus:(AlicloudNetworkStatus)status {
-    @synchronized(self) {
+    dispatch_sync(sNetworkTypeQueue, ^{
         switch (status) {
             case AlicloudReachableViaWiFi:
                 sNetworkType = @"wifi";
@@ -116,35 +123,49 @@ static NSString *sWifiBssid = @"unknown";
                 break;
         }
         HttpdnsLogDebug(@"Update network status: %d, network type: %@", status, sNetworkType);
-    }
+    });
 }
 
 + (NSString *)getNetworkType {
+    __block NSString *networkType = nil;
+    dispatch_sync(sNetworkTypeQueue, ^{
+        networkType = sNetworkType;
+    });
     return sNetworkType;
 }
 
 + (BOOL)isWifiNetwork {
-    return [sNetworkType isEqualToString:@"wifi"];
+    __block BOOL res = NO;
+    dispatch_sync(sNetworkTypeQueue, ^{
+       res = [sNetworkType isEqualToString:@"wifi"];
+    });
+    return res;
 }
 
 + (void)updateWifiBssid {
-    NSString *wifiBssid = nil;
-    NSArray *ifs = (id)CFBridgingRelease(CNCopySupportedInterfaces());
-    for (NSString *ifnam in ifs) {
-        id info = (id)CFBridgingRelease(CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifnam));
-        wifiBssid = [info objectForKey:(NSString*)kCNNetworkInfoKeyBSSID];
-        if (wifiBssid.length <= 0) {
-            continue;
+    dispatch_sync(sWifiBssidQueue, ^{
+        NSString *wifiBssid = nil;
+        NSArray *ifs = (id)CFBridgingRelease(CNCopySupportedInterfaces());
+        for (NSString *ifnam in ifs) {
+            id info = (id)CFBridgingRelease(CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifnam));
+            wifiBssid = [info objectForKey:(NSString*)kCNNetworkInfoKeyBSSID];
+            if (wifiBssid.length <= 0) {
+                continue;
+            }
         }
-    }
-    
-    if ([HttpdnsUtil isValidString:wifiBssid]) {
-        sWifiBssid = wifiBssid;
-    }
+        
+        if ([HttpdnsUtil isValidString:wifiBssid]) {
+            sWifiBssid = wifiBssid;
+        }
+    });
 }
 
 + (NSString *)getWifiBssid {
-    return sWifiBssid;
+    __block NSString *bssid = nil;
+    dispatch_sync(sWifiBssidQueue, ^{
+        bssid = sWifiBssid;
+    });
+    return bssid;
 }
 
 @end

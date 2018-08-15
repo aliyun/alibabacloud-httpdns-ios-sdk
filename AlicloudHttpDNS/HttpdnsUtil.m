@@ -292,15 +292,18 @@
  */
 + (NSString *)generateSessionID {
     static NSString *sessionId = nil;
-    NSString *alphabet = @"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    NSUInteger length = alphabet.length;
-    if (![HttpdnsUtil isValidString:sessionId]) {
-        NSMutableString *mSessionId = [NSMutableString string];
-        for (int i = 0; i < 12; i++) {
-            [mSessionId appendFormat:@"%@", [alphabet substringWithRange:NSMakeRange(arc4random() % length, 1)]];
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString *alphabet = @"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        NSUInteger length = alphabet.length;
+        if (![HttpdnsUtil isValidString:sessionId]) {
+            NSMutableString *mSessionId = [NSMutableString string];
+            for (int i = 0; i < 12; i++) {
+                [mSessionId appendFormat:@"%@", [alphabet substringWithRange:NSMakeRange(arc4random() % length, 1)]];
+            }
+            sessionId = [mSessionId copy];
         }
-        sessionId = [mSessionId copy];
-    }
+    });
     return sessionId;
 }
 

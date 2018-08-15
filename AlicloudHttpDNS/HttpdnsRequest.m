@@ -297,6 +297,9 @@ static NSURLSession *_resolveHOSTSession = nil;
     if (!error) {
         return nil;
     }
+    if (![HttpdnsUtil isValidString:urlStr]) {
+        return nil;
+    }
     NSString *fullUrlStr = [NSString stringWithFormat:@"http://%@", urlStr];
     HttpdnsLogDebug("Request URL: %@", fullUrlStr);
     CFStringRef urlString = (__bridge CFStringRef)fullUrlStr;
