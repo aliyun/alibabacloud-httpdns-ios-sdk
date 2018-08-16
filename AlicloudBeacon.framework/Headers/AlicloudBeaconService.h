@@ -19,17 +19,19 @@
 typedef void (^AlicloudBeaconCallbackHandler)(BOOL res, NSError *error);
 
 @interface AlicloudBeaconService : NSObject
-
 - (instancetype)initWithAppKey:(NSString *)appKey
                      appSecret:(NSString *)appSecret
                     SDKVersion:(NSString *)SDKVersion
                          SDKID:(NSString *)SDKID;
 
+- (instancetype)initWithAppKey:(NSString *)appKey
+                     appSecret:(NSString *)appSecret
+                    SDKVersion:(NSString *)SDKVersion
+                         SDKID:(NSString *)SDKID
+                     extension:(NSDictionary *)extension;
+
 - (void)enableLog:(BOOL)enabled;
 - (BOOL)isLogEnabled;
-
-//- (void)getBeaconConfigByKey:(NSString *)key
-//           completionHandler:(void(^)(AlicloudBeaconConfiguration *configuration, NSError *error))completionHandler;
 
 - (void)getBeaconConfigStringByKey:(NSString *)key
            completionHandler:(void(^)(NSString *result, NSError *error))completionHandler;
