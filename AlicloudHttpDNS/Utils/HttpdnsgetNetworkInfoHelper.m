@@ -131,7 +131,7 @@ static dispatch_queue_t sWifiBssidQueue = 0;
     dispatch_sync(sNetworkTypeQueue, ^{
         networkType = sNetworkType;
     });
-    return sNetworkType;
+    return networkType;
 }
 
 + (BOOL)isWifiNetwork {
