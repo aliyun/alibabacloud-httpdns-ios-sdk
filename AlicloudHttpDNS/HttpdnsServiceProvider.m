@@ -380,7 +380,7 @@ static HttpDnsService * _httpDnsClient = nil;
         return nil;
     }
     
-    [self getIpsByHost:host];
+    [self getIpsByHostAsync:host];
     
     NSArray *ip6ObjectArray = [_requestScheduler getIPv6ObjectArrayForHost:host];
     

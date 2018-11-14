@@ -18,6 +18,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <AlicloudUtils/AlicloudUtils.h>
 
 @interface HttpdnsUtil : NSObject
 
