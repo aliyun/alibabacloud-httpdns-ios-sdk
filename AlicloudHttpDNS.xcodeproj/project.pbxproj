@@ -14,6 +14,9 @@
 		2197CACB1BC7B3D400BDB65B /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB91BC7B3D400BDB65B /* HttpdnsRequest.m */; };
 		2197CACD1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABB1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m */; };
 		2197CAD11BC7B3D400BDB65B /* HttpdnsUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */; };
+		4AD90CA22138EC21008ECE64 /* HttpdnsIPv6Manager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AD90CA02138EC21008ECE64 /* HttpdnsIPv6Manager.h */; };
+		4AD90CA32138EC21008ECE64 /* HttpdnsIPv6Manager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD90CA12138EC21008ECE64 /* HttpdnsIPv6Manager.m */; };
+		4AD90CA42138EC21008ECE64 /* HttpdnsIPv6Manager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD90CA12138EC21008ECE64 /* HttpdnsIPv6Manager.m */; };
 		4AF4AB64211439A600D712DF /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AF4AB63211439A600D712DF /* AppDelegate.m */; };
 		4AF4AB67211439A600D712DF /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AF4AB66211439A600D712DF /* ViewController.m */; };
 		4AF4AB6A211439A600D712DF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4AF4AB68211439A600D712DF /* Main.storyboard */; };
@@ -174,6 +177,8 @@
 		2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsServiceProvider.m; sourceTree = "<group>"; };
 		2197CABE1BC7B3D400BDB65B /* HttpdnsUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsUtil.h; sourceTree = "<group>"; };
 		2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtil.m; sourceTree = "<group>"; };
+		4AD90CA02138EC21008ECE64 /* HttpdnsIPv6Manager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPv6Manager.h; sourceTree = "<group>"; };
+		4AD90CA12138EC21008ECE64 /* HttpdnsIPv6Manager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsIPv6Manager.m; sourceTree = "<group>"; };
 		4AF4AB60211439A600D712DF /* AlicloudHttpDNSTestDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlicloudHttpDNSTestDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AF4AB62211439A600D712DF /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		4AF4AB63211439A600D712DF /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -336,6 +341,7 @@
 		2197CA391BC79A4500BDB65B /* AlicloudHttpDNS */ = {
 			isa = PBXGroup;
 			children = (
+				4AD90C9F2138EBD5008ECE64 /* ipv6 */,
 				9A4E2F511F9E13EA0082866F /* statistics */,
 				9AA0FC6D1EB9AFA900E242DD /* Model */,
 				9AA0FC601EB9877600E242DD /* CacheStore */,
@@ -391,6 +397,15 @@
 				9A59148D1EA0C26200A7ED28 /* XCTestCase+AsyncTesting.m */,
 			);
 			path = AlicloudHttpDNSTests;
+			sourceTree = "<group>";
+		};
+		4AD90C9F2138EBD5008ECE64 /* ipv6 */ = {
+			isa = PBXGroup;
+			children = (
+				4AD90CA02138EC21008ECE64 /* HttpdnsIPv6Manager.h */,
+				4AD90CA12138EC21008ECE64 /* HttpdnsIPv6Manager.m */,
+			);
+			path = ipv6;
 			sourceTree = "<group>";
 		};
 		4AF4AB61211439A600D712DF /* AlicloudHttpDNSTestDemo */ = {
@@ -542,6 +557,7 @@
 				9AA0FC701EB9AFB700E242DD /* HttpdnsHostRecord.h in Headers */,
 				9AA0FC631EB9879B00E242DD /* HttpdnsCacheStore.h in Headers */,
 				9AA0FC7D1EB9D17700E242DD /* HttpdnsgetNetworkInfoHelper.h in Headers */,
+				4AD90CA22138EC21008ECE64 /* HttpdnsIPv6Manager.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -679,6 +695,7 @@
 				9A5D5E2A1E9CB4D400CAC3A6 /* HttpdnsScheduleCenterRequest.m in Sources */,
 				9AE63A051ECDA74D00F9C723 /* HttpdnsResultSet.m in Sources */,
 				9AA0FC6C1EB987B800E242DD /* HttpdnsIPCacheStore.m in Sources */,
+				4AD90CA32138EC21008ECE64 /* HttpdnsIPv6Manager.m in Sources */,
 				9A5BF7D51EC06B81001588B2 /* HttpdnsKeyValueStore.m in Sources */,
 				9A4D181E1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.m in Sources */,
 				9AE639FE1ECDA74D00F9C723 /* HttpdnsDatabaseAdditions.m in Sources */,
@@ -764,6 +781,7 @@
 				4AF4AB82211439D300D712DF /* HttpdnsDatabaseAdditions.m in Sources */,
 				4AF4AB83211439D300D712DF /* HttpdnsDatabasePool.m in Sources */,
 				4AF4AB84211439D300D712DF /* HttpdnsDatabaseQueue.m in Sources */,
+				4AD90CA42138EC21008ECE64 /* HttpdnsIPv6Manager.m in Sources */,
 				4AF4AB85211439D300D712DF /* HttpdnsResultSet.m in Sources */,
 				4AF4AB86211439D300D712DF /* HttpdnsConfig.m in Sources */,
 				4AF4AB87211439D300D712DF /* HttpdnsLog.m in Sources */,
@@ -1017,7 +1035,7 @@
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = NO;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
@@ -1052,7 +1070,7 @@
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = NO;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;

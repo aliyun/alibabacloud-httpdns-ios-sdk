@@ -35,6 +35,7 @@
 #import "HttpDnsHitService.h"
 #import "HttpdnsTCPSpeedTester.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
+#import "HttpdnsIPv6Manager.h"
 
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS = @"disable_status_key";
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME = @"disable_status";
@@ -196,8 +197,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         } else if (([result getIps].count == 0) && result.isQuerying ) {
             HttpdnsLogDebug("%@ queryingState: %d", host, [result isQuerying]);
             return nil;
-        }
-        else if ([result isExpired]) {
+        } else if ([result isExpired]) {
             HttpdnsLogDebug("%@ is expired, queryingState: %d", host, [result isQuerying]);
             if (_isExpiredIPEnabled) {
                 needToQuery = NO;
@@ -226,6 +226,17 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         [self bizPerfGetIPWithHost:host success:YES];
     }
     return result;
+}
+
+- (NSArray *)getIPv6ObjectArrayForHost:(NSString *)host {
+    NSArray *ipv6ObjectArray = [[HttpdnsIPv6Manager sharedInstance] getIPv6ObjectArrayForHost:host];
+    HttpdnsHostObject *hostObject = [self hostObjectFromCacheForHostName:host];
+    if (![EMASTools isValidArray:ipv6ObjectArray] ||
+        !hostObject ||
+        (!_isExpiredIPEnabled && [hostObject isExpired])) {
+        return nil;
+    }
+    return ipv6ObjectArray;
 }
 
 - (void)bizPerfGetIPWithHost:(NSString *)host
@@ -328,7 +339,10 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
  */
 - (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     NSDictionary *userInfo = error.userInfo;
-    [HttpDnsHitService bizErrSrvWithSrvAddrIndex:activatedServerIPIndex errCode:error.code errMsg:error.description];
+    NSString *srvAddr = [[HttpdnsScheduleCenter sharedInstance] getActivatedServerIPWithIndex:activatedServerIPIndex];
+    [HttpDnsHitService bizErrSrvWithSrvAddr:srvAddr
+                                    errCode:error.code
+                                     errMsg:error.description];
     //403 ServiceLevelDeny 错误强制更新，不触发disable机制。
     BOOL isServiceLevelDeny;
     @try {
@@ -432,8 +446,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         NSError *error;
         HttpdnsLogDebug("Async request for %@ starts...", host);
         HttpdnsHostObject *result = [[HttpdnsRequest new] lookupHostFromServer:host
-                                                            error:&error
-                                           activatedServerIPIndex:newActivatedServerIPIndex];
+                                                                         error:&error
+                                                        activatedServerIPIndex:newActivatedServerIPIndex];
         if (error) {
             HttpdnsLogDebug("Async request for %@ error: %@", host, error);
             

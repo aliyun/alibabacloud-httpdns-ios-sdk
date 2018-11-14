@@ -10,6 +10,8 @@
 #import "HttpdnsServiceProvider.h"
 #import "HttpdnsUtil.h"
 
+#import <AlicloudUtils/AlicloudIPv6Adapter.h>
+
 @interface ViewController ()
 
 @property (nonatomic, strong) HttpDnsService *service;
@@ -17,61 +19,6 @@
 @end
 
 @implementation ViewController
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
-    
-    for (int i = 0; i < 100; i++) {
-        dispatch_async(dispatch_queue_create(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            NSString *sessionId = [HttpdnsUtil generateSessionID];
-            if ([HttpdnsUtil isValidString:sessionId]) {
-                NSLog(@"thread: %@, sessionId: %@, address: %p", [NSThread currentThread], sessionId, sessionId);
-            }
-        });
-    }
-    
-    NSArray *ips = @[
-                     @"www.163.com",
-                     @"www.douban.com",
-                     @"data.zhibo8.cc",
-                     @"www.12306.cn",
-                     @"t.yunjiweidian.com",
-                     @"dca.qiumibao.com",
-                     @"home.cochat.lenovo.com",
-                     @"ra.namibox.com",
-                     @"namibox.com",
-                     @"dou.bz"
-                     ];
-
-//    NSArray *ips = @[ @"gateway.vtechl1.com" ];
-    
-    _service = [[HttpDnsService alloc] autoInit];
-    [_service setLogEnabled:YES];
-//    [_service setHTTPSRequestEnabled:YES];
-    
-    long long start, end;
-    
-    for (NSString *ip in ips) {
-        start = [self currentTimeInMillis];
-        [_service getIpByHostAsyncInURLFormat:ip];
-        end = [self currentTimeInMillis];
-        NSLog(@"duration: %lld", end - start);
-    }
-    
-    NSString *originStr = @"origin";
-    NSString *resStr = [NSString stringWithFormat:@"%@-%@", originStr, nil];
-    NSLog(@"resStr: %@", resStr);
-    resStr = [NSString stringWithFormat:@"%@-%@", originStr, @"test"];
-    NSLog(@"resStr: %@", resStr);
-}
-
-- (long long)currentTimeInMillis {
-    NSTimeInterval time = [[NSDate date] timeIntervalSince1970];
-    /* 单位：毫秒 */
-    long long milliSecond = (long long)(time * 1000);
-    return milliSecond;
-}
 
 - (IBAction)onHost1:(id)sender {
     [_service getIpByHostAsync:@"www.aliyun.com"];
@@ -81,7 +28,99 @@
 }
 
 - (IBAction)onHost2:(id)sender {
+}
+
+// 开启IPv6解析结果
+- (IBAction)onIPv6Result:(id)sender {
+    [_service enableIPv6:YES];
+    // 开启持久化缓存
+    //[_service setCachedIPEnabled:YES];
+}
+
+// 开启IPv6解析链路
+- (IBAction)onIPv6Resolve:(id)sender {
+    [_service enableIPv6Service:YES];
+}
+
+// 解析域名，返回IPv6解析结果
+- (IBAction)onStartIPv6Resolve:(id)sender {
+    NSString *host = @"ipv6.sjtu.edu.cn";
+    NSString *IP = [_service getIPv6ByHostAsync:host];
+    [self showAlert:@"IPv6解析结果" content:IP];
+}
+
+// IPv6 Stack检测
+- (IBAction)onCheckIPv6Stack:(id)sender {
+    NSString *preResolveIP = @"106.11.90.200";
+    BOOL haveIPv6Stack = [_service haveIPv6Stack];
+    if (haveIPv6Stack) {
+        NSString *ipv6 = [[AlicloudIPv6Adapter getInstance] getIPv6Address:preResolveIP];
+        [self showAlert:@"IPv6地址转换" content:ipv6];
+    }
+    NSMutableDictionary *mDic = [NSMutableDictionary dictionary];
+    [mDic setObject:@(1) forKey:@"enable"];
+    NSLog(@"mDic: %@", mDic);
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view, typically from a nib.
     
+    _service = [[HttpDnsService alloc] autoInit];
+    [_service setLogEnabled:YES];
+    
+//    for (int i = 0; i < 100; i++) {
+//        dispatch_async(dispatch_queue_create(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//            NSString *sessionId = [HttpdnsUtil generateSessionID];
+//            if ([HttpdnsUtil isValidString:sessionId]) {
+//                NSLog(@"thread: %@, sessionId: %@, address: %p", [NSThread currentThread], sessionId, sessionId);
+//            }
+//        });
+//    }
+    
+//    NSArray *ips = @[
+//                     @"www.163.com",
+//                     @"www.douban.com",
+//                     @"data.zhibo8.cc",
+//                     @"www.12306.cn",
+//                     @"t.yunjiweidian.com",
+//                     @"dca.qiumibao.com",
+//                     @"home.cochat.lenovo.com",
+//                     @"ra.namibox.com",
+//                     @"namibox.com",
+//                     @"dou.bz"
+//                     ];
+//
+//
+//    long long start, end;
+//
+//    for (NSString *ip in ips) {
+//        start = [self currentTimeInMillis];
+//        [_service getIpByHostAsyncInURLFormat:ip];
+//        end = [self currentTimeInMillis];
+//        NSLog(@"duration: %lld", end - start);
+//    }
+}
+
+- (long long)currentTimeInMillis {
+    NSTimeInterval time = [[NSDate date] timeIntervalSince1970];
+    /* 单位：毫秒 */
+    long long milliSecond = (long long)(time * 1000);
+    return milliSecond;
+}
+
+- (void)showAlert:(NSString *)title content:(NSString *)content {
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:content preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+    [alertController addAction:okAction];
+    
+    if ([NSThread isMainThread]) {
+        [self presentViewController:alertController animated:YES completion:nil];
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self presentViewController:alertController animated:YES completion:nil];
+        });
+    }
 }
 
 - (void)didReceiveMemoryWarning {

@@ -34,6 +34,7 @@ FOUNDATION_EXTERN NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TI
 - (void)addPreResolveHosts:(NSArray *)hosts;
 
 - (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync;
+- (NSArray *)getIPv6ObjectArrayForHost:(NSString *)host;
 
 - (void)setExpiredIPEnabled:(BOOL)enable;
 - (void)setCachedIPEnabled:(BOOL)enable;

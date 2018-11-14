@@ -37,6 +37,39 @@
                                     <action selector="onHost2:" destination="BYZ-38-t0r" eventType="touchUpInside" id="nBg-nC-aoc"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DVu-Bp-HIt">
+                                <rect key="frame" x="126" y="258" width="123" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="开启IPv6解析结果"/>
+                                <connections>
+                                    <action selector="onIPv6Result:" destination="BYZ-38-t0r" eventType="touchUpInside" id="LIe-qt-RvM"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cog-wf-nte">
+                                <rect key="frame" x="126" y="318" width="123" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="开启IPv6链路解析"/>
+                                <connections>
+                                    <action selector="onIPv6Resolve:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ttQ-qf-ozf"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iLU-g0-Nge">
+                                <rect key="frame" x="142" y="381" width="92" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="IPv6域名解析"/>
+                                <connections>
+                                    <action selector="onStartIPv6Resolve:" destination="BYZ-38-t0r" eventType="touchUpInside" id="m4R-qm-HNS"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3Qj-wB-isM">
+                                <rect key="frame" x="136" y="441" width="104" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="IPv6 Stack检测"/>
+                                <connections>
+                                    <action selector="onCheckIPv6Stack:" destination="BYZ-38-t0r" eventType="touchUpInside" id="fDM-mx-VKx"/>
+                                    <action selector="onStartIPv6Resolve:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ZMq-SJ-TiH"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     </view>
