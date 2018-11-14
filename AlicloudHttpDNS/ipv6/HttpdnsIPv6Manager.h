@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "HttpdnsModel.h"
 
 @interface HttpdnsIPv6Manager : NSObject
 
@@ -33,16 +34,13 @@
  @param ipv6Array IPv6解析结果数组
  @param host 域名
  */
-- (void)storeIPv6ResolveRes:(NSArray *)ipv6Array forHost:(NSString *)host;
+- (void)storeIPv6ResolveRes:(NSArray<HttpdnsIpObject *> *)ipv6Array forHost:(NSString *)host;
 
 /**
  获取IPv6解析结果数组
  */
-- (NSArray *)getIPv6ObjectArrayForHost:(NSString *)host;
+- (NSArray<HttpdnsIpObject *> *)getIPv6ObjectArrayForHost:(NSString *)host;
 
-/**
- 判断请求host是否为IPv6地址
- */
-- (BOOL)isIPv6URL:(NSString *)urlString;
+- (NSArray<NSString *> *)getIP6StringsByHost:(NSString *)host;
 
 @end

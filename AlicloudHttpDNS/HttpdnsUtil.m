@@ -21,7 +21,6 @@
 #import "HttpdnsLog.h"
 #import "CommonCrypto/CommonCrypto.h"
 #import "arpa/inet.h"
-#import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsServiceProvider_Internal.h"
 #import "UIApplication+ABSHTTPDNSSetting.h"
 #import "HttpdnsConstants.h"

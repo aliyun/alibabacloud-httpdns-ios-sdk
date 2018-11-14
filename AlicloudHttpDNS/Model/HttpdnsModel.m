@@ -23,6 +23,7 @@
 #import "HttpdnsLog.h"
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsIPRecord.h"
+#import "HttpdnsIPv6Manager.h"
 
 @implementation HttpdnsIpObject
 
@@ -46,17 +47,6 @@
     }
     return [IPObjects copy];
 }
-
-+ (NSArray<HttpdnsIpObject *> *)IPObjectsFromIP6s:(NSArray<NSString *> *)IP6s {
-    NSMutableArray *IPObjects = [NSMutableArray arrayWithCapacity:IP6s.count];
-    for (NSString *IP6 in IP6s) {
-        HttpdnsIpObject *IPObject = [HttpdnsIpObject new];
-        IPObject.ip = IP6;
-        [IPObjects addObject:IPObject];
-    }
-    return [IPObjects copy];
-}
-
 
 - (NSString *)description {
     return self.ip;
@@ -111,7 +101,19 @@
     [hostObject setHostName:hostRecord.host];
     [hostObject setLastLookupTime:[hostRecord.createAt timeIntervalSince1970]];
     [hostObject setTTL:hostRecord.TTL];
-    hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:hostRecord.IPs];
+    // 筛选IPv6地址
+    NSMutableArray *allIps = [NSMutableArray arrayWithArray:hostRecord.IPs];
+    NSMutableArray *ip6s = [NSMutableArray arrayWithCapacity:allIps.count];
+    for (NSString *ip in allIps) {
+        if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:ip]) {
+            [ip6s addObject:ip];
+        }
+    }
+    if ([EMASTools isValidArray:ip6s]) {
+        [allIps removeObjectsInArray:ip6s];
+        [[HttpdnsIPv6Manager sharedInstance] storeIPv6ResolveRes:[HttpdnsIpObject IPObjectsFromIPs:ip6s] forHost:hostRecord.host];
+    }
+    hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:allIps];
     return hostObject;
 }
 
@@ -122,6 +124,11 @@
         @try {
             [IPs addObject:IPObject.ip];
         } @catch (NSException *exception) {}
+    }
+    // 添加IPv6地址
+    NSArray<NSString *> *ip6s = [[HttpdnsIPv6Manager sharedInstance] getIP6StringsByHost:_hostName];
+    if ([EMASTools isValidArray:ip6s]) {
+        [IPs addObjectsFromArray:ip6s];
     }
     return [IPs copy];
 }

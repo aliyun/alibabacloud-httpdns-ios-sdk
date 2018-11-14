@@ -77,7 +77,7 @@
     return _usersetIPv6ResultEnable;
 }
 
-- (void)storeIPv6ResolveRes:(NSArray *)ipv6Array forHost:(NSString *)host {
+- (void)storeIPv6ResolveRes:(NSArray<HttpdnsIpObject *> *)ipv6Array forHost:(NSString *)host {
     if (![EMASTools isValidString:host] || ![EMASTools isValidArray:ipv6Array]) {
         return ;
     }
@@ -86,7 +86,7 @@
     });
 }
 
-- (NSArray *)getIPv6ObjectArrayForHost:(NSString *)host {
+- (NSArray<HttpdnsIpObject *> *)getIPv6ObjectArrayForHost:(NSString *)host {
     __block NSArray *res = nil;
     dispatch_sync(_storeSyncQueue, ^{
         res = [_storeIPv6Results objectForKey:host];
@@ -94,13 +94,18 @@
     return res;
 }
 
-- (BOOL)isIPv6URL:(NSString *)urlString {
-    NSURL *url = [NSURL URLWithString:urlString];
-    BOOL isIPv6 = NO;
-    if (url) {
-        isIPv6 = [EMASTools isIPv6Address:url.host];
+- (NSArray<NSString *> *)getIP6StringsByHost:(NSString *)host {
+    NSArray<HttpdnsIpObject *> *ipRecords = [self getIPv6ObjectArrayForHost:host];
+    if (!ipRecords) {
+        return nil;
     }
-    return isIPv6;
+    NSMutableArray<NSString *> *ip6s = [NSMutableArray arrayWithCapacity:ipRecords.count];
+    for (HttpdnsIpObject *ipObject in ipRecords) {
+        @try {
+            [ip6s addObject:ipObject.ip];
+        } @catch (NSException *exception) {}
+    }
+    return [ip6s copy];
 }
 
 @end

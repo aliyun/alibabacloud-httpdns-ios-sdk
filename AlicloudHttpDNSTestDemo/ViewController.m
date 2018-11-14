@@ -34,12 +34,12 @@
 - (IBAction)onIPv6Result:(id)sender {
     [_service enableIPv6:YES];
     // 开启持久化缓存
-    //[_service setCachedIPEnabled:YES];
+    [_service setCachedIPEnabled:YES];
 }
 
 // 开启IPv6解析链路
 - (IBAction)onIPv6Resolve:(id)sender {
-    [_service enableIPv6Service:YES];
+//    [_service enableIPv6Service:YES];
 }
 
 // 解析域名，返回IPv6解析结果
@@ -51,15 +51,15 @@
 
 // IPv6 Stack检测
 - (IBAction)onCheckIPv6Stack:(id)sender {
-    NSString *preResolveIP = @"106.11.90.200";
-    BOOL haveIPv6Stack = [_service haveIPv6Stack];
-    if (haveIPv6Stack) {
-        NSString *ipv6 = [[AlicloudIPv6Adapter getInstance] getIPv6Address:preResolveIP];
-        [self showAlert:@"IPv6地址转换" content:ipv6];
-    }
-    NSMutableDictionary *mDic = [NSMutableDictionary dictionary];
-    [mDic setObject:@(1) forKey:@"enable"];
-    NSLog(@"mDic: %@", mDic);
+//    NSString *preResolveIP = @"106.11.90.200";
+//    BOOL haveIPv6Stack = [_service haveIPv6Stack];
+//    if (haveIPv6Stack) {
+//        NSString *ipv6 = [[AlicloudIPv6Adapter getInstance] getIPv6Address:preResolveIP];
+//        [self showAlert:@"IPv6地址转换" content:ipv6];
+//    }
+//    NSMutableDictionary *mDic = [NSMutableDictionary dictionary];
+//    [mDic setObject:@(1) forKey:@"enable"];
+//    NSLog(@"mDic: %@", mDic);
 }
 
 - (void)viewDidLoad {
