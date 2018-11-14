@@ -23,13 +23,14 @@
 #import "HttpdnsModel.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
-#import <AlicloudUtils/AlicloudUtils.h>
-//#import <AlicloudUtils/EMASOptions.h>
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsHostCacheStore.h"
-#import <AlicloudBeacon/AlicloudBeacon.h>
 #import "HttpDnsHitService.h"
 #import "HttpdnsConstants.h"
+#import "HttpdnsIPv6Manager.h"
+
+#import <AlicloudBeacon/AlicloudBeacon.h>
+#import <AlicloudUtils/AlicloudUtils.h>
 
 static NSDictionary *HTTPDNS_EXT_INFO = nil;
 static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
@@ -71,14 +72,15 @@ static HttpDnsService * _httpDnsClient = nil;
     // Get config
     accountID = defaultOptions.httpdnsAccountId;
     secretKey = defaultOptions.httpdnsSecretKey;
-    // Get push(cps) service
-    EMASOptionSDKServiceItem *sdkItem = [defaultOptions sdkServiceItemForSdkId:sdkId]; if (sdkItem) {
+    EMASOptionSDKServiceItem *sdkItem = [defaultOptions sdkServiceItemForSdkId:sdkId];
+    if (sdkItem) {
         sdkVersion = sdkItem.version;
-        sdkStatus = sdkItem.status; }
+        sdkStatus = sdkItem.status;
+    }
     if ([EMASTools isValidString:accountID]) {
         return [self initWithAccountID:[accountID intValue] secretKey:secretKey];
     }
-    NSLog(@"Auto init fail, can not get accountId / secretKey, please check the file named :AliyunEmasServices-Info.plist.");
+    NSLog(@"Auto init fail, can not get accountId / secretKey, please check the file named: AliyunEmasServices-Info.plist.");
     return nil;
 }
 
@@ -143,9 +145,6 @@ static HttpDnsService * _httpDnsClient = nil;
                          EXT_INFO_KEY_VERSION : HTTPDNS_IOS_SDK_VERSION,
                          };
     _httpDnsClient.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
-    
-    
-
     
     /* 日活打点 */
     [[self class] statIfNeeded];//旧版日活打点
@@ -358,6 +357,44 @@ static HttpDnsService * _httpDnsClient = nil;
 
 - (NSString *)getSessionId {
     return [HttpdnsUtil generateSessionID];
+}
+
+- (void)enableIPv6:(BOOL)enable {
+    [[HttpdnsIPv6Manager sharedInstance] setIPv6ResultEnable:enable];
+}
+
+- (NSString *)getIPv6ByHostAsync:(NSString *)host {
+    NSArray *ips = [self getIPv6sByHostAsync:host];
+    NSString *ip = nil;
+    if (ips != nil && ips.count > 0) {
+        @try {
+            ip = ips[0];
+        } @catch (NSException *exception) {}
+    }
+    return ip;
+}
+
+- (NSArray *)getIPv6sByHostAsync:(NSString *)host {
+    // 判断是否可以获取IPv6解析结果
+    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        return nil;
+    }
+    
+    [self getIpsByHost:host];
+    
+    NSArray *ip6ObjectArray = [_requestScheduler getIPv6ObjectArrayForHost:host];
+    
+    if (ip6ObjectArray) {
+        NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
+        if (ip6ObjectArray && [ip6ObjectArray count] > 0) {
+            for (HttpdnsIpObject *ipObject in ip6ObjectArray) {
+                [ipsArray addObject:[ipObject getIpString]];
+            }
+            return ipsArray;
+        }
+    }
+    HttpdnsLogDebug("No available IP cached for %@", host);
+    return nil;
 }
 
 @end

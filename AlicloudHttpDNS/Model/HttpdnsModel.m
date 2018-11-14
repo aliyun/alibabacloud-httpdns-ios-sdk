@@ -47,6 +47,17 @@
     return [IPObjects copy];
 }
 
++ (NSArray<HttpdnsIpObject *> *)IPObjectsFromIP6s:(NSArray<NSString *> *)IP6s {
+    NSMutableArray *IPObjects = [NSMutableArray arrayWithCapacity:IP6s.count];
+    for (NSString *IP6 in IP6s) {
+        HttpdnsIpObject *IPObject = [HttpdnsIpObject new];
+        IPObject.ip = IP6;
+        [IPObjects addObject:IPObject];
+    }
+    return [IPObjects copy];
+}
+
+
 - (NSString *)description {
     return self.ip;
 }

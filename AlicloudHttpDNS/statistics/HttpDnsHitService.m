@@ -28,6 +28,7 @@ static NSString *const HTTPDNS_HIT_PARAM_SCADDR = @"scAddr" ;//当前SC服务器
 static NSString *const HTTPDNS_HIT_PARAM_SRVADDR = @"srvAddr" ;//当前嗅探的HTTPDNS服务器地址
 
 static NSString *const HTTPDNS_BIZ_LOCAL_DISABLE = @"biz_local_disable";
+static NSString *const HTTPDNS_BIZ_IPV6_ENABLE = @"biz_ipv6_enable";
 //HOST" ;//查询的HOST
 //scAddr" ;//当前SC服务器地址
 //SRVADDR" ;//当前嗅探的HTTPDNS服务器地址
@@ -234,9 +235,9 @@ static BOOL _disableStatus = NO;
     [_tracker sendCustomHit:HTTPDNS_ERR_SC duration:0 properties:extProperties];
 }
 
-+ (void)bizErrSrvWithSrvAddrIndex:(NSInteger)srvAddrIndex
-                          errCode:(NSInteger)errCode
-                           errMsg:(NSString *)errMsg {
++ (void)bizErrSrvWithSrvAddr:(NSString *)srvAddr
+                     errCode:(NSInteger)errCode
+                      errMsg:(NSString *)errMsg {
     if (_disableStatus) {
         return;
     }
@@ -245,7 +246,7 @@ static BOOL _disableStatus = NO;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
     @try {
-        [extProperties setObject:[self srvAddrFromIndex:srvAddrIndex] forKey:HTTPDNS_HIT_PARAM_SRVADDR];
+        [extProperties setObject:srvAddr forKey:HTTPDNS_HIT_PARAM_SRVADDR];
         [extProperties setObject:@(errCode) forKey:HTTPDNS_HIT_PARAM_ERRCODE];
         [extProperties setObject:errMsg forKey:HTTPDNS_HIT_PARAM_ERRMSG];
         [extProperties setObject:[self isIPV6Object] forKey:HTTPDNS_HIT_PARAM_IPV6];
@@ -469,6 +470,18 @@ static BOOL _disableStatus = NO;
     [_tracker sendCustomHit:HTTPDNS_PERF_IPSELECTION duration:0 properties:extProperties];
     
 }
+
++ (void)bizIPv6Enable {
+    if (_disableStatus) {
+        return;
+    }
+    NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
+    @try {
+        [extProperties setObject:@(1) forKey:HTTPDNS_HIT_PARAM_ENABLE];
+    } @catch (NSException *e) {}
+    [_tracker sendCustomHit:HTTPDNS_BIZ_IPV6_ENABLE duration:0 properties:extProperties];
+}
+
 + (NSString *)srvAddrFromIndex:(NSInteger)index {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *srv = [scheduleCenter getActivatedServerIPWithIndex:index];

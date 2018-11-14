@@ -23,7 +23,6 @@
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog.h"
 #import "HttpdnsConfig.h"
-#import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsRequestScheduler_Internal.h"
@@ -32,7 +31,9 @@
 #import "AlicloudHttpDNS.h"
 #import "HttpDnsHitService.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
-#import <AlicloudUtils/EMASTools.h>
+#import "HttpdnsIPv6Manager.h"
+
+#import <AlicloudUtils/AlicloudUtils.h>
 
 NSInteger const ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE = 10003;
 NSInteger const ALICLOUD_HTTPDNS_HTTP_COMMON_ERROR_CODE = 10004;
@@ -137,16 +138,20 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     NSString *hostName;
     NSArray *ips;
+    NSArray *ip6s;
     NSInteger ipsCount = 0;
     @try {
         hostName = [json objectForKey:@"host"];
         ips = [json objectForKey:@"ips"];
+        ip6s = [json objectForKey:@"ipsv6"];
         ipsCount = [ips count];
     } @catch (NSException *exception) {}
     if (![HttpdnsUtil isValidArray:ips] || ![HttpdnsUtil isValidString:hostName]) {
         HttpdnsLogDebug("IP list is empty for host %@", hostName);
         return nil;
     }
+    
+    HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
     NSMutableArray *ipArray = [[NSMutableArray alloc] init];
     for (NSString *ip in ips) {
         if (![HttpdnsUtil isValidString:ip]) {
@@ -157,13 +162,31 @@ static NSURLSession *_resolveHOSTSession = nil;
         [ipObject setIp:[[AlicloudIPv6Adapter getInstance] handleIpv4Address:ip]];
         [ipArray addObject:ipObject];
     }
-    HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
+    
+    // 处理IPv6解析结果
+    NSMutableArray *ip6Array = [[NSMutableArray alloc] init];
+    if ([EMASTools isValidArray:ip6s]) {
+        for (NSString *ipv6 in ip6s) {
+            if (![EMASTools isValidString:ipv6]) {
+                continue;
+            }
+            HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
+            [ipObject setIp:ipv6];
+            [ip6Array addObject:ipObject];
+        }
+        [[HttpdnsIPv6Manager sharedInstance] storeIPv6ResolveRes:ip6Array forHost:hostName];
+    }
+    
     [hostObject setHostName:hostName];
     [hostObject setIps:ipArray];
     [hostObject setTTL:[[json objectForKey:@"ttl"] longLongValue]];
     [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
     [hostObject setQueryingState:NO];
-    HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@", [hostObject getHostName], [hostObject getTTL], ipArray);
+    if (![EMASTools isValidArray:ip6Array]) {
+        HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@", [hostObject getHostName], [hostObject getTTL], ipArray);
+    } else {
+        HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@ ip6s: %@", [hostObject getHostName], [hostObject getTTL], ipArray, ip6Array);
+    }
     return hostObject;
 }
 
@@ -224,6 +247,11 @@ static NSURLSession *_resolveHOSTSession = nil;
         }
     }
     
+    // 开启IPv6解析结果后，URL处理
+    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        url = [[HttpdnsIPv6Manager sharedInstance] assembleIPv6ResultURL:url];
+    }
+    
     return url;
 }
 
@@ -244,7 +272,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     NSError *outError = nil;
     if (error != NULL) {
-       outError = (*error);
+        outError = (*error);
     }
     BOOL success = !outError;
     BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];

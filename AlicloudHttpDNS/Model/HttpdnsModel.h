@@ -25,8 +25,6 @@
 
 @property (nonatomic, copy, getter=getIpString, setter=setIp:) NSString *ip;
 
-//+ (NSArray<HttpdnsIpObject *> *)IPObjectsFromIPs:(NSArray<NSString *> *)IPs;
-
 @end
 
 @interface HttpdnsHostObject : NSObject<NSCoding>

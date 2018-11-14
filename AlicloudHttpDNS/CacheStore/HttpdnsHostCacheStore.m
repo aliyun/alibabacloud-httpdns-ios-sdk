@@ -61,7 +61,7 @@
         
         HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore new];
         
-        if (!hostRecord.IPs ||hostRecord.IPs.count == 0 ) {
+        if (!hostRecord.IPs || hostRecord.IPs.count == 0) {
             //删除记录，此时hostRecord.hostRecordId为nil，不能依据Id删，要先从数据库里拿id，再依据id删。
             NSArray<NSNumber *> *ids = [self hostRecordIdsForHost:hostRecord.host];
             [self deleteHostRecordAndItsIPsWithHostRecordIDs:ids];
