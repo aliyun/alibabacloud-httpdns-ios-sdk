@@ -363,6 +363,9 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (NSString *)getIPv6ByHostAsync:(NSString *)host {
+    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        return nil;
+    }
     NSArray *ips = [self getIPv6sByHostAsync:host];
     NSString *ip = nil;
     if (ips != nil && ips.count > 0) {
@@ -394,14 +397,14 @@ static HttpDnsService * _httpDnsClient = nil;
     
     HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO];
     if (hostObject) {
-        NSArray *ipsObject = [hostObject getIp6s];
-        NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
-        if (ipsObject && [ipsObject count] > 0) {
-            for (HttpdnsIpObject *ipObject in ipsObject) {
-                [ipsArray addObject:[ipObject getIpString]];
+        NSArray *ip6sObject = [hostObject getIp6s];
+        NSMutableArray *ip6sArray = [[NSMutableArray alloc] init];
+        if (ip6sObject && [ip6sObject count] > 0) {
+            for (HttpdnsIpObject *ip6Object in ip6sObject) {
+                [ip6sArray addObject:[ip6Object getIpString]];
             }
             [self bizPerfUserGetIPWithHost:host success:YES];
-            return ipsArray;
+            return ip6sArray;
         }
     }
     [self bizPerfUserGetIPWithHost:host success:NO];

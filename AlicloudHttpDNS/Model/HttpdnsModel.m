@@ -105,35 +105,41 @@
     [hostObject setLastLookupTime:[hostRecord.createAt timeIntervalSince1970]];
     [hostObject setTTL:hostRecord.TTL];
     // 筛选IPv6地址
-    NSMutableArray *allIps = [NSMutableArray arrayWithArray:hostRecord.IPs];
-    NSMutableArray *ip6s = [NSMutableArray arrayWithCapacity:allIps.count];
-    for (NSString *ip in allIps) {
-        if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:ip]) {
-            [ip6s addObject:ip];
+    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        NSMutableArray *allIps = [NSMutableArray arrayWithArray:hostRecord.IPs];
+        NSMutableArray *ip6s = [NSMutableArray arrayWithCapacity:allIps.count];
+        for (NSString *ip in allIps) {
+            if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:ip]) {
+                [ip6s addObject:ip];
+            }
         }
+        if ([EMASTools isValidArray:ip6s]) {
+            [allIps removeObjectsInArray:ip6s];
+        }
+        hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:allIps];
+        hostObject.ip6s = [HttpdnsIpObject IPObjectsFromIPs:ip6s];
+    } else {
+        hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:hostRecord.IPs];
     }
-    if ([EMASTools isValidArray:ip6s]) {
-        [allIps removeObjectsInArray:ip6s];
-    }
-    hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:allIps];
-    hostObject.ip6s = [HttpdnsIpObject IPObjectsFromIPs:ip6s];
     return hostObject;
 }
 
 - (NSArray<NSString *> *)getIPStrings {
     NSArray<HttpdnsIpObject *> *IPRecords = [self getIps];
-    NSMutableArray<NSString *> *IPs = [NSMutableArray arrayWithCapacity:IPRecords.count];
+    NSMutableArray<NSString *> *IPs = [NSMutableArray array];
     for (HttpdnsIpObject *IPObject in IPRecords) {
         @try {
             [IPs addObject:IPObject.ip];
         } @catch (NSException *exception) {}
     }
     // 添加IPv6地址
-    NSArray<HttpdnsIpObject *> *IP6Records = [self getIp6s];
-    for (HttpdnsIpObject *IPObject in IP6Records) {
-        @try {
-            [IPs addObject:IPObject.ip];
-        } @catch (NSException *exception) {}
+    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        NSArray<HttpdnsIpObject *> *IP6Records = [self getIp6s];
+        for (HttpdnsIpObject *IPObject in IP6Records) {
+            @try {
+                [IPs addObject:IPObject.ip];
+            } @catch (NSException *exception) {}
+        }
     }
     return [IPs copy];
 }
