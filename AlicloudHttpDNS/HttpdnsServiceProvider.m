@@ -30,7 +30,6 @@
 #import "HttpdnsIPv6Manager.h"
 
 #import <AlicloudBeacon/AlicloudBeacon.h>
-#import <AlicloudUtils/AlicloudUtils.h>
 
 static NSDictionary *HTTPDNS_EXT_INFO = nil;
 static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
@@ -377,6 +376,7 @@ static HttpDnsService * _httpDnsClient = nil;
 - (NSArray *)getIPv6sByHostAsync:(NSString *)host {
     // 判断是否可以获取IPv6解析结果
     if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        HttpdnsLogDebug("IPv6 resolve is disabled, return.");
         return nil;
     }
     

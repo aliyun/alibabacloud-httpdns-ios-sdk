@@ -339,10 +339,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
  */
 - (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     NSDictionary *userInfo = error.userInfo;
-    NSString *srvAddr = [[HttpdnsScheduleCenter sharedInstance] getActivatedServerIPWithIndex:activatedServerIPIndex];
-    [HttpDnsHitService bizErrSrvWithSrvAddr:srvAddr
-                                    errCode:error.code
-                                     errMsg:error.description];
+    [HttpDnsHitService bizErrSrvWithSrvAddrIndex:activatedServerIPIndex errCode:error.code errMsg:error.description];
     //403 ServiceLevelDeny 错误强制更新，不触发disable机制。
     BOOL isServiceLevelDeny;
     @try {
