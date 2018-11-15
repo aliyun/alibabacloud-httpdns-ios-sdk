@@ -253,7 +253,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [old setLastLookupTime:lastLookupTime];
             [old setIps:IPObjects];
             [old setQueryingState:NO];
-            if ([EMASTools isValidArray:IPObjects]) {
+            if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
                 [old setIp6s:IP6Objects];
             }
             HttpdnsLogDebug("Update %@: %@", hostName, result);
@@ -264,7 +264,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [hostObject setTTL:TTL];
             [hostObject setIps:IPObjects];
             [hostObject setQueryingState:NO];
-            if ([EMASTools isValidArray:IPObjects]) {
+            if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
                 [hostObject setIp6s:IP6Objects];
             }
             HttpdnsLogDebug("New resolved item: %@: %@", host, result);

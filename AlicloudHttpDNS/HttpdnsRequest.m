@@ -160,25 +160,25 @@ static NSURLSession *_resolveHOSTSession = nil;
         [ipObject setIp:[[AlicloudIPv6Adapter getInstance] handleIpv4Address:ip]];
         [ipArray addObject:ipObject];
     }
-    
     // 处理IPv6解析结果
     NSMutableArray *ip6Array = nil;
-    if ([EMASTools isValidArray:ip6s]) {
-        ip6Array = [[NSMutableArray alloc] init];
-        for (NSString *ipv6 in ip6s) {
-            if (![EMASTools isValidString:ipv6]) {
-                continue;
+    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        if ([EMASTools isValidArray:ip6s]) {
+            ip6Array = [[NSMutableArray alloc] init];
+            for (NSString *ipv6 in ip6s) {
+                if (![EMASTools isValidString:ipv6]) {
+                    continue;
+                }
+                HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
+                [ipObject setIp:ipv6];
+                [ip6Array addObject:ipObject];
             }
-            HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
-            [ipObject setIp:ipv6];
-            [ip6Array addObject:ipObject];
+        }
+        
+        if ([EMASTools isValidArray:ip6Array]) {
+            [hostObject setIp6s:ip6Array];
         }
     }
-    
-    if ([EMASTools isValidArray:ip6Array]) {
-        [hostObject setIp6s:ip6Array];
-    }
-    
     [hostObject setHostName:hostName];
     [hostObject setIps:ipArray];
     [hostObject setTTL:[[json objectForKey:@"ttl"] longLongValue]];
