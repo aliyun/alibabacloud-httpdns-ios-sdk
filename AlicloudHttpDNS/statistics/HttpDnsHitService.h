@@ -31,9 +31,9 @@
                     errCode:(NSInteger)errCode
                      errMsg:(NSString *)errMsg;
 
-+ (void)bizErrSrvWithSrvAddr:(NSString *)srvAddr
-                     errCode:(NSInteger)errCode
-                      errMsg:(NSString *)errMsg;
++ (void)bizErrSrvWithSrvAddrIndex:(NSInteger)srvAddrIndex
+                          errCode:(NSInteger)errCode
+                           errMsg:(NSString *)errMsg;
 
 + (void)bizContinuousBootingCrashWithLog:(NSString *)log;
 

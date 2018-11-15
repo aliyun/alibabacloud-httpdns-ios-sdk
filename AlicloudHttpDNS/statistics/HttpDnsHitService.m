@@ -235,9 +235,9 @@ static BOOL _disableStatus = NO;
     [_tracker sendCustomHit:HTTPDNS_ERR_SC duration:0 properties:extProperties];
 }
 
-+ (void)bizErrSrvWithSrvAddr:(NSString *)srvAddr
-                     errCode:(NSInteger)errCode
-                      errMsg:(NSString *)errMsg {
++ (void)bizErrSrvWithSrvAddrIndex:(NSInteger)srvAddrIndex
+                          errCode:(NSInteger)errCode
+                           errMsg:(NSString *)errMsg {
     if (_disableStatus) {
         return;
     }
@@ -246,7 +246,7 @@ static BOOL _disableStatus = NO;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
     @try {
-        [extProperties setObject:srvAddr forKey:HTTPDNS_HIT_PARAM_SRVADDR];
+        [extProperties setObject:[self srvAddrFromIndex:srvAddrIndex] forKey:HTTPDNS_HIT_PARAM_SRVADDR];
         [extProperties setObject:@(errCode) forKey:HTTPDNS_HIT_PARAM_ERRCODE];
         [extProperties setObject:errMsg forKey:HTTPDNS_HIT_PARAM_ERRMSG];
         [extProperties setObject:[self isIPV6Object] forKey:HTTPDNS_HIT_PARAM_IPV6];

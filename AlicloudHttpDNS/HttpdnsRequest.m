@@ -162,8 +162,9 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     
     // 处理IPv6解析结果
-    NSMutableArray *ip6Array = [[NSMutableArray alloc] init];
+    NSMutableArray *ip6Array = nil;
     if ([EMASTools isValidArray:ip6s]) {
+        ip6Array = [[NSMutableArray alloc] init];
         for (NSString *ipv6 in ip6s) {
             if (![EMASTools isValidString:ipv6]) {
                 continue;
