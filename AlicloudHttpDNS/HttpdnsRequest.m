@@ -173,7 +173,10 @@ static NSURLSession *_resolveHOSTSession = nil;
             [ipObject setIp:ipv6];
             [ip6Array addObject:ipObject];
         }
-        [[HttpdnsIPv6Manager sharedInstance] storeIPv6ResolveRes:ip6Array forHost:hostName];
+    }
+    
+    if ([EMASTools isValidArray:ip6Array]) {
+        [hostObject setIp6s:ip6Array];
     }
     
     [hostObject setHostName:hostName];

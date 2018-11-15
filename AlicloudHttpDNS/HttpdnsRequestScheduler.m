@@ -228,17 +228,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     return result;
 }
 
-- (NSArray *)getIPv6ObjectArrayForHost:(NSString *)host {
-    NSArray *ipv6ObjectArray = [[HttpdnsIPv6Manager sharedInstance] getIPv6ObjectArrayForHost:host];
-    HttpdnsHostObject *hostObject = [self hostObjectFromCacheForHostName:host];
-    if (![EMASTools isValidArray:ipv6ObjectArray] ||
-        !hostObject ||
-        (!_isExpiredIPEnabled && [hostObject isExpired])) {
-        return nil;
-    }
-    return ipv6ObjectArray;
-}
-
 - (void)bizPerfGetIPWithHost:(NSString *)host
                          success:(BOOL)success {
     BOOL cachedIPEnabled = [self _getCachedIPEnabled];
@@ -258,11 +247,15 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         int64_t lastLookupTime = [result getLastLookupTime];
         NSArray<NSString *> *IPStrings = [result getIPStrings];
         NSArray<HttpdnsIpObject *> *IPObjects = [result getIps];
+        NSArray<HttpdnsIpObject *> *IP6Objects = [result getIp6s];
         if (old) {
             [old setTTL:TTL];
             [old setLastLookupTime:lastLookupTime];
             [old setIps:IPObjects];
             [old setQueryingState:NO];
+            if ([EMASTools isValidArray:IPObjects]) {
+                [old setIp6s:IP6Objects];
+            }
             HttpdnsLogDebug("Update %@: %@", hostName, result);
         } else {
             HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
@@ -271,6 +264,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [hostObject setTTL:TTL];
             [hostObject setIps:IPObjects];
             [hostObject setQueryingState:NO];
+            if ([EMASTools isValidArray:IPObjects]) {
+                [hostObject setIp6s:IP6Objects];
+            }
             HttpdnsLogDebug("New resolved item: %@: %@", host, result);
             @synchronized(self) {
                 [_hostManagerDict setObject:hostObject forKey:host];

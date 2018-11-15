@@ -61,6 +61,7 @@
     _lastLookupTime = 0;
     _ttl = -1;
     _ips = nil;
+    _ip6s = nil;
     _queryingState = NO;
     return self;
 }
@@ -71,6 +72,7 @@
         _lastLookupTime = [aDecoder decodeInt64ForKey:@"lastLookupTime"];
         _ttl = [aDecoder decodeInt64ForKey:@"ttl"];
         _ips = [aDecoder decodeObjectForKey:@"ips"];
+        _ip6s = [aDecoder decodeObjectForKey:@"ip6s"];
         _queryingState = [aDecoder decodeBoolForKey:@"queryingState"];
     }
     return self;
@@ -81,6 +83,7 @@
     [aCoder encodeInt64:_lastLookupTime forKey:@"lastLookupTime"];
     [aCoder encodeInt64:_ttl forKey:@"ttl"];
     [aCoder encodeObject:_ips forKey:@"ips"];
+    [aCoder encodeObject:_ip6s forKey:@"ip6s"];
     [aCoder encodeBool:_queryingState forKey:@"queryingState"];
 }
 
@@ -111,9 +114,9 @@
     }
     if ([EMASTools isValidArray:ip6s]) {
         [allIps removeObjectsInArray:ip6s];
-        [[HttpdnsIPv6Manager sharedInstance] storeIPv6ResolveRes:[HttpdnsIpObject IPObjectsFromIPs:ip6s] forHost:hostRecord.host];
     }
     hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:allIps];
+    hostObject.ip6s = [HttpdnsIpObject IPObjectsFromIPs:ip6s];
     return hostObject;
 }
 
@@ -126,16 +129,23 @@
         } @catch (NSException *exception) {}
     }
     // 添加IPv6地址
-    NSArray<NSString *> *ip6s = [[HttpdnsIPv6Manager sharedInstance] getIP6StringsByHost:_hostName];
-    if ([EMASTools isValidArray:ip6s]) {
-        [IPs addObjectsFromArray:ip6s];
+    NSArray<HttpdnsIpObject *> *IP6Records = [self getIp6s];
+    for (HttpdnsIpObject *IPObject in IP6Records) {
+        @try {
+            [IPs addObject:IPObject.ip];
+        } @catch (NSException *exception) {}
     }
     return [IPs copy];
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld queryingState = %@",
-            _hostName, _ips, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO"];
+    if (![EMASTools isValidArray:_ip6s]) {
+        return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld queryingState = %@",
+                _hostName, _ips, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO"];
+    } else {
+        return [NSString stringWithFormat:@"Host = %@ ips = %@ ip6s = %@ lastLookup = %lld ttl = %lld queryingState = %@",
+                _hostName, _ips, _ip6s, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO"];
+    }
 }
 
 @end

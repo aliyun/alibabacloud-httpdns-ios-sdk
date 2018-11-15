@@ -374,25 +374,37 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (NSArray *)getIPv6sByHostAsync:(NSString *)host {
-    // 判断是否可以获取IPv6解析结果
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        HttpdnsLogDebug("IPv6 resolve is disabled, return.");
+    if ([self.delegate shouldDegradeHTTPDNS:host]) {
         return nil;
     }
     
-    [self getIpsByHostAsync:host];
+    if (!host) {
+        return nil;
+    }
     
-    NSArray *ip6ObjectArray = [_requestScheduler getIPv6ObjectArrayForHost:host];
+    if ([HttpdnsUtil isAnIP:host]) {
+        HttpdnsLogDebug("The host is just an IP.");
+        return [NSArray arrayWithObjects:host, nil];
+    }
     
-    if (ip6ObjectArray) {
+    if (![HttpdnsUtil isAHost:host]) {
+        HttpdnsLogDebug("The host is illegal.");
+        return nil;
+    }
+    
+    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO];
+    if (hostObject) {
+        NSArray *ipsObject = [hostObject getIp6s];
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
-        if (ip6ObjectArray && [ip6ObjectArray count] > 0) {
-            for (HttpdnsIpObject *ipObject in ip6ObjectArray) {
+        if (ipsObject && [ipsObject count] > 0) {
+            for (HttpdnsIpObject *ipObject in ipsObject) {
                 [ipsArray addObject:[ipObject getIpString]];
             }
+            [self bizPerfUserGetIPWithHost:host success:YES];
             return ipsArray;
         }
     }
+    [self bizPerfUserGetIPWithHost:host success:NO];
     HttpdnsLogDebug("No available IP cached for %@", host);
     return nil;
 }

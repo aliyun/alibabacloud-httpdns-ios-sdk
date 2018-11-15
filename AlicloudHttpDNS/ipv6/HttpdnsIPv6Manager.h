@@ -28,19 +28,4 @@
  */
 - (BOOL)isAbleToResolveIPv6Result;
 
-/**
- 存储IPv6解析结果
-
- @param ipv6Array IPv6解析结果数组
- @param host 域名
- */
-- (void)storeIPv6ResolveRes:(NSArray<HttpdnsIpObject *> *)ipv6Array forHost:(NSString *)host;
-
-/**
- 获取IPv6解析结果数组
- */
-- (NSArray<HttpdnsIpObject *> *)getIPv6ObjectArrayForHost:(NSString *)host;
-
-- (NSArray<NSString *> *)getIP6StringsByHost:(NSString *)host;
-
 @end
