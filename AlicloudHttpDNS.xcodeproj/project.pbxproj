@@ -14,6 +14,7 @@
 		2197CACB1BC7B3D400BDB65B /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB91BC7B3D400BDB65B /* HttpdnsRequest.m */; };
 		2197CACD1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABB1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m */; };
 		2197CAD11BC7B3D400BDB65B /* HttpdnsUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */; };
+		4A84996C219EA23500D82C95 /* IPv6ResTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A84996B219EA23500D82C95 /* IPv6ResTests.m */; };
 		4AD90CA22138EC21008ECE64 /* HttpdnsIPv6Manager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AD90CA02138EC21008ECE64 /* HttpdnsIPv6Manager.h */; };
 		4AD90CA32138EC21008ECE64 /* HttpdnsIPv6Manager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD90CA12138EC21008ECE64 /* HttpdnsIPv6Manager.m */; };
 		4AD90CA42138EC21008ECE64 /* HttpdnsIPv6Manager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD90CA12138EC21008ECE64 /* HttpdnsIPv6Manager.m */; };
@@ -177,6 +178,7 @@
 		2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsServiceProvider.m; sourceTree = "<group>"; };
 		2197CABE1BC7B3D400BDB65B /* HttpdnsUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsUtil.h; sourceTree = "<group>"; };
 		2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtil.m; sourceTree = "<group>"; };
+		4A84996B219EA23500D82C95 /* IPv6ResTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IPv6ResTests.m; sourceTree = "<group>"; };
 		4AD90CA02138EC21008ECE64 /* HttpdnsIPv6Manager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPv6Manager.h; sourceTree = "<group>"; };
 		4AD90CA12138EC21008ECE64 /* HttpdnsIPv6Manager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsIPv6Manager.m; sourceTree = "<group>"; };
 		4AF4AB60211439A600D712DF /* AlicloudHttpDNSTestDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlicloudHttpDNSTestDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -385,6 +387,7 @@
 			isa = PBXGroup;
 			children = (
 				9A5914751EA07EA700A7ED28 /* HttpdnsRequestTest.m */,
+				4A84996B219EA23500D82C95 /* IPv6ResTests.m */,
 				9A5914761EA07EA700A7ED28 /* NetworkManager.h */,
 				9A5914771EA07EA700A7ED28 /* NetworkManager.m */,
 				9A59147A1EA07EA700A7ED28 /* ScheduleCenterTestHelper.h */,
@@ -739,6 +742,7 @@
 				9A5D5E2B1E9D027200CAC3A6 /* HttpdnsScheduleCenter.m in Sources */,
 				9AF9A6021EC4CFE20018063B /* HttpdnsIPCacheStore.m in Sources */,
 				9AE63A0A1ECDAB3A00F9C723 /* HttpdnsResultSet.m in Sources */,
+				4A84996C219EA23500D82C95 /* IPv6ResTests.m in Sources */,
 				4AF5AB831DCB332800206DD8 /* HttpdnsConfig.m in Sources */,
 				9AE63A071ECDAB3A00F9C723 /* HttpdnsDatabaseAdditions.m in Sources */,
 				4AF5AB841DCB332800206DD8 /* HttpdnsLog.m in Sources */,
