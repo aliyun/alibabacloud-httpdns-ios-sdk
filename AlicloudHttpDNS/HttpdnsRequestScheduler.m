@@ -193,7 +193,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             result.hostName = host;
             result.ips = @[];
             [result setQueryingState:YES];
-            [_hostManagerDict setObject:result forKey:host];
+            if ([EMASTools isValidString:host] && result) {
+                [_hostManagerDict setObject:result forKey:host];
+            }
         } else if (([result getIps].count == 0) && result.isQuerying ) {
             HttpdnsLogDebug("%@ queryingState: %d", host, [result isQuerying]);
             return nil;
@@ -269,7 +271,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             }
             HttpdnsLogDebug("New resolved item: %@: %@", host, result);
             @synchronized(self) {
-                [_hostManagerDict setObject:hostObject forKey:host];
+                if ([EMASTools isValidString:hostObject] && hostObject) {
+                    [_hostManagerDict setObject:hostObject forKey:host];
+                }
             }
         }
         [self cacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings TTL:TTL];
@@ -705,8 +709,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             HttpdnsHostObject *hostObject = [HttpdnsHostObject hostObjectWithHostRecord:hostRecord];
             //从DB缓存中加载到内存里的数据，此时不会出现过期的情况，TTL时间后过期。
             [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
-            [_hostManagerDict setObject:hostObject forKey:host];
-            
+            if ([EMASTools isValidString:host] && hostObject) {
+                [_hostManagerDict setObject:hostObject forKey:host];
+            }
             [self aysncUpdateIPRankingWithResult:hostObject forHost:host];
         }
     });
