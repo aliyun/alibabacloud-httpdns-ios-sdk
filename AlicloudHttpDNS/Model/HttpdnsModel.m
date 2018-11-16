@@ -105,22 +105,18 @@
     [hostObject setLastLookupTime:[hostRecord.createAt timeIntervalSince1970]];
     [hostObject setTTL:hostRecord.TTL];
     // 筛选IPv6地址
-    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        NSMutableArray *allIps = [NSMutableArray arrayWithArray:hostRecord.IPs];
-        NSMutableArray *ip6s = [NSMutableArray arrayWithCapacity:allIps.count];
-        for (NSString *ip in allIps) {
-            if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:ip]) {
-                [ip6s addObject:ip];
-            }
+    NSMutableArray *allIps = [NSMutableArray arrayWithArray:hostRecord.IPs];
+    NSMutableArray *ip6s = [NSMutableArray arrayWithCapacity:allIps.count];
+    for (NSString *ip in allIps) {
+        if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:ip]) {
+            [ip6s addObject:ip];
         }
-        if ([EMASTools isValidArray:ip6s]) {
-            [allIps removeObjectsInArray:ip6s];
-        }
-        hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:allIps];
-        hostObject.ip6s = [HttpdnsIpObject IPObjectsFromIPs:ip6s];
-    } else {
-        hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:hostRecord.IPs];
     }
+    if ([EMASTools isValidArray:ip6s]) {
+        [allIps removeObjectsInArray:ip6s];
+        hostObject.ip6s = [HttpdnsIpObject IPObjectsFromIPs:ip6s];
+    }
+    hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:allIps];
     return hostObject;
 }
 
