@@ -12,6 +12,9 @@
 
 #import <AlicloudUtils/AlicloudIPv6Adapter.h>
 
+NSArray *ipv4HostArray = nil;
+NSArray *ipv6HostArray = nil;
+
 @interface ViewController ()
 
 @property (nonatomic, strong) HttpDnsService *service;
@@ -25,9 +28,19 @@
     
     NSString *sessionId = [_service getSessionId];
     NSLog(@"Get sessionId: %@", sessionId);
+    
+    for (NSString *ipv4Host in ipv4HostArray) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+            [_service getIpByHostAsync:ipv4Host];
+        });
+    }
 }
 
 - (IBAction)onHost2:(id)sender {
+    for (NSString *ipv4Host in ipv4HostArray) {
+        NSString *ipRes = [_service getIpByHostAsync:ipv4Host];
+        NSLog(@"host: %@, ip: %@", ipv4Host, ipRes);
+    }
 }
 
 // 开启IPv6解析结果
@@ -100,6 +113,39 @@
 //        end = [self currentTimeInMillis];
 //        NSLog(@"duration: %lld", end - start);
 //    }
+    
+    ipv4HostArray = @[
+                      @"m.u17.com",
+                      @"live-dev-cstest.fzzqxf.com",
+                      @"ios-dev-cstest.fzzqxf.com",
+                      @"gateway.vtechl1.com",
+                      @"www.163.com",
+                      @"www.douban.com",
+                      @"api.thekillboxgame.com",
+                      @"data.zhibo8.cc",
+                      @"www.12306.cn",
+                      @"t.yunjiweidian.com",
+                      @"dca.qiumibao.com",
+                      @"home.cochat.lenovo.com",
+                      @"ra.namibox.com",
+                      @"namibox.com",
+                      @"feature.yoho.cn",
+                      @"image2.benlailife.com",
+                      @"dou.bz",
+                      @"book.douban.com",
+                      @"cdn.yoho.cn",
+                      @"gw.alicdn.com",
+                      @"www.taobao.com",
+                      @"www.apple.com",
+                      @"guang.m.yohobuy.com",
+                      @"www.tmall.com",
+                      @"www.aliyun.com"
+                      ];
+    ipv6HostArray = @[
+                      @"tv6.ustc.edu.cn",
+                      @"ipv6.sjtu.edu.cn"
+                      ];
+    
 }
 
 - (long long)currentTimeInMillis {
