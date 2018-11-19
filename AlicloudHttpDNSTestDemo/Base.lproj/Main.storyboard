@@ -22,9 +22,9 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Grh-AF-Ffi">
-                                <rect key="frame" x="167" y="156" width="40" height="30"/>
+                                <rect key="frame" x="141" y="156" width="92" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Host1"/>
+                                <state key="normal" title="并发解析域名"/>
                                 <connections>
                                     <action selector="onHost1:" destination="BYZ-38-t0r" eventType="touchUpInside" id="42H-vO-YcA"/>
                                 </connections>

@@ -183,6 +183,13 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     @synchronized(self) {
         result = [self hostObjectFromCacheForHostName:host];
         HttpdnsLogDebug(@"Get from cache: %@", result);
+        /*
+         缓存处理逻辑：
+         1. 没有缓存对象；
+         2. 有缓存对象 && 缓存v4 IP数=0 && 正在发起查询请求；
+         3. 有缓存对象 && 缓存v4 IP数!=0 && TTL过期有效/无效；
+         4. 其他。
+         */
         if (result == nil) {
             HttpdnsLogDebug("No available cache for %@ yet.", host);
             if ([self isHostsNumberLimitReached]) {
