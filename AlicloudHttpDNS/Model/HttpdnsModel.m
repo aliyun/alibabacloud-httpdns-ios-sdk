@@ -112,11 +112,13 @@
             [ip6s addObject:ip];
         }
     }
-    if ([EMASTools isValidArray:ip6s]) {
+    if (![EMASTools isValidArray:ip6s]) {
+        hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:hostRecord.IPs];
+    } else {
         [allIps removeObjectsInArray:ip6s];
         hostObject.ip6s = [HttpdnsIpObject IPObjectsFromIPs:ip6s];
+        hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:allIps];
     }
-    hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:allIps];
     return hostObject;
 }
 
