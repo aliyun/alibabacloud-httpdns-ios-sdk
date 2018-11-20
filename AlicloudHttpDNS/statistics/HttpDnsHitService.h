@@ -68,7 +68,7 @@
                 selectedIpCost:(NSNumber *)selectedIpCost
                        ipCount:(NSNumber *)ipCount;
 
-+ (void)bizIPv6Enable;
++ (void)bizIPv6Enable:(BOOL)enable;
 
 @end
 
