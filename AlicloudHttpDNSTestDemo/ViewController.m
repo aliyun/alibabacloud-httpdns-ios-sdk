@@ -28,12 +28,6 @@ NSArray *ipv6HostArray = nil;
     
     NSString *sessionId = [_service getSessionId];
     NSLog(@"Get sessionId: %@", sessionId);
-    
-    for (NSString *ipv4Host in ipv4HostArray) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-            [_service getIpByHostAsync:ipv4Host];
-        });
-    }
 }
 
 - (IBAction)onHost2:(id)sender {
@@ -81,6 +75,7 @@ NSArray *ipv6HostArray = nil;
     
     _service = [[HttpDnsService alloc] autoInit];
     [_service setLogEnabled:YES];
+    [_service enableIPv6:YES];
     
 //    for (int i = 0; i < 100; i++) {
 //        dispatch_async(dispatch_queue_create(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -146,6 +141,40 @@ NSArray *ipv6HostArray = nil;
                       @"ipv6.sjtu.edu.cn"
                       ];
     
+    [self testConcurrentResolveIPv4Hosts];
+    [self testConcurrentResolveIPv6Hosts];
+    
+}
+
+- (void)testConcurrentResolveIPv4Hosts {
+    for (NSString *ipv4Host in ipv4HostArray) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+            [_service getIpByHostAsync:ipv4Host];
+        });
+    }
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        sleep(60);
+        for (NSString *ipv4Host in ipv4HostArray) {
+            NSString *ip = [_service getIpByHostAsync:ipv4Host];
+            NSLog(@"resolve v4 result: [%@] - [%@]", ipv4Host, ip);
+        }
+    });
+}
+
+- (void)testConcurrentResolveIPv6Hosts {
+    for (NSString *ipv6Host in ipv6HostArray) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+            [_service getIpByHostAsync:ipv6Host];
+        });
+    }
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        sleep(60);
+        for (NSString *ipv6Host in ipv6HostArray) {
+            NSString *ip = [_service getIPv6ByHostAsync:ipv6Host];
+            NSLog(@"resolve v6 result: [%@] - [%@]", ipv6Host, ip);
+        }
+    });
 }
 
 - (long long)currentTimeInMillis {
