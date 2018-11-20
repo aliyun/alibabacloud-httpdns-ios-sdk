@@ -471,13 +471,13 @@ static BOOL _disableStatus = NO;
     
 }
 
-+ (void)bizIPv6Enable {
++ (void)bizIPv6Enable:(BOOL)enable {
     if (_disableStatus) {
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
     @try {
-        [extProperties setObject:@(1) forKey:HTTPDNS_HIT_PARAM_ENABLE];
+        [extProperties setObject:@(enable) forKey:HTTPDNS_HIT_PARAM_ENABLE];
     } @catch (NSException *e) {}
     [_tracker sendCustomHit:HTTPDNS_BIZ_IPV6_ENABLE duration:0 properties:extProperties];
 }

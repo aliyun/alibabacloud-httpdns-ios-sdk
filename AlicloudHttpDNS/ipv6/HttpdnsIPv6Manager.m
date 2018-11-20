@@ -47,7 +47,7 @@
 
 - (void)setIPv6ResultEnable:(BOOL)enable {
     _usersetIPv6ResultEnable = enable;
-    [HttpDnsHitService bizIPv6Enable];
+    [HttpDnsHitService bizIPv6Enable:enable];
 }
 
 - (NSString *)assembleIPv6ResultURL:(NSString *)originURL {
