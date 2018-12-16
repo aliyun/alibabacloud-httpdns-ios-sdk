@@ -34,6 +34,8 @@
 @property (nonatomic, strong, setter=setHostName:, getter=getHostName) NSString *hostName;
 @property (nonatomic, strong, setter=setIps:, getter=getIps) NSArray<HttpdnsIpObject *> *ips;
 @property (nonatomic, setter=setTTL:, getter=getTTL) int64_t ttl;
+// 标识是否从持久化缓存加载
+@property (nonatomic, assign, setter=setIsLoadFromDB:, getter=getIsLoadFromDB) BOOL isLoadFromDB;
 
 /*!
  * 查询成功后的本地时间戳
