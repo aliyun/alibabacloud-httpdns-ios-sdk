@@ -16,7 +16,7 @@
 #import "HttpdnsConstants.h"
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsUtil.h"
-#import "HttpdnsLog.h"
+#import "HttpdnsLog_Internal.h"
 #import "HttpdnsConstants.h"
 #import "UIApplication+ABSHTTPDNSSetting.h"
 

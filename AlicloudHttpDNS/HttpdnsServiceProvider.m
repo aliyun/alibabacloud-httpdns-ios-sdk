@@ -22,7 +22,7 @@
 #import "HttpdnsConfig.h"
 #import "HttpdnsModel.h"
 #import "HttpdnsUtil.h"
-#import "HttpdnsLog.h"
+#import "HttpdnsLog_Internal.h"
 #import <AlicloudUtils/AlicloudUtils.h>
 //#import <AlicloudUtils/EMASOptions.h>
 #import "AlicloudHttpDNS.h"
@@ -164,7 +164,7 @@ static HttpDnsService * _httpDnsClient = nil;
                 /* 检查打点开关 */
                 NSString *utStatus = [serviceStatus objectForKey:@"ut"];
                 if ([HttpdnsUtil isValidString:utStatus] && [utStatus isEqualToString:@"disabled"]) {
-                    HttpdnsLogDebug(@"Beacon [___httpdns_service___] - [ut] is disabled, disable hit service.");
+                    HttpdnsLogDebug("Beacon [___httpdns_service___] - [ut] is disabled, disable hit service.");
                     [HttpDnsHitService disableHitService];
                 }
                 
@@ -172,7 +172,7 @@ static HttpDnsService * _httpDnsClient = nil;
                 if ([HttpdnsUtil isValidString:ipRankingStatus] && [ipRankingStatus isEqualToString:@"enable"]) {
                     self.requestScheduler.IPRankingEnabled = YES;
                 } else {
-                    HttpdnsLogDebug(@"Beacon [___httpdns_service___] - [ip-ranking] is disabled, disable ip-ranking feature.");
+                    HttpdnsLogDebug("Beacon [___httpdns_service___] - [ip-ranking] is disabled, disable ip-ranking feature.");
                     self.requestScheduler.IPRankingEnabled = NO;
                 }
             }
@@ -354,6 +354,10 @@ static HttpDnsService * _httpDnsClient = nil;
         }
     }
     return IPRankingDataSource;
+}
+
+- (void)setLogHandler:(id<HttpdnsLoggerProtocol>)logHandler {
+    [HttpdnsLog setLogHandler:logHandler];
 }
 
 - (NSString *)getSessionId {

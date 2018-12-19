@@ -17,19 +17,40 @@
  * under the License.
  */
 
-#import <Foundation/Foundation.h>
+#import "HttpdnsLog_Internal.h"
 
-#define HttpdnsLogDebug(frmt, ...)\
-if ([HttpdnsLog isEnabled]) {\
-    NSLog((@"%s [Line %d] " frmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);\
+static BOOL HttpdnsLogIsEnabled = NO;
+static __weak id<HttpdnsLoggerProtocol> sLogHandler;
+
+@implementation HttpdnsLog
+
++ (void)enableLog {
+    HttpdnsLogIsEnabled = YES;
 }
 
-@interface HttpdnsLog : NSObject
++ (void)disableLog {
+    HttpdnsLogIsEnabled = NO;
+}
 
-+ (void)enableLog;
++ (BOOL)isEnabled {
+    return HttpdnsLogIsEnabled;
+}
 
-+ (void)disableLog;
++ (void)setLogHandler:(id<HttpdnsLoggerProtocol>)handler {
+    SEL sel = NSSelectorFromString(@"log:");
+    if (handler && [handler respondsToSelector:sel]) {
+        sLogHandler = handler;
+    }
+}
 
-+ (BOOL)isEnabled;
++ (BOOL)validLogHandler {
+    return (sLogHandler != nil);
+}
+
++ (void)outputToLogHandler:(NSString *)logStr {
+    if (sLogHandler) {
+        [sLogHandler log:logStr];
+    }
+}
 
 @end

@@ -19,7 +19,7 @@
 
 #import "HttpdnsScheduleCenter_Internal.h"
 #import "HttpdnsPersistenceUtils.h"
-#import "HttpdnsLog.h"
+#import "HttpdnsLog_Internal.h"
 #import "HttpdnsConstants.h"
 #import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsServiceProvider_Internal.h"
@@ -409,7 +409,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
                                ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_KEY : @(activatedServerIPIndex)
                                };
         BOOL success = [HttpdnsPersistenceUtils saveJSON:json toPath:self.activatedIPIndexPath];
-        HttpdnsLogDebug(@"HTTPDNS activated IP changes %@, index is %@", success ? @"succeeded" : @"failed", @(activatedServerIPIndex));
+        HttpdnsLogDebug("HTTPDNS activated IP changes %@, index is %@", success ? @"succeeded" : @"failed", @(activatedServerIPIndex));
     });
 }
 
