@@ -34,6 +34,7 @@
 #import "HttpdnsUtil.h"
 #import "HttpDnsHitService.h"
 #import "HttpdnsTCPSpeedTester.h"
+#import "HttpdnsgetNetworkInfoHelper.h"
 
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS = @"disable_status_key";
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME = @"disable_status";
@@ -195,10 +196,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         } else if (([result getIps].count == 0) && result.isQuerying ) {
             HttpdnsLogDebug("%@ queryingState: %d", host, [result isQuerying]);
             return nil;
-        }
-        else if ([result isExpired]) {
-            HttpdnsLogDebug("%@ is expired, queryingState: %d", host, [result isQuerying]);
-            if (_isExpiredIPEnabled) {
+        } else if ([result isExpired]) {
+            HttpdnsLogDebug("%@ is expired or from DB, queryingState: %d", host, [result isQuerying]);
+            if (_isExpiredIPEnabled || [result getIsLoadFromDB]) {
                 needToQuery = NO;
                 if (![result isQuerying]) {
                     [result setQueryingState:YES];
@@ -249,6 +249,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         if (old) {
             [old setTTL:TTL];
             [old setLastLookupTime:lastLookupTime];
+            [old setIsLoadFromDB:NO];
             [old setIps:IPObjects];
             [old setQueryingState:NO];
             HttpdnsLogDebug("Update %@: %@", hostName, result);
@@ -489,6 +490,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 - (void)networkChanged:(NSNotification *)notification {
     NSNumber *networkStatus = [notification object];
+    
+    [HttpdnsgetNetworkInfoHelper updateNetworkStatus:(AlicloudNetworkStatus)[networkStatus intValue]];
+    
     __block NSString *statusString = nil;
     switch ([networkStatus longValue]) {
         case 0:
@@ -675,7 +679,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 - (void)cleanAllHostMemoryCache {
     @synchronized(self) {
-    [_hostManagerDict removeAllObjects];
+        [_hostManagerDict removeAllObjects];
     }
 }
 
@@ -695,7 +699,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             //从DB缓存中加载到内存里的数据，此时不会出现过期的情况，TTL时间后过期。
             [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
             [_hostManagerDict setObject:hostObject forKey:host];
-            
+            // 清除持久化缓存
+            [hostCacheStore deleteHostRecordAndItsIPsWithHostRecordIDs:@[@(hostRecord.hostRecordId)]];
             [self aysncUpdateIPRankingWithResult:hostObject forHost:host];
         }
     });

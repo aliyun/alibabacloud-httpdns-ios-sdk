@@ -59,6 +59,7 @@
     _hostName = nil;
     _lastLookupTime = 0;
     _ttl = -1;
+    _isLoadFromDB = NO;
     _ips = nil;
     _queryingState = NO;
     return self;
@@ -88,6 +89,9 @@
         HttpdnsLogDebug("This should never happen!!!");
         return NO;
     }
+    if (_isLoadFromDB) {
+        return YES;
+    }
     int64_t currentEpoch = (int64_t)[[[NSDate alloc] init] timeIntervalSince1970];
     if (_lastLookupTime + _ttl <= currentEpoch) {
         return YES;
@@ -100,6 +104,7 @@
     [hostObject setHostName:hostRecord.host];
     [hostObject setLastLookupTime:[hostRecord.createAt timeIntervalSince1970]];
     [hostObject setTTL:hostRecord.TTL];
+    [hostObject setIsLoadFromDB:YES];
     hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:hostRecord.IPs];
     return hostObject;
 }
