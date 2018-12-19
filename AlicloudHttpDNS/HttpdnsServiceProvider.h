@@ -74,6 +74,8 @@
 
 - (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource;
 
+- (NSString *)getSessionId;
+
 @end
 
 @interface HttpDnsService (HttpdnsDeprecated)

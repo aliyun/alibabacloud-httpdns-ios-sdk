@@ -356,4 +356,8 @@ static HttpDnsService * _httpDnsClient = nil;
     return IPRankingDataSource;
 }
 
+- (NSString *)getSessionId {
+    return [HttpdnsUtil generateSessionID];
+}
+
 @end
