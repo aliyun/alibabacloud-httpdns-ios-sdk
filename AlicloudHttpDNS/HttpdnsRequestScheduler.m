@@ -22,7 +22,7 @@
 #import "HttpdnsRequest.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsUtil.h"
-#import "HttpdnsLog.h"
+#import "HttpdnsLog_Internal.h"
 #import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsServiceProvider_Internal.h"
@@ -158,7 +158,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                     HttpdnsLogDebug("%@ is expired, pre fetch again.", hostName);
                     [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
                 } else {
-                    HttpdnsLogDebug(@"%@ is omitted, expired: %d querying: %d", hostName, [hostObject isExpired], [hostObject isQuerying]);
+                    HttpdnsLogDebug("%@ is omitted, expired: %d querying: %d", hostName, [hostObject isExpired], [hostObject isQuerying]);
                     continue;
                 }
             }
@@ -181,7 +181,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     @synchronized(self) {
         result = [self hostObjectFromCacheForHostName:host];
-        HttpdnsLogDebug(@"Get from cache: %@", result);
+        HttpdnsLogDebug("Get from cache: %@", result);
         if (result == nil) {
             HttpdnsLogDebug("No available cache for %@ yet.", host);
             if ([self isHostsNumberLimitReached]) {
@@ -460,7 +460,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 - (BOOL)isHostsNumberLimitReached {
     if ([_hostManagerDict count] >= HTTPDNS_MAX_MANAGE_HOST_NUM) {
-        HttpdnsLogDebug(@"Can't handle more than %d hosts due to the software configuration.", HTTPDNS_MAX_MANAGE_HOST_NUM);
+        HttpdnsLogDebug("Can't handle more than %d hosts due to the software configuration.", HTTPDNS_MAX_MANAGE_HOST_NUM);
         return YES;
     }
     return NO;
@@ -509,7 +509,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             break;
     }
    
-    HttpdnsLogDebug(@"Network changed, status: %@(%ld), lastNetworkStatus: %ld", statusString, [networkStatus longValue], _lastNetworkStatus);
+    HttpdnsLogDebug("Network changed, status: %@(%ld), lastNetworkStatus: %ld", statusString, [networkStatus longValue], _lastNetworkStatus);
     if (_lastNetworkStatus != [networkStatus longValue]) {
         dispatch_async(_syncDispatchQueue, ^{
             if (![statusString isEqualToString:@"None"]) {
@@ -518,7 +518,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 //同步操作，防止网络请求成功，更新后，缓存数据再覆盖掉。
                 [self loadIPsFromCacheSyncIfNeeded];
                 if (_isPreResolveAfterNetworkChangedEnabled == YES) {
-                    HttpdnsLogDebug(@"Network changed, pre resolve for hosts: %@", hostArray);
+                    HttpdnsLogDebug("Network changed, pre resolve for hosts: %@", hostArray);
                     [self addPreResolveHosts:hostArray];
                 }
             }
@@ -549,7 +549,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 - (void)setServerDisable:(BOOL)serverDisable host:(NSString *)host {
     if (serverDisable) {
-        HttpdnsLogDebug(@"if set serverDisable to YES, you must set the activatedServerIPIndex");
+        HttpdnsLogDebug("if set serverDisable to YES, you must set the activatedServerIPIndex");
     }
     [self setServerDisable:serverDisable host:host activatedServerIPIndex:0];
 }
@@ -574,7 +574,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                            ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS : @(serverDisable)
                            };
     BOOL success = [HttpdnsPersistenceUtils saveJSON:json toPath:self.disableStatusPath];
-    HttpdnsLogDebug(@"HTTPDNS disable status changes %@", success ? @"succeeded" : @"failed");
+    HttpdnsLogDebug("HTTPDNS disable status changes %@", success ? @"succeeded" : @"failed");
     if (serverDisable) {
         HttpdnsLogDebug("HTTPDNS is disabled");
         [_asyncOperationQueue cancelAllOperations];

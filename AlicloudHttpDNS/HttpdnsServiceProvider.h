@@ -19,6 +19,7 @@
 
 #import <Foundation/Foundation.h>
 #import "HttpdnsDegradationDelegate.h"
+#import "HttpdnsLoggerDelegate.h"
 
 #define ALICLOUD_HTTPDNS_DEPRECATED(explain) __attribute__((deprecated(explain)))
 
@@ -73,6 +74,8 @@
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
 
 - (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource;
+
+- (void)setLogHandler:(id<HttpdnsLoggerProtocol>)logHandler;
 
 - (NSString *)getSessionId;
 

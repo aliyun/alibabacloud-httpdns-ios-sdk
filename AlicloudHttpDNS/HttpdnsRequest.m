@@ -21,7 +21,7 @@
 #import "HttpdnsModel.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsUtil.h"
-#import "HttpdnsLog.h"
+#import "HttpdnsLog_Internal.h"
 #import "HttpdnsConfig.h"
 #import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsPersistenceUtils.h"

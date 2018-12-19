@@ -20,7 +20,7 @@
 #import "HttpdnsModel.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsUtil.h"
-#import "HttpdnsLog.h"
+#import "HttpdnsLog_Internal.h"
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsIPRecord.h"
 

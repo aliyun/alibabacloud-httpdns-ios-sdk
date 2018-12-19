@@ -17,23 +17,14 @@
  * under the License.
  */
 
-#import "HttpdnsLog.h"
+#import <Foundation/Foundation.h>
 
+@interface HttpdnsLog : NSObject
 
-BOOL HttpdnsLogIsEnabled = NO;
++ (void)enableLog;
 
-@implementation HttpdnsLog
++ (void)disableLog;
 
-+ (void)enableLog {
-    HttpdnsLogIsEnabled = YES;
-}
-
-+ (void)disableLog {
-    HttpdnsLogIsEnabled = NO;
-}
-
-+ (BOOL)isEnabled {
-    return HttpdnsLogIsEnabled;
-}
++ (BOOL)isEnabled;
 
 @end
