@@ -9,6 +9,7 @@
 #import "ViewController.h"
 #import "HttpdnsServiceProvider.h"
 #import "HttpdnsUtil.h"
+#import "MyLoggerHandler.h"
 
 @interface ViewController ()
 
@@ -64,6 +65,9 @@
     NSLog(@"resStr: %@", resStr);
     resStr = [NSString stringWithFormat:@"%@-%@", originStr, @"test"];
     NSLog(@"resStr: %@", resStr);
+    
+    MyLoggerHandler *logHandler = [[MyLoggerHandler alloc] init];
+    [_service setLogHandler:logHandler];
 }
 
 - (long long)currentTimeInMillis {

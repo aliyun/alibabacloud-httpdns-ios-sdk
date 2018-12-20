@@ -9,7 +9,7 @@
 #import "HttpdnsHostCacheStore.h"
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
-#import "HttpdnsLog.h"
+#import "HttpdnsLog_Internal.h"
 #import "HttpdnsDatabaseMigrator.h"
 #import "HttpdnsHostCacheStoreSQL.h"
 #import "HttpdnsConstants.h"

@@ -57,4 +57,7 @@ FOUNDATION_EXTERN NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
 
 - (void)changeToNextServerIPIndexFromIPIndex:(NSInteger)IPIndex;
 
+- (void)setSDKDisableFromBeacon;
+- (void)clearSDKDisableFromBeacon;
+
 @end
