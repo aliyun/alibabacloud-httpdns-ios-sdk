@@ -93,8 +93,6 @@ static HttpDnsService * _httpDnsClient = nil;
         if ([HttpdnsUtil isValidString:secretKey]) {
             _httpDnsClient.secretKey = [secretKey copy];
         }
-        NSString *accountIdString = [NSString stringWithFormat:@"%@", @(accountID)];
-        [self shareInitWithAccountId:accountIdString];
     });
     return _httpDnsClient;
 }
@@ -155,7 +153,7 @@ static HttpDnsService * _httpDnsClient = nil;
 
     /* beacon */
     NSDictionary *extras = @{
-                             ALICLOUD_HTTPDNS_BEACON_REQUEST_PARAM_ACCOUNTID : [NSString stringWithFormat:@"%@", @(_accountID)]
+                             ALICLOUD_HTTPDNS_BEACON_REQUEST_PARAM_ACCOUNTID : accountId
                              };
     EMASBeaconService *beaconService =  [[EMASBeaconService alloc] initWithAppKey:HTTPDNS_BEACON_APPKEY
                                                                         appSecret:HTTPDNS_BEACON_APPSECRECT
@@ -207,6 +205,8 @@ static HttpDnsService * _httpDnsClient = nil;
 
 - (void)setAccountID:(int)accountID {
     _accountID = accountID;
+    NSString *accountIdString = [NSString stringWithFormat:@"%@", @(accountID)];
+    [self shareInitWithAccountId:accountIdString];
 }
 
 - (HttpdnsRequestScheduler *)requestScheduler {
