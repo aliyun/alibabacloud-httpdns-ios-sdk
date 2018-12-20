@@ -23,6 +23,15 @@
                                 onSuccess:(SDKCheckSuccessHandler)successHandler
                                   onCrash:(SDKCheckCrashHandler)crashHandler;
 
+- (void)registerSDKComponentAndStartCheck:(NSString *)sdkId
+                               sdkVersion:(NSString *)sdkVersion
+                                   appKey:(NSString *)appKey
+                                appSecret:(NSString *)appSecret
+                                   extras:(NSDictionary *)extras
+                        sdkCrashThreshold:(NSUInteger)crashTimesThreshold
+                                onSuccess:(SDKCheckSuccessHandler)successHandler
+                                  onCrash:(SDKCheckCrashHandler)crashHandler;
+
 @end
 
 #endif /* EMASSecurityModeManager_h */

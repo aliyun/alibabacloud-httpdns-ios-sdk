@@ -9,7 +9,7 @@
 #import "HttpdnsgetNetworkInfoHelper.h"
 #import <UIKit/UIKit.h>
 #import <SystemConfiguration/CaptiveNetwork.h>
-#import "HttpdnsLog.h"
+#import "HttpdnsLog_Internal.h"
 #import "HttpdnsUtil.h"
 
 typedef NS_ENUM(NSInteger, HttpdnsCarrierType) {
@@ -122,7 +122,7 @@ static dispatch_queue_t sWifiBssidQueue = 0;
                 sNetworkType = @"unknown";
                 break;
         }
-        HttpdnsLogDebug(@"Update network status: %d, network type: %@", status, sNetworkType);
+        HttpdnsLogDebug("Update network status: %d, network type: %@", status, sNetworkType);
     });
 }
 

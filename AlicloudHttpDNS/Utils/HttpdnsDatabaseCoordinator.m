@@ -9,7 +9,7 @@
 #import "HttpdnsDatabaseCoordinator.h"
 #import "HttpdnsDatabase.h"
 #import "HttpdnsDatabaseQueue.h"
-#import "HttpdnsLog.h"
+#import "HttpdnsLog_Internal.h"
 
 #import <libkern/OSAtomic.h>
 

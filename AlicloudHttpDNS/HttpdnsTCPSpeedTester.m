@@ -28,7 +28,7 @@
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsUtil.h"
 #import "HttpDnsHitService.h"
-#import "HttpdnsLog.h"
+#import "HttpdnsLog_Internal.h"
 
 static NSString *const testSpeedKey = @"testSpeed";
 static NSString *const ipKey = @"ip";
