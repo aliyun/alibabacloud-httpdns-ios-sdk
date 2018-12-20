@@ -9,13 +9,14 @@
 #import "HttpdnsLoggerDelegate.h"
 #import "HttpdnsLog.h"
 
+// logHandler输出日志，不受日志开关影响
 #define HttpdnsLogDebug(frmt, ...)\
+if ([HttpdnsLog validLogHandler]) {\
+    NSString *logFormat = [NSString stringWithFormat:@"%s", frmt];\
+    NSString *logStr = [NSString stringWithFormat:logFormat, ##__VA_ARGS__, nil];\
+    [HttpdnsLog outputToLogHandler:logStr];\
+}\
 if ([HttpdnsLog isEnabled]) {\
-    if ([HttpdnsLog validLogHandler]) {\
-        NSString *logFormat = [NSString stringWithFormat:@"%s", frmt];\
-        NSString *logStr = [NSString stringWithFormat:logFormat, ##__VA_ARGS__, nil];\
-        [HttpdnsLog outputToLogHandler:logStr];\
-    }\
     NSLog((@"%s [Line %d] " frmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);\
 }
 
