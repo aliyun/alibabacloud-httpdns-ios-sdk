@@ -16,20 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
+#import <AlicloudUtils/AlicloudUtils.h>
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsModel.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
-#import <AlicloudUtils/AlicloudUtils.h>
-//#import <AlicloudUtils/EMASOptions.h>
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsHostCacheStore.h"
-#import <AlicloudBeacon/AlicloudBeacon.h>
 #import "HttpDnsHitService.h"
 #import "HttpdnsConstants.h"
+#import "HttpdnsScheduleCenter.h"
 
 static NSDictionary *HTTPDNS_EXT_INFO = nil;
 static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
@@ -102,6 +100,9 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (void)setAuthCurrentTime:(NSUInteger)authCurrentTime {
+    if (![self checkServiceStatus]) {
+        return;
+    }
     dispatch_sync(_authTimeOffsetSyncDispatchQueue, ^{
         NSUInteger localTimeInterval = (NSUInteger)[[NSDate date] timeIntervalSince1970];
         _authTimeOffset = authCurrentTime - localTimeInterval;
@@ -153,14 +154,37 @@ static HttpDnsService * _httpDnsClient = nil;
     [HttpDnsHitService bizActiveHit];//新版日活打点
 
     /* beacon */
-    AlicloudBeaconService *beaconService =  [[AlicloudBeaconService alloc] initWithAppKey:HTTPDNS_BEACON_APPKEY appSecret:HTTPDNS_BEACON_APPSECRECT SDKVersion:HTTPDNS_IOS_SDK_VERSION SDKID:@"httpdns"];
+    NSDictionary *extras = @{
+                             ALICLOUD_HTTPDNS_BEACON_REQUEST_PARAM_ACCOUNTID : [NSString stringWithFormat:@"%@", @(_accountID)]
+                             };
+    EMASBeaconService *beaconService =  [[EMASBeaconService alloc] initWithAppKey:HTTPDNS_BEACON_APPKEY
+                                                                        appSecret:HTTPDNS_BEACON_APPSECRECT
+                                                                       SDKVersion:HTTPDNS_IOS_SDK_VERSION
+                                                                            SDKID:@"httpdns"
+                                                                        extension:extras];
     [beaconService enableLog:YES];
     [beaconService getBeaconConfigStringByKey:@"___httpdns_service___" completionHandler:^(NSString *result, NSError *error) {
         if ([HttpdnsUtil isValidString:result]) {
-            HttpdnsLogDebug("%@", result);
+            HttpdnsLogDebug("beacon result: %@", result);
             id jsonObj = [HttpdnsUtil convertJsonStringToObject:result];
             if ([HttpdnsUtil isValidDictionary:jsonObj]) {
                 NSDictionary *serviceStatus = jsonObj;
+                /**
+                 beacon result format:
+                 {
+                    "status": "xx"
+                    "ut": "xx"
+                    "ip-ranking": "xx"
+                 }
+                 **/
+                NSString *sdkStatus = [serviceStatus objectForKey:ALICLOUD_HTTPDNS_BEACON_STATUS_KEY];
+                if ([sdkStatus isEqualToString:ALICLOUD_HTTPDNS_BEACON_SDK_DISABLE]) {
+                    // sdk disable
+                    [[HttpdnsScheduleCenter sharedInstance] setSDKDisableFromBeacon];
+                } else {
+                    [[HttpdnsScheduleCenter sharedInstance] clearSDKDisableFromBeacon];
+                }
+                
                 /* 检查打点开关 */
                 NSString *utStatus = [serviceStatus objectForKey:@"ut"];
                 if ([HttpdnsUtil isValidString:utStatus] && [utStatus isEqualToString:@"disabled"]) {
@@ -183,8 +207,6 @@ static HttpDnsService * _httpDnsClient = nil;
 
 - (void)setAccountID:(int)accountID {
     _accountID = accountID;
-    NSString *accountIdString = [NSString stringWithFormat:@"%@", @(accountID)];
-    [self shareInitWithAccountId:accountIdString];
 }
 
 - (HttpdnsRequestScheduler *)requestScheduler {
@@ -199,6 +221,9 @@ static HttpDnsService * _httpDnsClient = nil;
 #pragma mark dnsLookupMethods
 
 - (void)setPreResolveHosts:(NSArray *)hosts {
+    if (![self checkServiceStatus]) {
+        return;
+    }
     [_requestScheduler addPreResolveHosts:hosts];
 }
 
@@ -255,6 +280,9 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (NSString *)getIpByHostAsync:(NSString *)host {
+    if (![self checkServiceStatus]) {
+        return nil;
+    }
     NSArray *ips = [self getIpsByHostAsync:host];
     if (ips != nil && ips.count > 0) {
         NSString *ip;
@@ -267,6 +295,9 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (NSArray *)getIpsByHostAsync:(NSString *)host {
+    if (![self checkServiceStatus]) {
+        return nil;
+    }
     if ([self.delegate shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -309,6 +340,9 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host {
+    if (![self checkServiceStatus]) {
+        return nil;
+    }
     NSString *IP = [self getIpByHostAsync:host];
     if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:IP]) {
         return [NSString stringWithFormat:@"[%@]", IP];
@@ -317,15 +351,24 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (void)setHTTPSRequestEnabled:(BOOL)enable {
+    if (![self checkServiceStatus]) {
+        return;
+    }
     HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED = enable;
 }
 
 - (void)setCachedIPEnabled:(BOOL)enable {
+    if (![self checkServiceStatus]) {
+        return;
+    }
     [_requestScheduler setCachedIPEnabled:enable];
     [HttpDnsHitService bizCacheEnable:enable];
 }
 
 - (void)setExpiredIPEnabled:(BOOL)enable {
+    if (![self checkServiceStatus]) {
+        return;
+    }
     [_requestScheduler setExpiredIPEnabled:enable];
     [HttpDnsHitService bizExpiredIpEnable:enable];
 }
@@ -339,10 +382,16 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable {
+    if (![self checkServiceStatus]) {
+        return;
+    }
     [_requestScheduler setPreResolveAfterNetworkChanged:enable];
 }
 
 - (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource {
+    if (![self checkServiceStatus]) {
+        return;
+    }
     _IPRankingDataSource = IPRankingDatasource;
 }
 
@@ -362,6 +411,14 @@ static HttpDnsService * _httpDnsClient = nil;
 
 - (NSString *)getSessionId {
     return [HttpdnsUtil generateSessionID];
+}
+
+- (BOOL)checkServiceStatus {
+    if ([HttpdnsScheduleCenter sharedInstance].stopService) {
+        HttpdnsLogDebug("HttpDns service disable, return.");
+        return NO;
+    }
+    return YES;
 }
 
 @end

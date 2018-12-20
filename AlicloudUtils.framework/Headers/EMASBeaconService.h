@@ -1,15 +1,15 @@
 //
-//  AlicloudBeaconService.h
+//  EMASBeaconService.h
 //  AlicloudBeacon
 //
 //  Created by junmo on 2017/7/6.
 //  Copyright © 2017年 junmo. All rights reserved.
 //
 
-#ifndef AlicloudBeaconService_h
-#define AlicloudBeaconService_h
+#ifndef EMASBeaconService_h
+#define EMASBeaconService_h
 
-@interface AlicloudBeaconConfiguration : NSObject
+@interface EMASBeaconConfiguration : NSObject
 
 - (instancetype)initWithData:(NSData *)data;
 - (id)getConfigureItemByKey:(NSString *)key;
@@ -18,7 +18,8 @@
 
 typedef void (^AlicloudBeaconCallbackHandler)(BOOL res, NSError *error);
 
-@interface AlicloudBeaconService : NSObject
+@interface EMASBeaconService : NSObject
+
 - (instancetype)initWithAppKey:(NSString *)appKey
                      appSecret:(NSString *)appSecret
                     SDKVersion:(NSString *)SDKVersion
@@ -33,9 +34,12 @@ typedef void (^AlicloudBeaconCallbackHandler)(BOOL res, NSError *error);
 - (void)enableLog:(BOOL)enabled;
 - (BOOL)isLogEnabled;
 
+//- (void)getBeaconConfigByKey:(NSString *)key
+//           completionHandler:(void(^)(EMASBeaconConfiguration *configuration, NSError *error))completionHandler;
+
 - (void)getBeaconConfigStringByKey:(NSString *)key
            completionHandler:(void(^)(NSString *result, NSError *error))completionHandler;
 
 @end
 
-#endif /* AlicloudBeaconService_h */
+#endif /* EMASBeaconService_h */

@@ -366,6 +366,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         return nil;
     }
     if (scheduleCenter.isStopService) {
+        HttpdnsLogDebug("SDK disable, return nil.");
         return nil;
     }
     BOOL isRetry = NO;

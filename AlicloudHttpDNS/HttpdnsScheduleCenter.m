@@ -305,6 +305,19 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     });
 }
 
+- (void)setSDKDisableFromBeacon {
+    NSDictionary *manualDisable = @{
+                                    ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_KEY : ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_DISABLE_VALUE
+                                    };
+    [self setScheduleCenterResult:manualDisable];
+}
+
+- (void)clearSDKDisableFromBeacon {
+    if (_stopService) {
+        [self setScheduleCenterResult:nil];
+    }
+}
+
 - (void)setScheduleCenterResult:(NSDictionary *)scheduleCenterResult {
     dispatch_async(self.scheduleCenterResultQueue, ^{
         
