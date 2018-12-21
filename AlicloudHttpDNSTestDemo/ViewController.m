@@ -10,10 +10,13 @@
 #import "HttpdnsServiceProvider.h"
 #import "HttpdnsUtil.h"
 #import "MyLoggerHandler.h"
+#import "HttpdnsScheduleCenter.h"
 
 @interface ViewController ()
 
 @property (nonatomic, strong) HttpDnsService *service;
+@property (nonatomic, strong) HttpdnsScheduleCenter *sc;
+@property (nonatomic, strong) MyLoggerHandler *logHandler;
 
 @end
 
@@ -48,7 +51,8 @@
 //    NSArray *ips = @[ @"gateway.vtechl1.com" ];
     
     _service = [[HttpDnsService alloc] autoInit];
-    [_service setLogEnabled:YES];
+    _sc = [HttpdnsScheduleCenter sharedInstance];
+//    [_service setLogEnabled:YES];
 //    [_service setHTTPSRequestEnabled:YES];
     
     long long start, end;
@@ -66,8 +70,10 @@
     resStr = [NSString stringWithFormat:@"%@-%@", originStr, @"test"];
     NSLog(@"resStr: %@", resStr);
     
-    MyLoggerHandler *logHandler = [[MyLoggerHandler alloc] init];
-    [_service setLogHandler:logHandler];
+    _logHandler = [[MyLoggerHandler alloc] init];
+    printf("aaaa retain count = %ld\n", CFGetRetainCount((__bridge CFTypeRef)(_logHandler)));
+    [_service setLogHandler:_logHandler];
+    printf("bbbb retain count = %ld\n", CFGetRetainCount((__bridge CFTypeRef)(_logHandler)));
 }
 
 - (long long)currentTimeInMillis {
@@ -88,10 +94,37 @@
     
 }
 
+- (IBAction)onBeaconDisable:(id)sender {
+    [_sc setSDKDisableFromBeacon];
+    [self showAlert:@"beacon" content:@"set sdk disable"];
+}
+
+- (IBAction)onBeaconEnable:(id)sender {
+    [_sc clearSDKDisableFromBeacon];
+    [self showAlert:@"beacon" content:@"set sdk enable"];
+}
+
+- (IBAction)onResolveIP:(id)sender {
+    NSString *host = @"www.aliyun.com";
+    NSString *ip = [_service getIpByHostAsync:host];
+    [self showAlert:@"resolve" content:[NSString stringWithFormat:@"ip: %@", ip]];
+}
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
 
+- (void)showAlert:(NSString *)title content:(NSString *)content {
+    if ([NSThread isMainThread]) {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title message:content delegate:self cancelButtonTitle:@"已阅" otherButtonTitles:nil, nil];
+        [alertView show];
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title message:content delegate:self cancelButtonTitle:@"已阅" otherButtonTitles:nil, nil];
+            [alertView show];
+        });
+    }
+}
 
 @end
