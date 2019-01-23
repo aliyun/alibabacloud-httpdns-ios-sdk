@@ -193,11 +193,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
             HttpdnsLogDebug("need fetch ip list status");
             return;
         }
-        
-        @try {
-            value = [json[ALICLOUD_HTTPDNS_NEED_FETCH_FROM_SCHEDULE_CENTER_STATUS_CACHE_KEY] boolValue];
-        } @catch (NSException *exception) {}
-        
+        value = [[HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_NEED_FETCH_FROM_SCHEDULE_CENTER_STATUS_CACHE_KEY dict:json] boolValue];
         if (value) {
             HttpdnsLogDebug("need fetch ip list status");
         }
@@ -279,11 +275,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
         if (!json) {
             return;
         }
-        
-        @try {
-            _activatedServerIPIndex = [json[ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_KEY] integerValue];
-        } @catch (NSException *exception) {}
-        
+        _activatedServerIPIndex = [[HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_KEY dict:json] integerValue];
         if (_activatedServerIPIndex != oldServerIPIndex) {
             HttpdnsLogDebug("HTTPDNS activated IP changed");
         }
@@ -338,16 +330,15 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 - (void)setScheduleCenterResultAndOtherStatus:(NSDictionary *)scheduleCenterResult {
     dispatch_async(self.scheduleCenterResultQueue, ^{
         _scheduleCenterResult = scheduleCenterResult;
-        @try {
-            NSString *stopServiceValue = _scheduleCenterResult[ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_KEY];
-            _stopService = ([stopServiceValue isEqualToString:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_DISABLE_VALUE]);
-        } @catch (NSException *exception) {}
-        @try {
-            NSArray *result = _scheduleCenterResult[ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IP_KEY];
-            if ([HttpdnsUtil isValidArray:result]) {
-                _IPList = [result copy];
-            }
-        } @catch (NSException *exception) {}
+        NSString *stopServiceValue = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_KEY dict:_scheduleCenterResult];
+        if ([HttpdnsUtil isValidString:stopServiceValue]) {
+            _stopService =  ([stopServiceValue isEqualToString:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_DISABLE_VALUE]);
+        }
+        
+        NSArray *result = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IP_KEY dict:_scheduleCenterResult];
+        if ([HttpdnsUtil isValidArray:result]) {
+            _IPList = [result copy];
+        }
     });
 }
 
@@ -379,14 +370,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 }
 
 - (NSString *)getActivatedServerIPWithIndex:(NSInteger)index {
-    NSString *serverIP = ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED;
-    @try {
-        serverIP = self.IPList[index];
-    } @catch (NSException *exception) {
-        @try {
-            serverIP = self.IPList[0];
-        } @catch (NSException *exception) {}
-    }
+    NSString *serverIP = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:self.IPList defaultValue:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED];
     return serverIP;
 }
 

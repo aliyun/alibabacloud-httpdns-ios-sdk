@@ -307,4 +307,45 @@
     return sessionId;
 }
 
++ (void)safeAddObject:(id)object toArray:(NSMutableArray *)mutableArray {
+    @try {
+        [mutableArray addObject:object];
+    } @catch (NSException *exception) {}
+}
+
++ (void)safeAddValue:(id)value key:(NSString *)key toDict:(NSMutableDictionary *)dict {
+    @try {
+        [dict setObject:value forKey:key];
+    } @catch (NSException *e) {}
+}
+
++ (id)safeObjectForKey:(NSString *)key dict:(NSDictionary *)dict {
+    id obect;
+    @try {
+        obect = [dict objectForKey:key];
+    } @catch (NSException *exception) {}
+    return obect;
+}
+
++ (id)safeOjectAtIndex:(int)index array:(NSArray *)array {
+    id object;
+    @try {
+        object = array[index];
+    } @catch (NSException *exception) {}
+    return object;
+}
+
++ (id)safeObjectAtIndexOrTheFirst:(int)index array:(NSArray *)array defaultValue:(id)defaultValue {
+    id object = defaultValue;
+    @try {
+        object = array[index];
+    } @catch (NSException *exception) {
+        @try {
+            object = array[0];
+        } @catch (NSException *exception) {}
+    }
+    return object;
+
+}
+
 @end
