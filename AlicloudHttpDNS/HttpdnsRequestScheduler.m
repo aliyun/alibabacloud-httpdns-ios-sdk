@@ -125,10 +125,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             return;
         }
         
-        @try {
-            _serverDisable = [json[ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS] boolValue];
-        } @catch (NSException *exception) {}
-        
+       _serverDisable = [[HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS dict:json] boolValue];
         if (_serverDisable) {
             HttpdnsLogDebug("HTTPDNS is disabled");
         }
@@ -331,10 +328,11 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     [HttpDnsHitService bizErrSrvWithSrvAddrIndex:activatedServerIPIndex errCode:error.code errMsg:error.description];
     //403 ServiceLevelDeny 错误强制更新，不触发disable机制。
     BOOL isServiceLevelDeny;
-    @try {
-        NSString *errorMessage = userInfo[ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY];
+    NSString *errorMessage = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY dict:userInfo];
+    if ([HttpdnsUtil isValidString:errorMessage]) {
         isServiceLevelDeny = [errorMessage isEqualToString:ALICLOUD_HTTPDNS_ERROR_SERVICE_LEVEL_DENY];
-    } @catch (NSException *exception) {}
+    }
+    
     if (isServiceLevelDeny) {
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
         [scheduleCenter forceUpdateIpListAsync];

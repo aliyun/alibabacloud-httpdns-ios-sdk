@@ -69,11 +69,10 @@ static dispatch_queue_t sWifiBssidQueue = 0;
     NSArray *ifs = (__bridge_transfer id)CNCopySupportedInterfaces();
     for (NSString *ifnam in ifs) {
         NSDictionary *info = (__bridge_transfer id)CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifnam);
-        @try {
-            if (info[@"SSID"]) {
-                wifiName = info[@"SSID"];
-            }
-        } @catch (NSException *exception) {}
+        NSString *ssidname = [HttpdnsUtil safeObjectForKey:@"SSID" dict:info];
+        if ([HttpdnsUtil isValidString:ssidname]) {
+            wifiName = ssidname;
+        }
     }
     return wifiName;
 }

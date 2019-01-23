@@ -113,9 +113,7 @@
     NSArray<HttpdnsIpObject *> *IPRecords = [self getIps];
     NSMutableArray<NSString *> *IPs = [NSMutableArray arrayWithCapacity:IPRecords.count];
     for (HttpdnsIpObject *IPObject in IPRecords) {
-        @try {
-            [IPs addObject:IPObject.ip];
-        } @catch (NSException *exception) {}
+        [HttpdnsUtil safeAddObject:IPObject.ip toArray:IPs];
     }
     return [IPs copy];
 }

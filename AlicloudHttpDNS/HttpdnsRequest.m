@@ -138,11 +138,12 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSString *hostName;
     NSArray *ips;
     NSInteger ipsCount = 0;
+    hostName = [HttpdnsUtil safeObjectForKey:@"host" dict:json];
+    ips = [HttpdnsUtil safeObjectForKey:@"ips" dict:json];
     @try {
-        hostName = [json objectForKey:@"host"];
-        ips = [json objectForKey:@"ips"];
         ipsCount = [ips count];
     } @catch (NSException *exception) {}
+    
     if (![HttpdnsUtil isValidArray:ips] || ![HttpdnsUtil isValidString:hostName]) {
         HttpdnsLogDebug("IP list is empty for host %@", hostName);
         return nil;
