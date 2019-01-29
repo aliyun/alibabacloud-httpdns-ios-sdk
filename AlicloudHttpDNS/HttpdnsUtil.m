@@ -18,7 +18,7 @@
  */
 
 #import "HttpdnsUtil.h"
-#import "HttpdnsLog.h"
+#import "HttpdnsLog_Internal.h"
 #import "CommonCrypto/CommonCrypto.h"
 #import "arpa/inet.h"
 #import "HttpdnsServiceProvider_Internal.h"

@@ -19,7 +19,7 @@
 
 #import "HttpdnsScheduleCenter_Internal.h"
 #import "HttpdnsPersistenceUtils.h"
-#import "HttpdnsLog.h"
+#import "HttpdnsLog_Internal.h"
 #import "HttpdnsConstants.h"
 #import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsServiceProvider_Internal.h"
@@ -305,6 +305,19 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     });
 }
 
+- (void)setSDKDisableFromBeacon {
+    NSDictionary *manualDisable = @{
+                                    ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_KEY : ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_DISABLE_VALUE
+                                    };
+    [self setScheduleCenterResult:manualDisable];
+}
+
+- (void)clearSDKDisableFromBeacon {
+    if (_stopService) {
+        [self setScheduleCenterResult:nil];
+    }
+}
+
 - (void)setScheduleCenterResult:(NSDictionary *)scheduleCenterResult {
     dispatch_async(self.scheduleCenterResultQueue, ^{
         
@@ -409,7 +422,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
                                ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_KEY : @(activatedServerIPIndex)
                                };
         BOOL success = [HttpdnsPersistenceUtils saveJSON:json toPath:self.activatedIPIndexPath];
-        HttpdnsLogDebug(@"HTTPDNS activated IP changes %@, index is %@", success ? @"succeeded" : @"failed", @(activatedServerIPIndex));
+        HttpdnsLogDebug("HTTPDNS activated IP changes %@, index is %@", success ? @"succeeded" : @"failed", @(activatedServerIPIndex));
     });
 }
 

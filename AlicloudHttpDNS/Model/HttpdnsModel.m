@@ -20,7 +20,7 @@
 #import "HttpdnsModel.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsUtil.h"
-#import "HttpdnsLog.h"
+#import "HttpdnsLog_Internal.h"
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsIPRecord.h"
 #import "HttpdnsIPv6Manager.h"
@@ -60,6 +60,7 @@
     _hostName = nil;
     _lastLookupTime = 0;
     _ttl = -1;
+    _isLoadFromDB = NO;
     _ips = nil;
     _ip6s = nil;
     _queryingState = NO;
@@ -92,6 +93,9 @@
         HttpdnsLogDebug("This should never happen!!!");
         return NO;
     }
+    if (_isLoadFromDB) {
+        return YES;
+    }
     int64_t currentEpoch = (int64_t)[[[NSDate alloc] init] timeIntervalSince1970];
     if (_lastLookupTime + _ttl <= currentEpoch) {
         return YES;
@@ -119,6 +123,7 @@
         hostObject.ip6s = [HttpdnsIpObject IPObjectsFromIPs:ip6s];
         hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:allIps];
     }
+    [hostObject setIsLoadFromDB:YES];
     return hostObject;
 }
 
