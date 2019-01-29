@@ -9,6 +9,8 @@
 #import "ViewController.h"
 #import "HttpdnsServiceProvider.h"
 #import "HttpdnsUtil.h"
+#import "MyLoggerHandler.h"
+#import "HttpdnsScheduleCenter.h"
 
 #import <AlicloudUtils/AlicloudIPv6Adapter.h>
 
@@ -18,6 +20,8 @@ NSArray *ipv6HostArray = nil;
 @interface ViewController ()
 
 @property (nonatomic, strong) HttpDnsService *service;
+@property (nonatomic, strong) HttpdnsScheduleCenter *sc;
+@property (nonatomic, strong) MyLoggerHandler *logHandler;
 
 @end
 
@@ -108,6 +112,9 @@ NSArray *ipv6HostArray = nil;
 //        end = [self currentTimeInMillis];
 //        NSLog(@"duration: %lld", end - start);
 //    }
+    _sc = [HttpdnsScheduleCenter sharedInstance];
+//    [_service setLogEnabled:YES];
+//    [_service setHTTPSRequestEnabled:YES];
     
     ipv4HostArray = @[
                       @"m.u17.com",
@@ -175,6 +182,16 @@ NSArray *ipv6HostArray = nil;
             NSLog(@"resolve v6 result: [%@] - [%@]", ipv6Host, ip);
         }
     });
+    NSString *originStr = @"origin";
+    NSString *resStr = [NSString stringWithFormat:@"%@-%@", originStr, nil];
+    NSLog(@"resStr: %@", resStr);
+    resStr = [NSString stringWithFormat:@"%@-%@", originStr, @"test"];
+    NSLog(@"resStr: %@", resStr);
+    
+    _logHandler = [[MyLoggerHandler alloc] init];
+    printf("aaaa retain count = %ld\n", CFGetRetainCount((__bridge CFTypeRef)(_logHandler)));
+    [_service setLogHandler:_logHandler];
+    printf("bbbb retain count = %ld\n", CFGetRetainCount((__bridge CFTypeRef)(_logHandler)));
 }
 
 - (long long)currentTimeInMillis {
@@ -184,18 +201,20 @@ NSArray *ipv6HostArray = nil;
     return milliSecond;
 }
 
-- (void)showAlert:(NSString *)title content:(NSString *)content {
-    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:content preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
-    [alertController addAction:okAction];
-    
-    if ([NSThread isMainThread]) {
-        [self presentViewController:alertController animated:YES completion:nil];
-    } else {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self presentViewController:alertController animated:YES completion:nil];
-        });
-    }
+- (IBAction)onBeaconDisable:(id)sender {
+    [_sc setSDKDisableFromBeacon];
+    [self showAlert:@"beacon" content:@"set sdk disable"];
+}
+
+- (IBAction)onBeaconEnable:(id)sender {
+    [_sc clearSDKDisableFromBeacon];
+    [self showAlert:@"beacon" content:@"set sdk enable"];
+}
+
+- (IBAction)onResolveIP:(id)sender {
+    NSString *host = @"www.aliyun.com";
+    NSString *ip = [_service getIpByHostAsync:host];
+    [self showAlert:@"resolve" content:[NSString stringWithFormat:@"ip: %@", ip]];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -203,5 +222,16 @@ NSArray *ipv6HostArray = nil;
     // Dispose of any resources that can be recreated.
 }
 
+- (void)showAlert:(NSString *)title content:(NSString *)content {
+    if ([NSThread isMainThread]) {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title message:content delegate:self cancelButtonTitle:@"已阅" otherButtonTitles:nil, nil];
+        [alertView show];
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title message:content delegate:self cancelButtonTitle:@"已阅" otherButtonTitles:nil, nil];
+            [alertView show];
+        });
+    }
+}
 
 @end

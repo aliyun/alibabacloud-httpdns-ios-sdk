@@ -980,4 +980,32 @@
     //HttpdnsHostRecord *hostRecord = [hostCacheStore hostRecordsWithCurrentCarrierForHost:hostName];
 }
 
+/**
+ 测试目的：测试beacon远程开关持久化功能
+ 测试方法：
+ - 测试IP解析链路正常；
+ - 模拟beacon获取到disabled状态；
+ - 校验IP解析为为空；
+ - 模拟beacon获取到enable状态；
+ - 校验IP解析正常。
+ */
+- (void)testBeaconDisable {
+    NSString *host = @"www.aliyun.com";
+    HttpDnsService *service = [HttpDnsService sharedInstance];
+    HttpdnsScheduleCenter *sc = [HttpdnsScheduleCenter sharedInstance];
+    NSString *ip = [service getIpByHostAsync:host];
+    XCTAssertNil(ip);
+    sleep(5);
+    ip = [service getIpByHostAsync:host];
+    XCTAssertNotNil(ip);
+    [sc setSDKDisableFromBeacon];
+    sleep(5);
+    ip = [service getIpByHostAsync:host];
+    XCTAssertNil(ip);
+    [sc clearSDKDisableFromBeacon];
+    sleep(5);
+    ip = [service getIpByHostAsync:host];
+    XCTAssertNotNil(ip);
+}
+
 @end

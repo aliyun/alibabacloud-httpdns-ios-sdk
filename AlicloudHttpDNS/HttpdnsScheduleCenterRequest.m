@@ -7,7 +7,7 @@
 //
 
 #import "HttpdnsScheduleCenterRequest.h"
-#import "HttpdnsLog.h"
+#import "HttpdnsLog_Internal.h"
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsConstants.h"
 #import "HttpdnsConfig.h"
