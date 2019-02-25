@@ -16,11 +16,15 @@
 @property (nonatomic, copy) NSString *host;
 
 - (void)insertIPs:(NSArray<NSString *> *)IPs hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL;
+- (void)insertIP6s:(NSArray<NSString *> *)IPs hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL;
 
 - (void)deleteIPRecordWithHostRecordIDs:(NSArray<NSNumber *> *)hostRecordIDs;
+- (void)deleteIP6RecordWithHostRecordIDs:(NSArray<NSNumber *> *)hostRecordIDs;
 
 - (NSArray<HttpdnsIPRecord *> *)IPRecordsForHostID:(NSUInteger)hostID;
+- (NSArray<HttpdnsIPRecord *> *)IP6RecordsForHostID:(NSUInteger)hostID;
 - (NSArray<HttpdnsIPRecord *> *)IPRecordsForHostID:(NSUInteger)hostID db:(HttpdnsDatabase *)db;
+- (NSArray<HttpdnsIPRecord *> *)IP6RecordsForHostID:(NSUInteger)hostID db:(HttpdnsDatabase *)db;
 - (id)init NS_UNAVAILABLE;
 
 @end

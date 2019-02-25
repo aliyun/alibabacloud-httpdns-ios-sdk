@@ -7,6 +7,7 @@
 //
 
 #import "HttpdnsHostRecord.h"
+#import "HttpdnsUtil.h"
 
 @interface HttpdnsHostRecord()
 
@@ -50,6 +51,7 @@
                       host:(NSString *)host
                    carrier:(NSString *)carrier
                        IPs:(NSArray<NSString *> *)IPs
+                      IP6s:(NSArray<NSString *> *)IP6s
                        TTL:(int64_t)TTL
                   createAt:(NSDate *)createAt
                   expireAt:(NSDate *)expireAt{
@@ -58,6 +60,7 @@
         _host = [host copy];
         _carrier = [carrier copy];
         _IPs = [IPs copy];
+        _IP6s = [IP6s copy];
         _TTL = TTL;
         _createAt = createAt;
         _expireAt = expireAt;
@@ -72,6 +75,7 @@
                             host:(NSString *)host
                          carrier:(NSString *)carrier
                              IPs:(NSArray<NSString *> *)IPs
+                            IP6s:(NSArray<NSString *> *)IP6s
                              TTL:(int64_t)TTL
                         createAt:(NSDate *)createAt
                         expireAt:(NSDate *)expireAt {
@@ -79,6 +83,7 @@
                                                                      host:host
                                                                   carrier:carrier
                                                                       IPs:IPs
+                                                                     IP6s:IP6s
                                                                       TTL:TTL
                                                                  createAt:createAt expireAt:expireAt];
     return hostRecord;
@@ -89,10 +94,12 @@
  */
 - (instancetype)initWithHost:(NSString *)host
                          IPs:(NSArray<NSString *> *)IPs
+                        IP6s:(NSArray<NSString *> *)IP6s
                          TTL:(int64_t)TTL {
     if (self = [super init]) {
         _host = [host copy];
         _IPs = [IPs copy];
+        _IP6s = [IP6s copy];
         _TTL = TTL;
     }
     return self;
@@ -103,14 +110,22 @@
  */
 + (instancetype)hostRecordWithHost:(NSString *)host
                                IPs:(NSArray<NSString *> *)IPs
+                              IP6s:(NSArray<NSString *> *)IP6s
                                TTL:(int64_t)TTL {
-    HttpdnsHostRecord *hostRecord = [[HttpdnsHostRecord alloc] initWithHost:host IPs:IPs TTL:TTL];
+    HttpdnsHostRecord *hostRecord = [[HttpdnsHostRecord alloc] initWithHost:host IPs:IPs IP6s:IP6s TTL:TTL];
     return hostRecord;
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"hostRecordId = %@, host = %@, carrier = %@, IPs = %@ , TTL = %@---",
-            @(_hostRecordId), _host, _carrier, _IPs, @(_TTL)];
+    NSString *des;
+    if (![HttpdnsUtil isValidArray:_IP6s]) {
+        des = [NSString stringWithFormat:@"hostRecordId = %@, host = %@, carrier = %@, IPs = %@ , TTL = %@---",
+               @(_hostRecordId), _host, _carrier, _IPs, @(_TTL)];
+    } else {
+        des = [NSString stringWithFormat:@"hostRecordId = %@, host = %@, carrier = %@, IPs = %@ , IP6s = %@, TTL = %@---",
+               @(_hostRecordId), _host, _carrier, _IPs, _IP6s, @(_TTL)];
+    }
+    return des;
 }
 
 @end
