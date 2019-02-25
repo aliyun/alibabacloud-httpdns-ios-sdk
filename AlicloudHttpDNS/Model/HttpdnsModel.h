@@ -50,4 +50,6 @@
 
 - (NSArray<NSString *> *)getIPStrings;
 
+- (NSArray<NSString *> *)getIP6Strings;
+
 @end

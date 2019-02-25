@@ -137,12 +137,10 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSString *hostName;
     NSArray *ips;
     NSArray *ip6s;
-    NSInteger ipsCount = 0;
     @try {
         hostName = [json objectForKey:@"host"];
         ips = [json objectForKey:@"ips"];
         ip6s = [json objectForKey:@"ipsv6"];
-        ipsCount = [ips count];
     } @catch (NSException *exception) {}
     if (![HttpdnsUtil isValidArray:ips] || ![HttpdnsUtil isValidString:hostName]) {
         HttpdnsLogDebug("IP list is empty for host %@", hostName);
@@ -156,8 +154,13 @@ static NSURLSession *_resolveHOSTSession = nil;
             continue;
         }
         HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
-        // Adapt to IPv6-only network.
-        [ipObject setIp:[[AlicloudIPv6Adapter getInstance] handleIpv4Address:ip]];
+        // 用户主动开启v6解析后，IPv6-Only场景解析结果不再自动适配
+        // 确保getIpByHostAsync()返回v4地址，getIp6ByHostAsync()返回v6地址
+        if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+            [ipObject setIp:[[AlicloudIPv6Adapter getInstance] handleIpv4Address:ip]];
+        } else {
+            [ipObject setIp:ip];
+        }
         [ipArray addObject:ipObject];
     }
     // 处理IPv6解析结果

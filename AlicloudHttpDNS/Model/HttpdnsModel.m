@@ -108,20 +108,13 @@
     [hostObject setHostName:hostRecord.host];
     [hostObject setLastLookupTime:[hostRecord.createAt timeIntervalSince1970]];
     [hostObject setTTL:hostRecord.TTL];
-    // 筛选IPv6地址
-    NSMutableArray *allIps = [NSMutableArray arrayWithArray:hostRecord.IPs];
-    NSMutableArray *ip6s = [NSMutableArray arrayWithCapacity:allIps.count];
-    for (NSString *ip in allIps) {
-        if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:ip]) {
-            [ip6s addObject:ip];
-        }
+    NSArray *ips = hostRecord.IPs;
+    NSArray *ip6s = hostRecord.IP6s;
+    if ([HttpdnsUtil isValidArray:ips]) {
+        hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:ips];
     }
-    if (![EMASTools isValidArray:ip6s]) {
-        hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:hostRecord.IPs];
-    } else {
-        [allIps removeObjectsInArray:ip6s];
+    if ([HttpdnsUtil isValidArray:ip6s]) {
         hostObject.ip6s = [HttpdnsIpObject IPObjectsFromIPs:ip6s];
-        hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:allIps];
     }
     [hostObject setIsLoadFromDB:YES];
     return hostObject;
@@ -129,15 +122,19 @@
 
 - (NSArray<NSString *> *)getIPStrings {
     NSArray<HttpdnsIpObject *> *IPRecords = [self getIps];
-    NSMutableArray<NSString *> *IPs = [NSMutableArray array];
+    NSMutableArray<NSString *> *IPs = [NSMutableArray arrayWithCapacity:IPRecords.count];
     for (HttpdnsIpObject *IPObject in IPRecords) {
         @try {
             [IPs addObject:IPObject.ip];
         } @catch (NSException *exception) {}
     }
-    // 添加IPv6地址
+    return [IPs copy];
+}
+
+- (NSArray<NSString *> *)getIP6Strings {
+    NSArray<HttpdnsIpObject *> *IP6Records = [self getIp6s];
+    NSMutableArray<NSString *> *IPs = [NSMutableArray arrayWithCapacity:IP6Records.count];
     if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        NSArray<HttpdnsIpObject *> *IP6Records = [self getIp6s];
         for (HttpdnsIpObject *IPObject in IP6Records) {
             @try {
                 [IPs addObject:IPObject.ip];

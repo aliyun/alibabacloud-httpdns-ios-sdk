@@ -7,6 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <AlicloudUtils/AlicloudUtils.h>
 #import "HttpdnsRequestScheduler.h"
 #import "HttpdnsServiceProvider.h"
 #import "HttpdnsServiceProvider_Internal.h"
@@ -63,6 +64,7 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     sleep(10);
     ipv6Res = [httpdns getIPv6ByHostAsync:ipv6Host];
     XCTAssertNotNil(ipv6Res);
+    XCTAssertTrue([[AlicloudIPv6Adapter getInstance] isIPv6Address:ipv6Res]);
 }
 
 /**
@@ -90,8 +92,38 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     XCTAssertNotNil(ipv6Res);
 }
 
+- (void)testTemp {
+    
+    NSString *testHost = @"ipv6.sjtu.edu.cn";
+    NSString *testIPv4 = @"202.120.2.47";
+    NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
+    NSString *ip4Res = nil;
+    NSString *ip6Res = nil;
+    NSString *memoryCache = nil;
+    NSString *dbCache = nil;
+    
+    [httpdns enableIPv6:YES];
+    HttpdnsHostCacheStore *hostCacheStore = [[HttpdnsHostCacheStore alloc] init];
+    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[] IP6s:@[ testIPv6 ] TTL:3600];
+    [hostCacheStore insertHostRecords:@[hostRecord]];
+    sleep(5);
+    dbCache = [hostCacheStore showDBCache];
+    XCTAssertNotNil(dbCache);
+    [httpdns setCachedIPEnabled:YES];
+    memoryCache = [requestScheduler showMemoryCache];
+    XCTAssertNotNil(memoryCache);
+    ip4Res = [httpdns getIpByHostAsync:testHost];
+    XCTAssertNil(ip4Res);
+    ip6Res = [httpdns getIPv6ByHostAsync:testHost];
+    XCTAssertNotNil(ip6Res);
+    // 清空内存和持久化缓存
+    [self cleanMemoryAndCache:testHost];
+    sleep(5);
+}
+
 /**
  测试目的：v4和v6解析结果组合，验证各场景解析结果获取
+ 本测试用例失效，新feature，解析结果如果是从DB加载，下次调用接口一定触发解析
  测试方法：
  
  测试场景           获取v4解析结果                获取v6解析结果
@@ -108,12 +140,14 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
     NSString *ip4Res = nil;
     NSString *ip6Res = nil;
+    NSString *memoryCache = nil;
+    NSString *dbCache = nil;
     
     [httpdns enableIPv6:YES];
     
     // 有效v4
     HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
-    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[ testIPv4 ] TTL:3600];
+    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[ testIPv4 ] IP6s: @[] TTL:3600];
     [hostCacheStore insertHostRecords:@[hostRecord]];
     [httpdns setCachedIPEnabled:YES];
     sleep(5);
@@ -125,20 +159,26 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     [self cleanMemoryAndCache:testHost];
     
     // 有效v6
-    hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[ testIPv6 ] TTL:3600];
+    hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[] IP6s:@[ testIPv6 ] TTL:3600];
     [hostCacheStore insertHostRecords:@[hostRecord]];
-    [httpdns setCachedIPEnabled:YES];
     sleep(5);
+    dbCache = [hostCacheStore showDBCache];
+    XCTAssertNotNil(dbCache);
+    [httpdns setCachedIPEnabled:YES];
+    memoryCache = [requestScheduler showMemoryCache];
+    XCTAssertNotNil(memoryCache);
     ip4Res = [httpdns getIpByHostAsync:testHost];
     XCTAssertNil(ip4Res);
     ip6Res = [httpdns getIPv6ByHostAsync:testHost];
     XCTAssertNotNil(ip6Res);
     // 清空内存和持久化缓存
     [self cleanMemoryAndCache:testHost];
+    sleep(5);
     
     // 有效v4+v6
-    hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[ testIPv4, testIPv6 ] TTL:3600];
+    hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[ testIPv4 ] IP6s:@[ testIPv6 ] TTL:3600];
     [hostCacheStore insertHostRecords:@[hostRecord]];
+    sleep(5);
     [httpdns setCachedIPEnabled:YES];
     sleep(5);
     ip4Res = [httpdns getIpByHostAsync:testHost];
@@ -147,10 +187,12 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     XCTAssertNotNil(ip6Res);
     // 清空内存和持久化缓存
     [self cleanMemoryAndCache:testHost];
+    sleep(5);
     
     // 过期v4
-    hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[ testIPv4 ] TTL:0];
+    hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[ testIPv4 ] IP6s:@[] TTL:0];
     [hostCacheStore insertHostRecords:@[hostRecord]];
+    sleep(5);
     [httpdns setCachedIPEnabled:YES];
     sleep(5);
     ip4Res = [httpdns getIpByHostAsync:testHost];
@@ -161,10 +203,12 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     sleep(10);
     // 清空内存和持久化缓存
     [self cleanMemoryAndCache:testHost];
+    sleep(5);
     
     // 过期v6
-    hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[ testIPv6 ] TTL:0];
+    hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[] IP6s:@[ testIPv6 ] TTL:0];
     [hostCacheStore insertHostRecords:@[hostRecord]];
+    sleep(5);
     [httpdns setCachedIPEnabled:YES];
     sleep(5);
     ip4Res = [httpdns getIpByHostAsync:testHost];
@@ -175,10 +219,12 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     sleep(10);
     // 清空内存和持久化缓存
     [self cleanMemoryAndCache:testHost];
+    sleep(5);
     
     // 过期v4+v6
-    hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[ testIPv4, testIPv6 ] TTL:0];
+    hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[ testIPv4 ] IP6s:@[ testIPv6 ] TTL:0];
     [hostCacheStore insertHostRecords:@[hostRecord]];
+    sleep(5);
     [httpdns setCachedIPEnabled:YES];
     sleep(5);
     // IP过期有效
@@ -193,7 +239,7 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     [requestScheduler cleanAllHostMemoryCache];
     HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
     // IPs为nil时，执行删除动作
-    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[] TTL:0];
+    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[] IP6s:@[] TTL:0];
     [hostCacheStore insertHostRecords:@[hostRecord]];
 }
 

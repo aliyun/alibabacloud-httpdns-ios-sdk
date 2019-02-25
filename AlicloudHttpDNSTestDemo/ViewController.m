@@ -11,6 +11,7 @@
 #import "HttpdnsUtil.h"
 #import "MyLoggerHandler.h"
 #import "HttpdnsScheduleCenter.h"
+#import "TestIPv6ViewController.h"
 
 #import <AlicloudUtils/AlicloudIPv6Adapter.h>
 
@@ -58,6 +59,11 @@ NSArray *ipv6HostArray = nil;
     NSString *host = @"ipv6.sjtu.edu.cn";
     NSString *IP = [_service getIPv6ByHostAsync:host];
     [self showAlert:@"IPv6解析结果" content:IP];
+}
+
+- (IBAction)onIPv6Test:(id)sender {
+    TestIPv6ViewController *vc = [[TestIPv6ViewController alloc] init];
+    [self presentViewController:vc animated:YES completion:nil];
 }
 
 // IPv6 Stack检测
@@ -148,8 +154,8 @@ NSArray *ipv6HostArray = nil;
                       @"ipv6.sjtu.edu.cn"
                       ];
     
-    [self testConcurrentResolveIPv4Hosts];
-    [self testConcurrentResolveIPv6Hosts];
+    //[self testConcurrentResolveIPv4Hosts];
+    //[self testConcurrentResolveIPv6Hosts];
     
 }
 
