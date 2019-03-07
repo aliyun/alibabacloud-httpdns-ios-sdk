@@ -137,11 +137,10 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSString *hostName;
     NSArray *ips;
     NSArray *ip6s;
-    @try {
-        hostName = [json objectForKey:@"host"];
-        ips = [json objectForKey:@"ips"];
-        ip6s = [json objectForKey:@"ipsv6"];
-    } @catch (NSException *exception) {}
+    hostName = [HttpdnsUtil safeObjectForKey:@"host" dict:json];
+    ips = [HttpdnsUtil safeObjectForKey:@"ips" dict:json];
+    ip6s = [HttpdnsUtil safeObjectForKey:@"ipsv6" dict:json];
+    
     if (![HttpdnsUtil isValidArray:ips] || ![HttpdnsUtil isValidString:hostName]) {
         HttpdnsLogDebug("IP list is empty for host %@", hostName);
         return nil;

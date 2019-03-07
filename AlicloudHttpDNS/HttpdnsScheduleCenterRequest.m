@@ -69,12 +69,7 @@ static NSURLSession *_scheduleCenterSession = nil;
     NSString *serverHostOrIP = nil;
     NSArray *hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
     index = index % hostArray.count;
-
-    @try {
-        serverHostOrIP = hostArray[index];
-    } @catch (NSException *exception) {
-        serverHostOrIP = hostArray[0];
-    }
+    serverHostOrIP =   [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:hostArray defaultValue:nil];
     serverHostOrIP = [HttpdnsUtil getRequestHostFromString:serverHostOrIP];
     return serverHostOrIP;
 }
@@ -117,10 +112,7 @@ static NSURLSession *_scheduleCenterSession = nil;
                     errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10002 userInfo:dict];
                 } else {
                     NSString *errCode = @"";
-                    @try {
-                        errCode = [json objectForKey:@"code"];
-                    } @catch (NSException *exception) {}
-                    
+                    errCode = [HttpdnsUtil safeObjectForKey:@"code" dict:json];
                     NSDictionary *dict = nil;
                     if ([HttpdnsUtil isValidString:errCode]) {
                         dict = [[NSDictionary alloc] initWithObjectsAndKeys:
