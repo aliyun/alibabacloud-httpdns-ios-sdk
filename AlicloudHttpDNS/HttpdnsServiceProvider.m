@@ -231,9 +231,7 @@ static HttpDnsService * _httpDnsClient = nil;
     NSArray *ips = [self getIpsByHost:host];
     if (ips != nil && ips.count > 0) {
         NSString *ip;
-        @try {
-            ip = ips[0];
-        } @catch (NSException *exception) {}
+        ip = [HttpdnsUtil safeOjectAtIndex:0 array:ips];
         return ip;
     }
     return nil;
@@ -260,9 +258,7 @@ static HttpDnsService * _httpDnsClient = nil;
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
         if (ipsObject && [ipsObject count] > 0) {
             for (HttpdnsIpObject *ipObject in ipsObject) {
-                @try {
-                    [ipsArray addObject:[ipObject getIpString]];
-                } @catch (NSException *exception) {}
+                [HttpdnsUtil safeAddObject:[ipObject getIpString] toArray:ipsArray];
             }
             return ipsArray;
         }
@@ -286,9 +282,7 @@ static HttpDnsService * _httpDnsClient = nil;
     NSArray *ips = [self getIpsByHostAsync:host];
     if (ips != nil && ips.count > 0) {
         NSString *ip;
-        @try {
-            ip = ips[0];
-        } @catch (NSException *exception) {}
+        ip = [HttpdnsUtil safeOjectAtIndex:0 array:ips];
         return ip;
     }
     return nil;
