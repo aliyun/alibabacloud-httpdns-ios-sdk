@@ -144,11 +144,9 @@ static BOOL _disableStatus = NO;
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
-    @try {
-        [extProperties setObject:host forKey:HTTPDNS_HIT_PARAM_HOST];
-        [extProperties setObject:scAddr forKey:HTTPDNS_HIT_PARAM_SCADDR];
-        [extProperties setObject:[self srvAddrFromIndex:srvAddrIndex] forKey:HTTPDNS_HIT_PARAM_SRVADDR];
-    } @catch (NSException *e) {}
+    [HttpdnsUtil safeAddValue:host key:HTTPDNS_HIT_PARAM_HOST toDict:extProperties];
+    [HttpdnsUtil safeAddValue:scAddr key:HTTPDNS_HIT_PARAM_SCADDR toDict:extProperties];
+    [HttpdnsUtil safeAddValue:[self srvAddrFromIndex:srvAddrIndex] key:HTTPDNS_HIT_PARAM_SRVADDR toDict:extProperties];
     [_tracker sendCustomHit:HTTPDNS_BIZ_SNIFFER duration:0 properties:extProperties];
 }
 
@@ -173,11 +171,9 @@ static BOOL _disableStatus = NO;
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
-    @try {
-        [extProperties setObject:host forKey:HTTPDNS_HIT_PARAM_HOST];
-        [extProperties setObject:scAddr forKey:HTTPDNS_HIT_PARAM_SCADDR];
-        [extProperties setObject:[self srvAddrFromIndex:srvAddrIndex] forKey:HTTPDNS_HIT_PARAM_SRVADDR];
-    } @catch (NSException *e) {}
+    [HttpdnsUtil safeAddValue:host key:HTTPDNS_HIT_PARAM_HOST toDict:extProperties];
+    [HttpdnsUtil safeAddValue:scAddr key:HTTPDNS_HIT_PARAM_SCADDR toDict:extProperties];
+    [HttpdnsUtil safeAddValue:[self srvAddrFromIndex:srvAddrIndex] key:HTTPDNS_HIT_PARAM_SRVADDR toDict:extProperties];
     [_tracker sendCustomHit:HTTPDNS_BIZ_LOCAL_DISABLE duration:0 properties:extProperties];
 }
 
@@ -186,9 +182,7 @@ static BOOL _disableStatus = NO;
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
-    @try {
-        [extProperties setObject:@(enable) forKey:HTTPDNS_HIT_PARAM_ENABLE];
-        } @catch (NSException *e) {}
+    [HttpdnsUtil safeAddValue:@(enable) key:HTTPDNS_HIT_PARAM_ENABLE toDict:extProperties];
     [_tracker sendCustomHit:HTTPDNS_BIZ_CACHE duration:0 properties:extProperties];
 }
 
@@ -198,9 +192,8 @@ static BOOL _disableStatus = NO;
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
-    @try {
-        [extProperties setObject:@(enable) forKey:HTTPDNS_HIT_PARAM_ENABLE];
-    } @catch (NSException *e) {}
+    [HttpdnsUtil safeAddValue:@(enable) key:HTTPDNS_HIT_PARAM_ENABLE toDict:extProperties];
+
     [_tracker sendCustomHit:HTTPDNS_BIZ_EXPIRED_IP duration:0 properties:extProperties];
 }
 
@@ -225,12 +218,10 @@ static BOOL _disableStatus = NO;
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
-    @try {
-        [extProperties setObject:scAddr forKey:HTTPDNS_HIT_PARAM_SCADDR];
-        [extProperties setObject:@(errCode) forKey:HTTPDNS_HIT_PARAM_ERRCODE];
-        [extProperties setObject:errMsg forKey:HTTPDNS_HIT_PARAM_ERRMSG];
-        [extProperties setObject:[self isIPV6Object] forKey:HTTPDNS_HIT_PARAM_IPV6];
-    } @catch (NSException *e) {}
+    [HttpdnsUtil safeAddValue:scAddr key:HTTPDNS_HIT_PARAM_SCADDR toDict:extProperties];
+    [HttpdnsUtil safeAddValue:@(errCode) key:HTTPDNS_HIT_PARAM_ERRCODE toDict:extProperties];
+    [HttpdnsUtil safeAddValue:errMsg key:HTTPDNS_HIT_PARAM_ERRMSG toDict:extProperties];
+    [HttpdnsUtil safeAddValue:[self isIPV6Object] key:HTTPDNS_HIT_PARAM_IPV6 toDict:extProperties];
     [_tracker sendCustomHit:HTTPDNS_ERR_SC duration:0 properties:extProperties];
 }
 
@@ -244,12 +235,10 @@ static BOOL _disableStatus = NO;
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
-    @try {
-        [extProperties setObject:[self srvAddrFromIndex:srvAddrIndex] forKey:HTTPDNS_HIT_PARAM_SRVADDR];
-        [extProperties setObject:@(errCode) forKey:HTTPDNS_HIT_PARAM_ERRCODE];
-        [extProperties setObject:errMsg forKey:HTTPDNS_HIT_PARAM_ERRMSG];
-        [extProperties setObject:[self isIPV6Object] forKey:HTTPDNS_HIT_PARAM_IPV6];
-    } @catch (NSException *e) {}
+    [HttpdnsUtil safeAddValue:[self srvAddrFromIndex:srvAddrIndex] key:HTTPDNS_HIT_PARAM_SRVADDR toDict:extProperties];
+    [HttpdnsUtil safeAddValue:@(errCode) key:HTTPDNS_HIT_PARAM_ERRCODE toDict:extProperties];
+    [HttpdnsUtil safeAddValue:errMsg key:HTTPDNS_HIT_PARAM_ERRMSG toDict:extProperties];
+    [HttpdnsUtil safeAddValue:[self isIPV6Object] key:HTTPDNS_HIT_PARAM_IPV6 toDict:extProperties];
     [_tracker sendCustomHit:HTTPDNS_ERR_SRV duration:0 properties:extProperties];
 }
 
@@ -262,10 +251,9 @@ static BOOL _disableStatus = NO;
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
-    @try {
-        [extProperties setObject:log forKey:HTTPDNS_HIT_PARAM_LOG];
-        [extProperties setObject:[self isIPV6Object] forKey:HTTPDNS_HIT_PARAM_IPV6];
-    } @catch (NSException *e) {}
+    [HttpdnsUtil safeAddValue:log key:HTTPDNS_HIT_PARAM_LOG toDict:extProperties];
+    [HttpdnsUtil safeAddValue:[self isIPV6Object] key:HTTPDNS_HIT_PARAM_IPV6 toDict:extProperties];
+
     [_tracker sendCustomHit:HTTPDNS_ERR_CONTINUOUS_BOOTING_CRASH duration:0 properties:extProperties];
 }
 
@@ -278,10 +266,9 @@ static BOOL _disableStatus = NO;
     }
 
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
-    @try {
-        [extProperties setObject:log forKey:HTTPDNS_HIT_PARAM_LOG];
-        [extProperties setObject:[self isIPV6Object] forKey:HTTPDNS_HIT_PARAM_IPV6];
-    } @catch (NSException *e) {}
+    [HttpdnsUtil safeAddValue:log key:HTTPDNS_HIT_PARAM_LOG toDict:extProperties];
+    [HttpdnsUtil safeAddValue:[self isIPV6Object] key:HTTPDNS_HIT_PARAM_IPV6 toDict:extProperties];
+
     [_tracker sendCustomHit:HTTPDNS_ERR_CONTINUOUS_RUNNING_CRASH duration:0 properties:extProperties];
 }
 
@@ -293,9 +280,7 @@ static BOOL _disableStatus = NO;
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
-    @try {
-        [extProperties setObject:exception forKey:HTTPDNS_HIT_PARAM_EXCEPTION];
-    } @catch (NSException *e) {}
+    [HttpdnsUtil safeAddValue:exception key:HTTPDNS_HIT_PARAM_EXCEPTION toDict:extProperties];
     [_tracker sendCustomHit:HTTPDNS_ERR_UNCAUGHT_EXCEPTION duration:0 properties:extProperties];
 }
 
@@ -320,12 +305,10 @@ static BOOL _disableStatus = NO;
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
-    @try {
-        [extProperties setObject:scAddr forKey:HTTPDNS_HIT_PARAM_SCADDR];
-        [extProperties setObject:cost forKey:HTTPDNS_HIT_PARAM_COST];
-        [extProperties setObject:[self isIPV6Object] forKey:HTTPDNS_HIT_PARAM_IPV6];
-        [extProperties setObject:@(YES) forKey:HTTPDNS_HIT_PARAM_SUCCESS];
-    } @catch (NSException *e) {}
+    [HttpdnsUtil safeAddValue:scAddr key:HTTPDNS_HIT_PARAM_SCADDR toDict:extProperties];
+    [HttpdnsUtil safeAddValue:cost key:HTTPDNS_HIT_PARAM_COST toDict:extProperties];
+    [HttpdnsUtil safeAddValue:[self isIPV6Object] key:HTTPDNS_HIT_PARAM_IPV6 toDict:extProperties];
+    [HttpdnsUtil safeAddValue:@(YES) key:HTTPDNS_HIT_PARAM_SUCCESS toDict:extProperties];
     [_tracker sendCustomHit:HTTPDNS_PERF_SC duration:0 properties:extProperties];
 }
 
@@ -380,12 +363,10 @@ static BOOL _disableStatus = NO;
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
-    @try {
-        [extProperties setObject:srvAddr forKey:HTTPDNS_HIT_PARAM_SRVADDR];
-        [extProperties setObject:cost forKey:HTTPDNS_HIT_PARAM_COST];
-        [extProperties setObject:[self isIPV6Object] forKey:HTTPDNS_HIT_PARAM_IPV6];
-        [extProperties setObject:@(YES) forKey:HTTPDNS_HIT_PARAM_SUCCESS];
-    } @catch (NSException *e) {}
+    [HttpdnsUtil safeAddValue:srvAddr key:HTTPDNS_HIT_PARAM_SCADDR toDict:extProperties];
+    [HttpdnsUtil safeAddValue:cost key:HTTPDNS_HIT_PARAM_COST toDict:extProperties];
+    [HttpdnsUtil safeAddValue:[self isIPV6Object] key:HTTPDNS_HIT_PARAM_IPV6 toDict:extProperties];
+    [HttpdnsUtil safeAddValue:@(YES) key:HTTPDNS_HIT_PARAM_SUCCESS toDict:extProperties];
     [_tracker sendCustomHit:HTTPDNS_PERF_SRV duration:0 properties:extProperties];
 }
 
@@ -402,12 +383,10 @@ static BOOL _disableStatus = NO;
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
-    @try {
-        [extProperties setObject:host forKey:HTTPDNS_HIT_PARAM_HOST];
-        [extProperties setObject:@(success) forKey:HTTPDNS_HIT_PARAM_SUCCESS];
-        [extProperties setObject:@(cacheOpen) forKey:HTTPDNS_HIT_PARAM_CACHEOPEN];
-        [extProperties setObject:[self isIPV6Object] forKey:HTTPDNS_HIT_PARAM_IPV6];
-    } @catch (NSException *e) {}
+    [HttpdnsUtil safeAddValue:host key:HTTPDNS_HIT_PARAM_HOST toDict:extProperties];
+    [HttpdnsUtil safeAddValue:@(success) key:HTTPDNS_HIT_PARAM_SUCCESS toDict:extProperties];
+    [HttpdnsUtil safeAddValue:@(cacheOpen) key:HTTPDNS_HIT_PARAM_CACHEOPEN toDict:extProperties];
+    [HttpdnsUtil safeAddValue:[self isIPV6Object] key:HTTPDNS_HIT_PARAM_IPV6 toDict:extProperties];
     [_tracker sendCustomHit:HTTPDNS_PERF_GETIP duration:0 properties:extProperties];
 }
 
@@ -424,12 +403,11 @@ static BOOL _disableStatus = NO;
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
-    @try {
-        [extProperties setObject:host forKey:HTTPDNS_HIT_PARAM_HOST];
-        [extProperties setObject:@(success) forKey:HTTPDNS_HIT_PARAM_SUCCESS];
-        [extProperties setObject:@(cacheOpen) forKey:HTTPDNS_HIT_PARAM_CACHEOPEN];
-        [extProperties setObject:[self isIPV6Object] forKey:HTTPDNS_HIT_PARAM_IPV6];
-    } @catch (NSException *e) {}
+    [HttpdnsUtil safeAddValue:host key:HTTPDNS_HIT_PARAM_HOST toDict:extProperties];
+    [HttpdnsUtil safeAddValue:@(success) key:HTTPDNS_HIT_PARAM_SUCCESS toDict:extProperties];
+    [HttpdnsUtil safeAddValue:@(cacheOpen) key:HTTPDNS_HIT_PARAM_CACHEOPEN toDict:extProperties];
+    [HttpdnsUtil safeAddValue:[self isIPV6Object] key:HTTPDNS_HIT_PARAM_IPV6 toDict:extProperties];
+
     [_tracker sendCustomHit:HTTPDNS_PERF_USER_GETIP duration:0 properties:extProperties];
 }
 
@@ -458,14 +436,12 @@ static BOOL _disableStatus = NO;
         return;
     }
     NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
-    @try {
-        [extProperties setObject:host forKey:HTTPDNS_HIT_PARAM_HOST];
-        [extProperties setObject:defaultIp forKey:HTTPDNS_HIT_PARAM_DEFAULTIP];
-        [extProperties setObject:selectedIp forKey:HTTPDNS_HIT_PARAM_SELECTEDIP];
-        [extProperties setObject:defaultIpCost forKey:HTTPDNS_HIT_PARAM_DEFAULTIPCOST];
-        [extProperties setObject:selectedIpCost forKey:HTTPDNS_HIT_PARAM_SELECTEDIPCOST];
-        [extProperties setObject:ipCount forKey:HTTPDNS_HIT_PARAM_IPCOUNT];
-    } @catch (NSException *e) {}
+    [HttpdnsUtil safeAddValue:host key:HTTPDNS_HIT_PARAM_HOST toDict:extProperties];
+    [HttpdnsUtil safeAddValue:defaultIp key:HTTPDNS_HIT_PARAM_DEFAULTIP toDict:extProperties];
+    [HttpdnsUtil safeAddValue:selectedIp key:HTTPDNS_HIT_PARAM_SELECTEDIP toDict:extProperties];
+    [HttpdnsUtil safeAddValue:defaultIpCost key:HTTPDNS_HIT_PARAM_DEFAULTIPCOST toDict:extProperties];
+    [HttpdnsUtil safeAddValue:selectedIpCost key:HTTPDNS_HIT_PARAM_SELECTEDIPCOST toDict:extProperties];
+    [HttpdnsUtil safeAddValue:ipCount key:HTTPDNS_HIT_PARAM_SUCCESS toDict:extProperties];
     [_tracker sendCustomHit:HTTPDNS_PERF_IPSELECTION duration:0 properties:extProperties];
     
 }
