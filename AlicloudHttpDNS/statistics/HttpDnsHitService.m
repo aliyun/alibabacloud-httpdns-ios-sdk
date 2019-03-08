@@ -28,6 +28,7 @@ static NSString *const HTTPDNS_HIT_PARAM_SCADDR = @"scAddr" ;//当前SC服务器
 static NSString *const HTTPDNS_HIT_PARAM_SRVADDR = @"srvAddr" ;//当前嗅探的HTTPDNS服务器地址
 
 static NSString *const HTTPDNS_BIZ_LOCAL_DISABLE = @"biz_local_disable";
+static NSString *const HTTPDNS_BIZ_IPV6_ENABLE = @"biz_ipv6_enable";
 //HOST" ;//查询的HOST
 //scAddr" ;//当前SC服务器地址
 //SRVADDR" ;//当前嗅探的HTTPDNS服务器地址
@@ -445,6 +446,16 @@ static BOOL _disableStatus = NO;
     [_tracker sendCustomHit:HTTPDNS_PERF_IPSELECTION duration:0 properties:extProperties];
     
 }
+
++ (void)bizIPv6Enable:(BOOL)enable {
+    if (_disableStatus) {
+        return;
+    }
+    NSMutableDictionary *extProperties = [NSMutableDictionary dictionary];
+    [HttpdnsUtil safeAddValue:@(enable) key:HTTPDNS_HIT_PARAM_ENABLE toDict:extProperties];
+    [_tracker sendCustomHit:HTTPDNS_BIZ_IPV6_ENABLE duration:0 properties:extProperties];
+}
+
 + (NSString *)srvAddrFromIndex:(NSInteger)index {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *srv = [scheduleCenter getActivatedServerIPWithIndex:index];

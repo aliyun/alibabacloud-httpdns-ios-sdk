@@ -33,4 +33,8 @@ static NSTimeInterval ALICLOUD_HTTPDNS_HOST_CACHE_MAX_CACHE_AGE = 0;
 
 - (void)deleteHostRecordAndItsIPsWithHostRecordIDs:(NSArray<NSNumber *> *)hostRecordIDs;
 
+// for test
+- (void)deleteHostRecordAndItsIPsWithHost:(NSString *)host;
+- (NSString *)showDBCache;
+
 @end

@@ -21,7 +21,6 @@
 #import "HttpdnsLog_Internal.h"
 #import "CommonCrypto/CommonCrypto.h"
 #import "arpa/inet.h"
-#import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsServiceProvider_Internal.h"
 #import "UIApplication+ABSHTTPDNSSetting.h"
 #import "HttpdnsConstants.h"
@@ -320,11 +319,11 @@
 }
 
 + (id)safeObjectForKey:(NSString *)key dict:(NSDictionary *)dict {
-    id obect;
+    id object;
     @try {
-        obect = [dict objectForKey:key];
+        object = [dict objectForKey:key];
     } @catch (NSException *exception) {}
-    return obect;
+    return object;
 }
 
 + (id)safeOjectAtIndex:(int)index array:(NSArray *)array {

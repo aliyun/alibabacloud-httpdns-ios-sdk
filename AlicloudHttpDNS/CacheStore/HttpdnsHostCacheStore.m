@@ -61,7 +61,7 @@
         
         HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore new];
         
-        if (!hostRecord.IPs ||hostRecord.IPs.count == 0 ) {
+        if (![EMASTools isValidArray:hostRecord.IPs] && ![EMASTools isValidArray:hostRecord.IP6s]) {
             //删除记录，此时hostRecord.hostRecordId为nil，不能依据Id删，要先从数据库里拿id，再依据id删。
             NSArray<NSNumber *> *ids = [self hostRecordIdsForHost:hostRecord.host];
             [self deleteHostRecordAndItsIPsWithHostRecordIDs:ids];
@@ -79,10 +79,16 @@
         }));
         HttpdnsLogDebug("hostRecordId is : %@", @(hostRecordId));
         if (hostRecordId > 0) {
-            int64_t TTL = hostRecord.TTL;
-            HttpdnsLogDebug("host record saved success");
-            NSArray<NSString *> *IPs = hostRecord.IPs;
-            [IPCacheStore insertIPs:IPs hostRecordId:(NSUInteger)hostRecordId TTL:TTL];
+            @try {
+                int64_t TTL = hostRecord.TTL;
+                HttpdnsLogDebug("host record saved success");
+                NSArray<NSString *> *IPs = hostRecord.IPs;
+                NSArray<NSString *> *IP6s = hostRecord.IP6s;
+                [IPCacheStore insertIPs:IPs hostRecordId:(NSUInteger)hostRecordId TTL:TTL];
+                [IPCacheStore insertIP6s:IP6s hostRecordId:(NSUInteger)hostRecordId TTL:TTL];
+            } @catch (NSException *exception) {
+                HttpdnsLogDebug("insert hostRecord error: %@", exception);
+            }
         }
     }
 }
@@ -190,20 +196,31 @@
     NSDate *createAt = [self dateFromTimeInterval:createAtInterval];
     NSDate *expireAt = [self dateFromTimeInterval:expireAtInterval];
     NSArray *IPs = nil;
+    NSArray *IP6s = nil;
     int64_t TTL = 0;
     if (db) {
         HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore new];
         NSArray<HttpdnsIPRecord *> *IPRecords = [IPCacheStore IPRecordsForHostID:hostID db:db];
+        NSArray<HttpdnsIPRecord *> *IP6Records = [IPCacheStore IP6RecordsForHostID:hostID db:db];
         @try {
-            HttpdnsIPRecord *IPRecord = IPRecords[0];
-            NSMutableArray *mutableIPs = [NSMutableArray arrayWithCapacity:IPRecords.count];
-            for (HttpdnsIPRecord *IPRecord in IPRecords) {
-                [mutableIPs addObject:IPRecord.IP];
+            if (IPRecords.count > 0) {
+                NSMutableArray *mutableIPs = [NSMutableArray arrayWithCapacity:IPRecords.count];
+                for (HttpdnsIPRecord *IPRecord in IPRecords) {
+                    [mutableIPs addObject:IPRecord.IP];
+                }
+                IPs = [mutableIPs copy];
+                TTL = IPRecords[0].TTL;
             }
-            IPs = [mutableIPs copy];
-            TTL = IPRecord.TTL;
+            if (IP6Records.count > 0) {
+                NSMutableArray *mutableIP6s = [NSMutableArray arrayWithCapacity:IP6Records.count];
+                for (HttpdnsIPRecord *IP6Record in IP6Records) {
+                    [mutableIP6s addObject:IP6Record.IP];
+                }
+                IP6s = [mutableIP6s copy];
+                TTL = IP6Records[0].TTL;
+            }
         } @catch (NSException *exception) {
-            HttpdnsLogDebug("DB error, HostRecord has data with id %@, but there is not IPRecord data with same id.", @(hostID));
+            HttpdnsLogDebug("DB error: %@, HostRecord has data with id %@, but there is not IPRecord data with same id.", exception, @(hostID));
         }
     }
     
@@ -211,6 +228,7 @@
                                                                host:host
                                                             carrier:carrier
                                                                 IPs:IPs
+                                                               IP6s:IP6s
                                                                 TTL:TTL
                                                            createAt:createAt
                                                            expireAt:expireAt];
@@ -308,6 +326,23 @@
     [HttpdnsUtil warnMainThreadIfNecessary];
     HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore new];
     [IPCacheStore deleteIPRecordWithHostRecordIDs:hostRecordIDs];
+    [IPCacheStore deleteIP6RecordWithHostRecordIDs:hostRecordIDs];
+}
+
+// for test
+- (void)deleteHostRecordAndItsIPsWithHost:(NSString *)host {
+    NSString *carrier = [HttpdnsgetNetworkInfoHelper getNetworkName];
+    [self deleteHostRecordAndItsIPsWithHost:host carrier:carrier];
+}
+
+// for test
+- (NSString *)showDBCache {
+    NSString *dbCache;
+    NSArray *hostRecords = [self hostRecordsForCurrentCarrier];
+    if ([HttpdnsUtil isValidArray:hostRecords]) {
+        dbCache = [NSString stringWithFormat:@"%@", hostRecords];
+    }
+    return dbCache;
 }
 
 @end
