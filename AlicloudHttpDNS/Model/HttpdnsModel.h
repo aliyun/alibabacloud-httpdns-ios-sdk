@@ -25,14 +25,13 @@
 
 @property (nonatomic, copy, getter=getIpString, setter=setIp:) NSString *ip;
 
-//+ (NSArray<HttpdnsIpObject *> *)IPObjectsFromIPs:(NSArray<NSString *> *)IPs;
-
 @end
 
 @interface HttpdnsHostObject : NSObject<NSCoding>
 
 @property (nonatomic, strong, setter=setHostName:, getter=getHostName) NSString *hostName;
 @property (nonatomic, strong, setter=setIps:, getter=getIps) NSArray<HttpdnsIpObject *> *ips;
+@property (nonatomic, strong, setter=setIp6s:, getter=getIp6s) NSArray<HttpdnsIpObject *> *ip6s;
 @property (nonatomic, setter=setTTL:, getter=getTTL) int64_t ttl;
 // 标识是否从持久化缓存加载
 @property (nonatomic, assign, setter=setIsLoadFromDB:, getter=getIsLoadFromDB) BOOL isLoadFromDB;
@@ -50,5 +49,7 @@
 + (instancetype)hostObjectWithHostRecord:(HttpdnsHostRecord *)IPRecord;
 
 - (NSArray<NSString *> *)getIPStrings;
+
+- (NSArray<NSString *> *)getIP6Strings;
 
 @end

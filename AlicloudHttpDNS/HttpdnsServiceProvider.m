@@ -27,6 +27,7 @@
 #import "HttpdnsHostCacheStore.h"
 #import "HttpDnsHitService.h"
 #import "HttpdnsConstants.h"
+#import "HttpdnsIPv6Manager.h"
 #import "HttpdnsScheduleCenter.h"
 
 static NSDictionary *HTTPDNS_EXT_INFO = nil;
@@ -69,14 +70,15 @@ static HttpDnsService * _httpDnsClient = nil;
     // Get config
     accountID = defaultOptions.httpdnsAccountId;
     secretKey = defaultOptions.httpdnsSecretKey;
-    // Get push(cps) service
-    EMASOptionSDKServiceItem *sdkItem = [defaultOptions sdkServiceItemForSdkId:sdkId]; if (sdkItem) {
+    EMASOptionSDKServiceItem *sdkItem = [defaultOptions sdkServiceItemForSdkId:sdkId];
+    if (sdkItem) {
         sdkVersion = sdkItem.version;
-        sdkStatus = sdkItem.status; }
+        sdkStatus = sdkItem.status;
+    }
     if ([EMASTools isValidString:accountID]) {
         return [self initWithAccountID:[accountID intValue] secretKey:secretKey];
     }
-    NSLog(@"Auto init fail, can not get accountId / secretKey, please check the file named :AliyunEmasServices-Info.plist.");
+    NSLog(@"Auto init fail, can not get accountId / secretKey, please check the file named: AliyunEmasServices-Info.plist.");
     return nil;
 }
 
@@ -142,9 +144,6 @@ static HttpDnsService * _httpDnsClient = nil;
                          EXT_INFO_KEY_VERSION : HTTPDNS_IOS_SDK_VERSION,
                          };
     _httpDnsClient.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
-    
-    
-
     
     /* 日活打点 */
     [[self class] statIfNeeded];//旧版日活打点
@@ -405,6 +404,58 @@ static HttpDnsService * _httpDnsClient = nil;
 
 - (NSString *)getSessionId {
     return [HttpdnsUtil generateSessionID];
+}
+
+- (void)enableIPv6:(BOOL)enable {
+    [[HttpdnsIPv6Manager sharedInstance] setIPv6ResultEnable:enable];
+}
+
+- (NSString *)getIPv6ByHostAsync:(NSString *)host {
+    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        return nil;
+    }
+    NSArray *ips = [self getIPv6sByHostAsync:host];
+    NSString *ip = nil;
+    if (ips != nil && ips.count > 0) {
+        ip = [HttpdnsUtil safeOjectAtIndex:0 array:ips];
+    }
+    return ip;
+}
+
+- (NSArray *)getIPv6sByHostAsync:(NSString *)host {
+    if ([self.delegate shouldDegradeHTTPDNS:host]) {
+        return nil;
+    }
+    
+    if (!host) {
+        return nil;
+    }
+    
+    if ([HttpdnsUtil isAnIP:host]) {
+        HttpdnsLogDebug("The host is just an IP.");
+        return [NSArray arrayWithObjects:host, nil];
+    }
+    
+    if (![HttpdnsUtil isAHost:host]) {
+        HttpdnsLogDebug("The host is illegal.");
+        return nil;
+    }
+    
+    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO];
+    if (hostObject) {
+        NSArray *ip6sObject = [hostObject getIp6s];
+        NSMutableArray *ip6sArray = [[NSMutableArray alloc] init];
+        if (ip6sObject && [ip6sObject count] > 0) {
+            for (HttpdnsIpObject *ip6Object in ip6sObject) {
+                [ip6sArray addObject:[ip6Object getIpString]];
+            }
+            [self bizPerfUserGetIPWithHost:host success:YES];
+            return ip6sArray;
+        }
+    }
+    [self bizPerfUserGetIPWithHost:host success:NO];
+    HttpdnsLogDebug("No available IP cached for %@", host);
+    return nil;
 }
 
 - (BOOL)checkServiceStatus {

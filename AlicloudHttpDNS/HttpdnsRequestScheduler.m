@@ -35,6 +35,7 @@
 #import "HttpDnsHitService.h"
 #import "HttpdnsTCPSpeedTester.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
+#import "HttpdnsIPv6Manager.h"
 
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS = @"disable_status_key";
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME = @"disable_status";
@@ -179,6 +180,13 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     @synchronized(self) {
         result = [self hostObjectFromCacheForHostName:host];
         HttpdnsLogDebug("Get from cache: %@", result);
+        /*
+         缓存处理逻辑：
+         1. 没有缓存对象；
+         2. 有缓存对象 && 缓存v4 IP数=0 && 正在发起查询请求；
+         3. 有缓存对象 && 缓存v4 IP数!=0 && TTL过期有效/无效；
+         4. 其他。
+         */
         if (result == nil) {
             HttpdnsLogDebug("No available cache for %@ yet.", host);
             if ([self isHostsNumberLimitReached]) {
@@ -189,7 +197,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             result.hostName = host;
             result.ips = @[];
             [result setQueryingState:YES];
-            [_hostManagerDict setObject:result forKey:host];
+            if ([EMASTools isValidString:host] && result) {
+                [_hostManagerDict setObject:result forKey:host];
+            }
         } else if (([result getIps].count == 0) && result.isQuerying ) {
             HttpdnsLogDebug("%@ queryingState: %d", host, [result isQuerying]);
             return nil;
@@ -242,13 +252,18 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         int64_t TTL = [result getTTL];
         int64_t lastLookupTime = [result getLastLookupTime];
         NSArray<NSString *> *IPStrings = [result getIPStrings];
+        NSArray<NSString *> *IP6Strings = [result getIP6Strings];
         NSArray<HttpdnsIpObject *> *IPObjects = [result getIps];
+        NSArray<HttpdnsIpObject *> *IP6Objects = [result getIp6s];
         if (old) {
             [old setTTL:TTL];
             [old setLastLookupTime:lastLookupTime];
             [old setIsLoadFromDB:NO];
             [old setIps:IPObjects];
             [old setQueryingState:NO];
+            if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
+                [old setIp6s:IP6Objects];
+            }
             HttpdnsLogDebug("Update %@: %@", hostName, result);
         } else {
             HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
@@ -257,12 +272,17 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [hostObject setTTL:TTL];
             [hostObject setIps:IPObjects];
             [hostObject setQueryingState:NO];
+            if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
+                [hostObject setIp6s:IP6Objects];
+            }
             HttpdnsLogDebug("New resolved item: %@: %@", host, result);
             @synchronized(self) {
-                [_hostManagerDict setObject:hostObject forKey:host];
+                if ([EMASTools isValidString:hostObject] && hostObject) {
+                    [_hostManagerDict setObject:hostObject forKey:host];
+                }
             }
         }
-        [self cacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings TTL:TTL];
+        [self cacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings IP6s:IP6Strings TTL:TTL];
         //TODO:
         [self aysncUpdateIPRankingWithResult:result forHost:host];
     } else {
@@ -310,7 +330,11 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             }
             HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
             // Adapt to IPv6-only network.
-            [ipObject setIp:[[AlicloudIPv6Adapter getInstance] handleIpv4Address:ip]];
+            if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+                [ipObject setIp:[[AlicloudIPv6Adapter getInstance] handleIpv4Address:ip]];
+            } else {
+                [ipObject setIp:ip];
+            }
             [ipArray addObject:ipObject];
         }
         [hostObject setIps:ipArray];
@@ -431,8 +455,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         NSError *error;
         HttpdnsLogDebug("Async request for %@ starts...", host);
         HttpdnsHostObject *result = [[HttpdnsRequest new] lookupHostFromServer:host
-                                                            error:&error
-                                           activatedServerIPIndex:newActivatedServerIPIndex];
+                                                                         error:&error
+                                                        activatedServerIPIndex:newActivatedServerIPIndex];
         if (error) {
             HttpdnsLogDebug("Async request for %@ error: %@", host, error);
             
@@ -697,7 +721,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             HttpdnsHostObject *hostObject = [HttpdnsHostObject hostObjectWithHostRecord:hostRecord];
             //从DB缓存中加载到内存里的数据，此时不会出现过期的情况，TTL时间后过期。
             [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
-            [_hostManagerDict setObject:hostObject forKey:host];
+            [HttpdnsUtil safeAddValue:hostObject key:host toDict:_hostManagerDict];
             // 清除持久化缓存
             [hostCacheStore deleteHostRecordAndItsIPsWithHostRecordIDs:@[@(hostRecord.hostRecordId)]];
             [self aysncUpdateIPRankingWithResult:hostObject forHost:host];
@@ -705,12 +729,12 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     });
 }
 
-- (void)cacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs TTL:(int64_t)TTL {
+- (void)cacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL {
     if (!_cachedIPEnabled) {
         return;
     }
     dispatch_async([HttpdnsRequestScheduler hostCacheQueue], ^{
-        HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:host IPs:IPs TTL:TTL];
+        HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL];
         HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
         [hostCacheStore insertHostRecords:@[hostRecord]];
     });
@@ -724,6 +748,15 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     dispatch_async([HttpdnsRequestScheduler hostCacheQueue], ^{
         [[HttpdnsHostCacheStore new] cleanAllExpiredHostRecordsSync];
     });
+}
+
+// for test
+- (NSString *)showMemoryCache {
+    NSString *cacheDes;
+    if ([HttpdnsUtil isValidDictionary:_hostManagerDict]) {
+        cacheDes = [NSString stringWithFormat:@"%@", _hostManagerDict];
+    }
+    return cacheDes;
 }
 
 @end

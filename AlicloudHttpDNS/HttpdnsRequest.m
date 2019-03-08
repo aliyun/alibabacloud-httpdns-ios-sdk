@@ -23,7 +23,6 @@
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsConfig.h"
-#import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsRequestScheduler_Internal.h"
@@ -32,7 +31,7 @@
 #import "AlicloudHttpDNS.h"
 #import "HttpDnsHitService.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
-#import <AlicloudUtils/EMASTools.h>
+#import "HttpdnsIPv6Manager.h"
 
 NSInteger const ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE = 10003;
 NSInteger const ALICLOUD_HTTPDNS_HTTP_COMMON_ERROR_CODE = 10004;
@@ -137,34 +136,61 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     NSString *hostName;
     NSArray *ips;
-    NSInteger ipsCount = 0;
+    NSArray *ip6s;
     hostName = [HttpdnsUtil safeObjectForKey:@"host" dict:json];
     ips = [HttpdnsUtil safeObjectForKey:@"ips" dict:json];
-    @try {
-        ipsCount = [ips count];
-    } @catch (NSException *exception) {}
+    ip6s = [HttpdnsUtil safeObjectForKey:@"ipsv6" dict:json];
     
     if (![HttpdnsUtil isValidArray:ips] || ![HttpdnsUtil isValidString:hostName]) {
         HttpdnsLogDebug("IP list is empty for host %@", hostName);
         return nil;
     }
+    
+    HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
     NSMutableArray *ipArray = [[NSMutableArray alloc] init];
     for (NSString *ip in ips) {
         if (![HttpdnsUtil isValidString:ip]) {
             continue;
         }
         HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
-        // Adapt to IPv6-only network.
-        [ipObject setIp:[[AlicloudIPv6Adapter getInstance] handleIpv4Address:ip]];
+        // 用户主动开启v6解析后，IPv6-Only场景解析结果不再自动适配
+        // 确保getIpByHostAsync()返回v4地址，getIp6ByHostAsync()返回v6地址
+        if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+            [ipObject setIp:[[AlicloudIPv6Adapter getInstance] handleIpv4Address:ip]];
+        } else {
+            [ipObject setIp:ip];
+        }
         [ipArray addObject:ipObject];
     }
-    HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
+    // 处理IPv6解析结果
+    NSMutableArray *ip6Array = nil;
+    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        if ([EMASTools isValidArray:ip6s]) {
+            ip6Array = [[NSMutableArray alloc] init];
+            for (NSString *ipv6 in ip6s) {
+                if (![EMASTools isValidString:ipv6]) {
+                    continue;
+                }
+                HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
+                [ipObject setIp:ipv6];
+                [ip6Array addObject:ipObject];
+            }
+        }
+        
+        if ([EMASTools isValidArray:ip6Array]) {
+            [hostObject setIp6s:ip6Array];
+        }
+    }
     [hostObject setHostName:hostName];
     [hostObject setIps:ipArray];
     [hostObject setTTL:[[json objectForKey:@"ttl"] longLongValue]];
     [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
     [hostObject setQueryingState:NO];
-    HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@", [hostObject getHostName], [hostObject getTTL], ipArray);
+    if (![EMASTools isValidArray:ip6Array]) {
+        HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@", [hostObject getHostName], [hostObject getTTL], ipArray);
+    } else {
+        HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@ ip6s: %@", [hostObject getHostName], [hostObject getTTL], ipArray, ip6Array);
+    }
     return hostObject;
 }
 
@@ -225,6 +251,11 @@ static NSURLSession *_resolveHOSTSession = nil;
         }
     }
     
+    // 开启IPv6解析结果后，URL处理
+    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        url = [[HttpdnsIPv6Manager sharedInstance] assembleIPv6ResultURL:url];
+    }
+    
     return url;
 }
 
@@ -245,7 +276,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     NSError *outError = nil;
     if (error != NULL) {
-       outError = (*error);
+        outError = (*error);
     }
     BOOL success = !outError;
     BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];

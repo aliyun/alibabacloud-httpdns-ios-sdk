@@ -49,6 +49,11 @@
 @property (nonatomic, copy, readonly) NSArray<NSString *> *IPs;
 
 /*!
+ * IPv6列表，非数据库字段，仅为兼容HttpdnsHostObject进行数据传递。
+ */
+@property (nonatomic, copy, readonly) NSArray<NSString *> *IP6s;
+
+/*!
  * TTL，非数据库字段，仅为兼容HttpdnsHostObject进行数据传递。
  */
 @property (nonatomic, assign, readonly) int64_t TTL;
@@ -60,6 +65,7 @@
                       host:(NSString *)host
                    carrier:(NSString *)carrier
                        IPs:(NSArray<NSString *> *)IPs
+                      IP6s:(NSArray<NSString *> *)IP6s
                        TTL:(int64_t)TTL
                   createAt:(NSDate *)createAt
                   expireAt:(NSDate *)expireAt;
@@ -71,6 +77,7 @@
                             host:(NSString *)host
                          carrier:(NSString *)carrier
                              IPs:(NSArray<NSString *> *)IPs
+                            IP6s:(NSArray<NSString *> *)IP6s
                              TTL:(int64_t)TTL
                         createAt:(NSDate *)createAt
                         expireAt:(NSDate *)expireAt;
@@ -79,12 +86,14 @@
  */
 - (instancetype)initWithHost:(NSString *)host
                          IPs:(NSArray<NSString *> *)IPs
+                        IP6s:(NSArray<NSString *> *)IP6s
                          TTL:(int64_t)TTL;
 /*!
  * 从网络初始化
  */
 + (instancetype)hostRecordWithHost:(NSString *)host
                                IPs:(NSArray<NSString *> *)IPs
+                              IP6s:(NSArray<NSString *> *)IP6s
                                TTL:(int64_t)TTL;
 
 @end

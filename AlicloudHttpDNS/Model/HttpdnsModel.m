@@ -23,6 +23,7 @@
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsIPRecord.h"
+#import "HttpdnsIPv6Manager.h"
 
 @implementation HttpdnsIpObject
 
@@ -61,6 +62,7 @@
     _ttl = -1;
     _isLoadFromDB = NO;
     _ips = nil;
+    _ip6s = nil;
     _queryingState = NO;
     return self;
 }
@@ -71,6 +73,7 @@
         _lastLookupTime = [aDecoder decodeInt64ForKey:@"lastLookupTime"];
         _ttl = [aDecoder decodeInt64ForKey:@"ttl"];
         _ips = [aDecoder decodeObjectForKey:@"ips"];
+        _ip6s = [aDecoder decodeObjectForKey:@"ip6s"];
         _queryingState = [aDecoder decodeBoolForKey:@"queryingState"];
     }
     return self;
@@ -81,6 +84,7 @@
     [aCoder encodeInt64:_lastLookupTime forKey:@"lastLookupTime"];
     [aCoder encodeInt64:_ttl forKey:@"ttl"];
     [aCoder encodeObject:_ips forKey:@"ips"];
+    [aCoder encodeObject:_ip6s forKey:@"ip6s"];
     [aCoder encodeBool:_queryingState forKey:@"queryingState"];
 }
 
@@ -104,8 +108,15 @@
     [hostObject setHostName:hostRecord.host];
     [hostObject setLastLookupTime:[hostRecord.createAt timeIntervalSince1970]];
     [hostObject setTTL:hostRecord.TTL];
+    NSArray *ips = hostRecord.IPs;
+    NSArray *ip6s = hostRecord.IP6s;
+    if ([HttpdnsUtil isValidArray:ips]) {
+        hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:ips];
+    }
+    if ([HttpdnsUtil isValidArray:ip6s]) {
+        hostObject.ip6s = [HttpdnsIpObject IPObjectsFromIPs:ip6s];
+    }
     [hostObject setIsLoadFromDB:YES];
-    hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:hostRecord.IPs];
     return hostObject;
 }
 
@@ -118,9 +129,25 @@
     return [IPs copy];
 }
 
+- (NSArray<NSString *> *)getIP6Strings {
+    NSArray<HttpdnsIpObject *> *IP6Records = [self getIp6s];
+    NSMutableArray<NSString *> *IPs = [NSMutableArray arrayWithCapacity:IP6Records.count];
+    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        for (HttpdnsIpObject *IPObject in IP6Records) {
+            [HttpdnsUtil safeAddObject:IPObject.ip toArray:IPs];
+        }
+    }
+    return [IPs copy];
+}
+
 - (NSString *)description {
-    return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld queryingState = %@",
-            _hostName, _ips, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO"];
+    if (![EMASTools isValidArray:_ip6s]) {
+        return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld queryingState = %@",
+                _hostName, _ips, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO"];
+    } else {
+        return [NSString stringWithFormat:@"Host = %@ ips = %@ ip6s = %@ lastLookup = %lld ttl = %lld queryingState = %@",
+                _hostName, _ips, _ip6s, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO"];
+    }
 }
 
 @end

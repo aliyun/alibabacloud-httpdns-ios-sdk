@@ -28,6 +28,7 @@
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsUtil.h"
 #import "HttpDnsHitService.h"
+#import "HttpdnsIPv6Manager.h"
 #import "HttpdnsLog_Internal.h"
 
 static NSString *const testSpeedKey = @"testSpeed";
@@ -60,12 +61,16 @@ static NSString *const ipKey = @"ip";
  - ~~只取内存缓存，与持久化缓存逻辑不产生交集。持久化优先级更高。~~ 无法区分持久化，持久化缓存也可能参与排序。
  - 测速逻辑公开，作为最佳实践。
  - 只在 IPv4 逻辑下测试，IPv6 环境不测。
+ - 开启IPv6解析结果时，不测试。
  - 测速逻辑不能增加用户计费请求次数。
  - 预加载也参与IP优选，网络请求成功就异步排序。
  -
  */
 - (NSArray<NSString *> *)ipRankingWithIPs:(NSArray<NSString *> *)IPs host:(NSString *)host {
     if ([[self class] isIPv6OnlyNetwork]) {
+        return nil;
+    }
+    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
         return nil;
     }
     if (![HttpdnsUtil isValidArray:IPs]) {

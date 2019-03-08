@@ -40,4 +40,8 @@
     return [self IPRecordWithHostRecordId:0 IP:IP TTL:0];
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"{\n ip: %@\n}\n", _IP];
+}
+
 @end

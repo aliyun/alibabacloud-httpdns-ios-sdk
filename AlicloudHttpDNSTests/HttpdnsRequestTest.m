@@ -828,7 +828,7 @@
     XCTAssertNotNil([service getIpByHost:hostName]);
     [requestScheduler cleanAllHostMemoryCache];
     [requestScheduler loadIPsFromCacheSyncIfNeeded];
-    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:hostName IPs:@[] TTL:0];
+    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:hostName IPs:@[] IP6s:@[] TTL:0];
     HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
     [hostCacheStore insertHostRecords:@[hostRecord]];
     
