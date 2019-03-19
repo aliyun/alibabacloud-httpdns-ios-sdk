@@ -322,13 +322,28 @@
     } @catch (NSException *e) {}
 }
 
++ (id)safeAllKeysFromDict:(NSDictionary *)dict {
+    NSArray *keysArray;
+    @synchronized (self) {
+        keysArray = [dict allKeys];
+    }
+    return keysArray;
+}
+
++ (NSInteger)safeCountFromDict:(NSDictionary *)dict {
+    NSInteger dictCount;
+    @synchronized (self) {
+        dictCount = [dict count];
+    }
+    return dictCount;
+}
+
 + (id)safeObjectForKey:(NSString *)key dict:(NSDictionary *)dict {
     id object;
     @try {
         @synchronized (self) {
             object = [dict objectForKey:key];
         }
-        
     } @catch (NSException *exception) {}
     return object;
 }

@@ -470,7 +470,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 - (BOOL)isHostsNumberLimitReached {
-    if ([_hostManagerDict count] >= HTTPDNS_MAX_MANAGE_HOST_NUM) {
+    if ([HttpdnsUtil safeCountFromDict:_hostManagerDict] >= HTTPDNS_MAX_MANAGE_HOST_NUM) {
         HttpdnsLogDebug("Can't handle more than %d hosts due to the software configuration.", HTTPDNS_MAX_MANAGE_HOST_NUM);
         return YES;
     }
@@ -524,7 +524,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (_lastNetworkStatus != [networkStatus longValue]) {
         dispatch_async(_syncDispatchQueue, ^{
             if (![statusString isEqualToString:@"None"]) {
-                NSArray *hostArray = [_hostManagerDict allKeys];
+                NSArray *hostArray = [HttpdnsUtil safeAllKeysFromDict:_hostManagerDict];
                 [self cleanAllHostMemoryCache];
                 //同步操作，防止网络请求成功，更新后，缓存数据再覆盖掉。
                 [self loadIPsFromCacheSyncIfNeeded];
