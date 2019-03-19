@@ -197,9 +197,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             result.hostName = host;
             result.ips = @[];
             [result setQueryingState:YES];
-            if ([EMASTools isValidString:host] && result) {
-                [_hostManagerDict setObject:result forKey:host];
-            }
+            [HttpdnsUtil safeAddValue:result key:host toDict:_hostManagerDict];
         } else if (([result getIps].count == 0) && result.isQuerying ) {
             HttpdnsLogDebug("%@ queryingState: %d", host, [result isQuerying]);
             return nil;
@@ -245,10 +243,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         [self setServerDisable:NO host:host];
         NSString *hostName = [result getHostName];
         HttpdnsHostObject *old;
-        @synchronized(self) {
-          old  = [_hostManagerDict objectForKey:hostName];
-        }
-        
+        old  = [HttpdnsUtil safeObjectForKey:hostName dict:_hostManagerDict];
         int64_t TTL = [result getTTL];
         int64_t lastLookupTime = [result getLastLookupTime];
         NSArray<NSString *> *IPStrings = [result getIPStrings];
@@ -276,11 +271,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 [hostObject setIp6s:IP6Objects];
             }
             HttpdnsLogDebug("New resolved item: %@: %@", host, result);
-            @synchronized(self) {
-                if ([EMASTools isValidString:hostObject] && hostObject) {
-                    [_hostManagerDict setObject:hostObject forKey:host];
-                }
-            }
+            [HttpdnsUtil safeAddValue:hostObject key:host toDict:_hostManagerDict];
         }
         [self cacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings IP6s:IP6Strings TTL:TTL];
         //TODO:
@@ -311,10 +302,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (!self.IPRankingEnabled) {
         return;
     }
-    HttpdnsHostObject *hostObject;
-    @synchronized(self) {
-     hostObject = [_hostManagerDict objectForKey:host];
-    }
+    HttpdnsHostObject *hostObject = [HttpdnsUtil safeObjectForKey:host dict:_hostManagerDict];
     if (!hostObject) {
         return;
     }
@@ -338,7 +326,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [ipArray addObject:ipObject];
         }
         [hostObject setIps:ipArray];
-        [_hostManagerDict setObject:hostObject forKey:host];
+        [HttpdnsUtil safeAddValue:hostObject key:host toDict:_hostManagerDict
     }
 }
 
@@ -688,9 +676,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         return nil;
     }
     HttpdnsHostObject *hostObject;
-    @synchronized(self) {
-        hostObject = [_hostManagerDict objectForKey:hostName];
-    }
+    hostObject = [HttpdnsUtil safeObjectForKey:hostName dict:_hostManagerDict];
     return hostObject;
 }
 
