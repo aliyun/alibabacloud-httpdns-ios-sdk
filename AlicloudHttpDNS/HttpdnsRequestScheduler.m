@@ -326,7 +326,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [ipArray addObject:ipObject];
         }
         [hostObject setIps:ipArray];
-        [HttpdnsUtil safeAddValue:hostObject key:host toDict:_hostManagerDict
+        [HttpdnsUtil safeAddValue:hostObject key:host toDict:_hostManagerDict];
     }
 }
 
