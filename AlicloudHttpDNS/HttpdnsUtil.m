@@ -38,7 +38,7 @@
 
 + (BOOL)isAnIP:(NSString *)candidate {
     const char *utf8 = [candidate UTF8String];
-
+    
     // Check valid IPv4.
     struct in_addr dst;
     int success = inet_pton(AF_INET, utf8, &(dst.s_addr));
@@ -56,7 +56,7 @@
     dispatch_once(&once_token, ^{
         hostExpression = [[NSRegularExpression alloc] initWithPattern:@"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$" options:NSRegularExpressionCaseInsensitive error:nil];
     });
-
+    
     if (!host.length) {
         return NO;
     }
@@ -195,7 +195,7 @@
     if (!isKindOf) {
         return NO;
     }
-
+    
     NSInteger stringLength = 0;
     @try {
         stringLength = [notValidString length];
@@ -271,7 +271,7 @@
                 dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                         errCode, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
             }
-         
+            
             NSString *domainString = [NSString stringWithFormat:@"httpdns.request.lookupAllHostsFromServer-%@", isHTTPS? @"HTTPS": @"HTTP"];
             NSInteger code = isHTTPS ? ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE : ALICLOUD_HTTPDNS_HTTP_COMMON_ERROR_CODE;
             errorStrong = [NSError errorWithDomain:domainString code:code userInfo:dict];
@@ -286,7 +286,7 @@
  生成sessionId
  App打开生命周期只生成一次，不做持久化
  sessionId为12位，采用base62编码
-
+ 
  @return 返回sessionId
  */
 + (NSString *)generateSessionID {
@@ -308,20 +308,42 @@
 
 + (void)safeAddObject:(id)object toArray:(NSMutableArray *)mutableArray {
     @try {
-        [mutableArray addObject:object];
+        @synchronized(self) {
+            [mutableArray addObject:object];
+        }
     } @catch (NSException *exception) {}
 }
 
 + (void)safeAddValue:(id)value key:(NSString *)key toDict:(NSMutableDictionary *)dict {
     @try {
-        [dict setObject:value forKey:key];
+        @synchronized (self) {
+            [dict setObject:value forKey:key];
+        }
     } @catch (NSException *e) {}
+}
+
++ (id)safeAllKeysFromDict:(NSDictionary *)dict {
+    NSArray *keysArray;
+    @synchronized (self) {
+        keysArray = [dict allKeys];
+    }
+    return keysArray;
+}
+
++ (NSInteger)safeCountFromDict:(NSDictionary *)dict {
+    NSInteger dictCount;
+    @synchronized (self) {
+        dictCount = [dict count];
+    }
+    return dictCount;
 }
 
 + (id)safeObjectForKey:(NSString *)key dict:(NSDictionary *)dict {
     id object;
     @try {
-        object = [dict objectForKey:key];
+        @synchronized (self) {
+            object = [dict objectForKey:key];
+        }
     } @catch (NSException *exception) {}
     return object;
 }
@@ -329,7 +351,9 @@
 + (id)safeOjectAtIndex:(int)index array:(NSArray *)array {
     id object;
     @try {
-        object = array[index];
+        @synchronized (self) {
+            object = array[index];
+        }
     } @catch (NSException *exception) {}
     return object;
 }
@@ -337,14 +361,17 @@
 + (id)safeObjectAtIndexOrTheFirst:(int)index array:(NSArray *)array defaultValue:(id)defaultValue {
     id object = defaultValue;
     @try {
-        object = array[index];
+        @synchronized (self) {
+            object = array[index];
+        }
     } @catch (NSException *exception) {
         @try {
-            object = array[0];
+            @synchronized (self) {
+                object = array[0];
+            }
         } @catch (NSException *exception) {}
     }
     return object;
-
 }
 
 @end
