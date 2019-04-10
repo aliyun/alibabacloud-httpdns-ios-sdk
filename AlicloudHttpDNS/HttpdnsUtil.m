@@ -174,10 +174,12 @@
     if (!isKindOf) {
         return NO;
     }
-    NSInteger arrayCount = 0;
-    @try {
-        arrayCount = [(NSArray *)notValidArray count];
-    } @catch (NSException *exception) {}
+    __block NSInteger arrayCount = 0;
+    @synchronized (self) {
+        @try {
+            arrayCount = [(NSArray *)notValidArray count];
+        } @catch (NSException *exception) {}
+    }
     if (arrayCount == 0) {
         return NO;
     }

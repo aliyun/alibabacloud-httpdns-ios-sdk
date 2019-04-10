@@ -255,7 +255,7 @@ static HttpDnsService * _httpDnsClient = nil;
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
-        if (ipsObject && [ipsObject count] > 0) {
+        if ([HttpdnsUtil isValidArray:ipsObject]) {
             for (HttpdnsIpObject *ipObject in ipsObject) {
                 [HttpdnsUtil safeAddObject:[ipObject getIpString] toArray:ipsArray];
             }
@@ -313,7 +313,7 @@ static HttpDnsService * _httpDnsClient = nil;
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
-        if (ipsObject && [ipsObject count] > 0) {
+        if ([HttpdnsUtil isValidArray:ipsObject]) {
             for (HttpdnsIpObject *ipObject in ipsObject) {
                 [ipsArray addObject:[ipObject getIpString]];
             }
@@ -445,7 +445,7 @@ static HttpDnsService * _httpDnsClient = nil;
     if (hostObject) {
         NSArray *ip6sObject = [hostObject getIp6s];
         NSMutableArray *ip6sArray = [[NSMutableArray alloc] init];
-        if (ip6sObject && [ip6sObject count] > 0) {
+        if ([HttpdnsUtil isValidArray:ip6sObject]) {
             for (HttpdnsIpObject *ip6Object in ip6sObject) {
                 [ip6sArray addObject:[ip6Object getIpString]];
             }
