@@ -170,7 +170,9 @@
     BOOL isKindOf = NO;
     @try {
         isKindOf = [notValidArray isKindOfClass:[NSArray class]];
-    } @catch (NSException *exception) {}
+    } @catch (NSException *exception) {
+        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
+    }
     if (!isKindOf) {
         return NO;
     }
@@ -178,7 +180,9 @@
     @synchronized (self) {
         @try {
             arrayCount = [(NSArray *)notValidArray count];
-        } @catch (NSException *exception) {}
+        } @catch (NSException *exception) {
+            NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
+        }
     }
     if (arrayCount == 0) {
         return NO;
@@ -201,7 +205,9 @@
     NSInteger stringLength = 0;
     @try {
         stringLength = [notValidString length];
-    } @catch (NSException *exception) {}
+    } @catch (NSException *exception) {
+        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
+    }
     if (stringLength == 0) {
         return NO;
     }
@@ -313,7 +319,9 @@
         @synchronized(self) {
             [mutableArray addObject:object];
         }
-    } @catch (NSException *exception) {}
+    } @catch (NSException *exception) {
+        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
+    }
 }
 
 + (void)safeAddValue:(id)value key:(NSString *)key toDict:(NSMutableDictionary *)dict {
@@ -321,7 +329,9 @@
         @synchronized (self) {
             [dict setObject:value forKey:key];
         }
-    } @catch (NSException *e) {}
+    } @catch (NSException *exception) {
+        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
+    }
 }
 
 + (id)safeAllKeysFromDict:(NSDictionary *)dict {
@@ -346,7 +356,9 @@
         @synchronized (self) {
             object = [dict objectForKey:key];
         }
-    } @catch (NSException *exception) {}
+    } @catch (NSException *exception) {
+        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
+    }
     return object;
 }
 
@@ -356,7 +368,9 @@
         @synchronized (self) {
             object = array[index];
         }
-    } @catch (NSException *exception) {}
+    } @catch (NSException *exception) {
+        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
+    }
     return object;
 }
 
@@ -371,7 +385,9 @@
             @synchronized (self) {
                 object = array[0];
             }
-        } @catch (NSException *exception) {}
+        } @catch (NSException *exception) {
+            NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
+        }
     }
     return object;
 }

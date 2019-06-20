@@ -69,7 +69,7 @@ static NSURLSession *_scheduleCenterSession = nil;
     NSString *serverHostOrIP = nil;
     NSArray *hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
     index = index % hostArray.count;
-    serverHostOrIP =   [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:hostArray defaultValue:nil];
+    serverHostOrIP = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:hostArray defaultValue:nil];
     serverHostOrIP = [HttpdnsUtil getRequestHostFromString:serverHostOrIP];
     return serverHostOrIP;
 }
