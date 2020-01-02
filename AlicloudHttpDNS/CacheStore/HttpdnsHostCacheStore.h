@@ -16,6 +16,8 @@ static NSTimeInterval ALICLOUD_HTTPDNS_HOST_CACHE_MAX_CACHE_AGE = 0;
 
 @interface HttpdnsHostCacheStore : HttpdnsCacheStore
 
++ (instancetype)sharedInstance;
+
 - (void)insertHostRecords:(NSArray<HttpdnsHostRecord *> *)hostRecords;
 
 //- (NSArray<HttpdnsIPRecord *> *)IPRecordsForHosts:(NSArray<NSString *> *)hosts;

@@ -28,6 +28,17 @@
     ALICLOUD_HTTPDNS_HOST_CACHE_MAX_CACHE_AGE  = 60 * 60 * 24 * 7;
 }
 
++ (instancetype)sharedInstance {
+    static id singletonInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        if (!singletonInstance) {
+            singletonInstance = [[super allocWithZone:NULL] init];
+        }
+    });
+    return singletonInstance;
+}
+
 - (void)databaseQueueDidLoad {
     ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
         [db executeUpdate:ALICLOUD_HTTPDNS_SQL_CREATE_HOST_RECORD_TABLE];
@@ -59,7 +70,7 @@
     for (HttpdnsHostRecord *hostRecord in hostRecords) {
         if (!hostRecord) continue;
         
-        HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore new];
+        HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore sharedInstance];
         
         if (![EMASTools isValidArray:hostRecord.IPs] && ![EMASTools isValidArray:hostRecord.IP6s]) {
             //删除记录，此时hostRecord.hostRecordId为nil，不能依据Id删，要先从数据库里拿id，再依据id删。
@@ -199,7 +210,7 @@
     NSArray *IP6s = nil;
     int64_t TTL = 0;
     if (db) {
-        HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore new];
+        HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore sharedInstance];
         NSArray<HttpdnsIPRecord *> *IPRecords = [IPCacheStore IPRecordsForHostID:hostID db:db];
         NSArray<HttpdnsIPRecord *> *IP6Records = [IPCacheStore IP6RecordsForHostID:hostID db:db];
         @try {
@@ -324,7 +335,7 @@
         return;
     }
     [HttpdnsUtil warnMainThreadIfNecessary];
-    HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore new];
+    HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore sharedInstance];
     [IPCacheStore deleteIPRecordWithHostRecordIDs:hostRecordIDs];
     [IPCacheStore deleteIP6RecordWithHostRecordIDs:hostRecordIDs];
 }

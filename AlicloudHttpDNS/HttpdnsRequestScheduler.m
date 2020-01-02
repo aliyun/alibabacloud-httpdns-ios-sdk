@@ -697,7 +697,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         if (!_cachedIPEnabled) {
             return;
         }
-        HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+        HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
         NSArray<HttpdnsHostRecord *> *hostRecords = [hostCacheStore hostRecordsForCurrentCarrier];
         if (![HttpdnsUtil isValidArray:hostRecords]) {
             return;
@@ -721,7 +721,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     }
     dispatch_async([HttpdnsRequestScheduler hostCacheQueue], ^{
         HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL];
-        HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+        HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
         [hostCacheStore insertHostRecords:@[hostRecord]];
     });
 }
@@ -732,7 +732,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         return;
     }
     dispatch_async([HttpdnsRequestScheduler hostCacheQueue], ^{
-        [[HttpdnsHostCacheStore new] cleanAllExpiredHostRecordsSync];
+        [[HttpdnsHostCacheStore sharedInstance] cleanAllExpiredHostRecordsSync];
     });
 }
 
