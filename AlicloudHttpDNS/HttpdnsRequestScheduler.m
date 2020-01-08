@@ -687,9 +687,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 - (void)cleanAllHostMemoryCache {
-    @synchronized(self) {
-        [_hostManagerDict removeAllObjects];
-    }
+    [HttpdnsUtil safeRemoveAllObjectsFromDict:_hostManagerDict];
 }
 
 - (void)loadIPsFromCacheSyncIfNeeded {
