@@ -320,8 +320,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             }
         }
     } else {
-        // 我的待定 
-        [self bizPerfGetIPWithHost:host success:YES];
+        // 我的修改 bizPerfGetIPWithHost
+        [self bizPerfGetIPWithHost:[NSString stringWithFormat:@"%@%@%@",host,params,cacheKey] success:YES];
     }
     
     return result;
