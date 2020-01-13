@@ -456,7 +456,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     return hostObject;
 }
 
-// 我的修改 调用接口 3.0  开始请求123
+// 我的修改 调用接口 3.0  开始请求 
 - (HttpdnsHostObject *)sdnsLookupHostFromServer:(NSString *)hostString withParams:(NSString *)params error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     // 配置设置
     [self resetRequestConfigure];
