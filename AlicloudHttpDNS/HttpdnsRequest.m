@@ -464,7 +464,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     HttpdnsLogDebug("\n ============ Resolve host(%@) over network.", hostString);
     HttpdnsHostObject *hostObject = nil;
     
-    // 我的修改 调用接口 4.0 拼接 URL
+    // 我的修改 调用接口 4.0 拼接 URL1
     // 我的拼接 URL 如果这里不在改动直接拼接 hostString = hostString + params
     NSString *url = [self sdnsConstructRequestURLWith:hostString withParams:params activatedServerIPIndex:activatedServerIPIndex];
     
