@@ -116,6 +116,40 @@
     return hostRecord;
 }
 
+
+// 我的修改 extra 初始化
+/*!
+ * 从网络初始化
+ */
+- (instancetype)initWithHostSdns:(NSString *)host
+                         IPs:(NSArray<NSString *> *)IPs
+                        IP6s:(NSArray<NSString *> *)IP6s
+                         TTL:(int64_t)TTL
+                        Extra:(NSString *)extra {
+    if (self = [super init]) {
+        _host = [host copy];
+        _IPs = [IPs copy];
+        _IP6s = [IP6s copy];
+        _TTL = TTL;
+        _extra = extra;
+    }
+    return self;
+}
+
+// 我的修改 extra 初始化
+/*!
+ * 从网络初始化
+ */
++ (instancetype)sdnsHostRecordWithHost:(NSString *)host
+                               IPs:(NSArray<NSString *> *)IPs
+                              IP6s:(NSArray<NSString *> *)IP6s
+                               TTL:(int64_t)TTL
+                             Extra:(NSString *)extra {
+    HttpdnsHostRecord *hostRecord = [[HttpdnsHostRecord alloc] initWithHostSdns:host IPs:IPs IP6s:IP6s TTL:TTL Extra:extra];
+    return hostRecord;
+}
+
+
 - (NSString *)description {
     NSString *des;
     if (![HttpdnsUtil isValidArray:_IP6s]) {
