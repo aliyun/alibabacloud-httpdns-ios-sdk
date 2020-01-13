@@ -42,7 +42,7 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
  */
 @property (nonatomic, assign) NSUInteger authTimeoutInterval;
 
-// 我的修改 设置全局参数属性
+// 我的修改 设置全局参数属性 
 @property (nonatomic, copy) NSString *globalParams;
 
 @end
