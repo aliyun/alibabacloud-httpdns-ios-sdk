@@ -358,9 +358,9 @@
 				2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */,
 				2197CAB81BC7B3D400BDB65B /* HttpdnsRequest.h */,
 				2197CAB91BC7B3D400BDB65B /* HttpdnsRequest.m */,
+				2197CABA1BC7B3D400BDB65B /* HttpdnsRequestScheduler.h */,
 				2197CABB1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m */,
 				9AF899261E8B5CF600D9CA8E /* HttpdnsRequestScheduler_Internal.h */,
-				2197CABA1BC7B3D400BDB65B /* HttpdnsRequestScheduler.h */,
 				2197CABC1BC7B3D400BDB65B /* HttpdnsServiceProvider.h */,
 				2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */,
 				9A9CBB7B1E8133D300F878BA /* HttpdnsServiceProvider_Internal.h */,
@@ -665,6 +665,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);

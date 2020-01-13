@@ -45,6 +45,7 @@ NSString *const ALICLOUD_HTTPDNS_SERVER_IP_1 = @"203.107.1.65";
 NSString *const ALICLOUD_HTTPDNS_SERVER_IP_2 = @"203.107.1.34";
 NSString *const ALICLOUD_HTTPDNS_SERVER_IP_3 = @"203.107.1.66";
 NSString *const ALICLOUD_HTTPDNS_SERVER_IP_4 = @"203.107.1.33";
+
 NSString *const ALICLOUD_HTTPDNS_HTTP_SERVER_PORT = @"80";
 NSString *const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 
@@ -63,6 +64,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 @property (nonatomic, strong) dispatch_queue_t cacheQueue;
 @property (nonatomic, copy) NSString *disableStatusPath;
 @property (nonatomic, assign) BOOL cachedIPEnabled;
+
 
 @end
 
@@ -232,6 +234,241 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     return result;
 }
 
+// 我的修改 调用接口 1.0
+- (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync  withParams:(NSString *)params withCacheKey:(NSString *)cacheKey {
+  
+    if (![HttpdnsUtil isAbleToRequest]) {
+        return nil;
+    }
+    
+    if (![HttpdnsUtil isValidString:host]) {
+        return nil;
+    }
+    
+    __block HttpdnsHostObject *result = nil;
+    __block BOOL needToQuery = NO;
+    
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    
+    @synchronized(self) {
+        // 我的修改 去表里查询缓存 params 包括全局参数和局部参数
+        result = [self hostObjectFromCacheForHostName: [NSString stringWithFormat:@"%@%@%@",host,params,cacheKey]];
+        HttpdnsLogDebug("\n hostObjectFromCacheForHostName ====== Get from cache: %@", result);
+        /*
+         缓存处理逻辑：
+         1. 没有缓存对象；
+         2. 有缓存对象 && 缓存v4 IP数=0 && 正在发起查询请求；
+         3. 有缓存对象 && 缓存v4 IP数!=0 && TTL过期有效/无效；
+         4. 其他。
+         */
+        
+        // 没有缓存对象
+        if (result == nil) {
+            HttpdnsLogDebug("\n ====== No available cache for %@ yet.", host);
+            
+            if ([self isHostsNumberLimitReached]) {
+                return nil;
+            }
+            
+            needToQuery = YES;
+            HttpdnsHostObject *result =  [HttpdnsHostObject new];
+            result.hostName = host;
+            result.ips = @[];
+            result.extra = @"";
+            [result setQueryingState:YES];
+            
+            // 我的修改 原来是 host 参数 没有则创建一个
+            [HttpdnsUtil safeAddValue:result key:[NSString stringWithFormat:@"%@%@%@",host,params,cacheKey] toDict:_hostManagerDict];
+            
+            // 有缓存对象 && 缓存v4 IP数=0 && 正在发起查询请求；
+        } else if (([result getIps].count == 0) && result.isQuerying ) {
+            HttpdnsLogDebug("%@ queryingState: %d", host, [result isQuerying]);
+            return nil;
+            // TTL是否过期
+        } else if ([result isExpired]) {
+            HttpdnsLogDebug("%@ is expired or from DB, queryingState: %d", host, [result isQuerying]);
+            
+            // 从 FromDB 获取
+            if (_isExpiredIPEnabled || [result getIsLoadFromDB]) {
+                needToQuery = NO;
+                if (![result isQuerying]) {
+                    [result setQueryingState:YES];
+                    // 发起请求 异步 开始接口调用 2.0
+                    [self sdnsExecuteRequest:host synchronously:NO withParams:params withCacheKey:cacheKey retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:Nil];
+                }
+            } else {
+                // 不接受过期的IP
+                HttpdnsLogDebug("Expired IP is not accepted.");
+                // For sync mode, We still send a synchronous request even it is in QUERYING state in order to avoid HOL blocking.
+                // 在同步模式下，为了避免 hol 阻塞，即使处于查询状态，我们仍然发送同步请求。
+                needToQuery = YES;
+                result = nil;
+            }
+        }
+    }
+    
+    // 需要查询
+    if (needToQuery) {
+        if (![result isQuerying]) {
+            [result setQueryingState:YES];
+            if (sync) {
+                // 同步 好像废弃了 目前无需修改
+                return [self executeRequest:host synchronously:YES retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
+            } else {
+                // 异步 异步请求 开始接口调用 2.0
+              return [self sdnsExecuteRequest:host synchronously:NO withParams:params withCacheKey:cacheKey retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:Nil];
+            }
+        }
+    } else {
+        // 我的待定
+        HttpdnsLogDebug("\n 我的待定  ==============  ");
+        [self bizPerfGetIPWithHost:host success:YES];
+    }
+    
+    return result;
+    
+}
+
+// 我的修改 调用接口 2.0
+- (HttpdnsHostObject *)sdnsExecuteRequest:(NSString *)host
+                        synchronously:(BOOL)sync
+                           withParams:(NSString *)params
+                         withCacheKey:(NSString *)cacheKey
+                           retryCount:(int)hasRetryedCount
+               activatedServerIPIndex:(NSInteger)activatedServerIPIndex
+                                error:(NSError *)error {
+    
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    
+    if (![HttpdnsUtil isAbleToRequest]) {
+        return nil;
+    }
+    
+    if (scheduleCenter.isStopService) {
+        HttpdnsLogDebug("SDK disable, return nil.");
+        return nil;
+    }
+    
+    BOOL isRetry = NO;
+    
+    if (hasRetryedCount == 0) {
+        error = nil;
+    } else {
+        isRetry = YES;
+    }
+    
+    if (hasRetryedCount > HTTPDNS_MAX_REQUEST_RETRY_TIME) {
+        // 重试次数超过限制，中止！
+        HttpdnsLogDebug("Retry count exceed limit, abort!");
+        // 用户访问引发的嗅探超时的情况，和重试引起的主动嗅探都会访问该方法
+        [self canNotResolveHost:host error:error isRetry:isRetry activatedServerIPIndex:activatedServerIPIndex];
+        return nil;
+    }
+    
+    [HttpDnsService statIfNeeded];
+    
+    if ([self isDisableToServer]) {
+        return nil;
+    }
+    
+    /**
+     *
+     * 以下为：网络 Disable 且 AbleToSniffer、网络正常。
+     * 可能发生的情况如下所示：
+     
+     ------------ | 网络 Disable且 AbleToSniffer | 网络正常
+     -------------|---------------------------- | -------------
+     同步     |     嗅探（不重试的异步）       | 正常（重试的同步）
+     异步     |     嗅探（不重试的异步）       | 正常（重试的异步）
+     
+     * 我们可以总结出来：以下方法的情况中，除了同步且网络正常的情况，其余都需要走异步请求，且异步中，唯一的区别在于，是否需要重试。
+     */
+    
+    NSInteger newActivatedServerIPIndex = [scheduleCenter nextServerIPIndexFromIPIndex:activatedServerIPIndex increase:hasRetryedCount];
+    
+    BOOL shouldRetry = !self.isServerDisable;
+    
+    
+    // 不需要这个 sync 是 NO
+    if (sync && shouldRetry) {
+        NSError *error;
+        HttpdnsLogDebug("\n ============ Sync request for %@ starts.", host);
+        HttpdnsHostObject *result = [[HttpdnsRequest new] lookupHostFromServer:host
+                                                                         error:&error
+                                                        activatedServerIPIndex:newActivatedServerIPIndex];
+        if (error) {
+            HttpdnsLogDebug("\n ============ Sync request for %@ error: %@", host, error);
+            return [self sdnsExecuteRequest:host
+                          synchronously:YES
+                             withParams:params
+                           withCacheKey:cacheKey
+                             retryCount:(hasRetryedCount + 1)
+                 activatedServerIPIndex:activatedServerIPIndex
+                                  error:error];
+        } else {
+            dispatch_async(_syncDispatchQueue, ^{
+                HttpdnsLogDebug("\n ============ Sync request for %@ finishes.", host);
+                [self mergeLookupResultToManager:result forHost:host];
+            });
+            return result;
+        }
+    }
+    
+    dispatch_semaphore_t signal = dispatch_semaphore_create(0);
+      __block HttpdnsHostObject * result = nil;
+    {
+    // 这里 异步处理
+    NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+        if ([self isDisableToServer]) {
+            return;
+        }
+        NSError *error;
+        HttpdnsLogDebug("\n ============ Async request for %@ starts...", host);
+        
+        // 我都修改 调用接口 3.0 异步请求启动
+        result = [[HttpdnsRequest new] sdnsLookupHostFromServer:host
+                                                     withParams:params
+                                                          error:&error
+                                         activatedServerIPIndex:newActivatedServerIPIndex];
+        dispatch_semaphore_signal(signal);
+        
+        if (error) {
+            HttpdnsLogDebug("\n ============ Async request for %@ error: %@", host, error);
+            // 是否重试
+            if (shouldRetry) {
+                // 重新调用下 该方法
+                [self sdnsExecuteRequest:host
+                       synchronously:NO
+                          withParams:params
+                        withCacheKey:cacheKey
+                          retryCount:hasRetryedCount + 1
+              activatedServerIPIndex:activatedServerIPIndex
+                               error:error];
+            } else {
+                // 用户访问引发的嗅探超时的情况，和重试引起的主动嗅探都会访问该方法
+                [self canNotResolveHost:host error:error isRetry:isRetry activatedServerIPIndex:activatedServerIPIndex];
+            }
+            
+        } else {
+            
+            dispatch_sync(_syncDispatchQueue, ^{
+                // 请求启动结束 异步请求完成
+                HttpdnsLogDebug("\n ============ Async request for %@ finishes result:%@ .", host,result);
+                // 我的修改 存储返回数据 1.0
+                [self sdnsMergeLookupResultToManager:result forHost:host withParams:params
+                withCacheKey:cacheKey];
+            });
+        }
+    }];
+    [_asyncOperationQueue addOperation:operation];
+    }
+    
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+    return result;;
+
+}
+
+
 - (void)bizPerfGetIPWithHost:(NSString *)host
                          success:(BOOL)success {
     BOOL cachedIPEnabled = [self _getCachedIPEnabled];
@@ -280,7 +517,76 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         HttpdnsLogDebug("Can't resolve %@", host);
     }
 }
+// 我的修改 存储返回数据 1.0
+- (void)sdnsMergeLookupResultToManager:(HttpdnsHostObject *)result
+                               forHost:(NSString *)host
+                            withParams:(NSString *)params
+                          withCacheKey:(NSString *)cacheKey {
 
+    if (result) {
+        [self setServerDisable:NO host:host];
+        NSString *hostName = [result getHostName];
+        HttpdnsHostObject *old; 
+        old  = [HttpdnsUtil safeObjectForKey:[NSString stringWithFormat:@"%@%@%@",hostName,params,cacheKey] dict:_hostManagerDict];
+        int64_t TTL = [result getTTL];
+        int64_t lastLookupTime = [result getLastLookupTime];
+        NSArray<NSString *> *IPStrings = [result getIPStrings];
+        NSArray<NSString *> *IP6Strings = [result getIP6Strings];
+        NSArray<HttpdnsIpObject *> *IPObjects = [result getIps];
+        NSArray<HttpdnsIpObject *> *IP6Objects = [result getIp6s];
+         
+        // 我的修改 添加 Extra
+        NSString * Extra  = [result getExtra];
+    
+        if (old) {
+            [old setTTL:TTL];
+            [old setLastLookupTime:lastLookupTime];
+            [old setIsLoadFromDB:NO];
+            [old setIps:IPObjects];
+            [old setQueryingState:NO];
+            // 我的修改 添加 Extra
+            [old setExtra:Extra];
+            
+            if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
+                [old setIp6s:IP6Objects];
+            }
+            // 这里是有结果的
+            HttpdnsLogDebug("\n ====================== Update %@: %@", hostName, result);
+            
+            // 一直到这里数据都是正常的
+            HttpdnsLogDebug("\n old 修改后 ====================== old %@: ", old);
+    
+        } else {
+            
+            HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
+            [hostObject setHostName:host];
+            [hostObject setLastLookupTime:lastLookupTime];
+            [hostObject setTTL:TTL];
+            [hostObject setIps:IPObjects];
+            [hostObject setQueryingState:NO];
+            
+            // 我的修改 添加Extra
+            [hostObject setExtra:Extra];
+            
+            if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
+                [hostObject setIp6s:IP6Objects];
+            }
+            
+            HttpdnsLogDebug("\n ====================== New resolved item: %@: %@", host, result);
+            [HttpdnsUtil safeAddValue:hostObject key:[NSString stringWithFormat:@"%@%@%@",host,params,cacheKey] toDict:_hostManagerDict];
+        }
+        
+        // 我的修改 存储数据2.0 HttpdnsHostRecord
+        [self sdnsCacheHostRecordAsyncIfNeededWithHost:host withParams:params
+        withCacheKey:cacheKey IPs:IPStrings IP6s:IP6Strings TTL:TTL withExtra:Extra];
+        
+        // TODO:
+        [self aysncUpdateIPRankingWithResult:result forHost:[NSString stringWithFormat:@"%@%@%@",host,params,cacheKey]];
+        
+    } else {
+        HttpdnsLogDebug("\n ====================== Can't resolve %@", host);
+    }
+}
 //TODO:
 - (void)aysncUpdateIPRankingWithResult:(HttpdnsHostObject *)result forHost:(NSString *)host {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
@@ -725,6 +1031,23 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         [hostCacheStore insertHostRecords:@[hostRecord]];
     });
 }
+
+// 我的修改 存储数据2.0 HttpdnsHostRecord
+- (void)sdnsCacheHostRecordAsyncIfNeededWithHost:(NSString *)host withParams:(NSString *)params withCacheKey:(NSString *)cacheKey IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL withExtra:(NSString *)extra {
+    
+    if (!_cachedIPEnabled) {
+        return;
+    }
+    dispatch_async([HttpdnsRequestScheduler hostCacheQueue], ^{
+        HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord sdnsHostRecordWithHost:[NSString stringWithFormat:@"%@%@%@",host,params,cacheKey] IPs:IPs IP6s:IP6s TTL:TTL Extra:extra];
+        
+        HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+        [hostCacheStore insertHostRecords:@[hostRecord]];
+        
+        
+    });
+}
+
 
 //清理过期数据的时机放在 `-loadIPsFromCacheSyncIfNeeded` 之前，应用启动后就进行，
 - (void)cleanAllExpiredHostRecordsAsyncIfNeeded {

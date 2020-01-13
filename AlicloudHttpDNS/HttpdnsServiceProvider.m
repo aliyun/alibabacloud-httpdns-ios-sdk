@@ -42,6 +42,9 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
  */
 @property (nonatomic, assign) NSUInteger authTimeoutInterval;
 
+// 我的修改 设置属性全局参数
+@property (nonatomic, copy) NSString *globalParams;
+
 @end
 
 @implementation HttpDnsService
@@ -86,7 +89,7 @@ static HttpDnsService * _httpDnsClient = nil;
     return [self initWithAccountID:accountID secretKey:nil];
 }
 
-//鉴权控制台：httpdns.console.aliyun.com
+// 鉴权控制台：httpdns.console.aliyun.com
 - (instancetype)initWithAccountID:(int)accountID secretKey:(NSString *)secretKey {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -464,6 +467,147 @@ static HttpDnsService * _httpDnsClient = nil;
         return NO;
     }
     return YES;
+}
+
+
+// 我的修改 设置 SDNS 全局参数实现
+- (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params {
+    
+    if (params == nil || params.count == 0) {
+        _globalParams = nil;
+    } else {
+        _globalParams = [self limitPapams:params];
+    }
+    
+}
+
+// 我的修改 清除 SDNS 全局参数实现
+- (void)clearSdnsGlobalParams {
+    _globalParams = nil;
+}
+
+// 我的修改 对入参判定
+- (NSString *)limitPapams:(NSDictionary<NSString *, NSString *> *)params {
+    NSString *str = @"^[A-Za-z0-9\-_]+";
+    NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", str];
+    NSMutableArray *arr = [[NSMutableArray alloc] initWithCapacity:0];
+    [params enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
+        if (![emailTest evaluateWithObject:key]) {
+            HttpdnsLogDebug(@" \n ====== 此参数 key: %@ 不符合要求 , 参数名key中不允许出现特殊字符 ", key);
+            return ;
+        } else {
+            NSString *str = [NSString stringWithFormat:@"%@%@",key, obj];
+            if ([str lengthOfBytesUsingEncoding:NSUnicodeStringEncoding] > 1000 ) {
+                HttpdnsLogDebug(@" \n ====== 参数名和参数值的整体大小不应超过 1000 字节");
+                return ;
+            } else {
+                NSString *str = [NSString stringWithFormat:@"&sdns-%@=%@", key,obj];
+                [arr addObject:str];
+            }
+        }
+    }];
+
+    HttpdnsLogDebug(@"\n 入参 ====== %@",[arr componentsJoinedByString:@""]);
+    return [arr componentsJoinedByString:@""];
+}
+
+// 我的修改 SDNS 请求接口实现
+- (NSArray *)getIpsByHostAsync:(NSString *)host withParams:(NSDictionary<NSString *, NSString *> *)params withCacheKey:(NSString *)cacheKey {
+    
+    if (![self checkServiceStatus]) {
+        return nil;
+    }
+    
+    if ([self.delegate shouldDegradeHTTPDNS:host]) {
+        return nil;
+    }
+    
+    if (!host) {
+        return nil;
+    }
+    
+    if ([HttpdnsUtil isAnIP:host]) {
+        HttpdnsLogDebug("The host is just an IP.");
+        return [NSArray arrayWithObjects:host, nil];
+    }
+    
+    if (![HttpdnsUtil isAHost:host]) {
+        HttpdnsLogDebug("The host is illegal.");
+        return nil;
+    }
+    
+    HttpdnsHostObject *hostObject ;
+    
+    // 全局参数为空
+    if (_globalParams == nil) {
+        // 局部参数为空
+        if (params == nil || params.count == 0) {
+            
+            if (cacheKey == nil || cacheKey.length == 0) {
+                // 缓存key为空走原始调用方法
+                hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO];
+            } else {
+                // 缓存key不为空 暂且不单独考虑 cacheKey 走原始调用方法
+                hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO];
+            }
+            
+        } else {  // 局部参数不为空
+        
+            if (cacheKey == nil || cacheKey.length == 0) {
+                // 缓存key为空
+                hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO withParams:[NSString stringWithFormat:@"%@",[self limitPapams:params]] withCacheKey:@""];
+            } else {
+                // 缓存key不为空
+                hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO withParams:[NSString stringWithFormat:@"%@",[self limitPapams:params]] withCacheKey:cacheKey];
+            }
+
+        }
+        
+    } else {
+        // 全局参数不为空
+        if (params == nil || params.count == 0) { // 局部参数为空
+            if (cacheKey == nil || cacheKey.length == 0) { // CacheKey 为空
+                hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO withParams:_globalParams withCacheKey:@""];
+            } else { // CacheKey 不为空
+                  hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO withParams:_globalParams withCacheKey:cacheKey];
+            }
+            
+        } else { // 局部参数不为空
+            
+            if (cacheKey == nil || cacheKey.length == 0) { // CacheKey 为空
+                hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO withParams:[NSString stringWithFormat:@"%@%@",_globalParams,[self limitPapams:params]] withCacheKey:@""];
+            } else { // CacheKey 不为空
+                hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO withParams:[NSString stringWithFormat:@"%@%@",_globalParams,[self limitPapams:params]] withCacheKey:cacheKey];
+                 
+                // 我的修改 这里没有数据
+                HttpdnsLogDebug(@"\n 请求接口 hostObject =======  %@",hostObject);
+                
+            }
+        }
+    }
+    
+    if (hostObject) {
+        
+        NSArray * ipsObject = [hostObject getIps];
+        
+        NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
+        if ([HttpdnsUtil isValidArray:ipsObject]) {
+            
+            for (HttpdnsIpObject *ipObject in ipsObject) {
+                [ipsArray addObject:[ipObject getIpString]];
+            }
+            
+            // 我的修改 待定 host
+            [self bizPerfUserGetIPWithHost:host success:YES];
+            // 只是返回一个 ips  extra 方法需要完善下
+            return ipsArray;
+        }
+    }
+    
+    // 我的修改 待定 host
+    [self bizPerfUserGetIPWithHost:host success:NO];
+    HttpdnsLogDebug("No available IP cached for %@", host);
+    return nil;
 }
 
 @end

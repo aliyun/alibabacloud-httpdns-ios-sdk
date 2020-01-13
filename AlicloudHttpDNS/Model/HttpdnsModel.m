@@ -65,6 +65,9 @@
     _ips = nil;
     _ip6s = nil;
     _queryingState = NO;
+    // 我的修改 初始化 extra
+    _extra = nil;
+    
     return self;
 }
 
@@ -76,6 +79,9 @@
         _ips = [aDecoder decodeObjectForKey:@"ips"];
         _ip6s = [aDecoder decodeObjectForKey:@"ip6s"];
         _queryingState = [aDecoder decodeBoolForKey:@"queryingState"];
+        // 我的修改 初始化 extra
+        _extra = [aDecoder decodeObjectForKey:@"extra"];
+        
     }
     return self;
 }
@@ -87,6 +93,8 @@
     [aCoder encodeObject:_ips forKey:@"ips"];
     [aCoder encodeObject:_ip6s forKey:@"ip6s"];
     [aCoder encodeBool:_queryingState forKey:@"queryingState"];
+    // 我的修改 初始化 extra
+    [aCoder encodeObject:_hostName forKey:@"extra"];
 }
 
 - (BOOL)isExpired {
@@ -109,6 +117,9 @@
     [hostObject setHostName:hostRecord.host];
     [hostObject setLastLookupTime:[hostRecord.createAt timeIntervalSince1970]];
     [hostObject setTTL:hostRecord.TTL];
+    
+    // 我的修改 待添加 添加 extra
+    
     NSArray *ips = hostRecord.IPs;
     NSArray *ip6s = hostRecord.IP6s;
     if ([HttpdnsUtil isValidArray:ips]) {
@@ -171,11 +182,11 @@
 
 - (NSString *)description {
     if (![EMASTools isValidArray:_ip6s]) {
-        return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld queryingState = %@",
-                _hostName, _ips, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO"];
+        return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld queryingState = %@ extra = %@",
+                _hostName, _ips, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO", _extra];
     } else {
-        return [NSString stringWithFormat:@"Host = %@ ips = %@ ip6s = %@ lastLookup = %lld ttl = %lld queryingState = %@",
-                _hostName, _ips, _ip6s, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO"];
+        return [NSString stringWithFormat:@"Host = %@ ips = %@ ip6s = %@ lastLookup = %lld ttl = %lld queryingState = %@ extra = %@",
+                _hostName, _ips, _ip6s, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO", _extra];
     }
 }
 
