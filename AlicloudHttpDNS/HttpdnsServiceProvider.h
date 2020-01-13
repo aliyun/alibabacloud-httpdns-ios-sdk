@@ -82,13 +82,10 @@
 - (void)enableIPv6:(BOOL)enable;
 - (NSString *)getIPv6ByHostAsync:(NSString *)host;
 
-// 我的修改 设置 SDNS 全局参数
 - (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params;
 
-// 我的修改 清除 SDNS 全局参数
 - (void)clearSdnsGlobalParams;
 
-// 我的修改 SDNS 请求接口
 - (NSArray *)getIpsByHostAsync:(NSString *)host withParams:(NSDictionary<NSString *, NSString *> *)params withCacheKey:(NSString *)cacheKey;
 
 @end

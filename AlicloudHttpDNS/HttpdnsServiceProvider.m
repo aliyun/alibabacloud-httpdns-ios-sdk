@@ -42,7 +42,7 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
  */
 @property (nonatomic, assign) NSUInteger authTimeoutInterval;
 
-// 我的修改 设置属性全局参数
+// 我的修改 设置全局参数属性
 @property (nonatomic, copy) NSString *globalParams;
 
 @end
@@ -578,10 +578,6 @@ static HttpDnsService * _httpDnsClient = nil;
                 hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO withParams:[NSString stringWithFormat:@"%@%@",_globalParams,[self limitPapams:params]] withCacheKey:@""];
             } else { // CacheKey 不为空
                 hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO withParams:[NSString stringWithFormat:@"%@%@",_globalParams,[self limitPapams:params]] withCacheKey:cacheKey];
-                 
-                // 我的修改 这里没有数据
-                HttpdnsLogDebug(@"\n 请求接口 hostObject =======  %@",hostObject);
-                
             }
         }
     }
@@ -591,17 +587,22 @@ static HttpDnsService * _httpDnsClient = nil;
         NSArray * ipsObject = [hostObject getIps];
         
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
+    
         if ([HttpdnsUtil isValidArray:ipsObject]) {
             
             for (HttpdnsIpObject *ipObject in ipsObject) {
                 [ipsArray addObject:[ipObject getIpString]];
             }
             
+            [ipsArray addObject:hostObject.extra];
+            
             // 我的修改 待定 host
             [self bizPerfUserGetIPWithHost:host success:YES];
-            // 只是返回一个 ips  extra 方法需要完善下
-            return ipsArray;
+            // 只是返回一个 ips extra 方法需要完善下
+            return  ipsArray;
         }
+        
+        
     }
     
     // 我的修改 待定 host

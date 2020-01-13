@@ -371,7 +371,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 
 - (NSString *)getActivatedServerIPWithIndex:(NSInteger)index {
     NSString *serverIP = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:self.IPList defaultValue:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED];
-    // 我的修改 此处修改 返回的服务ip
+    // 我的修改 返回的服务ip
     return serverIP;
 }
 
