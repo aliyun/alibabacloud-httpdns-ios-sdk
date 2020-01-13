@@ -118,7 +118,8 @@
     [hostObject setLastLookupTime:[hostRecord.createAt timeIntervalSince1970]];
     [hostObject setTTL:hostRecord.TTL];
     
-    // 我的修改 待添加 添加 extra
+    // 我的修改 添加 Extra
+    [hostObject setExtra:hostRecord.extra];
     
     NSArray *ips = hostRecord.IPs;
     NSArray *ip6s = hostRecord.IP6s;

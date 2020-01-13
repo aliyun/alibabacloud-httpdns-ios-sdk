@@ -320,8 +320,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             }
         }
     } else {
-        // 我的待定
-        HttpdnsLogDebug("\n 我的待定  ==============  ");
+        // 我的待定 
         [self bizPerfGetIPWithHost:host success:YES];
     }
     

@@ -216,24 +216,15 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSArray *ips;
     NSArray *ip6s;
     
-    // 经过 sdns 解析后 会额外返回一个 extra 字段，需要同步缓存到 ip 表内。
+    // 经过 sdns 解析后 会额外返回一个 extra 字段
     NSString *extra;
     
-    // 我的修改 待定 数据格式异
+    // 我的修改 待定 数据格式 
     // extra = [HttpdnsUtil safeObjectForKey:@"extra" dict:json];
     extra = [self htmlEntityDecode:[HttpdnsUtil safeObjectForKey:@"extra" dict:json]];
-    
-    HttpdnsLogDebug("\n ============ 返回 extra 字段 ：%@", extra);
-    
     hostName = [HttpdnsUtil safeObjectForKey:@"host" dict:json];
-    HttpdnsLogDebug("\n ============ 返回 hostName 字段 ：%@", hostName);
-    
     ips = [HttpdnsUtil safeObjectForKey:@"ips" dict:json];
-    HttpdnsLogDebug("\n ============ 返回 ips 字段 ：%@", ips);
-    
     ip6s = [HttpdnsUtil safeObjectForKey:@"ipsv6" dict:json];
-    HttpdnsLogDebug("\n ============ 返回 ip6s 字段 ：%@", ip6s);
-    
     if (![HttpdnsUtil isValidArray:ips] || ![HttpdnsUtil isValidString:hostName]) {
         HttpdnsLogDebug("\n ============ IP list is empty for host %@", hostName);
         return nil;
@@ -481,13 +472,11 @@ static NSURLSession *_resolveHOSTSession = nil;
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
         // 我的修改 调用接口 5.0 发送 HTTPS 请求 基于 URLSession
         hostObject = [self sdnsSendHTTPSRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
-        NSLog(@"\n HTTPS  hostObject ================= %@,%@,%@",hostObject.hostName,hostObject.ips,hostObject.extra);
 
     } else {
         // 我的修改 调用接口 6.0 发送 HTTP 请求
         hostObject = [self sdnsSendHTTPRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
-        NSLog(@"\n HTTP hostObject ================= %@,%@,%@",hostObject.hostName,hostObject.ips,hostObject.extra);
-
+        
     }
     
     
