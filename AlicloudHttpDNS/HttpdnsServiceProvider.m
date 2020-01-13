@@ -42,7 +42,7 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
  */
 @property (nonatomic, assign) NSUInteger authTimeoutInterval;
 
-// 我的修改 设置全局参数属性 
+// 我的修改 设置全局参数属性
 @property (nonatomic, copy) NSString *globalParams;
 
 @end
@@ -470,7 +470,7 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 
-// 我的修改 设置 SDNS 全局参数实现
+// 我的修改 实现 SDNS 全参
 - (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params {
     
     if (params == nil || params.count == 0) {
@@ -481,12 +481,12 @@ static HttpDnsService * _httpDnsClient = nil;
     
 }
 
-// 我的修改 清除 SDNS 全局参数实现
+// 我的修改 清除 SDNS 全参
 - (void)clearSdnsGlobalParams {
     _globalParams = nil;
 }
 
-// 我的修改 对入参判定
+// 我的修改 判定 SDNS 入参
 - (NSString *)limitPapams:(NSDictionary<NSString *, NSString *> *)params {
     NSString *str = @"^[A-Za-z0-9\-_]+";
     NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", str];
@@ -511,7 +511,7 @@ static HttpDnsService * _httpDnsClient = nil;
     return [arr componentsJoinedByString:@""];
 }
 
-// 我的修改 SDNS 请求接口实现
+// 我的修改 实现 SDNS 请求接口
 - (NSArray *)getIpsByHostAsync:(NSString *)host withParams:(NSDictionary<NSString *, NSString *> *)params withCacheKey:(NSString *)cacheKey {
     
     if (![self checkServiceStatus]) {
@@ -585,28 +585,27 @@ static HttpDnsService * _httpDnsClient = nil;
     if (hostObject) {
         
         NSArray * ipsObject = [hostObject getIps];
-        
+       
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
-    
+        
+        [ipsArray addObject:hostObject.extra];
+        
         if ([HttpdnsUtil isValidArray:ipsObject]) {
             
             for (HttpdnsIpObject *ipObject in ipsObject) {
                 [ipsArray addObject:[ipObject getIpString]];
             }
-            
-            [ipsArray addObject:hostObject.extra];
-            
-            // 我的修改 待定 host
-            [self bizPerfUserGetIPWithHost:host success:YES];
+            // 我的修改 bizPerfGetIPWithHost
+            [self bizPerfUserGetIPWithHost:[NSString stringWithFormat:@"%@%@%@",_globalParams,[self limitPapams:params],cacheKey] success:YES];
             // 只是返回一个 ips extra 方法需要完善下
             return  ipsArray;
         }
         
-        
     }
     
-    // 我的修改 待定 host
-    [self bizPerfUserGetIPWithHost:host success:NO];
+    // 我的修改 bizPerfGetIPWithHost
+    [self bizPerfUserGetIPWithHost:[NSString stringWithFormat:@"%@%@%@",_globalParams,[self limitPapams:params],cacheKey] success:NO];
+    
     HttpdnsLogDebug("No available IP cached for %@", host);
     return nil;
 }

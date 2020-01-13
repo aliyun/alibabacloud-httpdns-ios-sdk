@@ -488,7 +488,8 @@ static NSURLSession *_resolveHOSTSession = nil;
     BOOL success = !outError;
     BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
     
-    [HttpDnsHitService bizPerfGetIPWithHost:hostString success:success cacheOpen:cachedIPEnabled];
+    // 我的修改 bizPerfGetIPWithHost
+    [HttpDnsHitService bizPerfGetIPWithHost:[NSString stringWithFormat:@"%@%@",hostString,params] success:success cacheOpen:cachedIPEnabled];
     
     return hostObject;
 }
