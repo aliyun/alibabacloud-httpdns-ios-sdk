@@ -456,7 +456,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     return hostObject;
 }
 
-// 我的修改 调用接口 3.0  开始请求 
+// 我的修改 调用接口 3.0  开始请求
 - (HttpdnsHostObject *)sdnsLookupHostFromServer:(NSString *)hostString withParams:(NSString *)params error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     // 配置设置
     [self resetRequestConfigure];
@@ -488,8 +488,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     BOOL success = !outError;
     BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
     
-    // 我的修改 bizPerfGetIPWithHost
-    [HttpDnsHitService bizPerfGetIPWithHost:[NSString stringWithFormat:@"%@%@",hostString,params] success:success cacheOpen:cachedIPEnabled];
+    [HttpDnsHitService bizPerfGetIPWithHost:hostString success:success cacheOpen:cachedIPEnabled];
     
     return hostObject;
 }
