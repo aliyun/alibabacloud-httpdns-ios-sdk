@@ -129,15 +129,30 @@ static NSURLSession *_resolveHOSTSession = nil;
 }
 
 #pragma mark LookupIpAction
-
-- (HttpdnsHostObject *)parseHostInfoFromHttpResponse:(NSDictionary *)json {
+// 我的修改 开始调用接口 7.0 返回 extra 字段
+- (HttpdnsHostObject *)parseHostInfoFromHttpResponse:(NSDictionary *)json withHostStr:(NSString *)hostStr {
     if (json == nil) {
         return nil;
     }
     NSString *hostName;
     NSArray *ips;
     NSArray *ip6s;
-    hostName = [HttpdnsUtil safeObjectForKey:@"host" dict:json];
+    
+    // 我的修改 经过 sdns 解析后 会额外返回一个 extra 字段
+    NSString *extra;
+    // extra 数据格式
+    NSArray *hostArray= [hostStr componentsSeparatedByString:@"]"];
+    hostStr = [hostArray componentsJoinedByString:@""];
+    
+    if (hostArray.count != 1) {
+        extra = [self htmlEntityDecode:[HttpdnsUtil safeObjectForKey:@"extra" dict:json]];
+    } else {
+        extra = @"";
+    }
+    
+    // 我的修改 ostName = hostString
+    hostName = hostStr;  // hostName = [HttpdnsUtil safeObjectForKey:@"host" dict:json];
+    
     ips = [HttpdnsUtil safeObjectForKey:@"ips" dict:json];
     ip6s = [HttpdnsUtil safeObjectForKey:@"ipsv6" dict:json];
     
@@ -181,7 +196,13 @@ static NSURLSession *_resolveHOSTSession = nil;
             [hostObject setIp6s:ip6Array];
         }
     }
+    
+    // 返回 额外返回一个extra字段
+    if (hostArray.count != 1) {
+        [hostObject setExtra:extra];
+    }
     [hostObject setHostName:hostName];
+    
     [hostObject setIps:ipArray];
     [hostObject setTTL:[[json objectForKey:@"ttl"] longLongValue]];
     [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
@@ -194,7 +215,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     return hostObject;
 }
 
-// 将 &lt 等类似的字符转化为HTML中的“<”等
+// 我的修改 将 &lt 等类似的字符转化为 HTML 中的 " < " 等
 - (NSString *)htmlEntityDecode:(NSString *)string {
    
     string = [string stringByReplacingOccurrencesOfString:@"&quot;" withString:@"\""];
@@ -206,90 +227,11 @@ static NSURLSession *_resolveHOSTSession = nil;
     return string;
 }
 
-
-// 我的修改 调用接口 7.0 返回 extra 字段
-- (HttpdnsHostObject *)sdnsParseHostInfoFromHttpResponse:(NSDictionary *)json {
-    if (json == nil) {
-        return nil;
-    }
-    NSString *hostName;
-    NSArray *ips;
-    NSArray *ip6s;
-    
-    // 经过 sdns 解析后 会额外返回一个 extra 字段
-    NSString *extra;
-    
-    // 我的修改 待定 数据格式 
-    // extra = [HttpdnsUtil safeObjectForKey:@"extra" dict:json];
-    extra = [self htmlEntityDecode:[HttpdnsUtil safeObjectForKey:@"extra" dict:json]];
-    hostName = [HttpdnsUtil safeObjectForKey:@"host" dict:json];
-    ips = [HttpdnsUtil safeObjectForKey:@"ips" dict:json];
-    ip6s = [HttpdnsUtil safeObjectForKey:@"ipsv6" dict:json];
-    if (![HttpdnsUtil isValidArray:ips] || ![HttpdnsUtil isValidString:hostName]) {
-        HttpdnsLogDebug("\n ============ IP list is empty for host %@", hostName);
-        return nil;
-    }
-    
-    HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
-    NSMutableArray *ipArray = [[NSMutableArray alloc] init];
-    
-    for (NSString *ip in ips) {
-        if (![HttpdnsUtil isValidString:ip]) {
-            continue;
-        }
-        HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
-        // 用户主动开启v6解析后，IPv6-Only场景解析结果不再自动适配
-        // 确保getIpByHostAsync()返回v4地址，getIp6ByHostAsync()返回v6地址
-        if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-            [ipObject setIp:[[AlicloudIPv6Adapter getInstance] handleIpv4Address:ip]];
-        } else {
-            [ipObject setIp:ip];
-        }
-        [ipArray addObject:ipObject];
-    }
-    
-    // 处理IPv6解析结果
-    NSMutableArray *ip6Array = nil;
-    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        if ([EMASTools isValidArray:ip6s]) {
-            ip6Array = [[NSMutableArray alloc] init];
-            for (NSString *ipv6 in ip6s) {
-                if (![EMASTools isValidString:ipv6]) {
-                    continue;
-                }
-                HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
-                [ipObject setIp:ipv6];
-                [ip6Array addObject:ipObject];
-            }
-        }
-        
-        if ([EMASTools isValidArray:ip6Array]) {
-            [hostObject setIp6s:ip6Array];
-        }
-    }
-    
-    
-    [hostObject setHostName:hostName];
-    
-    // 返回 额外返回一个extra字段
-    [hostObject setExtra:extra];
-    [hostObject setIps:ipArray];
-    [hostObject setTTL:[[json objectForKey:@"ttl"] longLongValue]];
-    [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
-    [hostObject setQueryingState:NO];
-    
-    // 暂无修改
-    if (![EMASTools isValidArray:ip6Array]) {
-        HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@", [hostObject getHostName], [hostObject getTTL], ipArray);
-    } else {
-        HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@ ip6s: %@", [hostObject getHostName], [hostObject getTTL], ipArray, ip6Array);
-    }
-    NSLog(@"\n hostObject ================= %@,%@,%@",hostObject.hostName,hostObject.ips,hostObject.extra);
-    return hostObject;
-}
+// 我的修改 开始调用接口 4.0 拼接 URL
 - (NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
+    
     // Adapt to IPv6-only network.
     if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
         serverIp = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:serverIp]];
@@ -352,235 +294,57 @@ static NSURLSession *_resolveHOSTSession = nil;
     return url;
 }
 
-// 我的修改 调用接口 4.0 拼接 URL
-- (NSString *)sdnsConstructRequestURLWith:(NSString *)hostsString withParams:(NSString *)params activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
-    
-    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-    NSString *serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
-    // Adapt to IPv6-only network.
-    if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
-        serverIp = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:serverIp]];
-    }
-    NSString *requestType = @"d";
-    NSString *signatureRequestString = nil;
-    
-    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    
-   // 鉴权
-    NSString *secretKey = sharedService.secretKey;
-    NSUInteger localTimestampOffset = sharedService.authTimeOffset;
-    if ([HttpdnsUtil isValidString:secretKey ]) {
-        requestType = @"sign_d";
-        NSUInteger localTimestamp = (NSUInteger)[[NSDate date] timeIntervalSince1970] ;
-        if (localTimestampOffset != 0) {
-            localTimestamp = localTimestamp + localTimestampOffset;
-        }
-        NSUInteger expiredTimestamp = localTimestamp + HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
-        NSString *expiredTimestampString = [NSString stringWithFormat:@"%@", @(expiredTimestamp)];
-        NSString *signOriginString = [NSString stringWithFormat:@"%@-%@-%@", hostsString, secretKey, expiredTimestampString];
-        
-        NSString *sign = [HttpdnsUtil getMD5StringFrom:signOriginString];
-        signatureRequestString = [NSString stringWithFormat:@"&t=%@&s=%@", expiredTimestampString, sign];
-    }
-    
-    NSString *port = HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED ? ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT : ALICLOUD_HTTPDNS_HTTP_SERVER_PORT;
-    
-    // 拼接URL
-    NSString *url = [NSString stringWithFormat:@"%@:%@/%d/%@?host=%@%@",
-                     serverIp, port, sharedService.accountID, requestType, hostsString, params];
-    
-    //
-    
-    if ([HttpdnsUtil isValidString:signatureRequestString]) {
-        url = [NSString stringWithFormat:@"%@%@", url, signatureRequestString];
-    }
-    
-    // 追加版本
-    NSString *versionInfo = [NSString stringWithFormat:@"ios_%@", HTTPDNS_IOS_SDK_VERSION];
-    url = [NSString stringWithFormat:@"%@&sdk=%@", url, versionInfo];
-    
-    // sessionId
-    NSString *sessionId = [HttpdnsUtil generateSessionID];
-    if ([HttpdnsUtil isValidString:sessionId]) {
-        url = [NSString stringWithFormat:@"%@&sid=%@", url, sessionId];
-    }
-    
-    // 添加net和bssid(wifi)
-    NSString *netType = [HttpdnsgetNetworkInfoHelper getNetworkType];
-    if ([HttpdnsUtil isValidString:netType]) {
-        url = [NSString stringWithFormat:@"%@&net=%@", url, netType];
-        if ([HttpdnsgetNetworkInfoHelper isWifiNetwork]) {
-            NSString *bssid = [HttpdnsgetNetworkInfoHelper getWifiBssid];
-            if ([HttpdnsUtil isValidString:bssid]) {
-                url = [NSString stringWithFormat:@"%@&bssid=%@", url, [EMASTools URLEncodedString:bssid]];
-            }
-        }
-    }
-    
-    // 开启IPv6解析结果后，URL处理
-    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        url = [[HttpdnsIPv6Manager sharedInstance] assembleIPv6ResultURL:url];
-    }
-    
-    return url;
-}
-
-
-
-
-
 - (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     return [self lookupHostFromServer:hostString error:error activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
-    
-    
 }
 
+// 我的修改 开始调用接口 3.0 开始异步请求
 - (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
-    [self resetRequestConfigure];
-    HttpdnsLogDebug("Resolve host(%@) over network.", hostString);
-    HttpdnsHostObject *hostObject = nil;
-    NSString *url = [self constructRequestURLWith:hostString activatedServerIPIndex:activatedServerIPIndex];
-    if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
-        hostObject = [self sendHTTPSRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
-    } else {
-        hostObject = [self sendHTTPRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
-    }
-    NSError *outError = nil;
-    if (error != NULL) {
-        outError = (*error);
-    }
-    BOOL success = !outError;
-    BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
-    [HttpDnsHitService bizPerfGetIPWithHost:hostString success:success cacheOpen:cachedIPEnabled];
-    return hostObject;
-}
-
-// 我的修改 调用接口 3.0  开始请求
-- (HttpdnsHostObject *)sdnsLookupHostFromServer:(NSString *)hostString withParams:(NSString *)params error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     // 配置设置
     [self resetRequestConfigure];
     // 解析主机
-    HttpdnsLogDebug("\n ============ Resolve host(%@) over network.", hostString);
+    HttpdnsLogDebug("\n ====== Resolve host(%@) over network.", hostString);
     HttpdnsHostObject *hostObject = nil;
     
-    // 我的修改 调用接口 4.0 拼接 URL
-    // 我的拼接 URL 如果这里不在改动直接拼接 hostString = hostString + params
-    NSString *url = [self sdnsConstructRequestURLWith:hostString withParams:params activatedServerIPIndex:activatedServerIPIndex];
+    // 我的修改 开始调用接口 4.0 拼接 URL
+    NSString *copyHostString = hostString;
+    NSArray *hostArray= [hostString componentsSeparatedByString:@"]"];
+    // host { host 参数 hsk }
+    hostString = [hostArray componentsJoinedByString:@""];
+      
+    NSMutableArray * hostMArray = [NSMutableArray arrayWithArray:hostArray];
+    if (hostMArray.count == 3) {
+        [hostMArray removeLastObject];
+    }
+    // hostsUrl { host 参数 }
+    NSString * hostsUrl = [hostMArray componentsJoinedByString:@""];
+    NSString *url = [self constructRequestURLWith:hostsUrl activatedServerIPIndex:activatedServerIPIndex];
     
     // HTTP / HTTPS  请求
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
-        // 我的修改 调用接口 5.0 发送 HTTPS 请求 基于 URLSession
-        hostObject = [self sdnsSendHTTPSRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
-
+        // 我的修改 开始调用接口 5.0 基于 URLSession 发送 HTTPS 请求
+        hostObject = [self sendHTTPSRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];
     } else {
-        // 我的修改 调用接口 6.0 发送 HTTP 请求
-        hostObject = [self sdnsSendHTTPRequest:url error:error activatedServerIPIndex:activatedServerIPIndex];
-        
+        // 我的修改 开始调用接口 6.0 基于 CFNetwork 发送 HTTP 请求
+        hostObject = [self sendHTTPRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];
     }
-    
     
     NSError *outError = nil;
     if (error != NULL) {
         outError = (*error);
     }
-    
     BOOL success = !outError;
     BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
     
+    // 我的修改 此处 host
     [HttpDnsHitService bizPerfGetIPWithHost:hostString success:success cacheOpen:cachedIPEnabled];
-    
     return hostObject;
 }
-// 我的修改 调用接口 5.0 发送 HTTPS 请求 基于 URLSession
-- (HttpdnsHostObject *)sdnsSendHTTPSRequest:(NSString *)urlStr
-                                  error:(NSError **)pError
-                 activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
-    NSString *fullUrlStr = [NSString stringWithFormat:@"https://%@", urlStr];
-    HttpdnsLogDebug("\n 调用接口 5.0 HTTPS ============ Request URL: %@", fullUrlStr);
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
-                                                           cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
-                                                       timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
-    __block NSDictionary *json = nil;
-    __block NSError *errorStrong = nil;
-    
-    NSURLSessionTask *task = [_resolveHOSTSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        if (error) {
-            HttpdnsLogDebug("\n ============ Network error: %@", error);
-            errorStrong = error;
-        } else {
-            // 返回数据处理
-            id jsonValue = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
-            json = [HttpdnsUtil getValidDictionaryFromJson:jsonValue];
-            NSInteger statusCode = [(NSHTTPURLResponse *) response statusCode];
-            errorStrong = [HttpdnsUtil getErrorFromError:errorStrong statusCode:statusCode json:json isHTTPS:YES];
-        }
-        dispatch_semaphore_signal(_sem);
-    }];
-    [task resume];
-    
-    dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
-    if (!errorStrong) {
-        // 我的修改 调用接口 7.0 返回 extra 字段
-        return [self sdnsParseHostInfoFromHttpResponse:json];
-    }
-    
-    if (pError != NULL) {
-        *pError = errorStrong;
-        [self.requestScheduler changeToNextServerIPIfNeededWithError:errorStrong
-                                                         fromIPIndex:activatedServerIPIndex
-                                                             isHTTPS:YES];
-    }
-    return nil;
-}
 
-// 我的修改 调用接口 6.0 基于 CFNetwork 发送 HTTP 请求
-- (HttpdnsHostObject *)sdnsSendHTTPRequest:(NSString *)urlStr
-                                 error:(NSError **)error
-                activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
-    if (!error) {
-        return nil;
-    }
-    if (![HttpdnsUtil isValidString:urlStr]) {
-        return nil;
-    }
-    NSString *fullUrlStr = [NSString stringWithFormat:@"http://%@", urlStr];
-    HttpdnsLogDebug("\n 调用接口 6.0 HTTP ============ Request URL: %@", fullUrlStr);
-    CFStringRef urlString = (__bridge CFStringRef)fullUrlStr;
-    CFURLRef url = CFURLCreateWithString(kCFAllocatorDefault, urlString, NULL);
-    CFStringRef requestMethod = CFSTR("GET");
-    CFHTTPMessageRef request = CFHTTPMessageCreateRequest(kCFAllocatorDefault, requestMethod, url, kCFHTTPVersion1_1);
-    CFReadStreamRef requestReadStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, request);
-    _inputStream = (__bridge_transfer NSInputStream *)requestReadStream;
-    
-    NSThread *networkRequestThread = [[NSThread alloc] initWithTarget:self selector:@selector(networkRequestThreadEntryPoint:) object:nil];
-    [networkRequestThread start];
-    
-    CFRelease(url);
-    CFRelease(request);
-    CFRelease(requestMethod);
-    request = NULL;
-    NSDate *methodStart = [NSDate date];
-    dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
-    *error = self.networkError;
-    
-    if (!self.networkError) {
-        [HttpDnsHitService hitSRVTimeWithSuccess:YES methodStart:methodStart url:fullUrlStr];
-    }
-    
-    [self.requestScheduler changeToNextServerIPIfNeededWithError:self.networkError
-                                                     fromIPIndex:activatedServerIPIndex
-                                                         isHTTPS:NO];
-    if (*error == nil && _httpJSONDict) {
-        // 我的修改 调用接口 7.0 返回 extra 字段
-        return [self sdnsParseHostInfoFromHttpResponse:_httpJSONDict];
-    }
-    
-    return nil;
-}
-
-// 基于URLSession发送HTTPS请求
+ // 我的修改 开始调用接口 5.0 基于 URLSession 发送 HTTPS 请求
 - (HttpdnsHostObject *)sendHTTPSRequest:(NSString *)urlStr
+                                   host:(NSString *)hostStr
                                   error:(NSError **)pError
                  activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     NSString *fullUrlStr = [NSString stringWithFormat:@"https://%@", urlStr];
@@ -605,7 +369,8 @@ static NSURLSession *_resolveHOSTSession = nil;
     [task resume];
     dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
     if (!errorStrong) {
-        return [self parseHostInfoFromHttpResponse:json];
+        // 我的修改 开始调用接口 7.0 返回 extra 字段
+        return [self parseHostInfoFromHttpResponse:json withHostStr:hostStr];
     }
     
     if (pError != NULL) {
@@ -617,8 +382,9 @@ static NSURLSession *_resolveHOSTSession = nil;
     return nil;
 }
 
-// 基于CFNetwork发送HTTP请求
+// 我的修改 开始调用接口 6.0 基于 CFNetwork 发送 HTTP 请求
 - (HttpdnsHostObject *)sendHTTPRequest:(NSString *)urlStr
+                                  host:(NSString *)hostStr
                                  error:(NSError **)error
  activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     if (!error) {
@@ -653,7 +419,8 @@ static NSURLSession *_resolveHOSTSession = nil;
                                                      fromIPIndex:activatedServerIPIndex
                                                          isHTTPS:NO];
     if (*error == nil && _httpJSONDict) {
-        return [self parseHostInfoFromHttpResponse:_httpJSONDict];
+        // 我的修改 开始调用接口 7.0 返回 extra 字段
+        return [self parseHostInfoFromHttpResponse:_httpJSONDict withHostStr:hostStr];
     }
     return nil;
 }

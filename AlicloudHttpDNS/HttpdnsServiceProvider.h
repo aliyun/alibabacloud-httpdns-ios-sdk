@@ -80,6 +80,7 @@
 - (NSString *)getSessionId;
 
 - (void)enableIPv6:(BOOL)enable;
+
 - (NSString *)getIPv6ByHostAsync:(NSString *)host;
 
 - (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params;
