@@ -14,6 +14,17 @@
 
 @implementation HttpdnsIPCacheStore
 
++ (instancetype)sharedInstance {
+    static id singletonInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        if (!singletonInstance) {
+            singletonInstance = [[super allocWithZone:NULL] init];
+        }
+    });
+    return singletonInstance;
+}
+
 - (void)databaseQueueDidLoad {
     ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
         [db executeUpdate:ALICLOUD_HTTPDNS_SQL_CREATE_IP_RECORD_TABLE];

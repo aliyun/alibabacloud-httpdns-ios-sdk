@@ -15,6 +15,8 @@
 
 @property (nonatomic, copy) NSString *host;
 
++ (instancetype)sharedInstance;
+
 - (void)insertIPs:(NSArray<NSString *> *)IPs hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL;
 - (void)insertIP6s:(NSArray<NSString *> *)IPs hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL;
 
