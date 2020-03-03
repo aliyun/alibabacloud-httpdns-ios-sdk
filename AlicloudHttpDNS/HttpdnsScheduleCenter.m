@@ -351,11 +351,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 }
 
 - (BOOL)isStopService {
-    __block BOOL isStopService = NO;
-    dispatch_sync(self.scheduleCenterResultQueue, ^{
-        isStopService = _stopService;
-    });
-    return isStopService;
+    return _stopService;
 }
 
 - (NSArray *)IPList {
