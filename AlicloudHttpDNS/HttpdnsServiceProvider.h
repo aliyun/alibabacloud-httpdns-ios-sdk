@@ -26,7 +26,12 @@
 @interface HttpDnsService: NSObject
 
 @property (nonatomic, assign, readonly) int accountID;
+
 @property (nonatomic, copy, readonly) NSString *secretKey;
+
+// 我的修改 可选参数 海外节点选择
+@property (nonatomic, copy, readonly) NSString *region;
+
 @property (nonatomic, weak, setter=setDelegateForDegradationFilter:) id<HttpDNSDegradationDelegate> delegate;
 
 @property (nonatomic, assign) NSTimeInterval timeoutInterval;
@@ -71,6 +76,9 @@
 
 - (void)setLogEnabled:(BOOL)enable;
 
+// 我的修改 可选参数 海外节点选择
+- (void)setRegion:(NSString *)region;
+
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
 
 - (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource;
@@ -80,6 +88,7 @@
 - (NSString *)getSessionId;
 
 - (void)enableIPv6:(BOOL)enable;
+
 - (NSString *)getIPv6ByHostAsync:(NSString *)host;
 
 @end

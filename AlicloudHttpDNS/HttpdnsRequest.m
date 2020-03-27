@@ -503,7 +503,8 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     NSURLSessionAuthChallengeDisposition disposition = NSURLSessionAuthChallengePerformDefaultHandling;
     NSURLCredential *credential = nil;
-    NSString *host = ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED;
+    // 我的修改 Domain host = 203.107.1.1
+    NSString *host = @"203.107.1.1";
     if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
         if ([self evaluateServerTrust:challenge.protectionSpace.serverTrust forDomain:host]) {
             disposition = NSURLSessionAuthChallengeUseCredential;
