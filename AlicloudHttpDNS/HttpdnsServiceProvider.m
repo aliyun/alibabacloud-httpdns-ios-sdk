@@ -30,6 +30,8 @@
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsScheduleCenter.h"
 
+#import "HttpdnsScheduleCenterRequest.h"
+
 static NSDictionary *HTTPDNS_EXT_INFO = nil;
 static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 
@@ -37,6 +39,8 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 
 @property (nonatomic, assign) int accountID;
 @property (nonatomic, copy) NSString *secretKey;
+@property (nonatomic, copy) NSString *region;
+
 /**
  * 每次访问的签名有效期，SDK内部定死，当前不暴露设置接口，有效期定为10分钟。
  */
@@ -223,7 +227,19 @@ static HttpDnsService * _httpDnsClient = nil;
     if (![self checkServiceStatus]) {
         return;
     }
-    [_requestScheduler addPreResolveHosts:hosts];
+    
+    if ([HttpdnsServerIpObject sharedServerIpObject].serverIpArray == nil) {
+        HttpdnsScheduleCenterRequest *scheduleCenterRequest = [HttpdnsScheduleCenterRequest new];
+        NSDictionary *result = [scheduleCenterRequest queryScheduleCenterRecordFromServerSync];
+        
+        [HttpdnsServerIpObject sharedServerIpObject].serverIpArray = [result objectForKey:@"service_ip"];
+        ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED = [HttpdnsServerIpObject sharedServerIpObject].serverIpArray[0];
+        
+        [_requestScheduler addPreResolveHosts:hosts];
+    } else {
+        [_requestScheduler addPreResolveHosts:hosts];
+    }
+    
 }
 
 - (NSString *)getIpByHost:(NSString *)host {
@@ -400,6 +416,12 @@ static HttpDnsService * _httpDnsClient = nil;
 
 - (void)setLogHandler:(id<HttpdnsLoggerProtocol>)logHandler {
     [HttpdnsLog setLogHandler:logHandler];
+}
+
+- (void)setRegion:(NSString *)region {
+    if ([HttpdnsUtil isValidString:region]) {
+        _region = region;
+    }
 }
 
 - (NSString *)getSessionId {

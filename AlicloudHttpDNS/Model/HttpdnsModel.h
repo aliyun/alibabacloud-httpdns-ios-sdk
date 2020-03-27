@@ -20,6 +20,7 @@
 #import <Foundation/Foundation.h>
 @class HttpdnsHostRecord;
 @class HttpdnsIPRecord;
+@class HttpdnsServerIpObject;
 
 @interface HttpdnsIpObject: NSObject<NSCoding>
 
@@ -51,5 +52,13 @@
 - (NSArray<NSString *> *)getIPStrings;
 
 - (NSArray<NSString *> *)getIP6Strings;
+
+@end
+
+@interface HttpdnsServerIpObject: NSObject
+
+@property (nonatomic, strong) NSArray *serverIpArray;
+
++ (HttpdnsServerIpObject *)sharedServerIpObject;
 
 @end

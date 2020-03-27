@@ -180,3 +180,32 @@
 }
 
 @end
+
+@implementation HttpdnsServerIpObject : NSObject
+
+static HttpdnsServerIpObject * _serverIP = nil;
+
++ (id)allocWithZone:(struct _NSZone *)zone  {
+    
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _serverIP  = [super allocWithZone:zone];
+    });
+ return _serverIP ;
+ }
+
++ (instancetype)sharedServerIpObject {
+    if (_serverIP  == nil) {
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            _serverIP  = [[HttpdnsServerIpObject alloc] init];
+        });
+    }
+    return _serverIP ;
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+     return _serverIP ;
+}
+
+@end
