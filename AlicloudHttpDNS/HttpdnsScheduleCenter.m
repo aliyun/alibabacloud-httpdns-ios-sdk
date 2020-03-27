@@ -370,8 +370,16 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 }
 
 - (NSString *)getActivatedServerIPWithIndex:(NSInteger)index {
-    NSString *serverIP = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:self.IPList defaultValue:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED];
-    return serverIP;
+    
+    NSString *serverIp;
+
+    if ([HttpdnsServerIpObject sharedServerIpObject].serverIpArray != nil) {
+        serverIp = [HttpdnsServerIpObject sharedServerIpObject].serverIpArray[index];
+    } else {
+        serverIp = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:self.IPList defaultValue:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED];
+    }
+    
+    return serverIp;
 }
 
 - (void)changeToNextServerIPIndexFromIPIndex:(NSInteger)IPIndex {
