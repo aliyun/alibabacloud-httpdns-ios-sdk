@@ -128,6 +128,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     return self;
 }
 
+// 我的修改 考虑点 SS 每天也会调用一次 在初始化的时候
 - (void)upateIPListIfNeededAsync {
     if (![HttpdnsUtil isAbleToRequest]) {
         return;
@@ -370,8 +371,17 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 }
 
 - (NSString *)getActivatedServerIPWithIndex:(NSInteger)index {
-    NSString *serverIP = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:self.IPList defaultValue:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED];
-    return serverIP;
+    
+    NSString *serverIp;
+    // 我的修改 判断 serverIP 来源
+    if ([HttpdnsServerIpObject sharedServerIpObject].serverIpArray != nil) {
+        serverIp = [HttpdnsServerIpObject sharedServerIpObject].serverIpArray[index];
+    } else {
+        // 我的修改 待考虑 ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED 的参数值
+        serverIp = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:self.IPList defaultValue:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED];
+    }
+    
+    return serverIp;
 }
 
 - (void)changeToNextServerIPIndexFromIPIndex:(NSInteger)IPIndex {
