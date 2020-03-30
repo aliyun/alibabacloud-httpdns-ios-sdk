@@ -40,7 +40,14 @@
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS = @"disable_status_key";
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME = @"disable_status";
 
+bool ALICLOUD_HTTPDNS_SERVER_IP_BUTTON = NO;
 NSString * ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED = @"203.107.1.1";
+
+// 我的修改 取消固定 ALICLOUD_HTTPDNS_SERVER_IP_1 参数
+//NSString *const ALICLOUD_HTTPDNS_SERVER_IP_1 = @"203.107.1.65";
+//NSString *const ALICLOUD_HTTPDNS_SERVER_IP_2 = @"203.107.1.34";
+//NSString *const ALICLOUD_HTTPDNS_SERVER_IP_3 = @"203.107.1.66";
+//NSString *const ALICLOUD_HTTPDNS_SERVER_IP_4 = @"203.107.1.33";
 
 NSString *const ALICLOUD_HTTPDNS_HTTP_SERVER_PORT = @"80";
 NSString *const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
@@ -106,13 +113,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 + (void)configureServerIPsAndResetActivatedIPTime {
- 
-    if ([HttpdnsServerIpObject sharedServerIpObject].serverIpArray != nil) {
-        ALICLOUD_HTTPDNS_SERVER_IP_LIST = [HttpdnsServerIpObject sharedServerIpObject].serverIpArray;
-    } else {
-        ALICLOUD_HTTPDNS_SERVER_IP_LIST = @[ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED];
-    }
-    
+    ALICLOUD_HTTPDNS_SERVER_IP_LIST = @[ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED];
     ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL = 30; // 30 second
     ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 1 * 24 * 60 * 60; // one day
 }

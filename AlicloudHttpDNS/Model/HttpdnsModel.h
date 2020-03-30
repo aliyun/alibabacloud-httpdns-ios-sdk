@@ -55,10 +55,3 @@
 
 @end
 
-@interface HttpdnsServerIpObject: NSObject
-
-@property (nonatomic, strong) NSArray *serverIpArray;
-
-+ (HttpdnsServerIpObject *)sharedServerIpObject;
-
-@end

@@ -128,6 +128,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     return self;
 }
 
+// 我的修改 每天也会调用一次 在初始化的时候
 - (void)upateIPListIfNeededAsync {
     if (![HttpdnsUtil isAbleToRequest]) {
         return;
@@ -152,7 +153,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     HttpdnsLogDebug("begin fetch ip list status");
     [self updateIpListAsyncWithCallback:^(NSDictionary *result) {
         if (result) {
-            //隔一段时间请求一次，仅仅从请求成功后开始计时，防止弱网情况下，频频超时但无法访问SC。
+            // 隔一段时间请求一次，仅仅从请求成功后开始计时，防止弱网情况下，频频超时但无法访问SC。
             [self setNeedToFetchFromScheduleCenter:NO];
             [self setScheduleCenterResult:result];
             HttpdnsLogDebug("fetch ip list status succeed");
@@ -167,14 +168,13 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
         !callback ?: callback(nil);
     }];
 }
-
+// 我的修改
 - (void)updateIpListAsyncWithCallback:(HttpDnsIdCallback)callback {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
         self.connectingWithScheduleCenter = YES;
         dispatch_async(self.connectToScheduleCenterQueue, ^(void) {
             _lastScheduleCenterConnectDate = [NSDate date];
         });
-        
         HttpdnsScheduleCenterRequest *scheduleCenterRequest = [HttpdnsScheduleCenterRequest new];
         NSDictionary *queryScheduleCenterRecord = [scheduleCenterRequest queryScheduleCenterRecordFromServerSync];
         !callback ?: callback(queryScheduleCenterRecord);
@@ -261,8 +261,8 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     ALICLOUD_HTTPDNS_ABLE_TO_CONNECT_SCHEDULE_CENTER_INTERVAL = 5 * 60; /**< 五分钟 */
     ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = @[
                                                    ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP,
-                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2,
-                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
+                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2
+//                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
                                                    ];
     
 }
@@ -370,15 +370,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 }
 
 - (NSString *)getActivatedServerIPWithIndex:(NSInteger)index {
-    
-    NSString *serverIp;
-
-    if ([HttpdnsServerIpObject sharedServerIpObject].serverIpArray != nil) {
-        serverIp = [HttpdnsServerIpObject sharedServerIpObject].serverIpArray[index];
-    } else {
-        serverIp = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:self.IPList defaultValue:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED];
-    }
-    
+    NSString *serverIp = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:self.IPList defaultValue:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED];
     return serverIp;
 }
 
@@ -395,6 +387,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     dispatch_sync(self.changeServerIPIndexQueue, ^{
         nextServerIPIndex = ((IPIndex + increase) % self.IPList.count);
     });
+    
     return nextServerIPIndex;
 }
 
@@ -458,7 +451,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = @[
                                                    @"100.100.100.100",
                                                    @"101.101.101.101",
-                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
+//                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
                                                    ];
 }
 
