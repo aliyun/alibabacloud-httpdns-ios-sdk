@@ -128,11 +128,11 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     return self;
 }
 
-// 我的修改 考虑点 SS 每天也会调用一次 在初始化的时候
 - (void)upateIPListIfNeededAsync {
     if (![HttpdnsUtil isAbleToRequest]) {
         return;
     }
+
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
         if (![self needToFetchFromScheduleCenter]) {
             return;
@@ -153,11 +153,11 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     HttpdnsLogDebug("begin fetch ip list status");
     [self updateIpListAsyncWithCallback:^(NSDictionary *result) {
         if (result) {
-            //隔一段时间请求一次，仅仅从请求成功后开始计时，防止弱网情况下，频频超时但无法访问SC。
+            // 隔一段时间请求一次，仅仅从请求成功后开始计时，防止弱网情况下，频频超时但无法访问SC。
             [self setNeedToFetchFromScheduleCenter:NO];
             [self setScheduleCenterResult:result];
             HttpdnsLogDebug("fetch ip list status succeed");
-            //从服务端获取到新的IP列表后，取消disable状态，置为
+            // 从服务端获取到新的IP列表后，取消 disable状态，置为
             HttpDnsService *serviceProvider = [HttpDnsService sharedInstance];
             HttpdnsRequestScheduler *requestScheduler = serviceProvider.requestScheduler;
             [requestScheduler setServerDisable:NO host:nil];
@@ -175,7 +175,6 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
         dispatch_async(self.connectToScheduleCenterQueue, ^(void) {
             _lastScheduleCenterConnectDate = [NSDate date];
         });
-        
         HttpdnsScheduleCenterRequest *scheduleCenterRequest = [HttpdnsScheduleCenterRequest new];
         NSDictionary *queryScheduleCenterRecord = [scheduleCenterRequest queryScheduleCenterRecordFromServerSync];
         !callback ?: callback(queryScheduleCenterRecord);
@@ -262,8 +261,8 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     ALICLOUD_HTTPDNS_ABLE_TO_CONNECT_SCHEDULE_CENTER_INTERVAL = 5 * 60; /**< 五分钟 */
     ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = @[
                                                    ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP,
-                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2,
-                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
+                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2
+//                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
                                                    ];
     
 }
@@ -285,7 +284,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 
 - (void)initScheduleCenterResultFromCache {
     dispatch_async(self.scheduleCenterResultQueue, ^{
-        //IP List 没有过期时间，仅仅在 fetch SC 后更新。
+        // IP List 没有过期时间，仅仅在 fetch SC 后更新。
         NSDictionary *scheduleCenterResult = [HttpdnsPersistenceUtils getJSONFromDirectory:[HttpdnsPersistenceUtils scheduleCenterResultPath]
                                                                                   fileName:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_RESULT_CACHE_FILE_NAME];
         if (!scheduleCenterResult) {
@@ -338,6 +337,9 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
         
         NSArray *result = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IP_KEY dict:_scheduleCenterResult];
         if ([HttpdnsUtil isValidArray:result]) {
+            ALICLOUD_HTTPDNS_SERVER_IP_LIST = [result copy];
+            ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED = ALICLOUD_HTTPDNS_SERVER_IP_LIST[0];
+            ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE = YES;
             _IPList = [result copy];
         }
     });
@@ -371,16 +373,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 }
 
 - (NSString *)getActivatedServerIPWithIndex:(NSInteger)index {
-    
-    NSString *serverIp;
-    // 我的修改 判断 serverIP 来源
-    if ([HttpdnsServerIpObject sharedServerIpObject].serverIpArray != nil) {
-        serverIp = [HttpdnsServerIpObject sharedServerIpObject].serverIpArray[index];
-    } else {
-        // 我的修改 待考虑 ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED 的参数值
-        serverIp = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:self.IPList defaultValue:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED];
-    }
-    
+    NSString *serverIp = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:self.IPList defaultValue:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED];
     return serverIp;
 }
 
@@ -397,6 +390,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     dispatch_sync(self.changeServerIPIndexQueue, ^{
         nextServerIPIndex = ((IPIndex + increase) % self.IPList.count);
     });
+    
     return nextServerIPIndex;
 }
 
@@ -460,7 +454,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = @[
                                                    @"100.100.100.100",
                                                    @"101.101.101.101",
-                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
+//                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
                                                    ];
 }
 

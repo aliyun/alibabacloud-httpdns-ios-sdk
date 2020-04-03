@@ -36,10 +36,10 @@ static NSString *const HTTPDNS_BEACON_APPSECRECT = @"f30fc0937f2b1e9e50a1b7134f1
 /// @name Schedule Center
 ///=============================================================================
 
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST = @"httpdns-sc.aliyuncs.com";
+// static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST = @"httpdns-sc.aliyuncs.com";
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP = @"203.107.1.97";
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2 = @"203.107.1.100";
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_PATH = @"sc/httpdns_config";
+//static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_PATH = @"sc/httpdns_config";
 static NSString *const ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY = @"ErrorMessage";
 static NSString *const ALICLOUD_HTTPDNS_ERROR_SERVICE_LEVEL_DENY = @"ServiceLevelDeny";
 
