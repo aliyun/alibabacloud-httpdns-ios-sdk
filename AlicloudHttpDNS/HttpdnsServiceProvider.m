@@ -29,9 +29,6 @@
 #import "HttpdnsConstants.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsScheduleCenter.h"
-
-
-// 我的修改 添加 头文件
 #import "HttpdnsScheduleCenterRequest.h"
 
 static NSDictionary *HTTPDNS_EXT_INFO = nil;
@@ -41,8 +38,6 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 
 @property (nonatomic, assign) int accountID;
 @property (nonatomic, copy) NSString *secretKey;
-
-// 我的修改 可选参数 海外节点选择
 @property (nonatomic, copy) NSString *region;
 
 /**
@@ -231,20 +226,13 @@ static HttpDnsService * _httpDnsClient = nil;
     if (![self checkServiceStatus]) {
         return;
     }
-    
-    // 我的修改 预解析前 也 初始化一下
-    if ([HttpdnsServerIpObject sharedServerIpObject].serverIpArray == nil) {
+    if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) {
         HttpdnsScheduleCenterRequest *scheduleCenterRequest = [HttpdnsScheduleCenterRequest new];
-        NSDictionary *result = [scheduleCenterRequest queryScheduleCenterRecordFromServerSync];
-        // 我的修改 这里重复 待删除
-        [HttpdnsServerIpObject sharedServerIpObject].serverIpArray = [result objectForKey:@"service_ip"];
-        ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED = [HttpdnsServerIpObject sharedServerIpObject].serverIpArray[0];
-        
+        [scheduleCenterRequest queryScheduleCenterRecordFromServerSync];
         [_requestScheduler addPreResolveHosts:hosts];
     } else {
         [_requestScheduler addPreResolveHosts:hosts];
     }
-    
 }
 
 - (NSString *)getIpByHost:(NSString *)host {
@@ -423,7 +411,6 @@ static HttpDnsService * _httpDnsClient = nil;
     [HttpdnsLog setLogHandler:logHandler];
 }
 
-// 我的修改 可选参数 海外节点选择
 - (void)setRegion:(NSString *)region {
     if ([HttpdnsUtil isValidString:region]) {
         _region = region;

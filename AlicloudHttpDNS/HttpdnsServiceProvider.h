@@ -29,7 +29,6 @@
 
 @property (nonatomic, copy, readonly) NSString *secretKey;
 
-// 我的修改 可选参数 海外节点选择
 @property (nonatomic, copy, readonly) NSString *region;
 
 @property (nonatomic, weak, setter=setDelegateForDegradationFilter:) id<HttpDNSDegradationDelegate> delegate;
@@ -76,7 +75,6 @@
 
 - (void)setLogEnabled:(BOOL)enable;
 
-// 我的修改 可选参数 海外节点选择
 - (void)setRegion:(NSString *)region;
 
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;

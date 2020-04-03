@@ -16,9 +16,6 @@
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsScheduleCenter.h"
 #import "HttpDnsHitService.h"
-
-
-// 我的修改 添加头文件
 #import "HttpdnsgetNetworkInfoHelper.h"
 #import "HttpdnsModel.h"
 
@@ -53,13 +50,11 @@ static NSURLSession *_scheduleCenterSession = nil;
 - (NSDictionary *)queryScheduleCenterRecordFromServerSyncWithHostIndex:(NSInteger)hostIndex {
     
     NSDictionary *scheduleCenterRecord = nil;
-    
-    // 我的修改 判断是 SERVER_IP 还是 CENTER_IP
     NSArray *hostArray;
-    if ([HttpdnsServerIpObject sharedServerIpObject].serverIpArray != nil) {
-        hostArray = [HttpdnsServerIpObject sharedServerIpObject].serverIpArray;
-    } else {
+    if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) {
         hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
+    } else {
+        hostArray = ALICLOUD_HTTPDNS_SERVER_IP_LIST;
     }
     
     NSInteger maxHostIndex = (hostArray.count - 1);
@@ -73,9 +68,8 @@ static NSURLSession *_scheduleCenterSession = nil;
     // 这里发起请求 返回数据
     scheduleCenterRecord = [self queryScheduleCenterRecordFromServerWithHostIndex:hostIndex error:&error];
     
-    // 我的修改 待测试 // 测试步骤 修改 .97 的 看会不会调用 .100 的
+
     if (!scheduleCenterRecord && error) {
-        // 延迟 5 分钟再次 调用
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(300 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 [self retryIndex:hostIndex + 1];
@@ -102,12 +96,11 @@ static NSURLSession *_scheduleCenterSession = nil;
     
     NSString *serverHostOrIP = nil;
     NSArray *hostArray;
-       
-    // 我的修改 判断是 SERVER_IP 还是 CENTER_IP
-    if ([HttpdnsServerIpObject sharedServerIpObject].serverIpArray != nil) {
-        hostArray = [HttpdnsServerIpObject sharedServerIpObject].serverIpArray;
-    } else {
+    
+    if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) {
         hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
+    } else {
+        hostArray = ALICLOUD_HTTPDNS_SERVER_IP_LIST;
     }
 
     index = index % hostArray.count;
@@ -117,7 +110,7 @@ static NSURLSession *_scheduleCenterSession = nil;
 }
 
 /**
- * 我的修改 拼接 URL
+ * 拼接 URL
  * https://203.107.1.1/100000/ss?region=hk&platform=ios&sdk_version=1.6.1&sid=LpmJIA2CUoi4&net=unknown&bssid=
  */
 - (NSString *)constructRequestURLWithHostIndex:(NSInteger)hostIndex {
@@ -130,7 +123,7 @@ static NSURLSession *_scheduleCenterSession = nil;
     return url;
 }
 
-// 我的修改 url 添加 region
+// 添加 region
 - (NSString *)urlFormatRegion:(NSString *)region {
     if ([HttpdnsUtil isValidString:region]) {
         return [NSString stringWithFormat:@"region=%@&",region];
@@ -138,7 +131,7 @@ static NSURLSession *_scheduleCenterSession = nil;
     return @"";
 }
 
-// 我的修改 url 添加 sid net 和 bssid
+// url 添加 sid net 和 bssid
 - (NSString *)urlFormatSidNetBssid:(NSString *)url {
     
     NSString *sessionId = [HttpdnsUtil generateSessionID];
@@ -159,7 +152,7 @@ static NSURLSession *_scheduleCenterSession = nil;
     return url;
 }
 
-// 我的修改 基于 URLSession 发送 HTTPS 请求
+// 基于 URLSession 发送 HTTPS 请求
 - (NSDictionary *)queryScheduleCenterRecordFromServerWithHostIndex:(NSInteger)hostIndex error:(NSError **)pError {
     
     NSString *fullUrlStr = [self constructRequestURLWithHostIndex:hostIndex];
@@ -205,9 +198,13 @@ static NSURLSession *_scheduleCenterSession = nil;
     dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
 
     if (!errorStrong) {
-        [HttpdnsServerIpObject sharedServerIpObject].serverIpArray = [result objectForKey:@"service_ip"];
-        // 我的修改 对数组判定
-        ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED = [HttpdnsServerIpObject sharedServerIpObject].serverIpArray[0];
+        
+        if ([HttpdnsUtil isValidArray:[result objectForKey:@"service_ip"]]) {
+            ALICLOUD_HTTPDNS_SERVER_IP_LIST = [result objectForKey:@"service_ip"];
+            ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED = [result objectForKey:@"service_ip"][0];
+            ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE = YES;
+        }
+        
         return result;
     }
       
@@ -229,8 +226,7 @@ static NSURLSession *_scheduleCenterSession = nil;
     }
     NSURLSessionAuthChallengeDisposition disposition = NSURLSessionAuthChallengePerformDefaultHandling;
     NSURLCredential *credential = nil;
-    // 我的修改 Domain host = 203.107.1.1
-    NSString *host = @"203.107.1.1";
+    NSString *host = ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP;
     if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
         if ([self evaluateServerTrust:challenge.protectionSpace.serverTrust forDomain:host]) {
             disposition = NSURLSessionAuthChallengeUseCredential;

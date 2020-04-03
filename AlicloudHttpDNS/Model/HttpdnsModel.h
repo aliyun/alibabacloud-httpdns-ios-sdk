@@ -55,11 +55,3 @@
 
 @end
 
-// 我的修改 创建一个单例类
-@interface HttpdnsServerIpObject: NSObject
-
-@property (nonatomic, strong) NSArray *serverIpArray;
-
-+ (HttpdnsServerIpObject *)sharedServerIpObject;
-
-@end
