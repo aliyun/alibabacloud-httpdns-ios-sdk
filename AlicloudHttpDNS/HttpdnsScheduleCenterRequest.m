@@ -68,7 +68,6 @@ static NSURLSession *_scheduleCenterSession = nil;
     // 这里发起请求 返回数据
     scheduleCenterRecord = [self queryScheduleCenterRecordFromServerWithHostIndex:hostIndex error:&error];
     
-
     if (!scheduleCenterRecord && error) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(300 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
