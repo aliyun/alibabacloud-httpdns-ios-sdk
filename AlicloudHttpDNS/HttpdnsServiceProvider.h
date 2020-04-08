@@ -29,8 +29,6 @@
 
 @property (nonatomic, copy, readonly) NSString *secretKey;
 
-@property (nonatomic, copy, readonly) NSString *region;
-
 @property (nonatomic, weak, setter=setDelegateForDegradationFilter:) id<HttpDNSDegradationDelegate> delegate;
 
 @property (nonatomic, assign) NSTimeInterval timeoutInterval;

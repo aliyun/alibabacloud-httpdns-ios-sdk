@@ -116,7 +116,7 @@ static NSURLSession *_scheduleCenterSession = nil;
     
     NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    NSString * region = [self urlFormatRegion:sharedService.region];
+    NSString * region = [self urlFormatRegion:[[NSUserDefaults standardUserDefaults] objectForKey:@"HttpdnsRegion"]];
     NSString *url = [NSString stringWithFormat:@"https://%@/%d/ss?%@platform=ios&sdk_version=%@",serverIpOrHost,sharedService.accountID,region,HTTPDNS_IOS_SDK_VERSION];
     url = [self urlFormatSidNetBssid:url];
     return url;
