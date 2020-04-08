@@ -38,7 +38,6 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 
 @property (nonatomic, assign) int accountID;
 @property (nonatomic, copy) NSString *secretKey;
-@property (nonatomic, copy) NSString *region;
 
 /**
  * 每次访问的签名有效期，SDK内部定死，当前不暴露设置接口，有效期定为10分钟。
@@ -413,7 +412,13 @@ static HttpDnsService * _httpDnsClient = nil;
 
 - (void)setRegion:(NSString *)region {
     if ([HttpdnsUtil isValidString:region]) {
-        _region = region;
+        NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
+        NSString *olgregion = [userDefault objectForKey:@"HttpdnsRegion"];
+        if (![region isEqualToString:olgregion]) {
+            [userDefault setObject:region forKey:@"HttpdnsRegion"];
+            HttpdnsScheduleCenterRequest *scheduleCenterRequest = [HttpdnsScheduleCenterRequest new];
+            [scheduleCenterRequest queryScheduleCenterRecordFromServerSync];
+        }
     }
 }
 
