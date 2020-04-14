@@ -37,6 +37,7 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 
 @property (nonatomic, assign) int accountID;
 @property (nonatomic, copy) NSString *secretKey;
+
 /**
  * 每次访问的签名有效期，SDK内部定死，当前不暴露设置接口，有效期定为10分钟。
  */
@@ -226,7 +227,13 @@ static HttpDnsService * _httpDnsClient = nil;
     if (![self checkServiceStatus]) {
         return;
     }
-    [_requestScheduler addPreResolveHosts:hosts];
+    if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) {
+        HttpdnsScheduleCenter *scheduleCenter  = [HttpdnsScheduleCenter sharedInstance];
+        [scheduleCenter forceUpdateIpListAsync];
+        [_requestScheduler addPreResolveHosts:hosts];
+    } else {
+        [_requestScheduler addPreResolveHosts:hosts];
+    }
 }
 
 - (NSString *)getIpByHost:(NSString *)host {
@@ -402,6 +409,18 @@ static HttpDnsService * _httpDnsClient = nil;
 
 - (void)setLogHandler:(id<HttpdnsLoggerProtocol>)logHandler {
     [HttpdnsLog setLogHandler:logHandler];
+}
+
+- (void)setRegion:(NSString *)region {
+    if ([HttpdnsUtil isValidString:region]) {
+        NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
+        NSString *olgregion = [userDefault objectForKey:@"HttpdnsRegion"];
+        if (![region isEqualToString:olgregion]) {
+            [userDefault setObject:region forKey:@"HttpdnsRegion"];
+            HttpdnsScheduleCenter *scheduleCenter  = [HttpdnsScheduleCenter sharedInstance];
+            [scheduleCenter forceUpdateIpListAsync];
+        }
+    }
 }
 
 - (NSString *)getSessionId {

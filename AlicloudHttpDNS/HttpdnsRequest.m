@@ -565,7 +565,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     NSURLSessionAuthChallengeDisposition disposition = NSURLSessionAuthChallengePerformDefaultHandling;
     NSURLCredential *credential = nil;
-    NSString *host = ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED;
+    NSString *host = ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP;
     if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
         if ([self evaluateServerTrust:challenge.protectionSpace.serverTrust forDomain:host]) {
             disposition = NSURLSessionAuthChallengeUseCredential;

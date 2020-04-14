@@ -20,6 +20,7 @@
 #import <Foundation/Foundation.h>
 @class HttpdnsHostRecord;
 @class HttpdnsIPRecord;
+@class HttpdnsServerIpObject;
 
 @interface HttpdnsIpObject: NSObject<NSCoding>
 
@@ -57,3 +58,4 @@
 - (NSArray<NSString *> *)getIP6Strings;
 
 @end
+

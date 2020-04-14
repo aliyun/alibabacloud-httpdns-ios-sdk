@@ -26,7 +26,9 @@
 @interface HttpDnsService: NSObject
 
 @property (nonatomic, assign, readonly) int accountID;
+
 @property (nonatomic, copy, readonly) NSString *secretKey;
+
 @property (nonatomic, weak, setter=setDelegateForDegradationFilter:) id<HttpDNSDegradationDelegate> delegate;
 
 @property (nonatomic, assign) NSTimeInterval timeoutInterval;
@@ -70,6 +72,8 @@
 - (void)setExpiredIPEnabled:(BOOL)enable;
 
 - (void)setLogEnabled:(BOOL)enable;
+
+- (void)setRegion:(NSString *)region;
 
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
 
