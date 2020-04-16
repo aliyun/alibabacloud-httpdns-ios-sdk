@@ -536,13 +536,12 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     HttpdnsHostObject *hostObject;
     NSString * allParams;
-    
+    NSString *hostkey = [NSString stringWithFormat:@"%@%@",host,cacheKey];
     if (![HttpdnsUtil isValidString:_globalParams]) {
         if (![HttpdnsUtil isValidString:partsParams]) {
             allParams = host;
         } else {
-            allParams = [NSString stringWithFormat:@"%@]%@]%@",host,partsParams,cacheKey];
-             
+            allParams = [NSString stringWithFormat:@"%@]%@]%@",host,partsParams,hostkey];
         }
     } else {
         if ([HttpdnsUtil isValidString:partsParams]) {
@@ -554,14 +553,12 @@ static HttpDnsService * _httpDnsClient = nil;
                 [allParamDic setObject:obj forKey:key];
             }];
             partsParams = [self limitPapams:allParamDic];
-            allParams = [NSString stringWithFormat:@"%@]%@]%@",host,partsParams,cacheKey];
+            allParams = [NSString stringWithFormat:@"%@]%@]%@",host,partsParams,hostkey];
         } else {
-            allParams = [NSString stringWithFormat:@"%@]%@]%@",host,_globalParams,cacheKey];
+            allParams = [NSString stringWithFormat:@"%@]%@]%@",host,_globalParams,hostkey];
         }
     }
-    
     hostObject = [_requestScheduler addSingleHostAndLookup:allParams synchronously:NO];
-    NSString *hostspkey= [allParams stringByReplacingOccurrencesOfString:@"]" withString:@""];
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];
         NSMutableDictionary * ipsDictionary = [[NSMutableDictionary alloc] init];
@@ -571,11 +568,11 @@ static HttpDnsService * _httpDnsClient = nil;
         }
         if ([HttpdnsUtil isValidArray:ipsObject]) {
             [ipsDictionary setObject:ipsObject forKey:@"ips"];
-            [self bizPerfUserGetIPWithHost:hostspkey success:YES];
+            [self bizPerfUserGetIPWithHost:hostkey success:YES];
             return  ipsDictionary;
         }
     }
-    [self bizPerfUserGetIPWithHost:hostspkey success:NO];
+    [self bizPerfUserGetIPWithHost:hostkey success:NO];
     return nil;
 }
 

@@ -408,7 +408,6 @@ static BOOL _disableStatus = NO;
     [HttpdnsUtil safeAddValue:@(success) key:HTTPDNS_HIT_PARAM_SUCCESS toDict:extProperties];
     [HttpdnsUtil safeAddValue:@(cacheOpen) key:HTTPDNS_HIT_PARAM_CACHEOPEN toDict:extProperties];
     [HttpdnsUtil safeAddValue:[self isIPV6Object] key:HTTPDNS_HIT_PARAM_IPV6 toDict:extProperties];
-
     [_tracker sendCustomHit:HTTPDNS_PERF_USER_GETIP duration:0 properties:extProperties];
 }
 
