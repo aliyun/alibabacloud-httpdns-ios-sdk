@@ -33,9 +33,7 @@
 @property (nonatomic, strong, setter=setIps:, getter=getIps) NSArray<HttpdnsIpObject *> *ips;
 @property (nonatomic, strong, setter=setIp6s:, getter=getIp6s) NSArray<HttpdnsIpObject *> *ip6s;
 @property (nonatomic, setter=setTTL:, getter=getTTL) int64_t ttl;
-
-// 我的修改 extra 参数
-@property (nonatomic, strong, setter=setExtra:, getter=getExtra) NSString *extra;
+@property (nonatomic, strong, setter=setExtra:, getter=getExtra) NSDictionary *extra;
 
 // 标识是否从持久化缓存加载
 @property (nonatomic, assign, setter=setIsLoadFromDB:, getter=getIsLoadFromDB) BOOL isLoadFromDB;

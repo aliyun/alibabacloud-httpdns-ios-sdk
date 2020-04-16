@@ -58,11 +58,10 @@
  */
 @property (nonatomic, assign, readonly) int64_t TTL;
 
-// 我的修改 extra HttpdnsHostRecord
 /*!
  * extra，非数据库字段，仅为兼容HttpdnsHostObject进行数据传递。
  */
-@property (nonatomic, copy, readonly) NSString *extra;
+@property (nonatomic, copy, readonly) NSDictionary *extra;
 
 
 /*!
@@ -103,8 +102,6 @@
                               IP6s:(NSArray<NSString *> *)IP6s
                                TTL:(int64_t)TTL;
 
-
-// 我的修改 extra 初始化
 /*!
  * 从网络初始化
  */
@@ -112,8 +109,7 @@
                          IPs:(NSArray<NSString *> *)IPs
                         IP6s:(NSArray<NSString *> *)IP6s
                          TTL:(int64_t)TTL
-                       Extra:(NSString *)extra;
-// 我的修改 extra 初始化
+                       Extra:(NSDictionary *)extra;
 /*!
  * 从网络初始化
  */
@@ -121,7 +117,7 @@
                                IPs:(NSArray<NSString *> *)IPs
                               IP6s:(NSArray<NSString *> *)IP6s
                                TTL:(int64_t)TTL
-                             Extra:(NSString *)extra;
+                             Extra:(NSDictionary *)extra;
 
 
 
