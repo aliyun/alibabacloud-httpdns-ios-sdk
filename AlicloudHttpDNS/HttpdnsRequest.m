@@ -139,7 +139,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSArray *ip6s;
     NSDictionary *extra;
     NSArray *hostArray= [hostStr componentsSeparatedByString:@"]"];
-    hostStr = [hostArray componentsJoinedByString:@""];
+    hostStr = [hostArray lastObject];
     if ([[json allKeys] containsObject:@"extra"]) {
         extra = [self htmlEntityDecode:[HttpdnsUtil safeObjectForKey:@"extra" dict:json]];
     }
@@ -306,7 +306,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     
     NSString *copyHostString = hostString;
     NSArray *hostArray= [hostString componentsSeparatedByString:@"]"];
-    hostString = [hostArray componentsJoinedByString:@""];
+    hostString = [hostArray lastObject];
     NSMutableArray * hostMArray = [NSMutableArray arrayWithArray:hostArray];
     if (hostMArray.count == 3) {
         [hostMArray removeLastObject];

@@ -170,7 +170,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 - (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync {
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
-    host = [hostArray componentsJoinedByString:@""];
+    host = [hostArray lastObject];
     
     if (![HttpdnsUtil isAbleToRequest]) {
         return nil;
@@ -205,8 +205,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [result setQueryingState:YES];
             result.hostName = host;
             result.extra = @{};
-            
-            
             [HttpdnsUtil safeAddValue:result key:host toDict:_hostManagerDict];
             
         } else if (([result getIps].count == 0) && result.isQuerying ) {
@@ -258,14 +256,12 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
-    host = [hostArray componentsJoinedByString:@""];
+    host = [hostArray lastObject];
     
     if (result) {
         [self setServerDisable:NO host:host];
-        NSString *hostName = host;  
         HttpdnsHostObject *old;
-        old  = [HttpdnsUtil safeObjectForKey:hostName dict:_hostManagerDict];
-        
+        old  = [HttpdnsUtil safeObjectForKey:host dict:_hostManagerDict];
         int64_t TTL = [result getTTL];
         int64_t lastLookupTime = [result getLastLookupTime];
         NSArray<NSString *> *IPStrings = [result getIPStrings];
@@ -287,7 +283,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
                 [old setIp6s:IP6Objects];
             }
-            HttpdnsLogDebug("Update %@: %@", hostName, result);
+            HttpdnsLogDebug("Update %@: %@", host, result);
         } else {
             HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
             [hostObject setHostName:host];
@@ -331,10 +327,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         return;
     }
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
-    host = [hostArray componentsJoinedByString:@""];
-    NSString *hostName = host; // [result getHostName];
+    host = [hostArray lastObject];
     NSArray<NSString *> *IPStrings = [result getIPStrings];
-    NSArray *sortedIps = [[HttpdnsTCPSpeedTester new] ipRankingWithIPs:IPStrings host:hostName];
+    NSArray *sortedIps = [[HttpdnsTCPSpeedTester new] ipRankingWithIPs:IPStrings host:host];
     [self updateHostManagerDictWithIPs:sortedIps host:host];
 }
 
@@ -394,7 +389,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     BOOL isTimeoutError = [self isTimeoutError:error isHTTPS:HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED];
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
-    host = [hostArray componentsJoinedByString:@""];
+    host = [hostArray lastObject];
     
     if (isRetry && isTimeoutError) {
         [HttpDnsHitService bizLocalDisableWithHost:host srvAddrIndex:activatedServerIPIndex];
@@ -417,7 +412,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                                 error:(NSError *)error {
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
-    host = [hostArray componentsJoinedByString:@""];
+    host = [hostArray lastObject];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     
     if (![HttpdnsUtil isAbleToRequest]) {
@@ -521,7 +516,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                     // 请求启动结束 异步请求完成
                     HttpdnsLogDebug("\n ====== Async request for %@ finishes result:%@ .", host,result);
                     [self mergeLookupResultToManager:result forHost:CopyHost];
-                    
                 });
             }
         }];
@@ -618,9 +612,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     }
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
-    host = [hostArray componentsJoinedByString:@""];
-    
-    
+    host = [hostArray lastObject];
     [HttpDnsHitService bizSnifferWithHost:host
                          srvAddrIndex:activatedServerIPIndex];
     [self executeRequest:CopyHost synchronously:NO retryCount:0 activatedServerIPIndex:activatedServerIPIndex];
