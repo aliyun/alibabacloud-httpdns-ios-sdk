@@ -91,7 +91,7 @@
 
 - (void)clearSdnsGlobalParams;
 
-- (NSArray *)getIpsByHostAsync:(NSString *)host withParams:(NSDictionary<NSString *, NSString *> *)params withCacheKey:(NSString *)cacheKey;
+- (NSDictionary *)getIpsByHostAsync:(NSString *)host withParams:(NSDictionary<NSString *, NSString *> *)params withCacheKey:(NSString *)cacheKey;
 
 @end
 
