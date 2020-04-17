@@ -43,10 +43,8 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
  * 每次访问的签名有效期，SDK内部定死，当前不暴露设置接口，有效期定为10分钟。
  */
 @property (nonatomic, assign) NSUInteger authTimeoutInterval;
-
-// 我的添加 设置全局参数属性
 @property (nonatomic, copy) NSString *globalParams;
-
+@property (nonatomic, copy) NSDictionary *globalParamsDic;
 @end
 
 @implementation HttpDnsService
@@ -488,21 +486,19 @@ static HttpDnsService * _httpDnsClient = nil;
     return YES;
 }
 
-// 我的添加 实现 SDNS 全参
 - (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params {
-    if (params == nil || params.count == 0) {
-        _globalParams = @"";
-    } else {
+    if ([HttpdnsUtil isValidDictionary:params]) {
         _globalParams = [self limitPapams:params];
+        self.globalParamsDic = params;
+    } else {
+        _globalParams = @"";
     }
 }
 
-// 我的添加 清除 SDNS 全参
 - (void)clearSdnsGlobalParams {
     _globalParams = nil;
 }
 
-// 我的添加 判定 SDNS 入参
 - (NSString *)limitPapams:(NSDictionary<NSString *, NSString *> *)params {
     NSString *str = @"^[A-Za-z0-9\-_]+";
     NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", str];
@@ -528,8 +524,7 @@ static HttpDnsService * _httpDnsClient = nil;
     return [arr componentsJoinedByString:@""];
 }
 
-// 我的添加 实现 SDNS 请求接口
-- (NSArray *)getIpsByHostAsync:(NSString *)host withParams:(NSDictionary<NSString *, NSString *> *)params withCacheKey:(NSString *)cacheKey {
+- (NSDictionary *)getIpsByHostAsync:(NSString *)host withParams:(NSDictionary<NSString *, NSString *> *)params withCacheKey:(NSString *)cacheKey {
     
     if (![self checkServiceStatus]) {
         return nil;
@@ -542,80 +537,62 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     if ([HttpdnsUtil isAnIP:host]) {
         HttpdnsLogDebug("The host is just an IP.");
-        return [NSArray arrayWithObjects:host, nil];
+        return [NSDictionary dictionaryWithObject:host forKey:@"host"];
     }
     if (![HttpdnsUtil isAHost:host]) {
         HttpdnsLogDebug("The host is illegal.");
         return nil;
     }
     
-    // 对 params 参数的判定没有为空字符串
     NSString *partsParams;
-    if (params == nil || params.count == 0 || [params isEqual: @""]) {
-        partsParams = @"";
-    } else {
+    if ([HttpdnsUtil isValidDictionary:params]) {
         partsParams = [self limitPapams:params];
+    } else {
+        partsParams = @"";
     }
     
-    // 对 cacheKey 的判定没有为空字符串
-    if (cacheKey == nil || cacheKey.length == 0 || [cacheKey isEqual: @""]) {
+    if (![HttpdnsUtil isValidString: cacheKey]) {
         cacheKey = @"";
     }
-    
     HttpdnsHostObject *hostObject;
-    
-    // 全局参数为空
-    if ([_globalParams isEqual: @""] || _globalParams == nil) {
-        _globalParams = @"";
-        // 局部参数为空
-        if ([partsParams isEqual:@""]) {
-            // cacheKey 为空走原始调用方法
-            // cacheKey 不为空 暂且不单独考虑 cacheKey 走原始调用方法
-            return [self getIpsByHostAsync:host];
+    NSString * allParams;
+    NSString *hostkey = [NSString stringWithFormat:@"%@%@",host,cacheKey];
+    if (![HttpdnsUtil isValidString:_globalParams]) {
+        if (![HttpdnsUtil isValidString:partsParams]) {
+            allParams = host;
         } else {
-            // 局部参数不为空
-            NSString * allParams = [NSString stringWithFormat:@"%@]%@]%@",host,partsParams,cacheKey];
-            hostObject = [_requestScheduler addSingleHostAndLookup:allParams synchronously:NO];
+            allParams = [NSString stringWithFormat:@"%@]%@]%@",host,partsParams,hostkey];
         }
-        
     } else {
-        
-        // 判断 局部参数 key 是否 和 全局参数 key 一样 ，一样的话以局部参数为主
-        // FIX 暂未考虑 全局参数 和 局部参数是 多个元素的情况
-        if (![partsParams isEqual:@""]) {
-            NSArray *globalArray = [_globalParams componentsSeparatedByString:@"="];
-            NSArray *partsArray = [partsParams componentsSeparatedByString:@"="];
-            if ([globalArray[0] isEqual: partsArray[0]]) {
-                NSString * allParams = [NSString stringWithFormat:@"%@]%@]%@",host,partsParams,cacheKey];
-                hostObject = [_requestScheduler addSingleHostAndLookup:allParams synchronously:NO];
-            }
+        if ([HttpdnsUtil isValidString:partsParams]) {
+            NSMutableDictionary *allParamDic = [NSMutableDictionary dictionary];
+            [self.globalParamsDic enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                [allParamDic setObject:obj forKey:key];
+            }];
+            [params enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                [allParamDic setObject:obj forKey:key];
+            }];
+            partsParams = [self limitPapams:allParamDic];
+            allParams = [NSString stringWithFormat:@"%@]%@]%@",host,partsParams,hostkey];
+        } else {
+            allParams = [NSString stringWithFormat:@"%@]%@]%@",host,_globalParams,hostkey];
         }
-        
-        NSString * allParams = [NSString stringWithFormat:@"%@]%@%@]%@",host,_globalParams,partsParams,cacheKey];
-        hostObject = [_requestScheduler addSingleHostAndLookup:allParams synchronously:NO];
     }
-    
-    // host 表新增 key 字段，用于用户额外指定缓存标识，这样将由 host+sp+key 构成一个缓存命中标识；
-    NSString *hostspkey = [NSString stringWithFormat:@"%@%@%@%@",host,_globalParams,partsParams,cacheKey];
-    
+    hostObject = [_requestScheduler addSingleHostAndLookup:allParams synchronously:NO];
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];
-        NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
-        [ipsArray addObject:hostObject.extra];
-        
+        NSMutableDictionary * ipsDictionary = [[NSMutableDictionary alloc] init];
+        [ipsDictionary setObject:host forKey:@"host"];
+        if ([HttpdnsUtil isValidDictionary:hostObject.extra]) {
+            [ipsDictionary setObject:hostObject.extra forKey:@"extra"];
+        }
         if ([HttpdnsUtil isValidArray:ipsObject]) {
-            for (HttpdnsIpObject *ipObject in ipsObject) {
-                [ipsArray addObject:[ipObject getIpString]];
-            }
-            
-            // 我的修改 bizPerfGetIPWithHost
-            [self bizPerfUserGetIPWithHost:hostspkey success:YES];
-            return  ipsArray;
+            [ipsDictionary setObject:ipsObject forKey:@"ips"];
+            [self bizPerfUserGetIPWithHost:hostkey success:YES];
+            return  ipsDictionary;
         }
     }
-    
-    // 我的修改 bizPerfGetIPWithHost
-    [self bizPerfUserGetIPWithHost:hostspkey success:NO];
+    [self bizPerfUserGetIPWithHost:hostkey success:NO];
     return nil;
 }
 
