@@ -581,13 +581,17 @@ static HttpDnsService * _httpDnsClient = nil;
     hostObject = [_requestScheduler addSingleHostAndLookup:allParams synchronously:NO];
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];
+        NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
         NSMutableDictionary * ipsDictionary = [[NSMutableDictionary alloc] init];
         [ipsDictionary setObject:host forKey:@"host"];
         if ([HttpdnsUtil isValidDictionary:hostObject.extra]) {
             [ipsDictionary setObject:hostObject.extra forKey:@"extra"];
         }
         if ([HttpdnsUtil isValidArray:ipsObject]) {
-            [ipsDictionary setObject:ipsObject forKey:@"ips"];
+            for (HttpdnsIpObject *ipObject in ipsObject) {
+                [ipsArray addObject:[ipObject getIpString]];
+            }
+            [ipsDictionary setObject:ipsArray forKey:@"ips"];
             [self bizPerfUserGetIPWithHost:hostkey success:YES];
             return  ipsDictionary;
         }
