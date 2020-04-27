@@ -217,21 +217,13 @@ static NSURLSession *_resolveHOSTSession = nil;
     string = [string stringByReplacingOccurrencesOfString:@"&ldquo" withString:@"“"];
     string = [string stringByReplacingOccurrencesOfString:@"&darr" withString:@"↓"];
     string = [string stringByReplacingOccurrencesOfString:@"&middot" withString:@"·"];
-    NSArray * htmlCodeArr = @[@"&quot;",@"&apos;",@"&lt;",@"&gt;",@"&amp;",@"&nbsp",@"&mdash",@"&hellip",@"&rdquo",@"&lsquo",@"&rsquo",@"&ldquo",@"&darr",@"&middot"];
-    for (NSString *htmlCodeStr in htmlCodeArr) {
-        if ([string containsString:htmlCodeStr]) {
-            return [self htmlEntityDecode:string];
-        } else {
-            NSData *jsonData = [string dataUsingEncoding:NSUTF8StringEncoding];
-            NSError *err;
-            NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&err];
-            if(err) {
-                return nil;
-            }
-            return dic;
-        }
+    NSData *jsonData = [string dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *err;
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&err];
+    if(err) {
+        return nil;
     }
-    return nil;
+    return dic;
 }
 
 - (NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
