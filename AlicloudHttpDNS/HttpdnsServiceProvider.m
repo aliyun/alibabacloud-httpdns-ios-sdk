@@ -29,7 +29,6 @@
 #import "HttpdnsConstants.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsScheduleCenter.h"
-#import "HttpdnsScheduleCenterRequest.h"
 
 static NSDictionary *HTTPDNS_EXT_INFO = nil;
 static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
@@ -227,8 +226,8 @@ static HttpDnsService * _httpDnsClient = nil;
         return;
     }
     if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) {
-        HttpdnsScheduleCenterRequest *scheduleCenterRequest  = [[HttpdnsScheduleCenterRequest alloc]init];
-        [scheduleCenterRequest queryScheduleCenterRecordFromServerSync];
+        HttpdnsScheduleCenter *scheduleCenter  = [HttpdnsScheduleCenter sharedInstance];
+        [scheduleCenter forceUpdateIpListAsync];
         [_requestScheduler addPreResolveHosts:hosts];
     } else {
         [_requestScheduler addPreResolveHosts:hosts];
