@@ -249,7 +249,9 @@ static NSURLSession *_resolveHOSTSession = nil;
         }
         NSUInteger expiredTimestamp = localTimestamp + HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
         NSString *expiredTimestampString = [NSString stringWithFormat:@"%@", @(expiredTimestamp)];
-        NSString *signOriginString = [NSString stringWithFormat:@"%@-%@-%@", hostsString, secretKey, expiredTimestampString];
+        NSArray *hostArray= [hostsString componentsSeparatedByString:@"&"];
+        NSString *hostStr = [hostArray firstObject];
+        NSString *signOriginString = [NSString stringWithFormat:@"%@-%@-%@", hostStr, secretKey, expiredTimestampString];
         
         NSString *sign = [HttpdnsUtil getMD5StringFrom:signOriginString];
         signatureRequestString = [NSString stringWithFormat:@"&t=%@&s=%@", expiredTimestampString, sign];
