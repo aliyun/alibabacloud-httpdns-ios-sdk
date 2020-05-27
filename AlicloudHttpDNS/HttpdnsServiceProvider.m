@@ -410,6 +410,11 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (void)setRegion:(NSString *)region {
+    
+    if (![self checkServiceStatus]) {
+        return nil;
+    }
+    
     if ([HttpdnsUtil isValidString:region]) {
         NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
         NSString *olgregion = [userDefault objectForKey:@"HttpdnsRegion"];
@@ -430,6 +435,11 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (NSString *)getIPv6ByHostAsync:(NSString *)host {
+    
+    if (![self checkServiceStatus]) {
+        return nil;
+    }
+    
     if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
         return nil;
     }
@@ -442,6 +452,11 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (NSArray *)getIPv6sByHostAsync:(NSString *)host {
+    
+    if (![self checkServiceStatus]) {
+        return nil;
+    }
+    
     if ([self.delegate shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -528,6 +543,7 @@ static HttpDnsService * _httpDnsClient = nil;
     if (![self checkServiceStatus]) {
         return nil;
     }
+    
     if ([self.delegate shouldDegradeHTTPDNS:host]) {
         return nil;
     }
