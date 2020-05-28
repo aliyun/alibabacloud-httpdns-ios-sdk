@@ -19,7 +19,7 @@
 
 #import <Foundation/Foundation.h>
 
-static NSString *const HTTPDNS_IOS_SDK_VERSION = @"1.19.2.1";
+static NSString *const HTTPDNS_IOS_SDK_VERSION = @"1.19.2.3";
 
 #import <Foundation/Foundation.h>
 #import "HttpdnsLoggerDelegate.h"
