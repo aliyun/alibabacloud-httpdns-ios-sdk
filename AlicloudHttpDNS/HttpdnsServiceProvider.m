@@ -412,7 +412,7 @@ static HttpDnsService * _httpDnsClient = nil;
 - (void)setRegion:(NSString *)region {
     
     if (![self checkServiceStatus]) {
-        return nil;
+        return;
     }
     
     if ([HttpdnsUtil isValidString:region]) {
