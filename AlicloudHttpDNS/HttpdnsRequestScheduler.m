@@ -215,7 +215,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 needToQuery = NO;
                 if (![result isQuerying]) {
                     [result setQueryingState:YES];
-                    return [self executeRequest:CopyHost synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
+                    [self executeRequest:CopyHost synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
                 }
             } else {
                 // 不接受过期的 IP
@@ -481,8 +481,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     }
     // =====================================================================================
     
-    // 异步开始请求
-    dispatch_semaphore_t signal = dispatch_semaphore_create(1);
+
     __block HttpdnsHostObject * result = nil;
     {
         // 这里 异步处理
@@ -495,7 +494,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             result = [[HttpdnsRequest new] lookupHostFromServer:CopyHost
                                                           error:&error
                                         activatedServerIPIndex:newActivatedServerIPIndex];
-            dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
             if (error) {
                 HttpdnsLogDebug("Async request for %@ error: %@", host, error);
                 if (shouldRetry) {
@@ -519,7 +517,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         }];
         [_asyncOperationQueue addOperation:operation];
     }
-    dispatch_semaphore_signal(signal);
     return result;
 }
 
