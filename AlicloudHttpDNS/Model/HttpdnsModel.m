@@ -65,7 +65,6 @@
     _ips = nil;
     _ip6s = nil;
     _queryingState = NO;
-    // 我的修改 初始化 extra
     _extra = nil;
     
     return self;
@@ -79,7 +78,6 @@
         _ips = [aDecoder decodeObjectForKey:@"ips"];
         _ip6s = [aDecoder decodeObjectForKey:@"ip6s"];
         _queryingState = [aDecoder decodeBoolForKey:@"queryingState"];
-        // 我的修改 初始化 extra
         _extra = [aDecoder decodeObjectForKey:@"extra"];
         
     }
@@ -93,7 +91,6 @@
     [aCoder encodeObject:_ips forKey:@"ips"];
     [aCoder encodeObject:_ip6s forKey:@"ip6s"];
     [aCoder encodeBool:_queryingState forKey:@"queryingState"];
-    // 我的修改 初始化 extra
     [aCoder encodeObject:_hostName forKey:@"extra"];
 }
 
@@ -117,10 +114,7 @@
     [hostObject setHostName:hostRecord.host];
     [hostObject setLastLookupTime:[hostRecord.createAt timeIntervalSince1970]];
     [hostObject setTTL:hostRecord.TTL];
-    
-    // 我的修改 添加 Extra
     [hostObject setExtra:hostRecord.extra];
-    
     NSArray *ips = hostRecord.IPs;
     NSArray *ip6s = hostRecord.IP6s;
     if ([HttpdnsUtil isValidArray:ips]) {
