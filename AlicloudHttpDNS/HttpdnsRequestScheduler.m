@@ -164,15 +164,11 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     });
 }
 
-#pragma mark -
 #pragma mark - core method for all public query API
-// 我的修改 开始接口调用 1.0
 - (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync {
-   
-    // 我的修改 如果不是从 sdns 接口过来 host 不变
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
-    host = [hostArray componentsJoinedByString:@""];
+    host = [hostArray lastObject];
     
     if (![HttpdnsUtil isAbleToRequest]) {
         return nil;
@@ -205,14 +201,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             HttpdnsHostObject *result =  [HttpdnsHostObject new];
             result.ips = @[];
             [result setQueryingState:YES];
-            
-            // 我的修改 host 判断
             result.hostName = host;
-            
-            if (hostArray.count != 1) {
-                result.extra = @"";
-            }
-            
+            result.extra = @{};
             [HttpdnsUtil safeAddValue:result key:host toDict:_hostManagerDict];
             
         } else if (([result getIps].count == 0) && result.isQuerying ) {
@@ -225,7 +215,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 needToQuery = NO;
                 if (![result isQuerying]) {
                     [result setQueryingState:YES];
-                    // 我的修改 开始接口调用 2.0 发起异步请求
                     return [self executeRequest:CopyHost synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
                 }
             } else {
@@ -246,12 +235,10 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             if (sync) {
                 return [self executeRequest:CopyHost synchronously:YES retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
             } else {
-                // 我的修改 开始接口调用 2.0 发起异步请求
                 return [self executeRequest:CopyHost synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
             }
         }
     } else {
-        // 我的修改 bizPerfGetIPWithHost
         [self bizPerfGetIPWithHost:host success:YES];
     }
     return result;
@@ -263,30 +250,23 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     [HttpDnsHitService bizPerfUserGetIPWithHost:host success:YES cacheOpen:cachedIPEnabled];
 }
 
-// 我的修改 存储返回数据 1.0
 - (void)mergeLookupResultToManager:(HttpdnsHostObject *)result forHost:(NSString *)host {
     
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
-    host = [hostArray componentsJoinedByString:@""];
+    host = [hostArray lastObject];
     
     if (result) {
         [self setServerDisable:NO host:host];
-        
-        // 我的修改 host 判断 此处为 host
-        NSString *hostName = host; // [result getHostName];
         HttpdnsHostObject *old;
-        old  = [HttpdnsUtil safeObjectForKey:hostName dict:_hostManagerDict];
-        
+        old  = [HttpdnsUtil safeObjectForKey:host dict:_hostManagerDict];
         int64_t TTL = [result getTTL];
         int64_t lastLookupTime = [result getLastLookupTime];
         NSArray<NSString *> *IPStrings = [result getIPStrings];
         NSArray<NSString *> *IP6Strings = [result getIP6Strings];
         NSArray<HttpdnsIpObject *> *IPObjects = [result getIps];
         NSArray<HttpdnsIpObject *> *IP6Objects = [result getIp6s];
-        
-        // 我的修改 添加 Extra
-        NSString * Extra  = [result getExtra];
+        NSDictionary* Extra  = [result getExtra];
         
         if (old) {
             [old setTTL:TTL];
@@ -294,27 +274,22 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [old setIsLoadFromDB:NO];
             [old setIps:IPObjects];
             [old setQueryingState:NO];
-            
-            if (hostArray.count != 1) {
-                // 我的修改 添加 Extra
+            if ([HttpdnsUtil isValidDictionary:result.extra]) {
                 [old setExtra:Extra];
             }
                 
             if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
                 [old setIp6s:IP6Objects];
             }
-            HttpdnsLogDebug("Update %@: %@", hostName, result);
+            HttpdnsLogDebug("Update %@: %@", host, result);
         } else {
             HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
-            // 我的修改 host 判断
             [hostObject setHostName:host];
             [hostObject setLastLookupTime:lastLookupTime];
             [hostObject setTTL:TTL];
             [hostObject setIps:IPObjects];
             [hostObject setQueryingState:NO];
-            
-            if (hostArray.count != 1) {
-                // 我的修改 添加 Extra
+            if ([HttpdnsUtil isValidDictionary:result.extra]) {
                 [hostObject setExtra:Extra];
             }
             
@@ -325,11 +300,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [HttpdnsUtil safeAddValue:hostObject key:host toDict:_hostManagerDict];
         }
         
-        if(hostArray.count != 1) {
-            // 我的修改 存储数据 2.0 HttpdnsHostRecord
+        if([HttpdnsUtil isValidDictionary:result.extra]) {
             [self sdnsCacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings IP6s:IP6Strings TTL:TTL withExtra:Extra];
         } else {
-            // 我的修改 存储数据 2.0 HttpdnsHostRecord
             [self cacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings IP6s:IP6Strings TTL:TTL];
         }
         
@@ -351,17 +324,10 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (!self.IPRankingEnabled) {
         return;
     }
-    
-    NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
-    host = [hostArray componentsJoinedByString:@""];
-    
-    // 我的修改 host
-    NSString *hostName = host; // [result getHostName];
+    host = [hostArray lastObject];
     NSArray<NSString *> *IPStrings = [result getIPStrings];
-    NSArray *sortedIps = [[HttpdnsTCPSpeedTester new] ipRankingWithIPs:IPStrings host:hostName];
-    
-    // 我的修改 此处 host
+    NSArray *sortedIps = [[HttpdnsTCPSpeedTester new] ipRankingWithIPs:IPStrings host:host];
     [self updateHostManagerDictWithIPs:sortedIps host:host];
 }
 
@@ -419,12 +385,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     }
     
     BOOL isTimeoutError = [self isTimeoutError:error isHTTPS:HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED];
-    
-    // 我的修改 host 判断
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
-    // host { host 参数 hsk }
-    host = [hostArray componentsJoinedByString:@""];
+    host = [hostArray lastObject];
     
     if (isRetry && isTimeoutError) {
         [HttpDnsHitService bizLocalDisableWithHost:host srvAddrIndex:activatedServerIPIndex];
@@ -440,27 +403,14 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     return [self executeRequest:host synchronously:sync retryCount:hasRetryedCount activatedServerIPIndex:activatedServerIPIndex error:nil];
 }
 
-// 我的修改 开始接口调用 2.0 发起异步请求
 - (HttpdnsHostObject *)executeRequest:(NSString *)host
                         synchronously:(BOOL)sync
                            retryCount:(int)hasRetryedCount
                activatedServerIPIndex:(NSInteger)activatedServerIPIndex
                                 error:(NSError *)error {
-    
-    // 我的修改 如果不是从 sdns 接口过来 host 不变
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
-    // host { host 参数 hsk }
-    host = [hostArray componentsJoinedByString:@""];
-    
-    // 我的修改 开始拼接 URL 1.0
-    NSMutableArray * hostMArray = [NSMutableArray arrayWithArray:hostArray];
-    if (hostMArray.count == 3) {
-        [hostMArray removeLastObject];
-    }
-    // hostsUrl { host 参数 }
-    NSString * hostsUrl = [hostMArray componentsJoinedByString:@""];
-    
+    host = [hostArray lastObject];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     
     if (![HttpdnsUtil isAbleToRequest]) {
@@ -481,7 +431,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     
     if (hasRetryedCount > HTTPDNS_MAX_REQUEST_RETRY_TIME) {
         HttpdnsLogDebug("Retry count exceed limit, abort!");
-        // 我的修改 此处 CopyHost
         [self canNotResolveHost:CopyHost error:error isRetry:isRetry activatedServerIPIndex:activatedServerIPIndex];
         return nil;
     }
@@ -533,7 +482,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     // =====================================================================================
     
     // 异步开始请求
-    dispatch_semaphore_t signal = dispatch_semaphore_create(0);
+    dispatch_semaphore_t signal = dispatch_semaphore_create(1);
     __block HttpdnsHostObject * result = nil;
     {
         // 这里 异步处理
@@ -543,11 +492,10 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             }
             NSError *error;
             HttpdnsLogDebug("Async request for %@ starts...", host);
-            // 我的修改 开始调用接口 3.0  开始异步请求 
             result = [[HttpdnsRequest new] lookupHostFromServer:CopyHost
                                                           error:&error
                                         activatedServerIPIndex:newActivatedServerIPIndex];
-            dispatch_semaphore_signal(signal);
+            dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
             if (error) {
                 HttpdnsLogDebug("Async request for %@ error: %@", host, error);
                 if (shouldRetry) {
@@ -558,23 +506,20 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
               activatedServerIPIndex:activatedServerIPIndex
                  error:error];
                 } else {
-                    // 我的修改 此处 CopyHost
                     // 用户访问引发的嗅探超时的情况，和重试引起的主动嗅探都会访问该方法
                     [self canNotResolveHost:CopyHost error:error isRetry:isRetry activatedServerIPIndex:activatedServerIPIndex];
                 }
             } else {
                 dispatch_sync(_syncDispatchQueue, ^{
                     // 请求启动结束 异步请求完成
-                    HttpdnsLogDebug("\n ============ Async request for %@ finishes result:%@ .", host,result);
-                    // 我的修改 存储返回数据 1.0
+                    HttpdnsLogDebug("\n ====== Async request for %@ finishes result:%@ .", host,result);
                     [self mergeLookupResultToManager:result forHost:CopyHost];
                 });
             }
         }];
         [_asyncOperationQueue addOperation:operation];
     }
-    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
-
+    dispatch_semaphore_signal(signal);
     return result;
 }
 
@@ -662,14 +607,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (!_serverDisable) {
         return;
     }
-    
-    // 我的修改 host 判断
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
-    // host { host 参数 hsk }
-    host = [hostArray componentsJoinedByString:@""];
-    
-    
+    host = [hostArray lastObject];
     [HttpDnsHitService bizSnifferWithHost:host
                          srvAddrIndex:activatedServerIPIndex];
     [self executeRequest:CopyHost synchronously:NO retryCount:0 activatedServerIPIndex:activatedServerIPIndex];
@@ -841,8 +781,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     });
 }
 
-// 我的修改 存储数据 2.0 HttpdnsHostRecord
-- (void)sdnsCacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL withExtra:(NSString *)extra {
+- (void)sdnsCacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL withExtra:(NSDictionary *)extra {
     
     if (!_cachedIPEnabled) {
         return;

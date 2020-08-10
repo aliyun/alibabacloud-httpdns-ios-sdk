@@ -116,8 +116,6 @@
     return hostRecord;
 }
 
-
-// 我的修改 extra 初始化
 /*!
  * 从网络初始化
  */
@@ -125,7 +123,7 @@
                          IPs:(NSArray<NSString *> *)IPs
                         IP6s:(NSArray<NSString *> *)IP6s
                          TTL:(int64_t)TTL
-                        Extra:(NSString *)extra {
+                        Extra:(NSDictionary *)extra {
     if (self = [super init]) {
         _host = [host copy];
         _IPs = [IPs copy];
@@ -136,7 +134,6 @@
     return self;
 }
 
-// 我的修改 extra 初始化
 /*!
  * 从网络初始化
  */
@@ -144,7 +141,7 @@
                                IPs:(NSArray<NSString *> *)IPs
                               IP6s:(NSArray<NSString *> *)IP6s
                                TTL:(int64_t)TTL
-                             Extra:(NSString *)extra {
+                             Extra:(NSDictionary *)extra {
     HttpdnsHostRecord *hostRecord = [[HttpdnsHostRecord alloc] initWithHostSdns:host IPs:IPs IP6s:IP6s TTL:TTL Extra:extra];
     return hostRecord;
 }

@@ -129,7 +129,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 }
 
 #pragma mark LookupIpAction
-// 我的修改 开始调用接口 7.0 返回 extra 字段
+
 - (HttpdnsHostObject *)parseHostInfoFromHttpResponse:(NSDictionary *)json withHostStr:(NSString *)hostStr {
     if (json == nil) {
         return nil;
@@ -137,30 +137,19 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSString *hostName;
     NSArray *ips;
     NSArray *ip6s;
-    
-    // 我的修改 经过 sdns 解析后 会额外返回一个 extra 字段
-    NSString *extra;
-    // extra 数据格式
+    NSDictionary *extra;
     NSArray *hostArray= [hostStr componentsSeparatedByString:@"]"];
-    hostStr = [hostArray componentsJoinedByString:@""];
-    
-    if (hostArray.count != 1) {
+    hostStr = [hostArray lastObject];
+    if ([[json allKeys] containsObject:@"extra"]) {
         extra = [self htmlEntityDecode:[HttpdnsUtil safeObjectForKey:@"extra" dict:json]];
-    } else {
-        extra = @"";
     }
-    
-    // 我的修改 ostName = hostString
-    hostName = hostStr;  // hostName = [HttpdnsUtil safeObjectForKey:@"host" dict:json];
-    
+    hostName = hostStr;
     ips = [HttpdnsUtil safeObjectForKey:@"ips" dict:json];
     ip6s = [HttpdnsUtil safeObjectForKey:@"ipsv6" dict:json];
-    
     if (![HttpdnsUtil isValidArray:ips] || ![HttpdnsUtil isValidString:hostName]) {
         HttpdnsLogDebug("IP list is empty for host %@", hostName);
         return nil;
     }
-    
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
     NSMutableArray *ipArray = [[NSMutableArray alloc] init];
     for (NSString *ip in ips) {
@@ -196,13 +185,11 @@ static NSURLSession *_resolveHOSTSession = nil;
             [hostObject setIp6s:ip6Array];
         }
     }
-    
     // 返回 额外返回一个extra字段
-    if (hostArray.count != 1) {
+    if ([[json allKeys] containsObject:@"extra"]) {
         [hostObject setExtra:extra];
     }
     [hostObject setHostName:hostName];
-    
     [hostObject setIps:ipArray];
     [hostObject setTTL:[[json objectForKey:@"ttl"] longLongValue]];
     [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
@@ -215,19 +202,30 @@ static NSURLSession *_resolveHOSTSession = nil;
     return hostObject;
 }
 
-// 我的修改 将 &lt 等类似的字符转化为 HTML 中的 " < " 等
-- (NSString *)htmlEntityDecode:(NSString *)string {
-   
+- (NSDictionary *)htmlEntityDecode:(NSString *)string {
     string = [string stringByReplacingOccurrencesOfString:@"&quot;" withString:@"\""];
-    string = [string stringByReplacingOccurrencesOfString:@"&apos;" withString:@"‘"];
+    string = [string stringByReplacingOccurrencesOfString:@"&apos;" withString:@"'"];
     string = [string stringByReplacingOccurrencesOfString:@"&lt;" withString:@"<"];
     string = [string stringByReplacingOccurrencesOfString:@"&gt;" withString:@">"];
     string = [string stringByReplacingOccurrencesOfString:@"&amp;" withString:@"&"];
-    
-    return string;
+    string = [string stringByReplacingOccurrencesOfString:@"&nbsp" withString:@" "];
+    string = [string stringByReplacingOccurrencesOfString:@"&mdash" withString:@"—"];
+    string = [string stringByReplacingOccurrencesOfString:@"&hellip" withString:@"..."];
+    string = [string stringByReplacingOccurrencesOfString:@"&rdquo" withString:@"”"];
+    string = [string stringByReplacingOccurrencesOfString:@"&lsquo" withString:@"‘"];
+    string = [string stringByReplacingOccurrencesOfString:@"&rsquo" withString:@"’"];
+    string = [string stringByReplacingOccurrencesOfString:@"&ldquo" withString:@"“"];
+    string = [string stringByReplacingOccurrencesOfString:@"&darr" withString:@"↓"];
+    string = [string stringByReplacingOccurrencesOfString:@"&middot" withString:@"·"];
+    NSData *jsonData = [string dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *err;
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&err];
+    if(err) {
+        return nil;
+    }
+    return dic;
 }
 
-// 我的修改 开始调用接口 4.0 拼接 URL
 - (NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
@@ -251,7 +249,9 @@ static NSURLSession *_resolveHOSTSession = nil;
         }
         NSUInteger expiredTimestamp = localTimestamp + HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
         NSString *expiredTimestampString = [NSString stringWithFormat:@"%@", @(expiredTimestamp)];
-        NSString *signOriginString = [NSString stringWithFormat:@"%@-%@-%@", hostsString, secretKey, expiredTimestampString];
+        NSArray *hostArray= [hostsString componentsSeparatedByString:@"&"];
+        NSString *hostStr = [hostArray firstObject];
+        NSString *signOriginString = [NSString stringWithFormat:@"%@-%@-%@", hostStr, secretKey, expiredTimestampString];
         
         NSString *sign = [HttpdnsUtil getMD5StringFrom:signOriginString];
         signatureRequestString = [NSString stringWithFormat:@"&t=%@&s=%@", expiredTimestampString, sign];
@@ -299,7 +299,6 @@ static NSURLSession *_resolveHOSTSession = nil;
     return [self lookupHostFromServer:hostString error:error activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
 }
 
-// 我的修改 开始调用接口 3.0 开始异步请求
 - (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     // 配置设置
     [self resetRequestConfigure];
@@ -307,26 +306,19 @@ static NSURLSession *_resolveHOSTSession = nil;
     HttpdnsLogDebug("\n ====== Resolve host(%@) over network.", hostString);
     HttpdnsHostObject *hostObject = nil;
     
-    // 我的修改 开始调用接口 4.0 拼接 URL
     NSString *copyHostString = hostString;
     NSArray *hostArray= [hostString componentsSeparatedByString:@"]"];
-    // host { host 参数 hsk }
-    hostString = [hostArray componentsJoinedByString:@""];
-      
+    hostString = [hostArray lastObject];
     NSMutableArray * hostMArray = [NSMutableArray arrayWithArray:hostArray];
     if (hostMArray.count == 3) {
         [hostMArray removeLastObject];
     }
-    // hostsUrl { host 参数 }
     NSString * hostsUrl = [hostMArray componentsJoinedByString:@""];
     NSString *url = [self constructRequestURLWith:hostsUrl activatedServerIPIndex:activatedServerIPIndex];
-    
     // HTTP / HTTPS  请求
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
-        // 我的修改 开始调用接口 5.0 基于 URLSession 发送 HTTPS 请求
         hostObject = [self sendHTTPSRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];
     } else {
-        // 我的修改 开始调用接口 6.0 基于 CFNetwork 发送 HTTP 请求
         hostObject = [self sendHTTPRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];
     }
     
@@ -336,13 +328,10 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     BOOL success = !outError;
     BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
-    
-    // 我的修改 此处 host
     [HttpDnsHitService bizPerfGetIPWithHost:hostString success:success cacheOpen:cachedIPEnabled];
     return hostObject;
 }
 
- // 我的修改 开始调用接口 5.0 基于 URLSession 发送 HTTPS 请求
 - (HttpdnsHostObject *)sendHTTPSRequest:(NSString *)urlStr
                                    host:(NSString *)hostStr
                                   error:(NSError **)pError
@@ -369,7 +358,6 @@ static NSURLSession *_resolveHOSTSession = nil;
     [task resume];
     dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
     if (!errorStrong) {
-        // 我的修改 开始调用接口 7.0 返回 extra 字段
         return [self parseHostInfoFromHttpResponse:json withHostStr:hostStr];
     }
     
@@ -382,7 +370,6 @@ static NSURLSession *_resolveHOSTSession = nil;
     return nil;
 }
 
-// 我的修改 开始调用接口 6.0 基于 CFNetwork 发送 HTTP 请求
 - (HttpdnsHostObject *)sendHTTPRequest:(NSString *)urlStr
                                   host:(NSString *)hostStr
                                  error:(NSError **)error
@@ -419,7 +406,6 @@ static NSURLSession *_resolveHOSTSession = nil;
                                                      fromIPIndex:activatedServerIPIndex
                                                          isHTTPS:NO];
     if (*error == nil && _httpJSONDict) {
-        // 我的修改 开始调用接口 7.0 返回 extra 字段
         return [self parseHostInfoFromHttpResponse:_httpJSONDict withHostStr:hostStr];
     }
     return nil;
