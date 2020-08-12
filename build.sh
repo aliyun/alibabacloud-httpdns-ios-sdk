@@ -51,3 +51,11 @@ if [ -d "${INSTALL_DIR}/ALBB.bundle" ]
 then
     rm -rf "${INSTALL_DIR}/ALBB.bundle"
 fi
+
+# 压缩zip
+cd "Products"
+echo "zip  begin......."
+zip -r "httpdns.zip" "${PROJECT_NAME}.framework"
+echo "zip  end......."
+
+echo "\nBUILD FINISH."
