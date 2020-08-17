@@ -4,24 +4,83 @@
 <dict>
 	<key>config</key>
 	<dict>
-		<key>emas.appKey</key>
-		<string>23714771</string>
-		<key>emas.appSecret</key>
-		<string>xxxx</string>
-		<key>emas.bundleId</key>
-		<string>null</string>
-		<key>httpdns.accountId</key>
-		<string>102933</string>
-	</dict>
+            <key>emas.appKey</key>
+            <string>30473988</string>
+            <key>emas.appSecret</key>
+            <string>4490a66be5fe325f9cb9cbe983363126</string>
+            <key>emas.bundleId</key>
+            <string>com.aliyun.emas.pocdemo</string>
+            <key>hotfix.idSecret</key>
+            <string>30473988-2</string>
+            <key>hotfix.rsaSecret</key>
+            <string>MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCvSTWfS7YHLqL/4wM684lGn/t+HqwhqLBTBC/8MXZMRyiMPf4rq3hXwtMHjehTulALjdwR65V+eUMWqSwAZ9WPnmdovJGKxBLeXcvHJoXAO1Gsth2zGeNbru5KKQiPWEga6IZgtNtJYxp+nbgSZgFxfhOSI729efmLANs6o/GeTowItUr7Em4hG61HwTjYp1GLzb2icwCrvGlFpkE6ZaPKVnid+grZzkn5WgmRIm9kqa4D9Us2FOjTfXVnLS8ImT/0I3mcU0a+yAj9r1C0oJ3kM4DhW/TqchTXxwkB0XrZxdbxJcke7xNNpatdJvBLc59ckreylk3iYQiWIwSCV6GfAgMBAAECggEARK28ktOJWLsPJo993oU5TjC0yy+dZfrAS2ainn+KyExBOOG5Ssb+efRd1uHlG5kub7h/d44Enu9IOALEuMv2QzVfcwwfQm2crv+1LiyLz0vurmsUq+4CxRN/ThNRxUhjyBc/P3jdSp3H7cBCNQM+oYcyh9n1J944xhvpycoei1W5PEqVnJmc7HgcBqU/8rnr6tH5OuNzrrvFHPCTN5M74VTwT4qPw5X7jaBRbPHin6bWaNrSDozjbMGKr642UWuGASAqJKf6gizjXyCTq1zfieMvZiuSc+B1A2rFj2sShtXNZFcb+zkQO70B4cwK1b172IGYdKQLEp8NkBqCGeCFsQKBgQDZy54jfuP2RX9Q4vYP8MiKyxtQJpbGIuTT/aAafNR2NQiPtqMS9+S6pzzZzo5B6lcJVSQ6JW10eYmHWfu8uUcIJ1Rpvs/sXzniMgFCwugeRmQUnLc3pDxvLE7YlfvfMfxR0khkAswt3F3OrrGMDoN6FY497Ko69o1WlwvB/fQhtQKBgQDOCKbqzFM4keKU/mSRAkBK9mT7rpQz0CuWtbud6nc+FlfNnzsPbeNtWSJH0GxsT55KzMDOnSL6d1+gmGZnucxfHR9YPI/xaVn5nPZ3Q5Dex2Vz84BDpnyzpgIefnOMH6ieM+VOwTPzIf1ppNk9spitH6SePVpwxMPDEqaKjcYagwKBgQCeH4vvn2eoXCqkMjONvTYMNovc9DdRIPJbyu7bbDfgnn5ZwLLCycGBlnvCcomr55RLTUphAN1ny/mCkF0JVsbwb4WExKk2pqhixgVOUC2wFVEB+gm3VwEdgeC4tKPKFwNm8DHoknNk9HIS5Zg35C2mjFHaOaIZ7vkMndtGe7csZQKBgD6tcSHisLp33ucWkL9wYOCtHkFWda1hebEqbf33UvknUOSzuQLTmikswXn5VNKKUgxNR6ZTNU3evM+dLSIG6r5QnLV6DwwQ0ZdXAb98ZXjwTdO9UtrBrhP0v5ZJP5t0Eha2kN6pdcVUJMRbqt7TExEvnCOrZHUD1s3kQZfK02ZDAoGBAMCJ2/ARYT/4c47YsTeTHnt38mfGEl3HhwQ4/X04lGcaxCWOY3Yz0pZIXRhlZJhmmZ1u8hfR553dl/tWEKvf4a7D2fGbVN854TsSsIo3Qkdvj8mNKW36bE9nSDg+/x4y0P1cfStEUENLS+iC5khbjHNBEYZ7HRWq8VVYJx8HQUHW</string>
+            <key>httpdns.accountId</key>
+            <string>170713</string>
+            <key>httpdns.secretKey</key>
+            <string>204cee9ccb981dc5101fa00ed21ec1dd</string>
+            <key>appmonitor.tlog.rsaSecret</key>
+            <string>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCD8h32yG4/JQUC+3p0hquL2yfmdoen6JsXPVzhE++lrJqUkf0hVWKVnn7n9ZGf9ymE3QOxAGEYqYyHYLLplbhqtNdfF0/24tpC4wXT7LqM5N7MA2Zn51EBp6WzZPKB1OlhQBfIIoJ0ZdKSjQuUWjvoWYkbClcmB7z9spt/3/odkwIDAQAB</string>
+            <key>appmonitor.rsaSecret</key>
+            <string>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCD8h32yG4/JQUC+3p0hquL2yfmdoen6JsXPVzhE++lrJqUkf0hVWKVnn7n9ZGf9ymE3QOxAGEYqYyHYLLplbhqtNdfF0/24tpC4wXT7LqM5N7MA2Zn51EBp6WzZPKB1OlhQBfIIoJ0ZdKSjQuUWjvoWYkbClcmB7z9spt/3/odkwIDAQAB</string>
+    	</dict>
 	<key>services</key>
 	<dict>
-		<key>httpdns_service</key>
-		<dict>
+          	<key>hotfix_service</key>
+       	<dict>
 			<key>status</key>
 			<integer>1</integer>
 			<key>version</key>
-			<string>1.6.13</string>
+			<string>1.0.0-1</string>
 		</dict>
-	</dict>
+         	<key>feedback_service</key>
+       	<dict>
+			<key>status</key>
+			<integer>1</integer>
+			<key>version</key>
+			<string>3.3.8</string>
+		</dict>
+         	<key>tlog_service</key>
+       	<dict>
+			<key>status</key>
+			<integer>1</integer>
+			<key>version</key>
+			<string>1.0.0.2</string>
+		</dict>
+         	<key>httpdns_service</key>
+       	<dict>
+			<key>status</key>
+			<integer>1</integer>
+			<key>version</key>
+			<string>1.19.2.6</string>
+		</dict>
+         	<key>apm_service</key>
+       	<dict>
+			<key>status</key>
+			<integer>1</integer>
+			<key>version</key>
+			<string>1.0.0.1</string>
+		</dict>
+         	<key>crashreporter_service</key>
+       	<dict>
+			<key>status</key>
+			<integer>1</integer>
+			<key>version</key>
+			<string>1.1.1</string>
+		</dict>
+         	<key>man_service</key>
+       	<dict>
+			<key>status</key>
+			<integer>0</integer>
+			<key>version</key>
+			<string>1.0.13</string>
+		</dict>
+         	<key>cps_service</key>
+       	<dict>
+			<key>status</key>
+			<integer>1</integer>
+			<key>version</key>
+			<string>1.9.9.2</string>
+		</dict>
+    	</dict>
 </dict>
 </plist>

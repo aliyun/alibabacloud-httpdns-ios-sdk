@@ -28,62 +28,12 @@ NSArray *ipv6HostArray = nil;
 
 @implementation ViewController
 
-- (IBAction)onHost1:(id)sender {
-    [_service getIpByHostAsync:@"www.aliyun.com"];
-    
-    NSString *sessionId = [_service getSessionId];
-    NSLog(@"Get sessionId: %@", sessionId);
-}
-
-- (IBAction)onHost2:(id)sender {
-    for (NSString *ipv4Host in ipv4HostArray) {
-        NSString *ipRes = [_service getIpByHostAsync:ipv4Host];
-        NSLog(@"host: %@, ip: %@", ipv4Host, ipRes);
-    }
-}
-
-// 开启IPv6解析结果
-- (IBAction)onIPv6Result:(id)sender {
-    [_service enableIPv6:YES];
-    // 开启持久化缓存
-    [_service setCachedIPEnabled:YES];
-}
-
-// 开启IPv6解析链路
-- (IBAction)onIPv6Resolve:(id)sender {
-//    [_service enableIPv6Service:YES];
-}
-
-// 解析域名，返回IPv6解析结果
-- (IBAction)onStartIPv6Resolve:(id)sender {
-    NSString *host = @"ipv6.sjtu.edu.cn";
-    NSString *IP = [_service getIPv6ByHostAsync:host];
-    [self showAlert:@"IPv6解析结果" content:IP];
-}
-
-- (IBAction)onIPv6Test:(id)sender {
-    TestIPv6ViewController *vc = [[TestIPv6ViewController alloc] init];
-    [self presentViewController:vc animated:YES completion:nil];
-}
-
-// IPv6 Stack检测
-- (IBAction)onCheckIPv6Stack:(id)sender {
-//    NSString *preResolveIP = @"106.11.90.200";
-//    BOOL haveIPv6Stack = [_service haveIPv6Stack];
-//    if (haveIPv6Stack) {
-//        NSString *ipv6 = [[AlicloudIPv6Adapter getInstance] getIPv6Address:preResolveIP];
-//        [self showAlert:@"IPv6地址转换" content:ipv6];
-//    }
-//    NSMutableDictionary *mDic = [NSMutableDictionary dictionary];
-//    [mDic setObject:@(1) forKey:@"enable"];
-//    NSLog(@"mDic: %@", mDic);
-}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    _service = [[HttpDnsService alloc] autoInit];
+    _service = [[HttpDnsService alloc] initWithAccountID:170713];
     [_service setLogEnabled:YES];
     [_service enableIPv6:YES];
     
@@ -158,6 +108,62 @@ NSArray *ipv6HostArray = nil;
     //[self testConcurrentResolveIPv6Hosts];
     
 }
+
+
+
+
+- (IBAction)onHost1:(id)sender {
+    [_service getIpByHostAsync:@"www.aliyun.com"];
+    
+    NSString *sessionId = [_service getSessionId];
+    NSLog(@"Get sessionId: %@", sessionId);
+}
+
+- (IBAction)onHost2:(id)sender {
+    for (NSString *ipv4Host in ipv4HostArray) {
+        NSString *ipRes = [_service getIpByHostAsync:ipv4Host];
+        NSLog(@"host: %@, ip: %@", ipv4Host, ipRes);
+    }
+}
+
+// 开启IPv6解析结果
+- (IBAction)onIPv6Result:(id)sender {
+    [_service enableIPv6:YES];
+    // 开启持久化缓存
+    [_service setCachedIPEnabled:YES];
+}
+
+// 开启IPv6解析链路
+- (IBAction)onIPv6Resolve:(id)sender {
+//    [_service enableIPv6Service:YES];
+}
+
+// 解析域名，返回IPv6解析结果
+- (IBAction)onStartIPv6Resolve:(id)sender {
+    NSString *host = @"ipv6.sjtu.edu.cn";
+    NSString *IP = [_service getIPv6ByHostAsync:host];
+    [self showAlert:@"IPv6解析结果" content:IP];
+}
+
+- (IBAction)onIPv6Test:(id)sender {
+    TestIPv6ViewController *vc = [[TestIPv6ViewController alloc] init];
+    [self presentViewController:vc animated:YES completion:nil];
+}
+
+// IPv6 Stack检测
+- (IBAction)onCheckIPv6Stack:(id)sender {
+//    NSString *preResolveIP = @"106.11.90.200";
+//    BOOL haveIPv6Stack = [_service haveIPv6Stack];
+//    if (haveIPv6Stack) {
+//        NSString *ipv6 = [[AlicloudIPv6Adapter getInstance] getIPv6Address:preResolveIP];
+//        [self showAlert:@"IPv6地址转换" content:ipv6];
+//    }
+//    NSMutableDictionary *mDic = [NSMutableDictionary dictionary];
+//    [mDic setObject:@(1) forKey:@"enable"];
+//    NSLog(@"mDic: %@", mDic);
+}
+
+
 
 - (void)testConcurrentResolveIPv4Hosts {
     for (NSString *ipv4Host in ipv4HostArray) {
