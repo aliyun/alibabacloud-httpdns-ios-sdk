@@ -69,11 +69,9 @@ static NSURLSession *_scheduleCenterSession = nil;
     scheduleCenterRecord = [self queryScheduleCenterRecordFromServerWithHostIndex:hostIndex error:&error];
     
     if (!scheduleCenterRecord && error) {
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(300 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [self retryIndex:hostIndex + 1];
-            });
-        });
+        //5分钟后重连
+        [NSThread sleepForTimeInterval:300];
+        return [self queryScheduleCenterRecordFromServerSyncWithHostIndex:(hostIndex + 1)];
     }
     
     // scheduleCenterRecord && !error
@@ -197,13 +195,6 @@ static NSURLSession *_scheduleCenterSession = nil;
     dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
 
     if (!errorStrong) {
-        
-        if ([HttpdnsUtil isValidArray:[result objectForKey:@"service_ip"]]) {
-            ALICLOUD_HTTPDNS_SERVER_IP_LIST = [result objectForKey:@"service_ip"];
-            ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED = [result objectForKey:@"service_ip"][0];
-            ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE = YES;
-        }
-        
         return result;
     }
       
