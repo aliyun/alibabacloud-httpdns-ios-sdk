@@ -59,6 +59,12 @@ static NSURLSession *_scheduleCenterSession = nil;
     
     NSInteger maxHostIndex = (hostArray.count - 1);
     if (hostIndex > maxHostIndex) {
+        //强降级策略 当服务IP轮询更新服务IP
+        if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE) {
+            //强降级到启动IP
+            ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE = NO;
+            return [self queryScheduleCenterRecordFromServerSyncWithHostIndex:0];
+        }
         return nil;
     }
     
@@ -69,8 +75,6 @@ static NSURLSession *_scheduleCenterSession = nil;
     scheduleCenterRecord = [self queryScheduleCenterRecordFromServerWithHostIndex:hostIndex error:&error];
     
     if (!scheduleCenterRecord && error) {
-        //5分钟后重连
-        [NSThread sleepForTimeInterval:300];
         return [self queryScheduleCenterRecordFromServerSyncWithHostIndex:(hostIndex + 1)];
     }
     
@@ -83,11 +87,6 @@ static NSURLSession *_scheduleCenterSession = nil;
     
     return scheduleCenterRecord;
 }
-
-- (void)retryIndex:(NSInteger)hostIndex{
-    [self queryScheduleCenterRecordFromServerSyncWithHostIndex:hostIndex];
-}
-
 
 - (NSString *)scheduleCenterHostFromIPIndex:(NSInteger)index {
     
