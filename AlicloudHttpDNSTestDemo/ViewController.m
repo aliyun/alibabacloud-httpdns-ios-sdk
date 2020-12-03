@@ -31,46 +31,6 @@ NSArray *ipv6HostArray = nil;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
-    
-    _service = [[HttpDnsService alloc] initWithAccountID:170713];
-    [_service setLogEnabled:YES];
-    [_service enableIPv6:YES];
-    
-//    for (int i = 0; i < 100; i++) {
-//        dispatch_async(dispatch_queue_create(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-//            NSString *sessionId = [HttpdnsUtil generateSessionID];
-//            if ([HttpdnsUtil isValidString:sessionId]) {
-//                NSLog(@"thread: %@, sessionId: %@, address: %p", [NSThread currentThread], sessionId, sessionId);
-//            }
-//        });
-//    }
-    
-//    NSArray *ips = @[
-//                     @"www.163.com",
-//                     @"www.douban.com",
-//                     @"data.zhibo8.cc",
-//                     @"www.12306.cn",
-//                     @"t.yunjiweidian.com",
-//                     @"dca.qiumibao.com",
-//                     @"home.cochat.lenovo.com",
-//                     @"ra.namibox.com",
-//                     @"namibox.com",
-//                     @"dou.bz"
-//                     ];
-//
-//
-//    long long start, end;
-//
-//    for (NSString *ip in ips) {
-//        start = [self currentTimeInMillis];
-//        [_service getIpByHostAsyncInURLFormat:ip];
-//        end = [self currentTimeInMillis];
-//        NSLog(@"duration: %lld", end - start);
-//    }
-    _sc = [HttpdnsScheduleCenter sharedInstance];
-//    [_service setLogEnabled:YES];
-//    [_service setHTTPSRequestEnabled:YES];
     
     ipv4HostArray = @[
                       @"m.u17.com",
@@ -104,8 +64,13 @@ NSArray *ipv6HostArray = nil;
                       @"ipv6.sjtu.edu.cn"
                       ];
     
-    //[self testConcurrentResolveIPv4Hosts];
-    //[self testConcurrentResolveIPv6Hosts];
+    _service = [[HttpDnsService alloc] initWithAccountID:170713];
+    [_service setLogEnabled:YES];
+    [_service setCachedIPEnabled:YES];
+    [_service setExpiredIPEnabled:YES];
+    [_service setHTTPSRequestEnabled:YES];
+//    [_service enableIPv6:YES];
+
     
 }
 
@@ -113,10 +78,17 @@ NSArray *ipv6HostArray = nil;
 
 
 - (IBAction)onHost1:(id)sender {
-    [_service getIpByHostAsync:@"www.aliyun.com"];
+//    [_service getIpByHostAsync:@"www.aliyun.com"];
+//
+//    NSString *sessionId = [_service getSessionId];
+//    NSLog(@"Get sessionId: %@", sessionId);
     
-    NSString *sessionId = [_service getSessionId];
-    NSLog(@"Get sessionId: %@", sessionId);
+//    [_service setPreResolveHosts:@[@"m.u17.com", @"live-dev-cstest.fzzqxf.com", @"ios-dev-cstest.fzzqxf.com"]];
+    
+    NSString *ip = [_service getIpByHostAsync:@"www.baidu.com"];
+    NSLog(@"");
+
+    
 }
 
 - (IBAction)onHost2:(id)sender {
