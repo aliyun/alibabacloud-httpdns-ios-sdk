@@ -156,6 +156,7 @@
 		9AF9A6111EC4E9990018063B /* HttpdnsIPRecord.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AF9A60F1EC4E9990018063B /* HttpdnsIPRecord.h */; };
 		9AF9A6121EC4E9990018063B /* HttpdnsIPRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */; };
 		9AF9A6131EC4F5500018063B /* HttpdnsIPRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */; };
+		B0E74132257F7E05002018B8 /* CFHTTPSURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */; };
 		B0E9EE7924E130A800EF63E6 /* AliyunEmasServices-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B0E9EE7824E130A700EF63E6 /* AliyunEmasServices-Info.plist */; };
 /* End PBXBuildFile section */
 
@@ -271,6 +272,8 @@
 		9AF9A60D1EC4D2EA0018063B /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		9AF9A60F1EC4E9990018063B /* HttpdnsIPRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPRecord.h; sourceTree = "<group>"; };
 		9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsIPRecord.m; sourceTree = "<group>"; };
+		B0E74130257F7E05002018B8 /* CFHTTPSURLProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CFHTTPSURLProtocol.h; sourceTree = "<group>"; };
+		B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CFHTTPSURLProtocol.m; sourceTree = "<group>"; };
 		B0E9EE7824E130A700EF63E6 /* AliyunEmasServices-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "AliyunEmasServices-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -425,6 +428,7 @@
 		4AF4AB61211439A600D712DF /* AlicloudHttpDNSTestDemo */ = {
 			isa = PBXGroup;
 			children = (
+				B0E7412F257F7D9A002018B8 /* sni */,
 				B0E9EE7824E130A700EF63E6 /* AliyunEmasServices-Info.plist */,
 				4AF4AB62211439A600D712DF /* AppDelegate.h */,
 				4AF4AB63211439A600D712DF /* AppDelegate.m */,
@@ -534,6 +538,15 @@
 				9AE639FA1ECDA74D00F9C723 /* HttpdnsResultSet.m */,
 			);
 			path = HttpdnsDB;
+			sourceTree = "<group>";
+		};
+		B0E7412F257F7D9A002018B8 /* sni */ = {
+			isa = PBXGroup;
+			children = (
+				B0E74130257F7E05002018B8 /* CFHTTPSURLProtocol.h */,
+				B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */,
+			);
+			path = sni;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -801,6 +814,7 @@
 				4AF4AB7E211439D300D712DF /* HttpdnsDatabaseMigrator.m in Sources */,
 				4AF4AB7F211439D300D712DF /* HttpdnsKeyValueStore.m in Sources */,
 				4AF4AB80211439D300D712DF /* HttpdnsgetNetworkInfoHelper.m in Sources */,
+				B0E74132257F7E05002018B8 /* CFHTTPSURLProtocol.m in Sources */,
 				4AF4AB81211439D300D712DF /* HttpdnsDatabase.m in Sources */,
 				4AF4AB82211439D300D712DF /* HttpdnsDatabaseAdditions.m in Sources */,
 				4AF4AB83211439D300D712DF /* HttpdnsDatabasePool.m in Sources */,
