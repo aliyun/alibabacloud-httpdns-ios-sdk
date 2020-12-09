@@ -9,7 +9,22 @@
 #import <Foundation/Foundation.h>
 #import "HttpdnsModel.h"
 
+typedef NS_OPTIONS(NSUInteger, HttpdnsIPType) {
+    HttpdnsIPTypeIpv4 = 1 << 0,
+    HttpdnsIPTypeIpv6 = 1 << 1,
+};
+
 @interface HttpdnsIPv6Manager : NSObject
+
+
+/// 设置host 对应查询策略
+/// @param host 域名
+/// @param queryType 查询策略 ipv4 ipv6
+- (void)setQueryHost:(NSString *)host ipQueryType:(HttpdnsIPType)queryType;
+
+//- (void)removeQueryHost:(NSString *)host;
+
+
 
 + (instancetype)sharedInstance;
 
@@ -21,7 +36,7 @@
 /**
  返回支持IPv6解析结果的请求报文
  */
-- (NSString *)assembleIPv6ResultURL:(NSString *)originURL;
+- (NSString *)assembleIPv6ResultURL:(NSString *)originURL queryHost:(NSString *)queryHost;
 
 /**
  判断是否支持返回IPv6解析结果

@@ -18,6 +18,8 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "HttpdnsIPv6Manager.h"
+
 //V6版本默认只保留一个IP
 FOUNDATION_EXTERN bool ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE ;
 FOUNDATION_EXTERN NSString * ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED;
@@ -35,7 +37,7 @@ FOUNDATION_EXTERN NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TI
 
 - (void)addPreResolveHosts:(NSArray *)hosts;
 
-- (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync;
+- (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync queryType:(HttpdnsIPType)queryType;
 
 
 /// 获取当前域名的HostObject

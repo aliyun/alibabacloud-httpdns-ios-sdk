@@ -87,6 +87,8 @@
 
 - (NSString *)getIPv6ByHostAsync:(NSString *)host;
 
+- (NSArray *)getIPv6sByHostAsync:(NSString *)host;
+
 - (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params;
 
 - (void)clearSdnsGlobalParams;
