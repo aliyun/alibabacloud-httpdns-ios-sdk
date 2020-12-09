@@ -20,7 +20,7 @@ ALICLOUD_HTTPDNS_FIELD_TTL              @" NUMBERIC NOT NULL"                \
 @")"
 
 #define ALICLOUD_HTTPDNS_SQL_INSERT_IP6_RECORD                              \
-@"INSERT OR REPLACE INTO " ALICLOUD_HTTPDNS_TABLE_IP_RECORD     @" ("  \
+@"INSERT OR REPLACE INTO " ALICLOUD_HTTPDNS_TABLE_IP6_RECORD     @" ("  \
 ALICLOUD_HTTPDNS_FIELD_HOST_RECORD_ID      @", "                  \
 ALICLOUD_HTTPDNS_FIELD_IP                  @", "                  \
 ALICLOUD_HTTPDNS_FIELD_TTL                                        \
