@@ -146,7 +146,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     hostName = hostStr;
     ips = [HttpdnsUtil safeObjectForKey:@"ips" dict:json];
     ip6s = [HttpdnsUtil safeObjectForKey:@"ipsv6" dict:json];
-    if (![HttpdnsUtil isValidArray:ips] || ![HttpdnsUtil isValidString:hostName]) {
+    if ((![HttpdnsUtil isValidArray:ips] && ![HttpdnsUtil isValidArray:ip6s]) || ![HttpdnsUtil isValidString:hostName]) {
         HttpdnsHostObject *cacheHostObject = [self.requestScheduler hostObjectFromCacheForHostName:hostStr];
         if (cacheHostObject) {
             [cacheHostObject setQueryingState:NO];
@@ -155,7 +155,9 @@ static NSURLSession *_resolveHOSTSession = nil;
         return nil;
     }
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
-    NSMutableArray *ipArray = [[NSMutableArray alloc] init];
+    
+    //处理ipv4
+    NSMutableArray *ipArray = [NSMutableArray array];
     for (NSString *ip in ips) {
         if (![HttpdnsUtil isValidString:ip]) {
             continue;
@@ -170,23 +172,17 @@ static NSURLSession *_resolveHOSTSession = nil;
         }
         [ipArray addObject:ipObject];
     }
+    
     // 处理IPv6解析结果
-    NSMutableArray *ip6Array = nil;
+    NSMutableArray *ip6Array = [NSMutableArray array];
     if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        if ([EMASTools isValidArray:ip6s]) {
-            ip6Array = [[NSMutableArray alloc] init];
-            for (NSString *ipv6 in ip6s) {
-                if (![EMASTools isValidString:ipv6]) {
-                    continue;
-                }
-                HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
-                [ipObject setIp:ipv6];
-                [ip6Array addObject:ipObject];
+        for (NSString *ipv6 in ip6s) {
+            if (![EMASTools isValidString:ipv6]) {
+                continue;
             }
-        }
-        
-        if ([EMASTools isValidArray:ip6Array]) {
-            [hostObject setIp6s:ip6Array];
+            HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
+            [ipObject setIp:ipv6];
+            [ip6Array addObject:ipObject];
         }
     }
     // 返回 额外返回一个extra字段
@@ -195,6 +191,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     [hostObject setHostName:hostName];
     [hostObject setIps:ipArray];
+    [hostObject setIp6s:ip6Array];
     [hostObject setTTL:[[json objectForKey:@"ttl"] longLongValue]];
     [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
     [hostObject setQueryingState:NO];
@@ -230,7 +227,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     return dic;
 }
 
-- (NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
+- (NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex reallyHostKey:(NSString *)reallyHostKey {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
     
@@ -292,7 +289,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     
     // 开启IPv6解析结果后，URL处理
     if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        url = [[HttpdnsIPv6Manager sharedInstance] assembleIPv6ResultURL:url];
+        url = [[HttpdnsIPv6Manager sharedInstance] assembleIPv6ResultURL:url queryHost:reallyHostKey];
     }
     
     return url;
@@ -318,7 +315,7 @@ static NSURLSession *_resolveHOSTSession = nil;
         [hostMArray removeLastObject];
     }
     NSString * hostsUrl = [hostMArray componentsJoinedByString:@""];
-    NSString *url = [self constructRequestURLWith:hostsUrl activatedServerIPIndex:activatedServerIPIndex];
+    NSString *url = [self constructRequestURLWith:hostsUrl activatedServerIPIndex:activatedServerIPIndex reallyHostKey:hostString];
     // HTTP / HTTPS  请求
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
         hostObject = [self sendHTTPSRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];

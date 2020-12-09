@@ -56,6 +56,7 @@
 
 @implementation HttpdnsHostObject
 @synthesize ips = _ips;
+@synthesize ip6s = _ip6s;
 
 - (instancetype)init {
     _hostName = nil;
@@ -153,6 +154,27 @@
         _ips = ips;
     }
 }
+
+
+- (NSArray<HttpdnsIpObject *> *)getIp6s {
+    id object_ = nil;
+    @try {
+        @synchronized (self) {
+            object_ = _ip6s;
+        }
+    } @catch (NSException *exception) {
+        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), @"");
+    }
+    return object_;
+}
+
+- (void)setIp6s:(NSArray<HttpdnsIpObject *> *)ip6s {
+    @synchronized (self) {
+        _ip6s = ip6s;
+    }
+}
+
+
 
 - (NSArray<NSString *> *)getIP6Strings {
     NSArray *getIP6Strings = nil;
