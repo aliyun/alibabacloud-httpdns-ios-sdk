@@ -165,7 +165,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 #pragma mark - core method for all public query API
-- (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync {
+- (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync queryType:(HttpdnsIPType)queryType {
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
     host = [hostArray lastObject];
@@ -183,6 +183,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     
     @synchronized(self) {
+        //设置域名查询策略
+        [[HttpdnsIPv6Manager sharedInstance] setQueryHost:host ipQueryType:queryType];
+        
         result = [self hostObjectFromCacheForHostName:host];
         HttpdnsLogDebug("Get from cache: %@", result);
         /**
@@ -204,7 +207,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             result.extra = @{};
             [HttpdnsUtil safeAddValue:result key:host toDict:_hostManagerDict];
             
-        } else if (([result getIps].count == 0)) {
+        } else if ([self _needToQuery:result ipQueryType:queryType]) {
             if (result.isQuerying) {
                 HttpdnsLogDebug("%@ queryingState: %d", host, [result isQuerying]);
                 return nil;
@@ -253,6 +256,34 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     [HttpDnsHitService bizPerfUserGetIPWithHost:host success:YES cacheOpen:cachedIPEnabled];
 }
 
+
+
+/// 判断当前hostObject 是否需要开启查询
+- (BOOL)_needToQuery:(HttpdnsHostObject *)hostObject ipQueryType:(HttpdnsIPType)queryType {
+    
+    if (queryType & HttpdnsIPTypeIpv4 && queryType & HttpdnsIPTypeIpv6) {  //同时查询v4 v6
+        
+        if (![HttpdnsUtil isValidArray:[hostObject getIps]] || ![HttpdnsUtil isValidArray:[hostObject getIp6s]]) {
+            return YES;
+        }
+        
+    } else if (queryType & HttpdnsIPTypeIpv4) {
+        
+        if (![HttpdnsUtil isValidArray:[hostObject getIps]]) {
+            return YES;
+        }
+        
+    } else if (queryType & HttpdnsIPTypeIpv6) {
+        
+        if (![HttpdnsUtil isValidArray:[hostObject getIp6s]]) {
+            return YES;
+        }
+        
+    }
+    
+    return NO;
+}
+
 - (void)mergeLookupResultToManager:(HttpdnsHostObject *)result forHost:(NSString *)host {
     
     NSString * CopyHost = host;
@@ -276,14 +307,15 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [old setLastLookupTime:lastLookupTime];
             [old setIsLoadFromDB:NO];
             [old setIps:IPObjects];
+            [old setIp6s:IP6Objects];
             [old setQueryingState:NO];
             if ([HttpdnsUtil isValidDictionary:result.extra]) {
                 [old setExtra:Extra];
             }
                 
-            if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
-                [old setIp6s:IP6Objects];
-            }
+//            if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
+//                [old setIp6s:IP6Objects];
+//            }
             HttpdnsLogDebug("Update %@: %@", host, result);
         } else {
             HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
@@ -291,14 +323,15 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [hostObject setLastLookupTime:lastLookupTime];
             [hostObject setTTL:TTL];
             [hostObject setIps:IPObjects];
+            [hostObject setIp6s:IP6Objects];
             [hostObject setQueryingState:NO];
             if ([HttpdnsUtil isValidDictionary:result.extra]) {
                 [hostObject setExtra:Extra];
             }
             
-            if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
-                [hostObject setIp6s:IP6Objects];
-            }
+//            if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
+//                [hostObject setIp6s:IP6Objects];
+//            }
             HttpdnsLogDebug("New resolved item: %@: %@", host, result);
             [HttpdnsUtil safeAddValue:hostObject key:host toDict:_hostManagerDict];
         }

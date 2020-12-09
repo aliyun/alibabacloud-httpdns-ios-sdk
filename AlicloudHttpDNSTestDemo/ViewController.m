@@ -69,7 +69,7 @@ NSArray *ipv6HostArray = nil;
     [_service setCachedIPEnabled:YES];
     [_service setExpiredIPEnabled:YES];
     [_service setHTTPSRequestEnabled:YES];
-//    [_service enableIPv6:YES];
+    [_service enableIPv6:YES];
 
     
 }
@@ -85,8 +85,9 @@ NSArray *ipv6HostArray = nil;
     
 //    [_service setPreResolveHosts:@[@"m.u17.com", @"live-dev-cstest.fzzqxf.com", @"ios-dev-cstest.fzzqxf.com"]];
     
-    NSString *ip = [_service getIpByHostAsync:@"www.baidu.com"];
-    NSLog(@"");
+    NSString *ip = [_service getIpByHostAsync:@"www.taobao.com"];
+//    [_service getIpsByHostAsync:@"www.taobao.com" withParams:@{@"key1": @"value1", @"key2": @"value2"} withCacheKey:@"cache"];
+    
 
     
 }
@@ -217,5 +218,18 @@ NSArray *ipv6HostArray = nil;
         });
     }
 }
+
+- (IBAction)queryIpv4:(id)sender {
+    NSString *ipv4 = [_service getIpByHostAsync:@"www.taobao.com"];
+    NSLog(@"ipv4:--------%@", ipv4);
+}
+
+
+
+- (IBAction)queryIpv6:(id)sender {
+    NSString *ipv6 = [_service getIPv6ByHostAsync:@"www.taobao.com"];
+    NSLog(@"ipv6:--------%@", ipv6);
+}
+
 
 @end
