@@ -165,7 +165,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 #pragma mark - core method for all public query API
-- (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync {
+- (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync queryType:(HttpdnsIPType)queryType {
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
     host = [hostArray lastObject];
@@ -183,6 +183,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     
     @synchronized(self) {
+        //设置域名查询策略
+        [[HttpdnsIPv6Manager sharedInstance] setQueryHost:host ipQueryType:queryType];
+        
         result = [self hostObjectFromCacheForHostName:host];
         HttpdnsLogDebug("Get from cache: %@", result);
         /**
