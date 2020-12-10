@@ -265,7 +265,7 @@ static HttpDnsService * _httpDnsClient = nil;
         return nil;
     }
     
-    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:YES queryType:HttpdnsIPTypeIpv4];
+    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:YES queryType:HttpdnsQueryIPTypeIpv4];
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
@@ -322,7 +322,7 @@ static HttpDnsService * _httpDnsClient = nil;
         return nil;
     }
     
-    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO queryType:HttpdnsIPTypeIpv4];
+    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO queryType:HttpdnsQueryIPTypeIpv4];
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
@@ -486,7 +486,7 @@ static HttpDnsService * _httpDnsClient = nil;
         return nil;
     }
     
-    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO queryType:HttpdnsIPTypeIpv6];
+    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO queryType:HttpdnsQueryIPTypeIpv6];
     if (hostObject) {
         NSArray *ip6sObject = [hostObject getIp6s];
         NSMutableArray *ip6sArray = [[NSMutableArray alloc] init];
@@ -538,7 +538,7 @@ static HttpDnsService * _httpDnsClient = nil;
         return nil;
     }
     
-    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO queryType:HttpdnsIPTypeIpv4|HttpdnsIPTypeIpv6];
+    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO queryType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
     if (hostObject) {
         NSArray *ip4s = [hostObject getIPStrings];
         NSArray *ip6s = [hostObject getIP6Strings];
@@ -662,7 +662,7 @@ static HttpDnsService * _httpDnsClient = nil;
             allParams = [NSString stringWithFormat:@"%@]%@]%@",host,_globalParams,hostkey];
         }
     }
-    hostObject = [_requestScheduler addSingleHostAndLookup:allParams synchronously:NO queryType:HttpdnsIPTypeIpv4];
+    hostObject = [_requestScheduler addSingleHostAndLookup:allParams synchronously:NO queryType:HttpdnsQueryIPTypeIpv4];
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];

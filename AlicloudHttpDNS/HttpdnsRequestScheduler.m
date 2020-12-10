@@ -165,7 +165,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 #pragma mark - core method for all public query API
-- (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync queryType:(HttpdnsIPType)queryType {
+- (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync queryType:(HttpdnsQueryIPType)queryType {
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
     host = [hostArray lastObject];
@@ -259,21 +259,21 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 
 /// 判断当前hostObject 是否需要开启查询
-- (BOOL)_needToQuery:(HttpdnsHostObject *)hostObject ipQueryType:(HttpdnsIPType)queryType {
+- (BOOL)_needToQuery:(HttpdnsHostObject *)hostObject ipQueryType:(HttpdnsQueryIPType)queryType {
     
-    if (queryType & HttpdnsIPTypeIpv4 && queryType & HttpdnsIPTypeIpv6) {  //同时查询v4 v6
+    if (queryType & HttpdnsQueryIPTypeIpv4 && queryType & HttpdnsQueryIPTypeIpv6) {  //同时查询v4 v6
         
         if (![HttpdnsUtil isValidArray:[hostObject getIps]] || ![HttpdnsUtil isValidArray:[hostObject getIp6s]]) {
             return YES;
         }
         
-    } else if (queryType & HttpdnsIPTypeIpv4) {
+    } else if (queryType & HttpdnsQueryIPTypeIpv4) {
         
         if (![HttpdnsUtil isValidArray:[hostObject getIps]]) {
             return YES;
         }
         
-    } else if (queryType & HttpdnsIPTypeIpv6) {
+    } else if (queryType & HttpdnsQueryIPTypeIpv6) {
         
         if (![HttpdnsUtil isValidArray:[hostObject getIp6s]]) {
             return YES;

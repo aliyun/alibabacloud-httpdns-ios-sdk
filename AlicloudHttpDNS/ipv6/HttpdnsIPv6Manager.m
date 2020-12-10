@@ -14,8 +14,8 @@
 
 
 
-static NSString *const QueryCacheIPV4 = @"QueryCacheIPV4";
-static NSString *const QueryCacheIPV6 = @"QueryCacheIPV6";
+static NSString *const QueryCacheIPV4Key = @"QueryCacheIPV4Key";
+static NSString *const QueryCacheIPV6Key = @"QueryCacheIPV6Key";
 
 @interface HttpdnsIPv6Manager()
 
@@ -71,7 +71,7 @@ static NSString *const QueryCacheIPV6 = @"QueryCacheIPV6";
         if (cacheArr.count == 2) {
             originURL = [NSString stringWithFormat:@"%@&query=%@", originURL, [EMASTools URLEncodedString:@"4,6"]];
         } else {
-            if ([cacheArr containsObject:QueryCacheIPV6]) {
+            if ([cacheArr containsObject:QueryCacheIPV6Key]) {
                 originURL = [NSString stringWithFormat:@"%@&query=%@", originURL, [EMASTools URLEncodedString:@"6"]];
             }
         }
@@ -87,7 +87,7 @@ static NSString *const QueryCacheIPV6 = @"QueryCacheIPV6";
 }
 
 
-- (void)setQueryHost:(NSString *)host ipQueryType:(HttpdnsIPType)queryType{
+- (void)setQueryHost:(NSString *)host ipQueryType:(HttpdnsQueryIPType)queryType{
     @synchronized (self) {
         
         if ([EMASTools isValidString:host]) {
@@ -99,25 +99,25 @@ static NSString *const QueryCacheIPV6 = @"QueryCacheIPV6";
             
             if (![EMASTools isValidArray:cacheArr]) {  //当前缓存中无当前域名查询策略
                 NSMutableArray *cacheMArr = [NSMutableArray array];
-                if (queryType & HttpdnsIPTypeIpv4) {  //ipv4 查询
-                    [cacheMArr addObject:QueryCacheIPV4];
+                if (queryType & HttpdnsQueryIPTypeIpv4) {  //ipv4 查询
+                    [cacheMArr addObject:QueryCacheIPV4Key];
                 }
                 
-                if (queryType & HttpdnsIPTypeIpv6) {  //ipv6 查询
-                    [cacheMArr addObject:QueryCacheIPV6];
+                if (queryType & HttpdnsQueryIPTypeIpv6) {  //ipv6 查询
+                    [cacheMArr addObject:QueryCacheIPV6Key];
                 }
                 [HttpdnsUtil safeAddValue:cacheMArr key:host toDict:self.ipQueryCache];
                 
             } else {  //当前缓存中存在该域名的查询策略
                 
                 NSMutableArray *cacheMArr = [NSMutableArray arrayWithArray:cacheArr];
-                if ([cacheArr containsObject:QueryCacheIPV4]) {
-                    if (queryType & HttpdnsIPTypeIpv6) {
-                        [cacheMArr addObject:QueryCacheIPV6];
+                if ([cacheArr containsObject:QueryCacheIPV4Key]) {
+                    if (queryType & HttpdnsQueryIPTypeIpv6) {
+                        [cacheMArr addObject:QueryCacheIPV6Key];
                     }
                 } else {
-                    if (queryType & HttpdnsIPTypeIpv4) {
-                        [cacheMArr addObject:QueryCacheIPV4];
+                    if (queryType & HttpdnsQueryIPTypeIpv4) {
+                        [cacheMArr addObject:QueryCacheIPV4Key];
                     }
                 }
                 [HttpdnsUtil safeAddValue:cacheMArr key:host toDict:self.ipQueryCache];
@@ -129,25 +129,25 @@ static NSString *const QueryCacheIPV6 = @"QueryCacheIPV6";
 }
 
 
-- (HttpdnsIPType)getQueryHostIPType:(NSString *)host {
+- (HttpdnsQueryIPType)getQueryHostIPType:(NSString *)host {
     
     @synchronized (self) {
         NSArray *cacheArr = [HttpdnsUtil safeObjectForKey:host dict:self.ipQueryCache];
         if ([HttpdnsUtil isValidArray:cacheArr]) {
             
             if (cacheArr.count == 2) {
-                return HttpdnsIPTypeIpv4|HttpdnsIPTypeIpv6;
+                return HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6;
             } else {
                 
-                if ([cacheArr containsObject:QueryCacheIPV4]) {
-                    return HttpdnsIPTypeIpv4;
+                if ([cacheArr containsObject:QueryCacheIPV4Key]) {
+                    return HttpdnsQueryIPTypeIpv4;
                 } else {
-                    return HttpdnsIPTypeIpv6;
+                    return HttpdnsQueryIPTypeIpv6;
                 }
             }
             
         } else {  //默认ipv4
-            return HttpdnsIPTypeIpv4;
+            return HttpdnsQueryIPTypeIpv4;
         }
     }
     
