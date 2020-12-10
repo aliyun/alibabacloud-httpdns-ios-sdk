@@ -34,6 +34,14 @@
 @property (nonatomic, strong, setter=setIps:, getter=getIps) NSArray<HttpdnsIpObject *> *ips;
 @property (nonatomic, strong, setter=setIp6s:, getter=getIp6s) NSArray<HttpdnsIpObject *> *ip6s;
 @property (nonatomic, setter=setTTL:, getter=getTTL) int64_t ttl;
+//v4 ttl
+@property (nonatomic, setter=setV4TTL:, getter=getV4TTL) int64_t v4ttl;
+@property (nonatomic, assign) int64_t lastIPv4LookupTime;
+
+//v6 ttl
+@property (nonatomic, setter=setV6TTL:, getter=getV6TTL) int64_t v6ttl;
+@property (nonatomic, assign) int64_t lastIPv6LookupTime;
+
 @property (nonatomic, strong, setter=setExtra:, getter=getExtra) NSDictionary *extra;
 
 // 标识是否从持久化缓存加载
