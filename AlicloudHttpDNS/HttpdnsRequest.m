@@ -193,6 +193,18 @@ static NSURLSession *_resolveHOSTSession = nil;
     [hostObject setIps:ipArray];
     [hostObject setIp6s:ip6Array];
     [hostObject setTTL:[[json objectForKey:@"ttl"] longLongValue]];
+    
+    //分别设置 v4ttl v6ttl
+    if ([HttpdnsUtil isValidArray:ipArray]) {
+        [hostObject setV4TTL:[[json objectForKey:@"ttl"] longLongValue]];
+        hostObject.lastIPv4LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
+    }
+    if ([HttpdnsUtil isValidArray:ip6Array]) {
+        [hostObject setV6TTL:[[json objectForKey:@"ttl"] longLongValue]];
+        hostObject.lastIPv6LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
+    }
+    
+    
     [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
     [hostObject setQueryingState:NO];
     if (![EMASTools isValidArray:ip6Array]) {

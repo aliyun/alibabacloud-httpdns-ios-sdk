@@ -129,6 +129,30 @@ static NSString *const QueryCacheIPV6 = @"QueryCacheIPV6";
 }
 
 
+- (HttpdnsIPType)getQueryHostIPType:(NSString *)host {
+    
+    @synchronized (self) {
+        NSArray *cacheArr = [HttpdnsUtil safeObjectForKey:host dict:self.ipQueryCache];
+        if ([HttpdnsUtil isValidArray:cacheArr]) {
+            
+            if (cacheArr.count == 2) {
+                return HttpdnsIPTypeIpv4|HttpdnsIPTypeIpv6;
+            } else {
+                
+                if ([cacheArr containsObject:QueryCacheIPV4]) {
+                    return HttpdnsIPTypeIpv4;
+                } else {
+                    return HttpdnsIPTypeIpv6;
+                }
+            }
+            
+        } else {  //默认ipv4
+            return HttpdnsIPTypeIpv4;
+        }
+    }
+    
+}
+
 - (void)removeQueryHost:(NSString *)host {
     @synchronized (self) {
         [self.ipQueryCache removeObjectForKey:host];

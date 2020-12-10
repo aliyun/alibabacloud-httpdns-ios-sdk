@@ -62,6 +62,10 @@
     _hostName = nil;
     _lastLookupTime = 0;
     _ttl = -1;
+    _v4ttl = -1;
+    _lastIPv4LookupTime = 0;
+    _v6ttl = -1;
+    _lastIPv6LookupTime = 0;
     _isLoadFromDB = NO;
     _ips = nil;
     _ip6s = nil;
@@ -76,6 +80,8 @@
         _hostName = [aDecoder decodeObjectForKey:@"hostName"];
         _lastLookupTime = [aDecoder decodeInt64ForKey:@"lastLookupTime"];
         _ttl = [aDecoder decodeInt64ForKey:@"ttl"];
+        _v4ttl = [aDecoder decodeInt64ForKey:@"v4ttl"];
+        _v6ttl = [aDecoder decodeInt64ForKey:@"v6ttl"];
         _ips = [aDecoder decodeObjectForKey:@"ips"];
         _ip6s = [aDecoder decodeObjectForKey:@"ip6s"];
         _queryingState = [aDecoder decodeBoolForKey:@"queryingState"];
@@ -89,6 +95,10 @@
     [aCoder encodeObject:_hostName forKey:@"hostName"];
     [aCoder encodeInt64:_lastLookupTime forKey:@"lastLookupTime"];
     [aCoder encodeInt64:_ttl forKey:@"ttl"];
+    [aCoder encodeInt64:_v4ttl forKey:@"v4ttl"];
+    [aCoder encodeInt64:_lastIPv4LookupTime forKey:@"lastIPv4LookupTime"];
+    [aCoder encodeInt64:_v6ttl forKey:@"v6ttl"];
+    [aCoder encodeInt64:_lastIPv6LookupTime forKey:@"lastIPv6LookupTime"];
     [aCoder encodeObject:_ips forKey:@"ips"];
     [aCoder encodeObject:_ip6s forKey:@"ip6s"];
     [aCoder encodeBool:_queryingState forKey:@"queryingState"];
@@ -103,10 +113,30 @@
     if (_isLoadFromDB) {
         return YES;
     }
+    
     int64_t currentEpoch = (int64_t)[[[NSDate alloc] init] timeIntervalSince1970];
-    if (_lastLookupTime + _ttl <= currentEpoch) {
-        return YES;
+    
+    //获取当前域名的查询策略
+    HttpdnsIPType queryType = [[HttpdnsIPv6Manager sharedInstance] getQueryHostIPType:self.hostName];
+    if (queryType & HttpdnsIPTypeIpv4 && queryType & HttpdnsIPTypeIpv6) {
+        
+        if (_lastIPv4LookupTime + _v4ttl <= currentEpoch) {
+            return YES;
+        }
+        
+        if (_lastIPv6LookupTime + _v6ttl <= currentEpoch) {
+            return YES;
+        }
+        
+    } else {
+        if (queryType & HttpdnsIPTypeIpv4) {
+            return (_lastIPv4LookupTime + _v4ttl <= currentEpoch);
+        }
+        if (queryType & HttpdnsIPTypeIpv6) {
+            return (_lastIPv4LookupTime + _v4ttl <= currentEpoch);
+        }
     }
+    
     return NO;
 }
 
@@ -120,9 +150,19 @@
     NSArray *ip6s = hostRecord.IP6s;
     if ([HttpdnsUtil isValidArray:ips]) {
         hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:ips];
+        
+        //设置ipv4 的ttl lookuptimer
+        [hostObject setV4TTL:hostRecord.TTL];
+        [hostObject setLastIPv4LookupTime:hostObject.getLastLookupTime];
+        
     }
     if ([HttpdnsUtil isValidArray:ip6s]) {
         hostObject.ip6s = [HttpdnsIpObject IPObjectsFromIPs:ip6s];
+        
+        //设置ipv6 的ttl lookuptimer
+        [hostObject setV6TTL:hostRecord.TTL];
+        [hostObject setLastIPv6LookupTime:hostObject.getLastLookupTime];
+        
     }
     [hostObject setIsLoadFromDB:YES];
     return hostObject;

@@ -22,6 +22,12 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsIPType) {
 /// @param queryType 查询策略 ipv4 ipv6
 - (void)setQueryHost:(NSString *)host ipQueryType:(HttpdnsIPType)queryType;
 
+
+/// 获取当前域名的查询策略
+/// @param host 域名
+- (HttpdnsIPType)getQueryHostIPType:(NSString *)host;
+
+
 //- (void)removeQueryHost:(NSString *)host;
 
 
