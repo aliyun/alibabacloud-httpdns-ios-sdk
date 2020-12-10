@@ -72,13 +72,11 @@ static NSString *const QueryCacheIPV6Key = @"QueryCacheIPV6Key";
             originURL = [NSString stringWithFormat:@"%@&query=%@", originURL, [EMASTools URLEncodedString:@"4,6"]];
         } else {
             if ([cacheArr containsObject:QueryCacheIPV6Key]) {
-                originURL = [NSString stringWithFormat:@"%@&query=%@", originURL, [EMASTools URLEncodedString:@"6"]];
+                originURL = [NSString stringWithFormat:@"%@&query=%@", originURL, @"6"];
             }
         }
     }
     
-    //删除当前域名的查询策略
-    [self removeQueryHost:queryHost];
     return originURL;
 }
 

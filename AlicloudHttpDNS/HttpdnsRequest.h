@@ -19,6 +19,7 @@
 
 #import <Foundation/Foundation.h>
 #import "HttpdnsModel.h"
+#import "HttpdnsIPv6Manager.h"
 
 FOUNDATION_EXTERN NSInteger const ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE;
 FOUNDATION_EXTERN NSInteger const ALICLOUD_HTTPDNS_HTTP_COMMON_ERROR_CODE;
@@ -35,6 +36,6 @@ FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_CAC
 
 - (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error;
 
-- (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex;
+- (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex queryIPType:(HttpdnsQueryIPType)queryIPType;
 
 @end
