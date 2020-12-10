@@ -306,8 +306,15 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [old setTTL:TTL];
             [old setLastLookupTime:lastLookupTime];
             [old setIsLoadFromDB:NO];
+            
             [old setIps:IPObjects];
+            [old setV4TTL:result.getV4TTL];
+            [old setLastIPv4LookupTime:result.lastIPv4LookupTime];
+            
             [old setIp6s:IP6Objects];
+            [old setV6TTL:result.getV6TTL];
+            [old setLastIPv6LookupTime:result.lastIPv6LookupTime];
+            
             [old setQueryingState:NO];
             if ([HttpdnsUtil isValidDictionary:result.extra]) {
                 [old setExtra:Extra];
@@ -322,8 +329,16 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [hostObject setHostName:host];
             [hostObject setLastLookupTime:lastLookupTime];
             [hostObject setTTL:TTL];
+            
             [hostObject setIps:IPObjects];
+            [hostObject setV4TTL:result.getV4TTL];
+            [hostObject setLastIPv4LookupTime:result.lastIPv4LookupTime];
+            
             [hostObject setIp6s:IP6Objects];
+            [hostObject setV6TTL:result.getV6TTL];
+            [hostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
+            
+            
             [hostObject setQueryingState:NO];
             if ([HttpdnsUtil isValidDictionary:result.extra]) {
                 [hostObject setExtra:Extra];
