@@ -29,6 +29,12 @@
 #import "HttpdnsConstants.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsScheduleCenter.h"
+#import <AlicloudUtils/AlicloudIPv6Adapter.h>
+
+
+NSString *const ALICLOUDHDNS_IPV4 = @"ALICLOUDHDNS_IPV4";
+NSString *const ALICLOUDHDNS_IPV6 = @"ALICLOUDHDNS_IPV6";
+
 
 static NSDictionary *HTTPDNS_EXT_INFO = nil;
 static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
@@ -453,6 +459,11 @@ static HttpDnsService * _httpDnsClient = nil;
 
 - (NSArray *)getIPv6sByHostAsync:(NSString *)host {
     
+    
+    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        return nil;
+    }
+    
     if (![self checkServiceStatus]) {
         return nil;
     }
@@ -491,6 +502,64 @@ static HttpDnsService * _httpDnsClient = nil;
     HttpdnsLogDebug("No available IP cached for %@", host);
     return nil;
 }
+
+
+- (NSDictionary<NSString *,NSArray *> *)getIPv4_v6ByHostAsync:(NSString *)host {
+    
+    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        return nil;
+    }
+    
+    
+    if (![self checkServiceStatus]) {
+        return nil;
+    }
+    
+    if ([self.delegate shouldDegradeHTTPDNS:host]) {
+        return nil;
+    }
+    
+    if (!host) {
+        return nil;
+    }
+    
+    if ([HttpdnsUtil isAnIP:host]) {
+        HttpdnsLogDebug("The host is just an IP.");
+        if ([[AlicloudIPv6Adapter getInstance] isIPv4Address:host]) {
+            return @{ALICLOUDHDNS_IPV4: @[host?:@""]};
+        } else if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:host]) {
+            return @{ALICLOUDHDNS_IPV6: @[host?:@""]};
+        }
+        return nil;
+    }
+    
+    if (![HttpdnsUtil isAHost:host]) {
+        HttpdnsLogDebug("The host is illegal.");
+        return nil;
+    }
+    
+    HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO queryType:HttpdnsIPTypeIpv4|HttpdnsIPTypeIpv6];
+    if (hostObject) {
+        NSArray *ip4s = [hostObject getIPStrings];
+        NSArray *ip6s = [hostObject getIP6Strings];
+        NSMutableDictionary *resultMDic = [NSMutableDictionary dictionary];
+        if ([HttpdnsUtil isValidArray:ip4s]) {
+            [resultMDic setObject:ip4s forKey:ALICLOUDHDNS_IPV4];
+        }
+        if ([HttpdnsUtil isValidArray:ip6s]) {
+            [resultMDic setObject:ip6s forKey:ALICLOUDHDNS_IPV6];
+        }
+        [self bizPerfUserGetIPWithHost:host success:YES];
+        return resultMDic;
+    }
+    
+    [self bizPerfUserGetIPWithHost:host success:NO];
+    HttpdnsLogDebug("No available IP cached for %@", host);
+    return nil;
+    
+}
+
+
 
 - (BOOL)checkServiceStatus {
     if ([HttpdnsScheduleCenter sharedInstance].stopService) {

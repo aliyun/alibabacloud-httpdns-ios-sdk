@@ -23,6 +23,10 @@
 
 #define ALICLOUD_HTTPDNS_DEPRECATED(explain) __attribute__((deprecated(explain)))
 
+
+extern NSString *const ALICLOUDHDNS_IPV4;
+extern NSString *const ALICLOUDHDNS_IPV6;
+
 @interface HttpDnsService: NSObject
 
 @property (nonatomic, assign, readonly) int accountID;
@@ -88,6 +92,16 @@
 - (NSString *)getIPv6ByHostAsync:(NSString *)host;
 
 - (NSArray *)getIPv6sByHostAsync:(NSString *)host;
+
+
+/// 同时获取ipv4 ipv6的IP （需要开启ipv6 开关 enableIPv6）
+/// @param host 域名
+/// @result 返回字典类型结构
+///   {
+///         ALICLOUDHDNS_IPV4: ['xxx.xxx.xxx.xxx', 'xxx.xxx.xxx.xxx'],
+///         ALICLOUDHDNS_IPV6: ['xx:xx:xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx:xx:xx']
+///   }
+- (NSDictionary <NSString *, NSArray *>*)getIPv4_v6ByHostAsync:(NSString *)host;
 
 - (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params;
 

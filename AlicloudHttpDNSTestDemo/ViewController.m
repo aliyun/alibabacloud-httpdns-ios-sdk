@@ -231,5 +231,12 @@ NSArray *ipv6HostArray = nil;
     NSLog(@"ipv6:--------%@", ipv6);
 }
 
+- (IBAction)queryIpv4_Ipv6:(id)sender {
+    
+    NSDictionary *ipvsDic = [_service getIPv4_v6ByHostAsync:@"www.taobao.com"];
+    NSLog(@"ipv4:--------%@++++ipv4:--------%@",[ipvsDic objectForKey:ALICLOUDHDNS_IPV4], [ipvsDic objectForKey:ALICLOUDHDNS_IPV6]);
+    
+}
+
 
 @end
