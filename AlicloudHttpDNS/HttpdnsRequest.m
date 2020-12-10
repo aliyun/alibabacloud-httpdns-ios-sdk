@@ -133,7 +133,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 - (HttpdnsHostObject *)parseHostInfoFromHttpResponse:(NSDictionary *)json withHostStr:(NSString *)hostStr {
     if (json == nil) {
         return nil;
-    }
+    }    
     NSString *hostName;
     NSArray *ips;
     NSArray *ip6s;
@@ -239,7 +239,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     return dic;
 }
 
-- (NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex reallyHostKey:(NSString *)reallyHostKey {
+- (NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex reallyHostKey:(NSString *)reallyHostKey queryIPType:(HttpdnsQueryIPType)queryIPType {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
     
@@ -301,6 +301,9 @@ static NSURLSession *_resolveHOSTSession = nil;
     
     // 开启IPv6解析结果后，URL处理
     if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        //设置当前域名的查询策略
+        [[HttpdnsIPv6Manager sharedInstance] setQueryHost:reallyHostKey ipQueryType:queryIPType];
+        
         url = [[HttpdnsIPv6Manager sharedInstance] assembleIPv6ResultURL:url queryHost:reallyHostKey];
     }
     
@@ -309,10 +312,10 @@ static NSURLSession *_resolveHOSTSession = nil;
 
 - (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-    return [self lookupHostFromServer:hostString error:error activatedServerIPIndex:scheduleCenter.activatedServerIPIndex];
+    return [self lookupHostFromServer:hostString error:error activatedServerIPIndex:scheduleCenter.activatedServerIPIndex queryIPType:HttpdnsQueryIPTypeIpv4];
 }
 
-- (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
+- (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex queryIPType:(HttpdnsQueryIPType)queryIPType{
     // 配置设置
     [self resetRequestConfigure];
     // 解析主机
@@ -327,7 +330,7 @@ static NSURLSession *_resolveHOSTSession = nil;
         [hostMArray removeLastObject];
     }
     NSString * hostsUrl = [hostMArray componentsJoinedByString:@""];
-    NSString *url = [self constructRequestURLWith:hostsUrl activatedServerIPIndex:activatedServerIPIndex reallyHostKey:hostString];
+    NSString *url = [self constructRequestURLWith:hostsUrl activatedServerIPIndex:activatedServerIPIndex reallyHostKey:hostString queryIPType:queryIPType];
     // HTTP / HTTPS  请求
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
         hostObject = [self sendHTTPSRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];

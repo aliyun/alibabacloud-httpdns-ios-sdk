@@ -18,9 +18,13 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "HttpdnsIPv6Manager.h"
+
 @class HttpdnsHostRecord;
 @class HttpdnsIPRecord;
 @class HttpdnsServerIpObject;
+
+
 
 @interface HttpdnsIpObject: NSObject<NSCoding>
 
@@ -55,7 +59,7 @@
 
 - (instancetype)init;
 
-- (BOOL)isExpired;
+- (BOOL)isExpiredWithQueryIPType:(HttpdnsQueryIPType)queryIPType;
 
 + (instancetype)hostObjectWithHostRecord:(HttpdnsHostRecord *)IPRecord;
 

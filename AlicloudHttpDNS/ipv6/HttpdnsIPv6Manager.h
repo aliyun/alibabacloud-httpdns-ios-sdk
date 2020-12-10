@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "HttpdnsModel.h"
+
 
 typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
     HttpdnsQueryIPTypeIpv4 = 1 << 0,
@@ -27,8 +27,9 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 /// @param host 域名
 - (HttpdnsQueryIPType)getQueryHostIPType:(NSString *)host;
 
-
-//- (void)removeQueryHost:(NSString *)host;
+/// 删除当前域名的查询策略
+/// @param host 域名
+- (void)removeQueryHost:(NSString *)host;
 
 
 
