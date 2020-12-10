@@ -37,7 +37,7 @@ FOUNDATION_EXTERN NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TI
 
 - (void)addPreResolveHosts:(NSArray *)hosts;
 
-- (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync queryType:(HttpdnsIPType)queryType;
+- (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync queryType:(HttpdnsQueryIPType)queryType;
 
 
 /// 获取当前域名的HostObject

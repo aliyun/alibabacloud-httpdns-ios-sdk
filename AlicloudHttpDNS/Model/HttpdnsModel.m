@@ -117,8 +117,8 @@
     int64_t currentEpoch = (int64_t)[[[NSDate alloc] init] timeIntervalSince1970];
     
     //获取当前域名的查询策略
-    HttpdnsIPType queryType = [[HttpdnsIPv6Manager sharedInstance] getQueryHostIPType:self.hostName];
-    if (queryType & HttpdnsIPTypeIpv4 && queryType & HttpdnsIPTypeIpv6) {
+    HttpdnsQueryIPType queryType = [[HttpdnsIPv6Manager sharedInstance] getQueryHostIPType:self.hostName];
+    if (queryType & HttpdnsQueryIPTypeIpv4 && queryType & HttpdnsQueryIPTypeIpv6) {
         
         if (_lastIPv4LookupTime + _v4ttl <= currentEpoch) {
             return YES;
@@ -129,10 +129,10 @@
         }
         
     } else {
-        if (queryType & HttpdnsIPTypeIpv4) {
+        if (queryType & HttpdnsQueryIPTypeIpv4) {
             return (_lastIPv4LookupTime + _v4ttl <= currentEpoch);
         }
-        if (queryType & HttpdnsIPTypeIpv6) {
+        if (queryType & HttpdnsQueryIPTypeIpv6) {
             return (_lastIPv4LookupTime + _v4ttl <= currentEpoch);
         }
     }

@@ -9,9 +9,9 @@
 #import <Foundation/Foundation.h>
 #import "HttpdnsModel.h"
 
-typedef NS_OPTIONS(NSUInteger, HttpdnsIPType) {
-    HttpdnsIPTypeIpv4 = 1 << 0,
-    HttpdnsIPTypeIpv6 = 1 << 1,
+typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
+    HttpdnsQueryIPTypeIpv4 = 1 << 0,
+    HttpdnsQueryIPTypeIpv6 = 1 << 1,
 };
 
 @interface HttpdnsIPv6Manager : NSObject
@@ -20,12 +20,12 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsIPType) {
 /// 设置host 对应查询策略
 /// @param host 域名
 /// @param queryType 查询策略 ipv4 ipv6
-- (void)setQueryHost:(NSString *)host ipQueryType:(HttpdnsIPType)queryType;
+- (void)setQueryHost:(NSString *)host ipQueryType:(HttpdnsQueryIPType)queryType;
 
 
 /// 获取当前域名的查询策略
 /// @param host 域名
-- (HttpdnsIPType)getQueryHostIPType:(NSString *)host;
+- (HttpdnsQueryIPType)getQueryHostIPType:(NSString *)host;
 
 
 //- (void)removeQueryHost:(NSString *)host;
