@@ -35,7 +35,7 @@ FOUNDATION_EXTERN NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TI
 
 @interface HttpdnsRequestScheduler : NSObject
 
-- (void)addPreResolveHosts:(NSArray *)hosts;
+- (void)addPreResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType;
 
 - (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync queryType:(HttpdnsQueryIPType)queryType;
 

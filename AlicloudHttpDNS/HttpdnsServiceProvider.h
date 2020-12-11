@@ -23,9 +23,15 @@
 
 #define ALICLOUD_HTTPDNS_DEPRECATED(explain) __attribute__((deprecated(explain)))
 
-
 extern NSString *const ALICLOUDHDNS_IPV4;
 extern NSString *const ALICLOUDHDNS_IPV6;
+
+typedef NS_ENUM(NSUInteger, AlicloudHttpDNS_IPType) {
+    AlicloudHttpDNS_IPTypeV4,           //ipv4
+    AlicloudHttpDNS_IPTypeV6,           //ipv6
+    AlicloudHttpDNS_IPTypeV64,          //ipv4 + ipv6
+};
+
 
 @interface HttpDnsService: NSObject
 
@@ -82,10 +88,17 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 /// @param region region为节点，可设置海外region
 - (void)setRegion:(NSString *)region;
 
-/// 预解析
+/// 域名预解析 (ipv4)
 /// 选择性的预先向 HTTPDNS SDK 中注册您后续可能会使用到的域名，以便 SDK 提前解析，减少后续解析域名时请求的时延
 /// @param hosts 预解析列表数组
 - (void)setPreResolveHosts:(NSArray *)hosts;
+
+
+/// 域名预解析
+/// @param hosts 域名
+/// @param ipType 4: ipv4; 6: ipv6; 64: ipv4+ipv6
+- (void)setPreResolveHosts:(NSArray *)hosts queryIPType:(AlicloudHttpDNS_IPType)ipType;
+
 
 /// 本地日志 log 开关
 /// @param enable YES: 打开 NO: 关闭
@@ -95,6 +108,11 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 /// 如果打开此开关，在网络切换时，会自动刷新所有域名的解析结果，但会产生一定流量消耗
 /// @param enable YES: 开启 NO: 关闭
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
+
+/// 设置IP俳优规则
+/// @param IPRankingDatasource 设置对应域名的端口号
+/// @{host: port}
+- (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource;
 
 /// 设置是否 开启 IPv6 结果解析
 /// 开启后调用 getIPv6ByHostAsync: 接口使用
@@ -137,12 +155,6 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 ///         ALICLOUDHDNS_IPV6: ['xx:xx:xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx:xx:xx']
 ///   }
 - (NSDictionary <NSString *, NSArray *>*)getIPv4_v6ByHostAsync:(NSString *)host;
-
-
-/// 设置IP俳优规则
-/// @param IPRankingDatasource 设置对应域名的端口号
-/// @{host: port}
-- (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource;
 
 
 /// 设置日志输出回调
