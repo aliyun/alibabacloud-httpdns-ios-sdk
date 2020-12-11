@@ -133,7 +133,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     });
 }
 
-- (void)addPreResolveHosts:(NSArray *)hosts {
+- (void)addPreResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType{
     if (![HttpdnsUtil isAbleToRequest]) {
         HttpdnsLogDebug("You should set accountID before adding PreResolveHosts");
         return;
@@ -149,12 +149,12 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             }
             HttpdnsHostObject *hostObject = [self hostObjectFromCacheForHostName:hostName];
             if (!hostObject) {
-                [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex queryIPType:HttpdnsQueryIPTypeIpv4];
+                [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex queryIPType:queryType];
                 HttpdnsLogDebug("Pre resolve host %@ by async lookup.", hostName);
             } else if (![hostObject isQuerying]) {
                 if ([hostObject isExpiredWithQueryIPType:HttpdnsQueryIPTypeIpv4]) {
                     HttpdnsLogDebug("%@ is expired, pre fetch again.", hostName);
-                    [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex queryIPType:HttpdnsQueryIPTypeIpv4];
+                    [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex queryIPType:queryType];
                 } else {
                     HttpdnsLogDebug("%@ is omitted, expired: %d querying: %d", hostName, [hostObject isExpiredWithQueryIPType:HttpdnsQueryIPTypeIpv4], [hostObject isQuerying]);
                     continue;
@@ -642,7 +642,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 [self loadIPsFromCacheSyncIfNeeded];
                 if (_isPreResolveAfterNetworkChangedEnabled == YES) {
                     HttpdnsLogDebug("Network changed, pre resolve for hosts: %@", hostArray);
-                    [self addPreResolveHosts:hostArray];
+                    [self addPreResolveHosts:hostArray queryType:HttpdnsQueryIPTypeAuto];
                 }
             }
         });
