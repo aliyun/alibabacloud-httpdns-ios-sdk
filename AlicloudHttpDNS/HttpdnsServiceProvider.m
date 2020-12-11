@@ -340,7 +340,7 @@ static HttpDnsService * _httpDnsClient = nil;
     if (![self checkServiceStatus]) {
         return nil;
     }
-    if ([self.delegate shouldDegradeHTTPDNS:host]) {
+    if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
     
@@ -413,7 +413,7 @@ static HttpDnsService * _httpDnsClient = nil;
         return nil;
     }
     
-    if ([self.delegate shouldDegradeHTTPDNS:host]) {
+    if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
     
@@ -459,7 +459,7 @@ static HttpDnsService * _httpDnsClient = nil;
         return nil;
     }
     
-    if ([self.delegate shouldDegradeHTTPDNS:host]) {
+    if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
     
@@ -529,7 +529,7 @@ static HttpDnsService * _httpDnsClient = nil;
         return nil;
     }
     
-    if ([self.delegate shouldDegradeHTTPDNS:host]) {
+    if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
     if (!host) {
@@ -665,6 +665,14 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 
+- (BOOL)_shouldDegradeHTTPDNS:(NSString *)host {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(shouldDegradeHTTPDNS:)]) {
+        return [self.delegate shouldDegradeHTTPDNS:host];
+    }
+    return NO;
+}
+
+
 
 #pragma mark -
 #pragma mark -------------- HttpdnsRequestScheduler_Internal
@@ -701,7 +709,7 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (NSArray *)getIpsByHost:(NSString *)host {
-    if ([self.delegate shouldDegradeHTTPDNS:host]) {
+    if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
     
