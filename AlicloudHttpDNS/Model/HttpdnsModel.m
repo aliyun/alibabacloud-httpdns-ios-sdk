@@ -23,7 +23,7 @@
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsIPRecord.h"
-#import "HttpdnsIPv6Manager.h"
+
 
 @implementation HttpdnsIpObject
 
@@ -105,7 +105,7 @@
     [aCoder encodeObject:_hostName forKey:@"extra"];
 }
 
-- (BOOL)isExpired {
+- (BOOL)isExpiredWithQueryIPType:(HttpdnsQueryIPType)queryIPType {
     if (_ttl == -1) {
         HttpdnsLogDebug("This should never happen!!!");
         return NO;
@@ -115,10 +115,7 @@
     }
     
     int64_t currentEpoch = (int64_t)[[[NSDate alloc] init] timeIntervalSince1970];
-    
-    //获取当前域名的查询策略
-    HttpdnsIPType queryType = [[HttpdnsIPv6Manager sharedInstance] getQueryHostIPType:self.hostName];
-    if (queryType & HttpdnsIPTypeIpv4 && queryType & HttpdnsIPTypeIpv6) {
+    if (queryIPType & HttpdnsQueryIPTypeIpv4 && queryIPType & HttpdnsQueryIPTypeIpv6) {
         
         if (_lastIPv4LookupTime + _v4ttl <= currentEpoch) {
             return YES;
@@ -129,11 +126,11 @@
         }
         
     } else {
-        if (queryType & HttpdnsIPTypeIpv4) {
+        if (queryIPType & HttpdnsQueryIPTypeIpv4) {
             return (_lastIPv4LookupTime + _v4ttl <= currentEpoch);
         }
-        if (queryType & HttpdnsIPTypeIpv6) {
-            return (_lastIPv4LookupTime + _v4ttl <= currentEpoch);
+        if (queryIPType & HttpdnsQueryIPTypeIpv6) {
+            return (_lastIPv6LookupTime + _v6ttl <= currentEpoch);
         }
     }
     
