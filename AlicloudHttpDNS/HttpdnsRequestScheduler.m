@@ -152,7 +152,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex queryIPType:queryType];
                 HttpdnsLogDebug("Pre resolve host %@ by async lookup.", hostName);
             } else if (![hostObject isQuerying]) {
-                if ([hostObject isExpiredWithQueryIPType:HttpdnsQueryIPTypeIpv4]) {
+                if ([hostObject isExpiredWithQueryIPType:queryType]) {
                     HttpdnsLogDebug("%@ is expired, pre fetch again.", hostName);
                     [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex queryIPType:queryType];
                 } else {
