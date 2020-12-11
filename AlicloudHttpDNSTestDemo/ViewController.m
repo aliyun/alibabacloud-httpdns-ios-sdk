@@ -13,6 +13,8 @@
 #import "HttpdnsScheduleCenter.h"
 #import "TestIPv6ViewController.h"
 
+#import "HttpdnsServiceProvider_Internal.h"
+
 #import <AlicloudUtils/AlicloudIPv6Adapter.h>
 
 NSArray *ipv4HostArray = nil;
@@ -236,6 +238,14 @@ NSArray *ipv6HostArray = nil;
     NSDictionary *ipvsDic = [_service getIPv4_v6ByHostAsync:@"www.taobao.com"];
     NSLog(@"ipv4:--------%@++++ipv4:--------%@",[ipvsDic objectForKey:ALICLOUDHDNS_IPV4], [ipvsDic objectForKey:ALICLOUDHDNS_IPV6]);
     
+    //预加载
+    
+    //AlicloudHttpDNS_IPTypeV4,           //ipv4
+    //AlicloudHttpDNS_IPTypeV6,           //ipv6
+    //AlicloudHttpDNS_IPTypeV64,          //ipv4 + ipv6
+    
+//    [_service setPreResolveHosts:@[@"www.taobao.com", @"www.tmall.com"] queryIPType: AlicloudHttpDNS_IPTypeV64];
+//    [_service.requestScheduler addPreResolveHosts:@[@"www.taobao.com", @"www.tmall.com"] queryType:HttpdnsQueryIPTypeAuto];
 }
 
 

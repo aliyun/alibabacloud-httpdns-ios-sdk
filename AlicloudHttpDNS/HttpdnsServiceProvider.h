@@ -139,11 +139,11 @@ typedef NS_ENUM(NSUInteger, AlicloudHttpDNS_IPType) {
 /// @param host 域名
 - (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host;
 
-/// 获取域名对应的ipv6, 单IP
+/// 获取域名对应的ipv6, 单IP （需要开启ipv6 开关 enableIPv6）
 /// @param host 域名
 - (NSString *)getIPv6ByHostAsync:(NSString *)host;
 
-/// 获取域名对应的ipv6数组, 多IP
+/// 获取域名对应的ipv6数组, 多IP （需要开启ipv6 开关 enableIPv6）
 /// @param host 域名
 - (NSArray *)getIPv6sByHostAsync:(NSString *)host;
 
