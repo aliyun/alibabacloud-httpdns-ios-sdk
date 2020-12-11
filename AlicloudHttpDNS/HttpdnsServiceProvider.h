@@ -61,38 +61,73 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 
 + (instancetype)sharedInstance;
 
+
+/// 设置持久化缓存功能
+/// @param enable YES: 开启 NO: 关闭
 - (void)setCachedIPEnabled:(BOOL)enable;
 
-- (void)setPreResolveHosts:(NSArray *)hosts;
 
-- (NSString *)getIpByHostAsync:(NSString *)host;
-
-- (NSArray *)getIpsByHostAsync:(NSString *)host;
-
-- (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host;
-
-- (void)setHTTPSRequestEnabled:(BOOL)enable;
-
+/// 是否允许 HTTPDNS 返回 TTL 过期域名的 ip ，建议允许（默认不允许）
+/// @param enable YES: 开启 NO: 关闭
 - (void)setExpiredIPEnabled:(BOOL)enable;
 
-- (void)setLogEnabled:(BOOL)enable;
 
+/// * 设置 HTTPDNS 域名解析请求类型 ( HTTP / HTTPS )
+/// 若不调用该接口，默认为 HTTP 请求。
+/// HTTP 请求基于底层 CFNetwork 实现，不受 ATS 限制；
+/// @param enable YES: HTTPS请求 NO: HTTP请求
+- (void)setHTTPSRequestEnabled:(BOOL)enable;
+
+/// 设置 region 节点，调用后，会按照 region 更新服务IP
+/// @param region region为节点，可设置海外region
 - (void)setRegion:(NSString *)region;
 
+/// 预解析
+/// 选择性的预先向 HTTPDNS SDK 中注册您后续可能会使用到的域名，以便 SDK 提前解析，减少后续解析域名时请求的时延
+/// @param hosts 预解析列表数组
+- (void)setPreResolveHosts:(NSArray *)hosts;
+
+/// 本地日志 log 开关
+/// @param enable YES: 打开 NO: 关闭
+- (void)setLogEnabled:(BOOL)enable;
+
+/// 设置网络切换时是否自动跟新所有域名解析结果
+/// 如果打开此开关，在网络切换时，会自动刷新所有域名的解析结果，但会产生一定流量消耗
+/// @param enable YES: 开启 NO: 关闭
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
 
-- (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource;
-
-- (void)setLogHandler:(id<HttpdnsLoggerProtocol>)logHandler;
-
-- (NSString *)getSessionId;
-
+/// 设置是否 开启 IPv6 结果解析
+/// 开启后调用 getIPv6ByHostAsync: 接口使用
+///【注意】开启 IPv6 结果解析后，SDK在 IPv6-Only 网络环境下，对 IPv4 解析结果不再自动转换为 IPv6 地址, getIpsByHostAsync:返回 IPv4 地址，getIPv6ByHostAsync:返回 IPv6 地址
+/// @param enable YES: 开启 NO: 关闭
 - (void)enableIPv6:(BOOL)enable;
 
+
+/// 获取用于用户追踪的 sessionId
+/// sessionId为随机生成，长度为 12 位，App 生命周期内保持不变
+/// 为了排查可能的解析问题，需要您将 sessionId 和解析出的 IP 一起记录在日志中
+/// 请参考: 解析异常排查之 “会话追踪方案” https://help.aliyun.com/document_detail/100530.html
+- (NSString *)getSessionId;
+
+/// 获取域名对应的IP，单IP
+/// @param host 域名
+- (NSString *)getIpByHostAsync:(NSString *)host;
+
+/// 获取域名对应的IP数组，多IP
+/// @param host 域名
+- (NSArray *)getIpsByHostAsync:(NSString *)host;
+
+/// 获取域名对应格式化后的IP (针对ipv6)
+/// @param host 域名
+- (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host;
+
+/// 获取域名对应的ipv6, 单IP
+/// @param host 域名
 - (NSString *)getIPv6ByHostAsync:(NSString *)host;
 
+/// 获取域名对应的ipv6数组, 多IP
+/// @param host 域名
 - (NSArray *)getIPv6sByHostAsync:(NSString *)host;
-
 
 /// 同时获取ipv4 ipv6的IP （需要开启ipv6 开关 enableIPv6）
 /// @param host 域名
@@ -103,10 +138,17 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 ///   }
 - (NSDictionary <NSString *, NSArray *>*)getIPv4_v6ByHostAsync:(NSString *)host;
 
+
+/// 设置IP俳优规则
+/// @param IPRankingDatasource 设置对应域名的端口号
+/// @{host: port}
+- (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource;
+
+
+/// 设置日志输出回调
+- (void)setLogHandler:(id<HttpdnsLoggerProtocol>)logHandler;
 - (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params;
-
 - (void)clearSdnsGlobalParams;
-
 - (NSDictionary *)getIpsByHostAsync:(NSString *)host withParams:(NSDictionary<NSString *, NSString *> *)params withCacheKey:(NSString *)cacheKey;
 
 @end
