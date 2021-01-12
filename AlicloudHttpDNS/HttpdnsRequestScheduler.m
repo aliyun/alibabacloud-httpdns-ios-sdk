@@ -177,8 +177,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         return nil;
     }
     
-    __block HttpdnsHostObject *result = nil;
-    __block BOOL needToQuery = NO;
+    HttpdnsHostObject *result = nil;
+    BOOL needToQuery = NO;
     
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     
@@ -198,16 +198,19 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 return nil;
             }
             needToQuery = YES;
-            HttpdnsHostObject *result =  [HttpdnsHostObject new];
+            result =  [HttpdnsHostObject new];
             result.ips = @[];
-            [result setQueryingState:YES];
             result.hostName = host;
             result.extra = @{};
             [HttpdnsUtil safeAddValue:result key:host toDict:_hostManagerDict];
             
-        } else if (([result getIps].count == 0) && result.isQuerying ) {
-            HttpdnsLogDebug("%@ queryingState: %d", host, [result isQuerying]);
-            return nil;
+        } else if (([result getIps].count == 0)) {
+            if (result.isQuerying) {
+                HttpdnsLogDebug("%@ queryingState: %d", host, [result isQuerying]);
+                return nil;
+            } else {
+                needToQuery = YES;
+            }
         } else if ([result isExpired]) {
             HttpdnsLogDebug("%@ is expired or from DB, queryingState: %d", host, [result isQuerying]);
             // 从 FDB 获取
