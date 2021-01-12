@@ -361,10 +361,10 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     __block NSArray *IPList = nil;
     dispatch_sync(self.scheduleCenterResultQueue, ^{
         IPList = [_IPList copy];
+        if (![HttpdnsUtil isValidArray:IPList]) {
+            IPList = [NSArray arrayWithArray:ALICLOUD_HTTPDNS_SERVER_IP_LIST];
+        }
     });
-    if (![HttpdnsUtil isValidArray:IPList]) {
-        return ALICLOUD_HTTPDNS_SERVER_IP_LIST;
-    }
     return IPList;
 }
 
