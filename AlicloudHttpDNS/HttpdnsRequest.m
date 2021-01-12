@@ -147,6 +147,10 @@ static NSURLSession *_resolveHOSTSession = nil;
     ips = [HttpdnsUtil safeObjectForKey:@"ips" dict:json];
     ip6s = [HttpdnsUtil safeObjectForKey:@"ipsv6" dict:json];
     if (![HttpdnsUtil isValidArray:ips] || ![HttpdnsUtil isValidString:hostName]) {
+        HttpdnsHostObject *cacheHostObject = [self.requestScheduler hostObjectFromCacheForHostName:hostStr];
+        if (cacheHostObject) {
+            [cacheHostObject setQueryingState:NO];
+        }        
         HttpdnsLogDebug("IP list is empty for host %@", hostName);
         return nil;
     }
