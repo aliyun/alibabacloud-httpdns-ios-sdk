@@ -156,6 +156,10 @@
 		9AF9A6111EC4E9990018063B /* HttpdnsIPRecord.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AF9A60F1EC4E9990018063B /* HttpdnsIPRecord.h */; };
 		9AF9A6121EC4E9990018063B /* HttpdnsIPRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */; };
 		9AF9A6131EC4F5500018063B /* HttpdnsIPRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */; };
+		B0028BAC25F0F64E00DDEEBE /* AlicloudSender.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0028BAB25F0F64E00DDEEBE /* AlicloudSender.framework */; };
+		B0028BB925F0FB5300DDEEBE /* EMASRest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0028BB825F0FB5300DDEEBE /* EMASRest.framework */; };
+		B0028BBF25F0FC8D00DDEEBE /* EMASRestSendService.h in Headers */ = {isa = PBXBuildFile; fileRef = B0028BBD25F0FC8D00DDEEBE /* EMASRestSendService.h */; };
+		B0028BC025F0FC8D00DDEEBE /* EMASRestSendService+MultiChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = B0028BBE25F0FC8D00DDEEBE /* EMASRestSendService+MultiChannel.h */; };
 		B0E74132257F7E05002018B8 /* CFHTTPSURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */; };
 		B0E9EE7924E130A800EF63E6 /* AliyunEmasServices-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B0E9EE7824E130A700EF63E6 /* AliyunEmasServices-Info.plist */; };
 /* End PBXBuildFile section */
@@ -272,6 +276,10 @@
 		9AF9A60D1EC4D2EA0018063B /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		9AF9A60F1EC4E9990018063B /* HttpdnsIPRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPRecord.h; sourceTree = "<group>"; };
 		9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsIPRecord.m; sourceTree = "<group>"; };
+		B0028BAB25F0F64E00DDEEBE /* AlicloudSender.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AlicloudSender.framework; sourceTree = "<group>"; };
+		B0028BB825F0FB5300DDEEBE /* EMASRest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = EMASRest.framework; sourceTree = "<group>"; };
+		B0028BBD25F0FC8D00DDEEBE /* EMASRestSendService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EMASRestSendService.h; sourceTree = "<group>"; };
+		B0028BBE25F0FC8D00DDEEBE /* EMASRestSendService+MultiChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "EMASRestSendService+MultiChannel.h"; sourceTree = "<group>"; };
 		B0E74130257F7E05002018B8 /* CFHTTPSURLProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CFHTTPSURLProtocol.h; sourceTree = "<group>"; };
 		B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CFHTTPSURLProtocol.m; sourceTree = "<group>"; };
 		B0E9EE7824E130A700EF63E6 /* AliyunEmasServices-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "AliyunEmasServices-Info.plist"; sourceTree = "<group>"; };
@@ -284,6 +292,8 @@
 			files = (
 				9479DFE21CD361EE00C49B32 /* UTDID.framework in Frameworks */,
 				9A4E2F641F9F5F9F0082866F /* UTMini.framework in Frameworks */,
+				B0028BAC25F0F64E00DDEEBE /* AlicloudSender.framework in Frameworks */,
+				B0028BB925F0FB5300DDEEBE /* EMASRest.framework in Frameworks */,
 				9A4E2F591F9F43340082866F /* AlicloudUtils.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -320,6 +330,10 @@
 		2197CA2D1BC79A4500BDB65B = {
 			isa = PBXGroup;
 			children = (
+				B0028BBD25F0FC8D00DDEEBE /* EMASRestSendService.h */,
+				B0028BBE25F0FC8D00DDEEBE /* EMASRestSendService+MultiChannel.h */,
+				B0028BB825F0FB5300DDEEBE /* EMASRest.framework */,
+				B0028BAB25F0F64E00DDEEBE /* AlicloudSender.framework */,
 				9A4E2F611F9F5E660082866F /* UTMini.framework */,
 				9A4E2F581F9F43340082866F /* AlicloudUtils.framework */,
 				945914111CEB5D9C00D95CF7 /* libresolv.tbd */,
@@ -570,6 +584,7 @@
 				9A4D181A1E8F8FE1001E45B4 /* HttpdnsConstants.h in Headers */,
 				9A4E2F541F9E13EA0082866F /* HttpDnsHitService.h in Headers */,
 				9AC200371F0E169400754CC2 /* UIApplication+ABSHTTPDNSSetting.h in Headers */,
+				B0028BBF25F0FC8D00DDEEBE /* EMASRestSendService.h in Headers */,
 				9AE63A041ECDA74D00F9C723 /* HttpdnsResultSet.h in Headers */,
 				9AE63A011ECDA74D00F9C723 /* HttpdnsDatabaseQueue.h in Headers */,
 				9A9CBB7C1E8133D300F878BA /* HttpdnsServiceProvider_Internal.h in Headers */,
@@ -585,6 +600,7 @@
 				9AC27F031FDFCB4800DF016A /* HttpdnsTCPSpeedTester.h in Headers */,
 				9AF9A6111EC4E9990018063B /* HttpdnsIPRecord.h in Headers */,
 				9AA600651EA06CAD00B72D01 /* HttpdnsScheduleCenter_Internal.h in Headers */,
+				B0028BC025F0FC8D00DDEEBE /* EMASRestSendService+MultiChannel.h in Headers */,
 				9AE639FF1ECDA74D00F9C723 /* HttpdnsDatabasePool.h in Headers */,
 				9AA0FC5C1EB9843A00E242DD /* HttpdnsDatabaseMigrator.h in Headers */,
 				9AA0FC701EB9AFB700E242DD /* HttpdnsHostRecord.h in Headers */,

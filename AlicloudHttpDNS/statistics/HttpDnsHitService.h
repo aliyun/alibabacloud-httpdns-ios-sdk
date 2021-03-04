@@ -15,7 +15,7 @@
 
 + (void)disableHitService;
 
-+ (void)bizActiveHit;
++ (void)bizActiveHitWithAccountId:(NSString *)accountId;
 
 + (void)bizSnifferWithHost:(NSString *)host
               srvAddrIndex:(NSInteger)srvAddrIndex;

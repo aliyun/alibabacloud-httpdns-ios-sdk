@@ -86,10 +86,10 @@ static HttpDnsService * _httpDnsClient = nil;
                          };
     _httpDnsClient.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
     
-    /* 日活打点 */
-    [[self class] statIfNeeded];//旧版日活打点
+//    /* 日活打点 */
+//    [[self class] statIfNeeded];//旧版日活打点
     [HttpDnsHitService setGlobalPropertyWithAccountId:accountId];
-    [HttpDnsHitService bizActiveHit];//新版日活打点
+    [HttpDnsHitService bizActiveHitWithAccountId:accountId];//新版日活打点
 
     /* beacon */
     NSDictionary *extras = @{
@@ -677,9 +677,9 @@ static HttpDnsService * _httpDnsClient = nil;
 #pragma mark -
 #pragma mark -------------- HttpdnsRequestScheduler_Internal
 
-+ (void)statIfNeeded {
-    [AlicloudReport statAsync:AMSHTTPDNS extInfo:HTTPDNS_EXT_INFO];
-}
+//+ (void)statIfNeeded {
+//    [AlicloudReport statAsync:AMSHTTPDNS extInfo:HTTPDNS_EXT_INFO];
+//}
 
 - (NSUInteger)authTimeOffset {
     __block NSUInteger authTimeOffset = 0;

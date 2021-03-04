@@ -19,6 +19,11 @@
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsConstants.h"
 #import "UIApplication+ABSHTTPDNSSetting.h"
+#import <AlicloudSender/AlicloudSender.h>
+
+#import "EMASRestSendService.h"
+#import "EMASRestSendService+MultiChannel.h"
+
 
 static NSString *const HTTPDNS_BIZ_ACTIVE = @"biz_active";
 
@@ -117,11 +122,14 @@ static BOOL _disableStatus = NO;
     _disableStatus = YES;
 }
 
-+ (void)bizActiveHit {
++ (void)bizActiveHitWithAccountId:(NSString *)accountId {
     if (_disableStatus) {
         return;
     }
-    [_tracker sendCustomHit:HTTPDNS_BIZ_ACTIVE duration:0 properties:nil];
+    
+    // 去除UT自定义埋点 统一使用AlicloudSender 去调用
+//    [_tracker sendCustomHit:HTTPDNS_BIZ_ACTIVE duration:0 properties:nil];
+    [[AlicloudSender shareInstance] sendEvent:HTTPDNS_BIZ_ACTIVE appKey:@"" sdkId:@"httpdns" sdkVersion:HTTPDNS_IOS_SDK_VERSION extParams:@{@"accountId": [HttpdnsUtil isValidString:accountId] ? accountId : @""}];
 }
 
 + (void)bizSnifferWithHost:(NSString *)host
