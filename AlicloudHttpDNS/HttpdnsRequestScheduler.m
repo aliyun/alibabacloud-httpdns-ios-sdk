@@ -495,7 +495,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         return nil;
     }
     
-    [HttpDnsService statIfNeeded];
+//    [HttpDnsService statIfNeeded];
     if ([self isDisableToServer]) {
         return nil;
     }

@@ -34,7 +34,7 @@
 
 - (NSString *)getIpByHostInURLFormat:(NSString *)host;
 
-+ (void)statIfNeeded;
+//+ (void)statIfNeeded;
 
 @end
 
