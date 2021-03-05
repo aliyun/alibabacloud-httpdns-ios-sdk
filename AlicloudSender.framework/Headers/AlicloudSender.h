@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#define ALICLOUDRESTSEND_VERSION @"1.0.0"
+#define ALICLOUDRESTSEND_VERSION @"1.0.0.1-snapshot"
 
 //! Project version number for AlicloudSender.
 FOUNDATION_EXPORT double AlicloudSenderVersionNumber;

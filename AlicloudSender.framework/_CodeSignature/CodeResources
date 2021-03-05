@@ -6,7 +6,7 @@
 	<dict>
 		<key>Headers/AlicloudSender.h</key>
 		<data>
-		ifRPOlH3AZHRqRnbc43o2oBm5fc=
+		4AC+SpjOuD1uwudIgwM0D/Z0aM4=
 		</data>
 		<key>Info.plist</key>
 		<data>
@@ -23,11 +23,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			ifRPOlH3AZHRqRnbc43o2oBm5fc=
+			4AC+SpjOuD1uwudIgwM0D/Z0aM4=
 			</data>
 			<key>hash2</key>
 			<data>
-			ubiL2A0KHtrL86I1H3RoBYuWxVnlxephkjOeKSNMAIc=
+			apxdmsxu9fdyL/hDbjeOSK800/Twf6R/xho3D2bcxUQ=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>
