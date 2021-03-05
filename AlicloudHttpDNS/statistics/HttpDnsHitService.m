@@ -21,8 +21,6 @@
 #import "UIApplication+ABSHTTPDNSSetting.h"
 #import <AlicloudSender/AlicloudSender.h>
 
-#import "EMASRestSendService.h"
-#import "EMASRestSendService+MultiChannel.h"
 
 
 static NSString *const HTTPDNS_BIZ_ACTIVE = @"biz_active";
