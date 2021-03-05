@@ -14,5 +14,6 @@ Pod::Spec.new do |s|
   s.xcconfig = { 'OTHER_LDFLAGS' => '$(inherited) -ObjC -lz' }
   s.dependency "AlicloudUtils"
   s.dependency "AlicloudUT"
+  s.dependency "AlicloudSender"
 
 end
