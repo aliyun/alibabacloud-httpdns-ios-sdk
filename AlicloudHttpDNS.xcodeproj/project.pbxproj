@@ -156,10 +156,8 @@
 		9AF9A6111EC4E9990018063B /* HttpdnsIPRecord.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AF9A60F1EC4E9990018063B /* HttpdnsIPRecord.h */; };
 		9AF9A6121EC4E9990018063B /* HttpdnsIPRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */; };
 		9AF9A6131EC4F5500018063B /* HttpdnsIPRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */; };
-		B0028BB925F0FB5300DDEEBE /* EMASRest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0028BB825F0FB5300DDEEBE /* EMASRest.framework */; };
-		B0028C3925F1C4AE00DDEEBE /* EMASRest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0028BB825F0FB5300DDEEBE /* EMASRest.framework */; };
-		B05E8F6525F205E20077B81C /* AlicloudSender.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B05E8F6425F205E20077B81C /* AlicloudSender.framework */; };
-		B05E8F6625F205E20077B81C /* AlicloudSender.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B05E8F6425F205E20077B81C /* AlicloudSender.framework */; };
+		B0C70C6C2602ECF200986658 /* EMASRest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0C70C6B2602ECF200986658 /* EMASRest.framework */; };
+		B0C70C6E2602ECF800986658 /* AlicloudSender.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0C70C6D2602ECF800986658 /* AlicloudSender.framework */; };
 		B0E74132257F7E05002018B8 /* CFHTTPSURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */; };
 		B0E9EE7924E130A800EF63E6 /* AliyunEmasServices-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B0E9EE7824E130A700EF63E6 /* AliyunEmasServices-Info.plist */; };
 /* End PBXBuildFile section */
@@ -276,8 +274,8 @@
 		9AF9A60D1EC4D2EA0018063B /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		9AF9A60F1EC4E9990018063B /* HttpdnsIPRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPRecord.h; sourceTree = "<group>"; };
 		9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsIPRecord.m; sourceTree = "<group>"; };
-		B0028BB825F0FB5300DDEEBE /* EMASRest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = EMASRest.framework; sourceTree = "<group>"; };
-		B05E8F6425F205E20077B81C /* AlicloudSender.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AlicloudSender.framework; sourceTree = "<group>"; };
+		B0C70C6B2602ECF200986658 /* EMASRest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = EMASRest.framework; sourceTree = "<group>"; };
+		B0C70C6D2602ECF800986658 /* AlicloudSender.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AlicloudSender.framework; sourceTree = "<group>"; };
 		B0E74130257F7E05002018B8 /* CFHTTPSURLProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CFHTTPSURLProtocol.h; sourceTree = "<group>"; };
 		B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CFHTTPSURLProtocol.m; sourceTree = "<group>"; };
 		B0E9EE7824E130A700EF63E6 /* AliyunEmasServices-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "AliyunEmasServices-Info.plist"; sourceTree = "<group>"; };
@@ -290,8 +288,8 @@
 			files = (
 				9479DFE21CD361EE00C49B32 /* UTDID.framework in Frameworks */,
 				9A4E2F641F9F5F9F0082866F /* UTMini.framework in Frameworks */,
-				B0028BB925F0FB5300DDEEBE /* EMASRest.framework in Frameworks */,
-				B05E8F6525F205E20077B81C /* AlicloudSender.framework in Frameworks */,
+				B0C70C6C2602ECF200986658 /* EMASRest.framework in Frameworks */,
+				B0C70C6E2602ECF800986658 /* AlicloudSender.framework in Frameworks */,
 				9A4E2F591F9F43340082866F /* AlicloudUtils.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -319,8 +317,6 @@
 				4AF4AB91211439EA00D712DF /* AlicloudUtils.framework in Frameworks */,
 				4AF4AB92211439EA00D712DF /* UTMini.framework in Frameworks */,
 				4AF4AB93211439EA00D712DF /* UTDID.framework in Frameworks */,
-				B05E8F6625F205E20077B81C /* AlicloudSender.framework in Frameworks */,
-				B0028C3925F1C4AE00DDEEBE /* EMASRest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -330,8 +326,8 @@
 		2197CA2D1BC79A4500BDB65B = {
 			isa = PBXGroup;
 			children = (
-				B05E8F6425F205E20077B81C /* AlicloudSender.framework */,
-				B0028BB825F0FB5300DDEEBE /* EMASRest.framework */,
+				B0C70C6D2602ECF800986658 /* AlicloudSender.framework */,
+				B0C70C6B2602ECF200986658 /* EMASRest.framework */,
 				9A4E2F611F9F5E660082866F /* UTMini.framework */,
 				9A4E2F581F9F43340082866F /* AlicloudUtils.framework */,
 				945914111CEB5D9C00D95CF7 /* libresolv.tbd */,
