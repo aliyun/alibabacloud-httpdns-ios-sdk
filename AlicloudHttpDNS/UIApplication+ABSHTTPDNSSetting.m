@@ -20,12 +20,12 @@ NSUInteger const ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTINUOUS_CRASH_ON_LAUNCH_
 
 @implementation UIApplication (ABSHTTPDNSSetting)
 
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        [self abs_swizzleSetDelegate];
-    });
-}
+//+ (void)load {
+//    static dispatch_once_t onceToken;
+//    dispatch_once(&onceToken, ^{
+//        [self abs_swizzleSetDelegate];
+//    });
+//}
 
 + (void)abs_swizzleSetDelegate {
     static dispatch_once_t onceToken;
