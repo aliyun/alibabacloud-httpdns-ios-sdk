@@ -13,4 +13,10 @@ FOUNDATION_EXTERN NSUInteger const ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTINUOU
 
 @interface UIApplication (ABSHTTPDNSSetting)
 
+/*
+ * 连续闪退检测前需要执行的逻辑，如上报统计初始化
+ */
+- (void)onBeforeBootingProtection;
+
+
 @end
