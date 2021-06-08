@@ -30,7 +30,7 @@
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsScheduleCenter.h"
 #import <AlicloudUtils/AlicloudIPv6Adapter.h>
-
+#import "UIApplication+ABSHTTPDNSSetting.h"
 
 NSString *const ALICLOUDHDNS_IPV4 = @"ALICLOUDHDNS_IPV4";
 NSString *const ALICLOUDHDNS_IPV6 = @"ALICLOUDHDNS_IPV6";
@@ -59,6 +59,10 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _authTimeOffsetSyncDispatchQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.authTimeOffsetSyncDispatchQueue", DISPATCH_QUEUE_SERIAL);
+        
+        //注册 UIApplication+ABSHTTPDNSSetting 中的Swizzle 
+        [[UIApplication sharedApplication] onBeforeBootingProtection];
+
     });
 }
 

@@ -156,6 +156,8 @@
 		9AF9A6111EC4E9990018063B /* HttpdnsIPRecord.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AF9A60F1EC4E9990018063B /* HttpdnsIPRecord.h */; };
 		9AF9A6121EC4E9990018063B /* HttpdnsIPRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */; };
 		9AF9A6131EC4F5500018063B /* HttpdnsIPRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */; };
+		B0774601266F99E5009FC52F /* EMASRest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0C70C6B2602ECF200986658 /* EMASRest.framework */; };
+		B0774602266F99EA009FC52F /* AlicloudSender.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0C70C6D2602ECF800986658 /* AlicloudSender.framework */; };
 		B0C70C6C2602ECF200986658 /* EMASRest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0C70C6B2602ECF200986658 /* EMASRest.framework */; };
 		B0C70C6E2602ECF800986658 /* AlicloudSender.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0C70C6D2602ECF800986658 /* AlicloudSender.framework */; };
 		B0E74132257F7E05002018B8 /* CFHTTPSURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */; };
@@ -317,6 +319,8 @@
 				4AF4AB91211439EA00D712DF /* AlicloudUtils.framework in Frameworks */,
 				4AF4AB92211439EA00D712DF /* UTMini.framework in Frameworks */,
 				4AF4AB93211439EA00D712DF /* UTDID.framework in Frameworks */,
+				B0774601266F99E5009FC52F /* EMASRest.framework in Frameworks */,
+				B0774602266F99EA009FC52F /* AlicloudSender.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
