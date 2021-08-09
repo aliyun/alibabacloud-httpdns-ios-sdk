@@ -31,6 +31,8 @@
 #import "HttpdnsScheduleCenter.h"
 #import <AlicloudUtils/AlicloudIPv6Adapter.h>
 #import "UIApplication+ABSHTTPDNSSetting.h"
+#import "HttpdnsgetNetworkInfoHelper.h"
+
 
 NSString *const ALICLOUDHDNS_IPV4 = @"ALICLOUDHDNS_IPV4";
 NSString *const ALICLOUDHDNS_IPV6 = @"ALICLOUDHDNS_IPV6";
@@ -321,6 +323,11 @@ static HttpDnsService * _httpDnsClient = nil;
 
 - (void)enableIPv6:(BOOL)enable {
     [[HttpdnsIPv6Manager sharedInstance] setIPv6ResultEnable:enable];
+}
+
+
+- (void)enableNetworkInfo:(BOOL)enable {
+    [HttpdnsgetNetworkInfoHelper setNetworkInfoEnable:enable];
 }
 
 - (NSString *)getSessionId {

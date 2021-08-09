@@ -23,6 +23,10 @@ static NSString *sWifiBssid = @"unknown";
 static dispatch_queue_t sNetworkTypeQueue = 0;
 static dispatch_queue_t sWifiBssidQueue = 0;
 
+//networkInfo api 调用开关 默认打开
+static BOOL networkInfoEnable = YES;
+
+
 @implementation HttpdnsgetNetworkInfoHelper
 
 #define ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(type) [NSString stringWithFormat:@"%@", @(type)]
@@ -66,12 +70,14 @@ static dispatch_queue_t sWifiBssidQueue = 0;
 
 + (NSString *)getCurrentWifiHotSpotName {
     NSString *wifiName = nil;
-    NSArray *ifs = (__bridge_transfer id)CNCopySupportedInterfaces();
-    for (NSString *ifnam in ifs) {
-        NSDictionary *info = (__bridge_transfer id)CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifnam);
-        NSString *ssidname = [HttpdnsUtil safeObjectForKey:@"SSID" dict:info];
-        if ([HttpdnsUtil isValidString:ssidname]) {
-            wifiName = ssidname;
+    if (networkInfoEnable) {  // networkInfo 开关打开
+        NSArray *ifs = (__bridge_transfer id)CNCopySupportedInterfaces();
+        for (NSString *ifnam in ifs) {
+            NSDictionary *info = (__bridge_transfer id)CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifnam);
+            NSString *ssidname = [HttpdnsUtil safeObjectForKey:@"SSID" dict:info];
+            if ([HttpdnsUtil isValidString:ssidname]) {
+                wifiName = ssidname;
+            }
         }
     }
     return wifiName;
@@ -144,15 +150,16 @@ static dispatch_queue_t sWifiBssidQueue = 0;
 + (void)updateWifiBssid {
     dispatch_sync(sWifiBssidQueue, ^{
         NSString *wifiBssid = nil;
-        NSArray *ifs = (id)CFBridgingRelease(CNCopySupportedInterfaces());
-        for (NSString *ifnam in ifs) {
-            id info = (id)CFBridgingRelease(CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifnam));
-            wifiBssid = [info objectForKey:(NSString*)kCNNetworkInfoKeyBSSID];
-            if (wifiBssid.length <= 0) {
-                continue;
+        if (networkInfoEnable) {  //networkInfo 开关打开
+            NSArray *ifs = (id)CFBridgingRelease(CNCopySupportedInterfaces());
+            for (NSString *ifnam in ifs) {
+                id info = (id)CFBridgingRelease(CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifnam));
+                wifiBssid = [info objectForKey:(NSString*)kCNNetworkInfoKeyBSSID];
+                if (wifiBssid.length <= 0) {
+                    continue;
+                }
             }
         }
-        
         if ([HttpdnsUtil isValidString:wifiBssid]) {
             sWifiBssid = wifiBssid;
         }
@@ -165,6 +172,12 @@ static dispatch_queue_t sWifiBssidQueue = 0;
         bssid = sWifiBssid;
     });
     return bssid;
+}
+
++ (void)setNetworkInfoEnable:(BOOL)enable {
+    dispatch_sync(sWifiBssidQueue, ^{
+        networkInfoEnable = enable;
+    });
 }
 
 @end
