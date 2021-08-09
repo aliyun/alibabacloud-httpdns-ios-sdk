@@ -121,6 +121,11 @@ typedef NS_ENUM(NSUInteger, AlicloudHttpDNS_IPType) {
 - (void)enableIPv6:(BOOL)enable;
 
 
+/// 是否允许通过 CNCopyCurrentNetworkInfo 获取wifi ssid bssid
+/// @param enable YES: 开启 NO: 关闭 ，默认开启
+- (void)enableNetworkInfo:(BOOL)enable;
+
+
 /// 获取用于用户追踪的 sessionId
 /// sessionId为随机生成，长度为 12 位，App 生命周期内保持不变
 /// 为了排查可能的解析问题，需要您将 sessionId 和解析出的 IP 一起记录在日志中
