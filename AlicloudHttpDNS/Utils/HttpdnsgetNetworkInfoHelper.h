@@ -23,4 +23,9 @@
 + (BOOL)isWifiNetwork;
 + (NSString *)getWifiBssid;
 
+
+/// 设置networkInfo 开关 默认打开
++ (void)setNetworkInfoEnable:(BOOL)enable;
+
+
 @end
