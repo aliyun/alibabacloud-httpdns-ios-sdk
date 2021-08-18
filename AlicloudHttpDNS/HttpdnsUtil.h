@@ -67,6 +67,8 @@
 
 + (void)safeAddValue:(id)value key:(NSString *)key toDict:(NSMutableDictionary* )dict;
 
++ (void)safeRemoveObjectForKey:(NSString *)key toDict:(NSMutableDictionary *)dict;
+
 + (void)safeRemoveAllObjectsFromDict:(NSMutableDictionary *)dict;
 + (id)safeObjectForKey:(NSString *)key dict:(NSDictionary *)dict;
 + (id)safeOjectAtIndex:(int)index array:(NSArray *)array;

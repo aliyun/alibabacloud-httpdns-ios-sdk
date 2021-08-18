@@ -35,6 +35,11 @@ static NSTimeInterval ALICLOUD_HTTPDNS_HOST_CACHE_MAX_CACHE_AGE = 0;
 
 - (void)deleteHostRecordAndItsIPsWithHostRecordIDs:(NSArray<NSNumber *> *)hostRecordIDs;
 
+
+/// 清空指定host的数据库数据 包括(HostRecord + ipv4 + ipv6 三张表的数据)
+/// @param hostArray host数组 为空||nil 则删除全部数据
+- (void)cleanWithHosts:(NSArray <NSString *>*)hostArray;
+
 // for test
 - (void)deleteHostRecordAndItsIPsWithHost:(NSString *)host;
 - (NSString *)showDBCache;
