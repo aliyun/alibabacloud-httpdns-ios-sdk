@@ -60,5 +60,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 
 - (void)cleanAllHostMemoryCache;
 
+- (void)cleanCacheWithHostArray:(NSArray <NSString *>*)hostArray;
+
 @end
 

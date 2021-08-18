@@ -19,6 +19,10 @@ ALICLOUD_HTTPDNS_FIELD_IP               @" TEXT NOT NULL, "                    \
 ALICLOUD_HTTPDNS_FIELD_TTL              @" NUMBERIC NOT NULL"                \
 @")"
 
+#define ALICLOUD_HTTPDNS_SQL_CLEAN_IP6_RECORD_TABLE                        \
+        @"DELETE FROM " ALICLOUD_HTTPDNS_TABLE_IP6_RECORD  @" "            \
+
+
 #define ALICLOUD_HTTPDNS_SQL_INSERT_IP6_RECORD                              \
 @"INSERT OR REPLACE INTO " ALICLOUD_HTTPDNS_TABLE_IP6_RECORD     @" ("  \
 ALICLOUD_HTTPDNS_FIELD_HOST_RECORD_ID      @", "                  \

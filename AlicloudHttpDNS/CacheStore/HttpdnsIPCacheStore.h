@@ -23,6 +23,13 @@
 - (void)deleteIPRecordWithHostRecordIDs:(NSArray<NSNumber *> *)hostRecordIDs;
 - (void)deleteIP6RecordWithHostRecordIDs:(NSArray<NSNumber *> *)hostRecordIDs;
 
+
+/// 清空ipv4数据
+- (void)cleanIPRecord;
+/// 清空ipv6数据
+- (void)cleanIP6Record;
+
+
 - (NSArray<HttpdnsIPRecord *> *)IPRecordsForHostID:(NSUInteger)hostID;
 - (NSArray<HttpdnsIPRecord *> *)IP6RecordsForHostID:(NSUInteger)hostID;
 - (NSArray<HttpdnsIPRecord *> *)IPRecordsForHostID:(NSUInteger)hostID db:(HttpdnsDatabase *)db;

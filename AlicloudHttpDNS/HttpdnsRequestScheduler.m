@@ -808,6 +808,28 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     [HttpdnsUtil safeRemoveAllObjectsFromDict:_hostManagerDict];
 }
 
+- (void)cleanCacheWithHostArray:(NSArray<NSString *> *)hostArray {
+    
+    if (![HttpdnsUtil isValidArray:hostArray]) {
+        [self cleanAllHostMemoryCache];
+    } else {
+        for (NSString *host in hostArray) {
+            if ([HttpdnsUtil isValidString:host]) {
+                [HttpdnsUtil safeRemoveObjectForKey:host toDict:_hostManagerDict];
+            }
+        }
+    }
+    
+    //清空数据库数据
+    dispatch_async([[self class] hostCacheQueue], ^{
+        //清空数据库数据
+        [[HttpdnsHostCacheStore sharedInstance] cleanWithHosts:hostArray];
+    });
+    
+    
+}
+
+
 - (void)loadIPsFromCacheSyncIfNeeded {
     dispatch_sync(_syncLoadCacheQueue, ^{
         if (!_cachedIPEnabled) {
