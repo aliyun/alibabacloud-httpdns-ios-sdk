@@ -520,6 +520,11 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 
+- (void)cleanHostCache:(NSArray<NSString *> *)hostArray {
+    [_requestScheduler cleanCacheWithHostArray:hostArray];
+}
+
+
 - (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params {
     if ([HttpdnsUtil isValidDictionary:params]) {
         _globalParams = [self limitPapams:params];

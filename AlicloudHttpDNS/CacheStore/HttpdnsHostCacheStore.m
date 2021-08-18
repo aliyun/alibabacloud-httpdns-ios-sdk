@@ -285,8 +285,38 @@
     [self deleteHostRecordAndItsIPsWithHostRecordIDs:hostIds];
 }
 
+
+- (void)cleanWithHosts:(NSArray<NSString *> *)hostArray {
+    
+    [HttpdnsUtil warnMainThreadIfNecessary];
+    
+    if (![HttpdnsUtil isValidArray:hostArray]) {  //全部清空
+        [self cleanDatabaseCache];
+    } else {
+        for (NSString *host in hostArray) {
+            //删除域名对应的数据库数据
+            NSArray<NSNumber *> *ids = [self hostRecordIdsForHost:host];
+            [self deleteHostRecordAndItsIPsWithHostRecordIDs:ids];
+        }
+    }
+       
+}
+
 #pragma mark -
 #pragma mark - Private Methods
+
+
+- (void)cleanDatabaseCache {
+    
+    //删除host表
+    ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
+        [db executeUpdate:ALICLOUD_HTTPDNS_SQL_CLEAN_HOST_RECORD_TABLE];;
+    }));
+    
+    //删除ip表
+    [[HttpdnsIPCacheStore sharedInstance] cleanIPRecord];
+    [[HttpdnsIPCacheStore sharedInstance] cleanIP6Record];
+}
 
 - (NSArray<NSNumber *> *)allExpiredHostRecordNumbers {
     [HttpdnsUtil warnMainThreadIfNecessary];

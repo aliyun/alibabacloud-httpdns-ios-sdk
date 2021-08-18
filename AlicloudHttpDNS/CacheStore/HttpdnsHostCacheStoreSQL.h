@@ -27,6 +27,11 @@
         @"UNIQUE (" ALICLOUD_HTTPDNS_FIELD_HOST @", " ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER @")"           \
     @")"
 
+
+#define ALICLOUD_HTTPDNS_SQL_CLEAN_HOST_RECORD_TABLE                        \
+        @"DELETE FROM " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD  @" "            \
+
+
 #define ALICLOUD_HTTPDNS_SQL_INSERT_HOST_RECORD                            \
     @"INSERT OR REPLACE INTO " ALICLOUD_HTTPDNS_TABLE_HOST_RECORD   @" ("  \
         ALICLOUD_HTTPDNS_FIELD_HOST                 @", "                  \

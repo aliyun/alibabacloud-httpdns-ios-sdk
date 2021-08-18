@@ -162,6 +162,13 @@ typedef NS_ENUM(NSUInteger, AlicloudHttpDNS_IPType) {
 - (NSDictionary <NSString *, NSArray *>*)getIPv4_v6ByHostAsync:(NSString *)host;
 
 
+
+/// 清除指定host缓存（内存+沙盒数据库）
+/// @param hostArray 需要清除的host域名数组。如果需要清空全部数据传nil或者空数组即可
+- (void)cleanHostCache:(NSArray <NSString *>*)hostArray;
+
+
+
 /// 设置日志输出回调
 - (void)setLogHandler:(id<HttpdnsLoggerProtocol>)logHandler;
 - (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params;
