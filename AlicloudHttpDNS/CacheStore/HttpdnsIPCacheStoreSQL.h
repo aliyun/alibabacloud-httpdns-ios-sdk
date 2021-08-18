@@ -24,6 +24,11 @@
         ALICLOUD_HTTPDNS_FIELD_TTL              @" NUMBERIC NOT NULL"                \
     @")"
 
+
+#define ALICLOUD_HTTPDNS_SQL_CLEAN_IP_RECORD_TABLE                        \
+        @"DELETE FROM " ALICLOUD_HTTPDNS_TABLE_IP_RECORD  @" "            \
+
+
 #define ALICLOUD_HTTPDNS_SQL_INSERT_IP_RECORD                              \
     @"INSERT OR REPLACE INTO " ALICLOUD_HTTPDNS_TABLE_IP_RECORD     @" ("  \
          ALICLOUD_HTTPDNS_FIELD_HOST_RECORD_ID      @", "                  \

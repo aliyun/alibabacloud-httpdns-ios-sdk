@@ -137,4 +137,22 @@
     return record;
 }
 
+
+- (void)cleanIPRecord {
+    [HttpdnsUtil warnMainThreadIfNecessary];
+    ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
+        [db executeUpdate:ALICLOUD_HTTPDNS_SQL_CLEAN_IP_RECORD_TABLE];
+    }));
+}
+
+- (void)cleanIP6Record {
+    [HttpdnsUtil warnMainThreadIfNecessary];
+    ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
+        [db executeUpdate:ALICLOUD_HTTPDNS_SQL_CLEAN_IP6_RECORD_TABLE];
+    }));
+}
+
+
+
+
 @end
