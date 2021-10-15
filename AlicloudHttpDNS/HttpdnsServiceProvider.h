@@ -122,7 +122,7 @@ typedef NS_ENUM(NSUInteger, AlicloudHttpDNS_IPType) {
 
 
 /// 是否允许通过 CNCopyCurrentNetworkInfo 获取wifi ssid bssid
-/// @param enable YES: 开启 NO: 关闭 ，默认开启
+/// @param enable YES: 开启 NO: 关闭 ，默认关闭
 - (void)enableNetworkInfo:(BOOL)enable;
 
 
