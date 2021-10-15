@@ -24,7 +24,7 @@ static dispatch_queue_t sNetworkTypeQueue = 0;
 static dispatch_queue_t sWifiBssidQueue = 0;
 
 //networkInfo api 调用开关 默认打开
-static BOOL networkInfoEnable = YES;
+static BOOL networkInfoEnable = NO;
 
 
 @implementation HttpdnsgetNetworkInfoHelper
