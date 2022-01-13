@@ -72,6 +72,11 @@ static NSString *const ALICLOUD_HTTPDNS_BEACON_REQUEST_PARAM_ACCOUNTID = @"accou
 static NSString *const ALICLOUD_HTTPDNS_BEACON_STATUS_KEY = @"status";
 static NSString *const ALICLOUD_HTTPDNS_BEACON_SDK_DISABLE = @"disabled";
 
+
+
+static NSString *const ALICLOUD_HTTPDNS_REGION_KEY = @"HttpdnsRegion";
+
+
 //当前时间戳，单位秒
 #define ALICLOUD_HTTPDNS_DISTANT_CURRENT_TIMESTAMP \
     ([[NSDate date] timeIntervalSince1970])

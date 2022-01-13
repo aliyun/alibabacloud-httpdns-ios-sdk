@@ -241,12 +241,15 @@ static HttpDnsService * _httpDnsClient = nil;
     
     if ([HttpdnsUtil isValidString:region]) {
         NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
-        NSString *olgregion = [userDefault objectForKey:@"HttpdnsRegion"];
+        NSString *olgregion = [userDefault objectForKey:ALICLOUD_HTTPDNS_REGION_KEY];
         if (![region isEqualToString:olgregion]) {
-            [userDefault setObject:region forKey:@"HttpdnsRegion"];
+            [userDefault setObject:region forKey:ALICLOUD_HTTPDNS_REGION_KEY];
             HttpdnsScheduleCenter *scheduleCenter  = [HttpdnsScheduleCenter sharedInstance];
             [scheduleCenter forceUpdateIpListAsync];
         }
+        [_requestScheduler _setReginEnabled:YES];
+    } else {
+        [_requestScheduler _setReginEnabled:NO];
     }
 }
 

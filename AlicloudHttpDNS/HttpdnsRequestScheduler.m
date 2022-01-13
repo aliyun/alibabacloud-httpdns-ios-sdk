@@ -64,7 +64,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 @property (nonatomic, strong) dispatch_queue_t cacheQueue;
 @property (nonatomic, copy) NSString *disableStatusPath;
 @property (nonatomic, assign) BOOL cachedIPEnabled;
-
+@property (nonatomic, assign) BOOL regionEnabled;
 
 @end
 
@@ -94,6 +94,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         _isExpiredIPEnabled = NO;
         _IPRankingEnabled = NO;
         _isPreResolveAfterNetworkChangedEnabled = NO;
+        _regionEnabled = [EMASTools isValidString:[[NSUserDefaults standardUserDefaults] objectForKey:ALICLOUD_HTTPDNS_REGION_KEY]];
         _syncDispatchQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.sync", DISPATCH_QUEUE_SERIAL);
         _asyncOperationQueue = [[NSOperationQueue alloc] init];
         [_asyncOperationQueue setMaxConcurrentOperationCount:HTTPDNS_MAX_REQUEST_THREAD_NUM];
@@ -605,6 +606,10 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 - (BOOL)_getCachedIPEnabled {
     return _cachedIPEnabled;
+}
+
+- (void)_setReginEnabled:(BOOL)enable {
+    _regionEnabled = enable;
 }
 
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable {
