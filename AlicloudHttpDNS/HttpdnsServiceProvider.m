@@ -245,7 +245,8 @@ static HttpDnsService * _httpDnsClient = nil;
         if (![region isEqualToString:olgregion]) {
             [userDefault setObject:region forKey:ALICLOUD_HTTPDNS_REGION_KEY];
             HttpdnsScheduleCenter *scheduleCenter  = [HttpdnsScheduleCenter sharedInstance];
-            [scheduleCenter forceUpdateIpListAsync];
+            [scheduleCenter forceUpdateIpListAsync]; //强制更新服务IP
+            [self cleanHostCache:nil]; //清空本地沙盒和内存的IP缓存
         }
         [_requestScheduler _setReginEnabled:YES];
     } else {
