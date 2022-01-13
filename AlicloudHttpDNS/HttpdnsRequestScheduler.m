@@ -50,6 +50,9 @@ NSString *const ALICLOUD_HTTPDNS_HTTP_SERVER_PORT = @"80";
 NSString *const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 
 NSArray *ALICLOUD_HTTPDNS_SERVER_IP_LIST = nil;
+
+NSString *ALICLOUD_HTTPDNS_SERVER_IP_REGION = @""; //当前服务IP的region，默认为空为国内场景
+
 NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0;
 static dispatch_queue_t _hostCacheQueue = NULL;
 static dispatch_queue_t _syncLoadCacheQueue = NULL;

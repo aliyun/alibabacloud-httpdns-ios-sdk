@@ -341,6 +341,8 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
             ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED = ALICLOUD_HTTPDNS_SERVER_IP_LIST[0];
             ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE = YES;
             _IPList = [result copy];
+            //设置当前服务IP对应的region
+            ALICLOUD_HTTPDNS_SERVER_IP_REGION = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_REGION_KEY dict:_scheduleCenterResult]?:@"";
         }
     });
 }
