@@ -46,6 +46,11 @@
 @property (nonatomic, setter=setV6TTL:, getter=getV6TTL) int64_t v6ttl;
 @property (nonatomic, assign) int64_t lastIPv6LookupTime;
 
+//region 当次解析时，服务IP设置的region ,为空或者nil 默认是国内场景
+@property (nonatomic, copy) NSString *ipRegion;
+@property (nonatomic, copy) NSString *ip6Region;
+
+
 @property (nonatomic, strong, setter=setExtra:, getter=getExtra) NSDictionary *extra;
 
 // 标识是否从持久化缓存加载

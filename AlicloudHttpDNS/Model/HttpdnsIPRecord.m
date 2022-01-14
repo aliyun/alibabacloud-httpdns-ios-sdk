@@ -13,32 +13,34 @@
 @property (nonatomic, assign) NSUInteger hostRecordId;
 @property (nonatomic, copy) NSString *IP;
 @property (nonatomic, assign) int64_t TTL;
+@property (nonatomic, copy) NSString *region;
 
 @end
 
 @implementation HttpdnsIPRecord
 
-- (instancetype)initWithHostRecordId:(NSUInteger)hostRecordId IP:(NSString *)IP TTL:(int64_t)TTL {
+- (instancetype)initWithHostRecordId:(NSUInteger)hostRecordId IP:(NSString *)IP TTL:(int64_t)TTL region:(NSString *)region{
     if (self = [super init]) {
         _hostRecordId = hostRecordId;
         _IP = [IP copy];
         _TTL = TTL;
+        _region = region;
     }
     return self;
 }
 
-+ (instancetype)IPRecordWithHostRecordId:(NSUInteger)hostRecordId IP:(NSString *)IP TTL:(int64_t)TTL {
-    HttpdnsIPRecord *IPRecord = [[HttpdnsIPRecord alloc] initWithHostRecordId:hostRecordId IP:IP TTL:TTL];
++ (instancetype)IPRecordWithHostRecordId:(NSUInteger)hostRecordId IP:(NSString *)IP TTL:(int64_t)TTL region:(NSString *)region{
+    HttpdnsIPRecord *IPRecord = [[HttpdnsIPRecord alloc] initWithHostRecordId:hostRecordId IP:IP TTL:TTL region:region];
     return IPRecord;
 }
 
-- (instancetype)initWithIP:(NSString *)IP {
-    return [self initWithHostRecordId:0 IP:IP TTL:0];
-}
-
-+ (instancetype)IPRecordWithIP:(NSString *)IP {
-    return [self IPRecordWithHostRecordId:0 IP:IP TTL:0];
-}
+//- (instancetype)initWithIP:(NSString *)IP {
+//    return [self initWithHostRecordId:0 IP:IP TTL:0];
+//}
+//
+//+ (instancetype)IPRecordWithIP:(NSString *)IP {
+//    return [self IPRecordWithHostRecordId:0 IP:IP TTL:0];
+//}
 
 - (NSString *)description {
     return [NSString stringWithFormat:@"{\n ip: %@\n}\n", _IP];
