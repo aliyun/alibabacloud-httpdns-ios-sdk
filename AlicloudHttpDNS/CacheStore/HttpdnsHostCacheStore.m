@@ -95,8 +95,10 @@
                 HttpdnsLogDebug("host record saved success");
                 NSArray<NSString *> *IPs = hostRecord.IPs;
                 NSArray<NSString *> *IP6s = hostRecord.IP6s;
-                [IPCacheStore insertIPs:IPs hostRecordId:(NSUInteger)hostRecordId TTL:TTL];
-                [IPCacheStore insertIP6s:IP6s hostRecordId:(NSUInteger)hostRecordId TTL:TTL];
+                NSString *ipRegion = hostRecord.ipRegion;
+                NSString *ip6Region = hostRecord.ip6Region;
+                [IPCacheStore insertIPs:IPs hostRecordId:(NSUInteger)hostRecordId TTL:TTL ipRegion:ipRegion];
+                [IPCacheStore insertIP6s:IP6s hostRecordId:(NSUInteger)hostRecordId TTL:TTL ip6Region:ip6Region];
             } @catch (NSException *exception) {
                 HttpdnsLogDebug("insert hostRecord error: %@", exception);
             }
@@ -209,6 +211,9 @@
     NSArray *IPs = nil;
     NSArray *IP6s = nil;
     int64_t TTL = 0;
+    NSString *ipRegion = @"";
+    NSString *ip6Region = @"";
+    
     if (db) {
         HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore sharedInstance];
         NSArray<HttpdnsIPRecord *> *IPRecords = [IPCacheStore IPRecordsForHostID:hostID db:db];
@@ -221,6 +226,7 @@
                 }
                 IPs = [mutableIPs copy];
                 TTL = IPRecords[0].TTL;
+                ipRegion = IPRecords[0].region;
             }
             if (IP6Records.count > 0) {
                 NSMutableArray *mutableIP6s = [NSMutableArray arrayWithCapacity:IP6Records.count];
@@ -229,6 +235,7 @@
                 }
                 IP6s = [mutableIP6s copy];
                 TTL = IP6Records[0].TTL;
+                ip6Region = IP6Records[0].region;
             }
         } @catch (NSException *exception) {
             HttpdnsLogDebug("DB error: %@, HostRecord has data with id %@, but there is not IPRecord data with same id.", exception, @(hostID));
@@ -242,7 +249,8 @@
                                                                IP6s:IP6s
                                                                 TTL:TTL
                                                            createAt:createAt
-                                                           expireAt:expireAt];
+                                                           expireAt:expireAt
+                                                           ipRegion:ipRegion ip6Region:ip6Region];
     return record;
 }
 

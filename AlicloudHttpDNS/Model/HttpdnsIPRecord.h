@@ -26,23 +26,29 @@
 @property (nonatomic, assign, readonly) int64_t TTL;
 
 /*!
- * 从数据库初始化
+ * 当次解析IP 的服务IP对应的region
  */
-- (instancetype)initWithHostRecordId:(NSUInteger)hostRecordId IP:(NSString *)IP TTL:(int64_t)TTL;
+@property (nonatomic, copy, readonly) NSString *region;
+
 
 /*!
  * 从数据库初始化
  */
-+ (instancetype)IPRecordWithHostRecordId:(NSUInteger)hostRecordId IP:(NSString *)IP TTL:(int64_t)TTL;
+- (instancetype)initWithHostRecordId:(NSUInteger)hostRecordId IP:(NSString *)IP TTL:(int64_t)TTL region:(NSString *)region;
 
 /*!
- * 从网络初始化
+ * 从数据库初始化
  */
-- (instancetype)initWithIP:(NSString *)IP;
++ (instancetype)IPRecordWithHostRecordId:(NSUInteger)hostRecordId IP:(NSString *)IP TTL:(int64_t)TTL region:(NSString *)region;
 
-/*!
- * 从网络初始化
- */
-+ (instancetype)IPRecordWithIP:(NSString *)IP;
+///*!
+// * 从网络初始化
+// */
+//- (instancetype)initWithIP:(NSString *)IP;
+//
+///*!
+// * 从网络初始化
+// */
+//+ (instancetype)IPRecordWithIP:(NSString *)IP;
 
 @end
