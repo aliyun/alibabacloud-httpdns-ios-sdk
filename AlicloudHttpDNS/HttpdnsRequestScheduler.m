@@ -50,6 +50,9 @@ NSString *const ALICLOUD_HTTPDNS_HTTP_SERVER_PORT = @"80";
 NSString *const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 
 NSArray *ALICLOUD_HTTPDNS_SERVER_IP_LIST = nil;
+
+NSString *ALICLOUD_HTTPDNS_SERVER_IP_REGION = @""; //当前服务IP的region，默认为空为国内场景
+
 NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0;
 static dispatch_queue_t _hostCacheQueue = NULL;
 static dispatch_queue_t _syncLoadCacheQueue = NULL;
@@ -64,7 +67,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 @property (nonatomic, strong) dispatch_queue_t cacheQueue;
 @property (nonatomic, copy) NSString *disableStatusPath;
 @property (nonatomic, assign) BOOL cachedIPEnabled;
-
+@property (nonatomic, copy) NSString *customRegion; //当前设置的region
 
 @end
 
@@ -94,6 +97,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         _isExpiredIPEnabled = NO;
         _IPRankingEnabled = NO;
         _isPreResolveAfterNetworkChangedEnabled = NO;
+        _customRegion = [[NSUserDefaults standardUserDefaults] objectForKey:ALICLOUD_HTTPDNS_REGION_KEY];
         _syncDispatchQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.sync", DISPATCH_QUEUE_SERIAL);
         _asyncOperationQueue = [[NSOperationQueue alloc] init];
         [_asyncOperationQueue setMaxConcurrentOperationCount:HTTPDNS_MAX_REQUEST_THREAD_NUM];
@@ -209,6 +213,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 HttpdnsLogDebug("%@ queryingState: %d", host, [result isQuerying]);
                 return nil;
             } else {
+                //这种情况下所有的IP都为空，可以直接走后续逻辑
                 needToQuery = YES;
             }
         } else if ([result isExpiredWithQueryIPType:queryType]) {
@@ -229,6 +234,39 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 result = nil;
             }
         }
+        
+        if (result) { //这里处理region 匹配的问题
+            
+            if (!self.customRegion) {
+                self.customRegion = @"";
+            }
+            
+            if (!result.ipRegion) {
+                result.ipRegion = @"";
+            }
+            
+            if (!result.ip6Region) {
+                result.ip6Region = @"";
+            }
+            
+            
+            if (queryType & HttpdnsQueryIPTypeIpv4) {
+                if(![self.customRegion isEqualToString:result.ipRegion]) {
+                    result.ips = @[]; //清空ipv4
+                    needToQuery = YES;
+                }
+            }
+            
+            
+            if (queryType & HttpdnsQueryIPTypeIpv6) {
+                if(![self.customRegion isEqualToString:result.ip6Region]) {
+                    result.ip6s = @[]; //清空ipv6
+                    needToQuery = YES;
+                }
+            }
+            
+        }
+        
     }
     
     if (needToQuery) {
@@ -260,7 +298,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     
     if (queryType & HttpdnsQueryIPTypeIpv4 && queryType & HttpdnsQueryIPTypeIpv6) {  //同时查询v4 v6
         
-        if (![HttpdnsUtil isValidArray:[hostObject getIps]] || ![HttpdnsUtil isValidArray:[hostObject getIp6s]]) {
+        if (![HttpdnsUtil isValidArray:[hostObject getIps]] && ![HttpdnsUtil isValidArray:[hostObject getIp6s]]) {
             return YES;
         }
         
@@ -281,6 +319,47 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     return NO;
 }
 
+
+///// 判断当前命中的IP是否和当前region能匹配
+///// @param hostObject 命中IP对象
+///// @param queryType 查询类型
+//- (BOOL)_regionMatch:(HttpdnsHostObject *)hostObject ipQueryType:(HttpdnsQueryIPType)queryType {
+//    
+//    BOOL regionMatchFlag = YES;
+//    
+//    if (!self.customRegion) {
+//        self.customRegion = @"";
+//    }
+//    
+//    if (!hostObject.ipRegion) {
+//        hostObject.ipRegion = @"";
+//    }
+//    
+//    if (!hostObject.ip6Region) {
+//        hostObject.ip6Region = @"";
+//    }
+//    
+//    
+//    if (queryType & HttpdnsQueryIPTypeIpv4) {
+//        if(![self.customRegion isEqualToString:hostObject.ipRegion]) {
+//            hostObject.ips = @[]; //清空ipv4
+//            regionMatchFlag = NO;
+//        }
+//    }
+//    
+//    
+//    if (queryType & HttpdnsQueryIPTypeIpv6) {
+//        if(![self.customRegion isEqualToString:hostObject.ip6Region]) {
+//            hostObject.ip6s = @[]; //清空ipv6
+//            regionMatchFlag = NO;
+//        }
+//    }
+//    
+//  
+//    return regionMatchFlag;
+//}
+
+
 - (void)mergeLookupResultToManager:(HttpdnsHostObject *)result forHost:(NSString *)host {
     
     NSString * CopyHost = host;
@@ -298,6 +377,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         NSArray<HttpdnsIpObject *> *IPObjects = [result getIps];
         NSArray<HttpdnsIpObject *> *IP6Objects = [result getIp6s];
         NSDictionary* Extra  = [result getExtra];
+        NSString *ipRegion = result.ipRegion;
+        NSString *ip6Region = result.ip6Region;
         
         //拿到当前域名查询策略
         HttpdnsQueryIPType queryIPType = [[HttpdnsIPv6Manager sharedInstance] getQueryHostIPType:host];
@@ -314,12 +395,14 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 [old setIps:IPObjects];
                 [old setV4TTL:result.getV4TTL];
                 [old setLastIPv4LookupTime:result.lastIPv4LookupTime];
+                old.ipRegion = ipRegion;
             }
             
             if (queryIPType & HttpdnsQueryIPTypeIpv6) {
                 [old setIp6s:IP6Objects];
                 [old setV6TTL:result.getV6TTL];
                 [old setLastIPv6LookupTime:result.lastIPv6LookupTime];
+                old.ip6Region = ip6Region;
             }
             
             [old setQueryingState:NO];
@@ -340,10 +423,12 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [hostObject setIps:IPObjects];
             [hostObject setV4TTL:result.getV4TTL];
             [hostObject setLastIPv4LookupTime:result.lastIPv4LookupTime];
+            hostObject.ipRegion = ipRegion;
             
             [hostObject setIp6s:IP6Objects];
             [hostObject setV6TTL:result.getV6TTL];
             [hostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
+            hostObject.ip6Region = ip6Region;
             
             
             [hostObject setQueryingState:NO];
@@ -359,9 +444,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         }
         
         if([HttpdnsUtil isValidDictionary:result.extra]) {
-            [self sdnsCacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings IP6s:IP6Strings TTL:TTL withExtra:Extra];
+            [self sdnsCacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings IP6s:IP6Strings TTL:TTL withExtra:Extra ipRegion:ipRegion ip6Region:ip6Region];
         } else {
-            [self cacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings IP6s:IP6Strings TTL:TTL];
+            [self cacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings IP6s:IP6Strings TTL:TTL ipRegion:ipRegion ip6Region:ip6Region];
         }
         
         // TODO:
@@ -605,6 +690,11 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 - (BOOL)_getCachedIPEnabled {
     return _cachedIPEnabled;
+}
+
+
+- (void)_setRegin:(NSString *)region {
+    _customRegion = region;
 }
 
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable {
@@ -853,24 +943,24 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     });
 }
 
-- (void)cacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL {
+- (void)cacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL ipRegion:(NSString *)ipRegion ip6Region:(NSString *)ip6Region {
     if (!_cachedIPEnabled) {
         return;
     }
     dispatch_async([HttpdnsRequestScheduler hostCacheQueue], ^{
-        HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL];
+        HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL ipRegion:ipRegion ip6Region:ip6Region];
         HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
         [hostCacheStore insertHostRecords:@[hostRecord]];
     });
 }
 
-- (void)sdnsCacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL withExtra:(NSDictionary *)extra {
+- (void)sdnsCacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL withExtra:(NSDictionary *)extra ipRegion:(NSString *)ipRegion ip6Region:(NSString *)ip6Region {
     
     if (!_cachedIPEnabled) {
         return;
     }
     dispatch_async([HttpdnsRequestScheduler hostCacheQueue], ^{
-        HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord sdnsHostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL Extra:extra];
+        HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord sdnsHostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL Extra:extra ipRegion:ipRegion ip6Region:ip6Region];
         HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
         [hostCacheStore insertHostRecords:@[hostRecord]];
     });

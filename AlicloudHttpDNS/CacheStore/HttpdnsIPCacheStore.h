@@ -17,8 +17,8 @@
 
 + (instancetype)sharedInstance;
 
-- (void)insertIPs:(NSArray<NSString *> *)IPs hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL;
-- (void)insertIP6s:(NSArray<NSString *> *)IPs hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL;
+- (void)insertIPs:(NSArray<NSString *> *)IPs hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL ipRegion:(NSString *)ipRegion;
+- (void)insertIP6s:(NSArray<NSString *> *)IPs hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL ip6Region:(NSString *)ip6Region;
 
 - (void)deleteIPRecordWithHostRecordIDs:(NSArray<NSNumber *> *)hostRecordIDs;
 - (void)deleteIP6RecordWithHostRecordIDs:(NSArray<NSNumber *> *)hostRecordIDs;

@@ -113,7 +113,7 @@ static NSURLSession *_scheduleCenterSession = nil;
     
     NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    NSString * region = [self urlFormatRegion:[[NSUserDefaults standardUserDefaults] objectForKey:@"HttpdnsRegion"]];
+    NSString * region = [self urlFormatRegion:[[NSUserDefaults standardUserDefaults] objectForKey:ALICLOUD_HTTPDNS_REGION_KEY]];
     NSString *url = [NSString stringWithFormat:@"https://%@/%d/ss?%@platform=ios&sdk_version=%@",serverIpOrHost,sharedService.accountID,region,HTTPDNS_IOS_SDK_VERSION];
     url = [self urlFormatSidNetBssid:url];
     return url;
@@ -186,6 +186,22 @@ static NSURLSession *_scheduleCenterSession = nil;
                 }
             } else {
                 HttpdnsLogDebug("Response code 200.");
+                
+                //判断当前服务IP是否是特定region下的服务IP
+                NSString *urlRegionKey = @"region=";
+                if ([response.URL.query containsString:urlRegionKey]) {
+                    HttpdnsLogDebug("has region serviceIP!");
+                    NSArray *queryArr = [response.URL.query componentsSeparatedByString:@"&"];
+                    for (NSString *queryStr in queryArr) {
+                        if ([queryStr hasPrefix:urlRegionKey] && [EMASTools isValidDictionary:result]) {
+                            NSString *regionValue = [queryStr substringFromIndex:urlRegionKey.length];
+                            NSMutableDictionary *resultCopy = [NSMutableDictionary dictionaryWithDictionary:result];
+                            [resultCopy setObject:regionValue forKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_REGION_KEY];
+                            result = [NSDictionary dictionaryWithDictionary:resultCopy];
+                            break;;
+                        }
+                    }
+                }
             }
         }
         dispatch_semaphore_signal(_sem);
