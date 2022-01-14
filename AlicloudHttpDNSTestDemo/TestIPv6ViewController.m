@@ -189,32 +189,32 @@ NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
 }
 
 - (void)addValidV4 {
-    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:ipv6Host IPs:@[ testIPv4 ] IP6s:@[] TTL:3600];
+    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:ipv6Host IPs:@[ testIPv4 ] IP6s:@[] TTL:3600 ipRegion:@"" ip6Region:@""];
     [_hostCacheStore insertHostRecords:@[ hostRecord ]];
 }
 
 - (void)addValidV6 {
-    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:ipv6Host IPs:@[] IP6s:@[ testIPv6 ] TTL:3600];
+    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:ipv6Host IPs:@[] IP6s:@[ testIPv6 ] TTL:3600 ipRegion:@"" ip6Region:@""];
     [_hostCacheStore insertHostRecords:@[ hostRecord ]];
 }
 
 - (void)addValidV4AndV6 {
-    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:ipv6Host IPs:@[ testIPv4 ] IP6s:@[ testIPv6 ] TTL:3600];
+    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:ipv6Host IPs:@[ testIPv4 ] IP6s:@[ testIPv6 ] TTL:3600 ipRegion:@"" ip6Region:@""];
     [_hostCacheStore insertHostRecords:@[ hostRecord ]];
 }
 
 - (void)addExpiredV4 {
-    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:ipv6Host IPs:@[ testIPv4 ] IP6s:@[] TTL:0];
+    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:ipv6Host IPs:@[ testIPv4 ] IP6s:@[] TTL:0 ipRegion:@"" ip6Region:@""];
     [_hostCacheStore insertHostRecords:@[ hostRecord ]];
 }
 
 - (void)addExpiredV6 {
-    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:ipv6Host IPs:@[ ] IP6s:@[ testIPv6 ] TTL:0];
+    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:ipv6Host IPs:@[ ] IP6s:@[ testIPv6 ] TTL:0 ipRegion:@"" ip6Region:@""];
     [_hostCacheStore insertHostRecords:@[ hostRecord ]];
 }
 
 - (void)addExpiredV4AndV6 {
-    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:ipv6Host IPs:@[ testIPv4 ] IP6s:@[ testIPv6 ] TTL:0];
+    HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:ipv6Host IPs:@[ testIPv4 ] IP6s:@[ testIPv6 ] TTL:0 ipRegion:@"" ip6Region:@""];
     [_hostCacheStore insertHostRecords:@[ hostRecord ]];
 }
 

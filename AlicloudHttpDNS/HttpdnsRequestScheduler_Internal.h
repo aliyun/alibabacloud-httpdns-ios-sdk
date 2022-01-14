@@ -51,7 +51,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 - (BOOL)_getCachedIPEnabled;
 
 //设置开启region
-- (void)_setReginEnabled:(BOOL)enable;
+- (void)_setRegin:(NSString *)region;
 
 + (void)configureServerIPsAndResetActivatedIPTime;
 

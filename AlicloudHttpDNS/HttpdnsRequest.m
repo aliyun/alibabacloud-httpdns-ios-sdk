@@ -32,6 +32,9 @@
 #import "HttpDnsHitService.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
 #import "HttpdnsIPv6Manager.h"
+#import "HttpdnsConfig.h"
+#import "HttpdnsRequestScheduler.h"
+
 
 NSInteger const ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE = 10003;
 NSInteger const ALICLOUD_HTTPDNS_HTTP_COMMON_ERROR_CODE = 10004;
@@ -53,6 +56,10 @@ static NSURLSession *_resolveHOSTSession = nil;
 
 @property (nonatomic, strong) NSRunLoop *runloop;
 @property (nonatomic, strong) NSError *networkError;
+
+//记录域名解析发生时，当前service ip的region
+@property (nonatomic, copy) NSString *serviceRegion;
+
 
 @end
 
@@ -198,10 +205,12 @@ static NSURLSession *_resolveHOSTSession = nil;
     if ([HttpdnsUtil isValidArray:ipArray]) {
         [hostObject setV4TTL:[[json objectForKey:@"ttl"] longLongValue]];
         hostObject.lastIPv4LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
+        hostObject.ipRegion = self.serviceRegion;
     }
     if ([HttpdnsUtil isValidArray:ip6Array]) {
         [hostObject setV6TTL:[[json objectForKey:@"ttl"] longLongValue]];
         hostObject.lastIPv6LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
+        hostObject.ip6Region = self.serviceRegion;
     }
     
     
@@ -242,6 +251,11 @@ static NSURLSession *_resolveHOSTSession = nil;
 - (NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex reallyHostKey:(NSString *)reallyHostKey queryIPType:(HttpdnsQueryIPType)queryIPType {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
+    self.serviceRegion = [scheduleCenter getServiceIPRegion]; //获取当前service IP 的region
+    
+    if ([EMASTools isValidString:self.serviceRegion] && [@[ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2] containsObject:serverIp]) { //如果当前设置region 并且 当次服务IP是国内兜底IP 则直接禁止解析行为
+        return nil;
+    }
     
     // Adapt to IPv6-only network.
     if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
@@ -331,6 +345,11 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     NSString * hostsUrl = [hostMArray componentsJoinedByString:@""];
     NSString *url = [self constructRequestURLWith:hostsUrl activatedServerIPIndex:activatedServerIPIndex reallyHostKey:hostString queryIPType:queryIPType];
+    
+    if (![EMASTools isValidString:url]) {
+        return nil;
+    }
+    
     // HTTP / HTTPS  请求
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
         hostObject = [self sendHTTPSRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];

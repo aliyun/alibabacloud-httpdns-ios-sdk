@@ -57,6 +57,9 @@ FOUNDATION_EXTERN NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
 
 - (void)changeToNextServerIPIndexFromIPIndex:(NSInteger)IPIndex;
 
+/// 返回当前服务IP region
+- (NSString *)getServiceIPRegion;
+
 - (void)setSDKDisableFromBeacon;
 - (void)clearSDKDisableFromBeacon;
 

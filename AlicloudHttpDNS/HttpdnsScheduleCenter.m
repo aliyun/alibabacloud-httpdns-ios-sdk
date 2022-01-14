@@ -392,6 +392,10 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     return nextServerIPIndex;
 }
 
+- (NSString *)getServiceIPRegion {
+    return ALICLOUD_HTTPDNS_SERVER_IP_REGION;
+}
+
 - (void)setActivatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     dispatch_async(self.cacheActivatedServerIPStatusQueue, ^{
         if (_activatedServerIPIndex == activatedServerIPIndex) {

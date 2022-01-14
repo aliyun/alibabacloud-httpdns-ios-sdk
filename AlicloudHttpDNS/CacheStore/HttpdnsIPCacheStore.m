@@ -36,17 +36,34 @@
 
 - (void)migrateDatabaseIfNeeded:(NSString *)databasePath {
     //后续数据库升级，兼容操作
+    
+    //ip ip6两张表增加region列
+    ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
+        HttpdnsResultSet *result = [db executeQuery:ALICLOUD_HTTPDNS_SQL_FIND_REGION withArgumentsInArray:@[]];
+        if (!result.next) {
+            [db executeUpdate:ALICLOUD_HTTPDNS_SQL_ADD_IP_COLUMN_REGION];
+        }
+        [result close];
+        
+        HttpdnsResultSet *result_ip6 = [db executeQuery:ALICLOUD_HTTPDNS_SQL_FIND_IP6_REGION withArgumentsInArray:@[]];
+        if (!result_ip6.next) {
+            [db executeUpdate:ALICLOUD_HTTPDNS_SQL_ADD_IP_COLUMN_IP6_REGION];
+        }
+        [result_ip6 close];
+        
+        
+    }));
 }
 
-- (void)insertIPs:(NSArray<NSString *> *)IPs hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL {
-    [self innerInsertIPs:IPs hostRecordId:hostRecordId TTL:TTL isIPv6:NO];
+- (void)insertIPs:(NSArray<NSString *> *)IPs hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL ipRegion:(NSString *)ipRegion{
+    [self innerInsertIPs:IPs hostRecordId:hostRecordId TTL:TTL isIPv6:NO ipRegion:ipRegion ip6Region:@""];
 }
 
-- (void)insertIP6s:(NSArray<NSString *> *)IPs hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL {
-    [self innerInsertIPs:IPs hostRecordId:hostRecordId TTL:TTL isIPv6:YES];
+- (void)insertIP6s:(NSArray<NSString *> *)IPs hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL ip6Region:(NSString *)ip6Region{
+    [self innerInsertIPs:IPs hostRecordId:hostRecordId TTL:TTL isIPv6:YES ipRegion:@"" ip6Region:ip6Region];
 }
 
-- (void)innerInsertIPs:(NSArray<NSString *> *)IPs hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL isIPv6:(BOOL)isIPv6 {
+- (void)innerInsertIPs:(NSArray<NSString *> *)IPs hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL isIPv6:(BOOL)isIPv6 ipRegion:(NSString *)ipRegion ip6Region:(NSString *)ip6Region{
     [HttpdnsUtil warnMainThreadIfNecessary];
     NSString *sqlStr = (isIPv6) ? ALICLOUD_HTTPDNS_SQL_INSERT_IP6_RECORD : ALICLOUD_HTTPDNS_SQL_INSERT_IP_RECORD;
     if (!IPs || IPs.count == 0) {
@@ -54,7 +71,7 @@
     }
     ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
         for (NSString *IP in IPs) {
-            NSArray *insertionRecord = [self insertionRecordForIP:IP hostRecordId:hostRecordId TTL:TTL];
+            NSArray *insertionRecord = [self insertionRecordForIP:IP hostRecordId:hostRecordId TTL:TTL ipRegion:isIPv6?ip6Region:ipRegion];
             [db executeUpdate:sqlStr withArgumentsInArray:insertionRecord];
         }
     }));
@@ -81,11 +98,12 @@
     }));
 }
 
-- (NSArray *)insertionRecordForIP:(NSString *)IP hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL {
+- (NSArray *)insertionRecordForIP:(NSString *)IP hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL ipRegion:(NSString *)ipRegion{
     return @[
              @(hostRecordId), //ALICLOUD_HTTPDNS_FIELD_HOST_RECORD_ID
              IP,              //ALICLOUD_HTTPDNS_FIELD_IP
              @(TTL),          //ALICLOUD_HTTPDNS_FIELD_TTL
+             ipRegion?:@"",   //ALICLOUD_HTTPDNS_FIELD_REGION
              ];
 }
 
@@ -133,7 +151,8 @@
     NSUInteger hostID = [result intForColumn:ALICLOUD_HTTPDNS_FIELD_HOST_RECORD_ID];     //ALICLOUD_HTTPDNS_FIELD_HOST_RECORD_ID
     NSString *IP = [result stringForColumn:ALICLOUD_HTTPDNS_FIELD_IP];                   //ALICLOUD_HTTPDNS_FIELD_IP
     int64_t TTL = [result longLongIntForColumn:ALICLOUD_HTTPDNS_FIELD_TTL];              //ALICLOUD_HTTPDNS_FIELD_TTL
-    HttpdnsIPRecord *record = [HttpdnsIPRecord IPRecordWithHostRecordId:hostID IP:IP TTL:TTL];
+    NSString *region = [result stringForColumn:ALICLOUD_HTTPDNS_FIELD_REGION];           //ALICLOUD_HTTPDNS_FIELD_REGION
+    HttpdnsIPRecord *record = [HttpdnsIPRecord IPRecordWithHostRecordId:hostID IP:IP TTL:TTL region:region];
     return record;
 }
 

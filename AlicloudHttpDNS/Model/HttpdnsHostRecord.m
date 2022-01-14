@@ -40,6 +40,17 @@
  */
 @property (nonatomic, assign) int64_t TTL;
 
+
+/*!
+ * ipRegion 数据库字段 当次解析ipv4服务IP region
+ */
+@property (nonatomic, copy) NSString *ipRegion;
+
+/*!
+ * ip6Region 数据库字段 当次解析ipv6服务IP region
+ */
+@property (nonatomic, copy) NSString *ip6Region;
+
 @end
 
 @implementation HttpdnsHostRecord
@@ -54,7 +65,9 @@
                       IP6s:(NSArray<NSString *> *)IP6s
                        TTL:(int64_t)TTL
                   createAt:(NSDate *)createAt
-                  expireAt:(NSDate *)expireAt{
+                  expireAt:(NSDate *)expireAt
+                  ipRegion:(NSString *)ipRegion
+                 ip6Region:(NSString *)ip6Region {
     if (self = [super init]) {
         _hostRecordId = hostRecordId;
         _host = [host copy];
@@ -64,6 +77,8 @@
         _TTL = TTL;
         _createAt = createAt;
         _expireAt = expireAt;
+        _ipRegion = ipRegion;
+        _ip6Region = ip6Region;
     }
     return self;
 }
@@ -78,14 +93,17 @@
                             IP6s:(NSArray<NSString *> *)IP6s
                              TTL:(int64_t)TTL
                         createAt:(NSDate *)createAt
-                        expireAt:(NSDate *)expireAt {
+                        expireAt:(NSDate *)expireAt
+                        ipRegion:(NSString *)ipRegion
+                       ip6Region:(NSString *)ip6Region
+{
     HttpdnsHostRecord *hostRecord = [[HttpdnsHostRecord alloc] initWithId:hostRecordId
                                                                      host:host
                                                                   carrier:carrier
                                                                       IPs:IPs
                                                                      IP6s:IP6s
                                                                       TTL:TTL
-                                                                 createAt:createAt expireAt:expireAt];
+                                                                 createAt:createAt expireAt:expireAt ipRegion:ipRegion ip6Region:ip6Region];
     return hostRecord;
 }
 
@@ -95,12 +113,16 @@
 - (instancetype)initWithHost:(NSString *)host
                          IPs:(NSArray<NSString *> *)IPs
                         IP6s:(NSArray<NSString *> *)IP6s
-                         TTL:(int64_t)TTL {
+                         TTL:(int64_t)TTL
+                    ipRegion:(NSString *)ipRegion
+                   ip6Region:(NSString *)ip6Region {
     if (self = [super init]) {
         _host = [host copy];
         _IPs = [IPs copy];
         _IP6s = [IP6s copy];
         _TTL = TTL;
+        _ipRegion = ipRegion;
+        _ip6Region = ip6Region;
     }
     return self;
 }
@@ -111,8 +133,10 @@
 + (instancetype)hostRecordWithHost:(NSString *)host
                                IPs:(NSArray<NSString *> *)IPs
                               IP6s:(NSArray<NSString *> *)IP6s
-                               TTL:(int64_t)TTL {
-    HttpdnsHostRecord *hostRecord = [[HttpdnsHostRecord alloc] initWithHost:host IPs:IPs IP6s:IP6s TTL:TTL];
+                               TTL:(int64_t)TTL
+                          ipRegion:(NSString *)ipRegion
+                         ip6Region:(NSString *)ip6Region {
+    HttpdnsHostRecord *hostRecord = [[HttpdnsHostRecord alloc] initWithHost:host IPs:IPs IP6s:IP6s TTL:TTL ipRegion:ipRegion ip6Region:ip6Region];
     return hostRecord;
 }
 
@@ -123,13 +147,17 @@
                          IPs:(NSArray<NSString *> *)IPs
                         IP6s:(NSArray<NSString *> *)IP6s
                          TTL:(int64_t)TTL
-                        Extra:(NSDictionary *)extra {
+                        Extra:(NSDictionary *)extra
+                        ipRegion:(NSString *)ipRegion
+                       ip6Region:(NSString *)ip6Region {
     if (self = [super init]) {
         _host = [host copy];
         _IPs = [IPs copy];
         _IP6s = [IP6s copy];
         _TTL = TTL;
         _extra = extra;
+        _ipRegion = ipRegion;
+        _ip6Region = ip6Region;
     }
     return self;
 }
@@ -141,8 +169,10 @@
                                IPs:(NSArray<NSString *> *)IPs
                               IP6s:(NSArray<NSString *> *)IP6s
                                TTL:(int64_t)TTL
-                             Extra:(NSDictionary *)extra {
-    HttpdnsHostRecord *hostRecord = [[HttpdnsHostRecord alloc] initWithHostSdns:host IPs:IPs IP6s:IP6s TTL:TTL Extra:extra];
+                             Extra:(NSDictionary *)extra
+                          ipRegion:(NSString *)ipRegion
+                         ip6Region:(NSString *)ip6Region{
+    HttpdnsHostRecord *hostRecord = [[HttpdnsHostRecord alloc] initWithHostSdns:host IPs:IPs IP6s:IP6s TTL:TTL Extra:extra ipRegion:ipRegion ip6Region:ipRegion];
     return hostRecord;
 }
 

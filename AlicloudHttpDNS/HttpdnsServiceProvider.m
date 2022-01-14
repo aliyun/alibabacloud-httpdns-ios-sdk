@@ -248,9 +248,9 @@ static HttpDnsService * _httpDnsClient = nil;
             [scheduleCenter forceUpdateIpListAsync]; //强制更新服务IP
             [self cleanHostCache:nil]; //清空本地沙盒和内存的IP缓存
         }
-        [_requestScheduler _setReginEnabled:YES];
+        [_requestScheduler _setRegin:region];
     } else {
-        [_requestScheduler _setReginEnabled:NO];
+        [_requestScheduler _setRegin:@""];
     }
 }
 
