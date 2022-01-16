@@ -51,6 +51,12 @@ FOUNDATION_EXTERN NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
  */
 - (void)forceUpdateIpListAsync;
 
+/*
+ * 立即进行服务IP的更新，不受时间限制，谨慎使用，目前提供给region切换场景下使用
+ */
+- (void)forceUpdateIpListAsyncImmediately;
+
+
 - (NSString *)getActivatedServerIPWithIndex:(NSInteger)index;
 
 - (NSInteger)nextServerIPIndexFromIPIndex:(NSInteger)IPIndex increase:(NSInteger)increase;

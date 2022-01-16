@@ -145,6 +145,11 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     [self forceUpdateIpListAsyncWithCallback:nil];
 }
 
+- (void)forceUpdateIpListAsyncImmediately {
+    _lastScheduleCenterConnectDate = nil;
+    [self forceUpdateIpListAsyncWithCallback:nil];
+}
+
 - (void)forceUpdateIpListAsyncWithCallback:(HttpDnsIdCallback)callback {
     if (!self.isAbleToConnectToScheduleCenter) {
         !callback ?: callback(nil);
