@@ -239,19 +239,19 @@ static HttpDnsService * _httpDnsClient = nil;
         return;
     }
     
-    if ([HttpdnsUtil isValidString:region]) {
-        NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
-        NSString *olgregion = [userDefault objectForKey:ALICLOUD_HTTPDNS_REGION_KEY];
-        if (![region isEqualToString:olgregion]) {
-            [userDefault setObject:region forKey:ALICLOUD_HTTPDNS_REGION_KEY];
-            HttpdnsScheduleCenter *scheduleCenter  = [HttpdnsScheduleCenter sharedInstance];
-            [scheduleCenter forceUpdateIpListAsync]; //强制更新服务IP
-            [self cleanHostCache:nil]; //清空本地沙盒和内存的IP缓存
-        }
-        [_requestScheduler _setRegin:region];
-    } else {
-        [_requestScheduler _setRegin:@""];
+    region = [HttpdnsUtil isValidString:region] ? region : @"";
+    NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
+    NSString *olgregion = [userDefault objectForKey:ALICLOUD_HTTPDNS_REGION_KEY];
+    if (![region isEqualToString:olgregion]) {
+        [userDefault setObject:region forKey:ALICLOUD_HTTPDNS_REGION_KEY];
+        HttpdnsScheduleCenter *scheduleCenter  = [HttpdnsScheduleCenter sharedInstance];
+        [scheduleCenter forceUpdateIpListAsyncImmediately]; //强制更新服务IP
+        [self cleanHostCache:nil]; //清空本地沙盒和内存的IP缓存
     }
+    [_requestScheduler _setRegin:region];
+    
+    
+    
 }
 
 - (void)setPreResolveHosts:(NSArray *)hosts {
