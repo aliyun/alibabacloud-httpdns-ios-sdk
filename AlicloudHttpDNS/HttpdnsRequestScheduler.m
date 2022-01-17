@@ -96,7 +96,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 - (instancetype)init {
     if (self = [super init]) {
-        _lastNetworkStatus = 0;
+        _lastNetworkStatus = [AlicloudReachabilityManager shareInstance].currentNetworkStatus;
         _isExpiredIPEnabled = NO;
         _IPRankingEnabled = NO;
         _isPreResolveAfterNetworkChangedEnabled = NO;
@@ -106,7 +106,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         [_asyncOperationQueue setMaxConcurrentOperationCount:HTTPDNS_MAX_REQUEST_THREAD_NUM];
         _hostManagerDict = [[NSMutableDictionary alloc] init];
         [AlicloudIPv6Adapter getInstance];
-        [AlicloudReachabilityManager shareInstance];
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(networkChanged:)
                                                      name:ALICLOUD_NETWOEK_STATUS_NOTIFY
