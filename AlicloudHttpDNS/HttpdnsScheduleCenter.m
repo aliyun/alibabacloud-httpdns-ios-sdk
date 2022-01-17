@@ -134,6 +134,19 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
     }
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+        
+        //判断本地region 和 缓存的服务IP池的region是否匹配，如果不匹配则更新
+        NSDictionary *scheduleCenterResult = [HttpdnsPersistenceUtils getJSONFromDirectory:[HttpdnsPersistenceUtils scheduleCenterResultPath]
+                                                                            fileName:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_RESULT_CACHE_FILE_NAME];
+        if ([EMASTools isValidDictionary:scheduleCenterResult]) {
+            NSString *scheduleCenterRegion = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_REGION_KEY dict:scheduleCenterResult]?:@"";
+            NSString *userDefaultRegion = [[NSUserDefaults standardUserDefaults] objectForKey:ALICLOUD_HTTPDNS_REGION_KEY]?:@"";
+            if (![userDefaultRegion isEqualToString:scheduleCenterRegion]) {
+                [self forceUpdateIpListAsync];
+                return;
+            }
+        }
+        
         if (![self needToFetchFromScheduleCenter]) {
             return;
         }
