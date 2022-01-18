@@ -41,14 +41,14 @@
  */
 + (instancetype)IPRecordWithHostRecordId:(NSUInteger)hostRecordId IP:(NSString *)IP TTL:(int64_t)TTL region:(NSString *)region;
 
-///*!
-// * 从网络初始化
-// */
-//- (instancetype)initWithIP:(NSString *)IP;
-//
-///*!
-// * 从网络初始化
-// */
-//+ (instancetype)IPRecordWithIP:(NSString *)IP;
+/*!
+ * 从网络初始化
+ */
+- (instancetype)initWithIP:(NSString *)IP region:(NSString *)region;
+
+/*!
+ * 从网络初始化
+ */
++ (instancetype)IPRecordWithIP:(NSString *)IP region:(NSString *)region;
 
 @end

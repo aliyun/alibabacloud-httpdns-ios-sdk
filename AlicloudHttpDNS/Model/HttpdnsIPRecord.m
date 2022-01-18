@@ -34,13 +34,13 @@
     return IPRecord;
 }
 
-//- (instancetype)initWithIP:(NSString *)IP {
-//    return [self initWithHostRecordId:0 IP:IP TTL:0];
-//}
-//
-//+ (instancetype)IPRecordWithIP:(NSString *)IP {
-//    return [self IPRecordWithHostRecordId:0 IP:IP TTL:0];
-//}
+- (instancetype)initWithIP:(NSString *)IP region:(NSString *)region{
+    return [self initWithHostRecordId:0 IP:IP TTL:0 region:region];
+}
+
++ (instancetype)IPRecordWithIP:(NSString *)IP region:(NSString *)region{
+    return [self IPRecordWithHostRecordId:0 IP:IP TTL:0 region:region];
+}
 
 - (NSString *)description {
     return [NSString stringWithFormat:@"{\n ip: %@\n}\n", _IP];
