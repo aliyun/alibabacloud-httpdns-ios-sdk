@@ -189,7 +189,7 @@ static NSURLSession *_scheduleCenterSession = nil;
                 
                 //判断当前服务IP是否是特定region下的服务IP
                 NSString *urlRegionKey = @"region=";
-                if ([response.URL.query containsString:urlRegionKey]) {
+                if ([response.URL.query rangeOfString:urlRegionKey].location != NSNotFound) {
                     HttpdnsLogDebug("has region serviceIP!");
                     NSArray *queryArr = [response.URL.query componentsSeparatedByString:@"&"];
                     for (NSString *queryStr in queryArr) {
