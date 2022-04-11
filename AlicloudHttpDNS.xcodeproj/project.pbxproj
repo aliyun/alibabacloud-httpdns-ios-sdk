@@ -162,6 +162,7 @@
 		B0C70C6E2602ECF800986658 /* AlicloudSender.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0C70C6D2602ECF800986658 /* AlicloudSender.framework */; };
 		B0E74132257F7E05002018B8 /* CFHTTPSURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */; };
 		B0E9EE7924E130A800EF63E6 /* AliyunEmasServices-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B0E9EE7824E130A700EF63E6 /* AliyunEmasServices-Info.plist */; };
+		B0F2B8712803D334004ABD0F /* HTTPDNSCookieManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B0F2B8702803D334004ABD0F /* HTTPDNSCookieManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -281,6 +282,8 @@
 		B0E74130257F7E05002018B8 /* CFHTTPSURLProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CFHTTPSURLProtocol.h; sourceTree = "<group>"; };
 		B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CFHTTPSURLProtocol.m; sourceTree = "<group>"; };
 		B0E9EE7824E130A700EF63E6 /* AliyunEmasServices-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "AliyunEmasServices-Info.plist"; sourceTree = "<group>"; };
+		B0F2B86F2803D334004ABD0F /* HTTPDNSCookieManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HTTPDNSCookieManager.h; sourceTree = "<group>"; };
+		B0F2B8702803D334004ABD0F /* HTTPDNSCookieManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HTTPDNSCookieManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -440,6 +443,7 @@
 		4AF4AB61211439A600D712DF /* AlicloudHttpDNSTestDemo */ = {
 			isa = PBXGroup;
 			children = (
+				B0F2B86E2803CE98004ABD0F /* cookie */,
 				B0E7412F257F7D9A002018B8 /* sni */,
 				B0E9EE7824E130A700EF63E6 /* AliyunEmasServices-Info.plist */,
 				4AF4AB62211439A600D712DF /* AppDelegate.h */,
@@ -559,6 +563,15 @@
 				B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */,
 			);
 			path = sni;
+			sourceTree = "<group>";
+		};
+		B0F2B86E2803CE98004ABD0F /* cookie */ = {
+			isa = PBXGroup;
+			children = (
+				B0F2B86F2803D334004ABD0F /* HTTPDNSCookieManager.h */,
+				B0F2B8702803D334004ABD0F /* HTTPDNSCookieManager.m */,
+			);
+			path = cookie;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -817,6 +830,7 @@
 				4AF4AB76211439D300D712DF /* HttpDnsHitService.m in Sources */,
 				4A1C99F02224F3A100614E6E /* TestIPv6ViewController.m in Sources */,
 				4AF4AB77211439D300D712DF /* HttpdnsModel.m in Sources */,
+				B0F2B8712803D334004ABD0F /* HTTPDNSCookieManager.m in Sources */,
 				4AF4AB78211439D300D712DF /* HttpdnsHostRecord.m in Sources */,
 				4AF4AB79211439D300D712DF /* HttpdnsIPRecord.m in Sources */,
 				4AF4AB7A211439D300D712DF /* HttpdnsCacheStore.m in Sources */,
