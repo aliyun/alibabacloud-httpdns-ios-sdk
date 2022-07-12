@@ -334,6 +334,11 @@ static HttpDnsService * _httpDnsClient = nil;
     [HttpdnsgetNetworkInfoHelper setNetworkInfoEnable:enable];
 }
 
+- (void)enableCustomIPRank:(BOOL)enable {
+    _requestScheduler.customIPRankingEnabled = enable;
+}
+
+
 - (NSString *)getSessionId {
     return [HttpdnsUtil generateSessionID];
 }

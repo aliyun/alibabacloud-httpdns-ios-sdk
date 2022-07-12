@@ -99,6 +99,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         _lastNetworkStatus = [AlicloudReachabilityManager shareInstance].currentNetworkStatus;
         _isExpiredIPEnabled = NO;
         _IPRankingEnabled = NO;
+        _customIPRankingEnabled = YES;
         _isPreResolveAfterNetworkChangedEnabled = NO;
         _customRegion = [[NSUserDefaults standardUserDefaults] objectForKey:ALICLOUD_HTTPDNS_REGION_KEY];
         _syncDispatchQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.sync", DISPATCH_QUEUE_SERIAL);
@@ -466,7 +467,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 - (void)syncUpdateIPRankingWithResult:(HttpdnsHostObject *)result forHost:(NSString *)host {
-    if (!self.IPRankingEnabled) {
+    if (!self.IPRankingEnabled || !self.customIPRankingEnabled) {
         return;
     }
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
