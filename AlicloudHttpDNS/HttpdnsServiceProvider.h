@@ -126,6 +126,11 @@ typedef NS_ENUM(NSUInteger, AlicloudHttpDNS_IPType) {
 - (void)enableNetworkInfo:(BOOL)enable;
 
 
+/// 是否开启IP探测功能
+/// @param enable YES: 开启 NO: 关闭 默认打开
+- (void)enableCustomIPRank:(BOOL)enable;
+
+
 /// 获取用于用户追踪的 sessionId
 /// sessionId为随机生成，长度为 12 位，App 生命周期内保持不变
 /// 为了排查可能的解析问题，需要您将 sessionId 和解析出的 IP 一起记录在日志中
