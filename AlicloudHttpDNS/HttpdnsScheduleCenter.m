@@ -285,8 +285,8 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
     ALICLOUD_HTTPDNS_ABLE_TO_CONNECT_SCHEDULE_CENTER_INTERVAL = 5 * 60; /**< 五分钟 */
     ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = @[
                                                    ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP,
-                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2
-//                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
+                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2,
+                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
                                                    ];
     
     //内置ipv6 调度ip(启动ip)
