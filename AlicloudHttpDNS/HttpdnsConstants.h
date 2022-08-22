@@ -31,7 +31,14 @@
 static NSString *const HTTPDNS_BEACON_APPKEY  = @"24657847";
 static NSString *const HTTPDNS_BEACON_APPSECRECT = @"f30fc0937f2b1e9e50a1b7134f1ddb10";
 
-//HTTPDNS 国际版标识
+
+/**
+ HTTPDNS 国际版 标识
+ 1: 默认设置region 为sg
+ 2: 调度IP 只用于调度 ，服务IP 只用于解析
+ 3: 内置 调度IP 和 服务IP 和通用版不同
+ 4: 其他策略基本保持一致
+ */
 static BOOL const HTTPDNS_INTER = true;
 
 // ipv6 only 场景下 调度 服务ip 的策略
@@ -45,7 +52,7 @@ static BOOL const HTTPDNS_IPV6_SYN= false;
 /// @name Schedule Center
 ///=============================================================================
 
-// static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST = @"httpdns-sc.aliyuncs.com";
+ static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST = @"httpdns-sc.aliyuncs.com";
 
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP = @"203.107.1.97";
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2 = @"203.107.1.100";
