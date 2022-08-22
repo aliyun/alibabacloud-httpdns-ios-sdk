@@ -25,6 +25,7 @@
 #import "UIApplication+ABSHTTPDNSSetting.h"
 #import "HttpdnsConstants.h"
 #import "HttpdnsRequest.h"
+#import "HttpdnsIPv6Manager.h"
 
 @implementation HttpdnsUtil
 
@@ -72,7 +73,11 @@
     NSString *requestHost = string;
     // Adapt to IPv6-only network.
     if (([self isAnIP:string]) && ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork])) {
-        requestHost = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:string]];
+        if ([[AlicloudIPv6Adapter getInstance] isIPv4Address:string]) {
+            requestHost = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:string]];
+        } else {
+            requestHost = [NSString stringWithFormat:@"[%@]", string];
+        }
     }
     return requestHost;
 }
@@ -412,5 +417,14 @@
     }
     return object;
 }
+
++ (BOOL)canUseIPv6_Syn {
+    
+    if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
+        return HTTPDNS_IPV6_SYN;
+    }
+    return true;
+}
+
 
 @end
