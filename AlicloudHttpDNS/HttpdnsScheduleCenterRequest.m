@@ -52,9 +52,17 @@ static NSURLSession *_scheduleCenterSession = nil;
     NSDictionary *scheduleCenterRecord = nil;
     NSArray *hostArray;
     if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) {
-        hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
+        if (![HttpdnsUtil canUseIPv6_Syn] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
+            hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
+        } else {
+            hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
+        }
     } else {
-        hostArray = ALICLOUD_HTTPDNS_SERVER_IP_LIST;
+        if (![HttpdnsUtil canUseIPv6_Syn] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SERVER_IPV6_LIST]) {
+            hostArray = ALICLOUD_HTTPDNS_SERVER_IPV6_LIST;
+        } else {
+            hostArray = ALICLOUD_HTTPDNS_SERVER_IP_LIST;
+        }
     }
     
     NSInteger maxHostIndex = (hostArray.count - 1);
@@ -94,9 +102,17 @@ static NSURLSession *_scheduleCenterSession = nil;
     NSArray *hostArray;
     
     if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) {
-        hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
+        if (![HttpdnsUtil canUseIPv6_Syn] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
+            hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
+        } else {
+            hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
+        }
     } else {
-        hostArray = ALICLOUD_HTTPDNS_SERVER_IP_LIST;
+        if (![HttpdnsUtil canUseIPv6_Syn] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SERVER_IPV6_LIST]) {
+            hostArray = ALICLOUD_HTTPDNS_SERVER_IPV6_LIST;
+        } else {
+            hostArray = ALICLOUD_HTTPDNS_SERVER_IP_LIST;
+        }
     }
 
     index = index % hostArray.count;

@@ -21,6 +21,7 @@
 
 FOUNDATION_EXTERN NSInteger ALICLOUD_HTTPDNS_RESET_IP_LIST_TIME_DAY;
 FOUNDATION_EXTERN NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
+FOUNDATION_EXTERN NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
 
 @interface HttpdnsScheduleCenter : NSObject
 
@@ -36,6 +37,10 @@ FOUNDATION_EXTERN NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
 @property (nonatomic, copy, readonly) NSArray *IPList;
 
 @property (nonatomic, assign) NSInteger activatedServerIPIndex;
+
+//默认0开始
+@property (nonatomic, assign) NSInteger activatedServerIPv6Index;
+
 
 @property (nonatomic, assign, getter=isConnectingWithScheduleCenter) BOOL connectingWithScheduleCenter;
 
@@ -57,7 +62,14 @@ FOUNDATION_EXTERN NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
 - (void)forceUpdateIpListAsyncImmediately;
 
 
+
+/// 获取当前index 的ipv4 服务IP
+/// @param index 数组索引
 - (NSString *)getActivatedServerIPWithIndex:(NSInteger)index;
+
+/// 获取当前 的ipv6 服务IP 索引自动计算
+- (NSString *)getActivatedServerIPv6WithAuto;
+
 
 - (NSInteger)nextServerIPIndexFromIPIndex:(NSInteger)IPIndex increase:(NSInteger)increase;
 

@@ -250,16 +250,28 @@ static NSURLSession *_resolveHOSTSession = nil;
 
 - (NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex reallyHostKey:(NSString *)reallyHostKey queryIPType:(HttpdnsQueryIPType)queryIPType {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-    NSString *serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
+    NSString *serverIp = @"";
+    
+    if ([HttpdnsUtil canUseIPv6_Syn]) {
+        serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
+    } else {
+        serverIp = [scheduleCenter getActivatedServerIPv6WithAuto];
+    }
+    
+    
     self.serviceRegion = [scheduleCenter getServiceIPRegion]; //获取当前service IP 的region
     
-    if ([EMASTools isValidString:self.serviceRegion] && [@[ALICLOUD_HTTPDNS_DEFAULT_SERVER_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2] containsObject:serverIp]) { //如果当前设置region 并且 当次服务IP是国内兜底IP 则直接禁止解析行为
+    if ([EMASTools isValidString:self.serviceRegion] && [@[ALICLOUD_HTTPDNS_DEFAULT_SERVER_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2] containsObject:serverIp]) { //如果当前设置region 并且 当次服务IP是国内兜底IP 则直接禁止解析行为
         return nil;
     }
     
     // Adapt to IPv6-only network.
     if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
-        serverIp = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:serverIp]];
+        if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:serverIp]) {
+            serverIp = [NSString stringWithFormat:@"[%@]", serverIp];
+        } else {
+            serverIp = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:serverIp]];
+        }
     }
     NSString *requestType = @"d";
     NSString *signatureRequestString = nil;
