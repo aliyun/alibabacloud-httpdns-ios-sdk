@@ -27,6 +27,17 @@
 #import "HttpdnsRequest.h"
 #import "HttpdnsIPv6Manager.h"
 
+
+
+#define HTTPDNSUTIL_SuppressPerformSelectorLeakWarning(code) \
+do { \
+_Pragma("clang diagnostic push") \
+_Pragma("clang diagnostic ignored \"-Warc-performSelector-leaks\"") \
+code; \
+_Pragma("clang diagnostic pop") \
+} while (0)
+
+
 @implementation HttpdnsUtil
 
 + (int64_t)currentEpochTimeInSecond {
@@ -426,5 +437,40 @@
     return true;
 }
 
+
+
++ (void)AlicloudSenderSendEvent:(NSString *)event appKey:(NSString *)appkey sdkId:(NSString *)sdkId sdkVersion:(NSString *)sdkVersion extParams:(NSDictionary *)extParams {
+    
+    
+    Class AlicloudSenderClass = NSClassFromString(@"AlicloudSender");
+    if (!AlicloudSenderClass) {
+        return;
+    }
+    
+    SEL instanceSEL = NSSelectorFromString(@"shareInstance");
+    id senderObj = nil;
+    if ([AlicloudSenderClass respondsToSelector:instanceSEL]) {
+        HTTPDNSUTIL_SuppressPerformSelectorLeakWarning(senderObj = [AlicloudSenderClass performSelector:instanceSEL];);
+    }
+    
+    if (senderObj) {
+        SEL senderSelector = NSSelectorFromString(@"sendEvent:appKey:sdkId:sdkVersion:extParams:");
+        if ([senderObj respondsToSelector:senderSelector]) {
+            NSInvocation *inv = [NSInvocation invocationWithMethodSignature:[senderObj methodSignatureForSelector:senderSelector]];
+            [inv setTarget:senderObj];
+            [inv setSelector:senderSelector];
+            [inv setArgument:&event atIndex:2];
+            [inv setArgument:&appkey atIndex:3];
+            [inv setArgument:&sdkId atIndex:4];
+            [inv setArgument:&sdkVersion atIndex:5];
+            [inv setArgument:&extParams atIndex:6];
+            [inv invoke];
+        }
+    }
+    
+    
+    
+    
+}
 
 @end

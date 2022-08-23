@@ -92,60 +92,81 @@ static HttpDnsService * _httpDnsClient = nil;
                          };
     _httpDnsClient.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
     
-//    /* 日活打点 */
-//    [[self class] statIfNeeded];//旧版日活打点
-    [HttpDnsHitService setGlobalPropertyWithAccountId:accountId];
-    [HttpDnsHitService bizActiveHitWithAccountId:accountId];//新版日活打点
 
-    /* beacon */
-    NSDictionary *extras = @{
-                             ALICLOUD_HTTPDNS_BEACON_REQUEST_PARAM_ACCOUNTID : accountId
-                             };
-    EMASBeaconService *beaconService =  [[EMASBeaconService alloc] initWithAppKey:HTTPDNS_BEACON_APPKEY
-                                                                        appSecret:HTTPDNS_BEACON_APPSECRECT
-                                                                       SDKVersion:HTTPDNS_IOS_SDK_VERSION
-                                                                            SDKID:@"httpdns"
-                                                                        extension:extras];
-    [beaconService enableLog:YES];
-    [beaconService getBeaconConfigStringByKey:@"___httpdns_service___" completionHandler:^(NSString *result, NSError *error) {
-        if ([HttpdnsUtil isValidString:result]) {
-            HttpdnsLogDebug("beacon result: %@", result);
-            id jsonObj = [HttpdnsUtil convertJsonStringToObject:result];
-            if ([HttpdnsUtil isValidDictionary:jsonObj]) {
-                NSDictionary *serviceStatus = jsonObj;
-                /**
-                 beacon result format:
-                 {
-                    "status": "xx"
-                    "ut": "xx"
-                    "ip-ranking": "xx"
-                 }
-                 **/
-                NSString *sdkStatus = [serviceStatus objectForKey:ALICLOUD_HTTPDNS_BEACON_STATUS_KEY];
-                if ([sdkStatus isEqualToString:ALICLOUD_HTTPDNS_BEACON_SDK_DISABLE]) {
-                    // sdk disable
-                    [[HttpdnsScheduleCenter sharedInstance] setSDKDisableFromBeacon];
-                } else {
-                    [[HttpdnsScheduleCenter sharedInstance] clearSDKDisableFromBeacon];
-                }
-                
-                /* 检查打点开关 */
-                NSString *utStatus = [serviceStatus objectForKey:@"ut"];
-                if ([HttpdnsUtil isValidString:utStatus] && [utStatus isEqualToString:@"disabled"]) {
-                    HttpdnsLogDebug("Beacon [___httpdns_service___] - [ut] is disabled, disable hit service.");
-                    [HttpDnsHitService disableHitService];
-                }
-                
-                NSString *ipRankingStatus = [serviceStatus objectForKey:@"ip-ranking"];
-                if ([HttpdnsUtil isValidString:ipRankingStatus] && [ipRankingStatus isEqualToString:@"enable"]) {
-                    self.requestScheduler.IPRankingEnabled = YES;
-                } else {
-                    HttpdnsLogDebug("Beacon [___httpdns_service___] - [ip-ranking] is disabled, disable ip-ranking feature.");
-                    self.requestScheduler.IPRankingEnabled = NO;
+    
+    if (HTTPDNS_INTER) {
+        
+        //国际版移除beacon ut AlicloudSender 等依赖
+        
+        //设置固定region 为sg
+        [self setRegion:@"sg"];
+        
+        [[HttpdnsScheduleCenter sharedInstance] clearSDKDisableFromBeacon];
+        //关闭ut埋点上报
+        [HttpDnsHitService disableHitService];
+        
+    } else {
+        
+        
+        //    /* 日活打点 */
+        //    [[self class] statIfNeeded];//旧版日活打点
+        [HttpDnsHitService setGlobalPropertyWithAccountId:accountId];
+        [HttpDnsHitService bizActiveHitWithAccountId:accountId];//新版日活打点
+        
+        /* beacon */
+        NSDictionary *extras = @{
+            ALICLOUD_HTTPDNS_BEACON_REQUEST_PARAM_ACCOUNTID : accountId
+        };
+        EMASBeaconService *beaconService =  [[EMASBeaconService alloc] initWithAppKey:HTTPDNS_BEACON_APPKEY
+                                                                            appSecret:HTTPDNS_BEACON_APPSECRECT
+                                                                           SDKVersion:HTTPDNS_IOS_SDK_VERSION
+                                                                                SDKID:@"httpdns"
+                                                                            extension:extras];
+        [beaconService enableLog:YES];
+        [beaconService getBeaconConfigStringByKey:@"___httpdns_service___" completionHandler:^(NSString *result, NSError *error) {
+            if ([HttpdnsUtil isValidString:result]) {
+                HttpdnsLogDebug("beacon result: %@", result);
+                id jsonObj = [HttpdnsUtil convertJsonStringToObject:result];
+                if ([HttpdnsUtil isValidDictionary:jsonObj]) {
+                    NSDictionary *serviceStatus = jsonObj;
+                    /**
+                     beacon result format:
+                     {
+                     "status": "xx"
+                     "ut": "xx"
+                     "ip-ranking": "xx"
+                     }
+                     **/
+                    NSString *sdkStatus = [serviceStatus objectForKey:ALICLOUD_HTTPDNS_BEACON_STATUS_KEY];
+                    if ([sdkStatus isEqualToString:ALICLOUD_HTTPDNS_BEACON_SDK_DISABLE]) {
+                        // sdk disable
+                        [[HttpdnsScheduleCenter sharedInstance] setSDKDisableFromBeacon];
+                    } else {
+                        [[HttpdnsScheduleCenter sharedInstance] clearSDKDisableFromBeacon];
+                    }
+                    
+                    /* 检查打点开关 */
+                    NSString *utStatus = [serviceStatus objectForKey:@"ut"];
+                    if ([HttpdnsUtil isValidString:utStatus] && [utStatus isEqualToString:@"disabled"]) {
+                        HttpdnsLogDebug("Beacon [___httpdns_service___] - [ut] is disabled, disable hit service.");
+                        [HttpDnsHitService disableHitService];
+                    }
+                    
+                    NSString *ipRankingStatus = [serviceStatus objectForKey:@"ip-ranking"];
+                    if ([HttpdnsUtil isValidString:ipRankingStatus] && [ipRankingStatus isEqualToString:@"enable"]) {
+                        self.requestScheduler.IPRankingEnabled = YES;
+                    } else {
+                        HttpdnsLogDebug("Beacon [___httpdns_service___] - [ip-ranking] is disabled, disable ip-ranking feature.");
+                        self.requestScheduler.IPRankingEnabled = NO;
+                    }
                 }
             }
-        }
-    }];
+        }];
+        
+    }
+    
+    
+
     
 }
 

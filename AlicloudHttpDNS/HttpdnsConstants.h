@@ -54,11 +54,37 @@ static BOOL const HTTPDNS_IPV6_SYN= false;
 
  static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST = @"httpdns-sc.aliyuncs.com";
 
+///===================================国内版本==========================================
+//国内版内置调度IPv4地址
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP = @"203.107.1.97";
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2 = @"203.107.1.100";
-
+//国内版内置调度IPv6地址
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6 = @"2401:b180:2000:20::10";
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2 = @"2401:b180:2000:30::1c";
+
+
+//国内内置服务IPv4地址
+static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IP = @"203.107.1.1";
+//国内内置服务IPv6地址
+static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6 = @"2401:b180:2000:30::1c";
+///===================================国内版本==========================================
+
+
+///===================================国际版本版本==========================================
+//国际版内置调度IPv4地址
+static NSString *const ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IP = @"8.219.58.10";
+static NSString *const ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IP_2 = @"8.219.89.41";
+static NSString *const ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IP_3 = @"203.107.1.97"; //用于兜底
+//国际版内置调度IPv6地址
+static NSString *const ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IPV6 = @"240b:4000:f10::92";
+static NSString *const ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2 = @"240b:4000:f10::208";
+
+
+//国际内置服务IPv4地址
+static NSString *const ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_SERVER_HOST_IP = @"161.117.200.122";
+//国际内置服务IPv6地址
+static NSString *const ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_SERVER_HOST_IPV6 = @"240b:4000:f10::178";
+///===================================国际版本版本==========================================
 
 
 //static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_PATH = @"sc/httpdns_config";
