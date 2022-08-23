@@ -19,7 +19,7 @@
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsConstants.h"
 #import "UIApplication+ABSHTTPDNSSetting.h"
-#import <AlicloudSender/AlicloudSender.h>
+//#import <AlicloudSender/AlicloudSender.h>
 
 
 
@@ -127,7 +127,9 @@ static BOOL _disableStatus = NO;
     
     // 去除UT自定义埋点 统一使用AlicloudSender 去调用
 //    [_tracker sendCustomHit:HTTPDNS_BIZ_ACTIVE duration:0 properties:nil];
-    [[AlicloudSender shareInstance] sendEvent:HTTPDNS_BIZ_ACTIVE appKey:@"" sdkId:@"httpdns" sdkVersion:HTTPDNS_IOS_SDK_VERSION extParams:@{@"accountId": [HttpdnsUtil isValidString:accountId] ? accountId : @""}];
+//        [[AlicloudSender shareInstance] sendEvent:HTTPDNS_BIZ_ACTIVE appKey:@"" sdkId:@"httpdns" sdkVersion:HTTPDNS_IOS_SDK_VERSION extParams:@{@"accountId": [HttpdnsUtil isValidString:accountId] ? accountId : @""}];
+    
+    [HttpdnsUtil AlicloudSenderSendEvent:HTTPDNS_BIZ_ACTIVE appKey:@"" sdkId:@"httpdns" sdkVersion:HTTPDNS_IOS_SDK_VERSION extParams:@{@"accountId": [HttpdnsUtil isValidString:accountId] ? accountId : @""}];
 }
 
 + (void)bizSnifferWithHost:(NSString *)host

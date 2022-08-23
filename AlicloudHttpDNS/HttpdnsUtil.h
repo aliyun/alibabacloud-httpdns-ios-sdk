@@ -84,4 +84,9 @@
  */
 + (BOOL)canUseIPv6_Syn;
 
+
+/// AlicloudSender 日活上报
++ (void)AlicloudSenderSendEvent:(NSString *)event appKey:(NSString *)appkey sdkId:(NSString *)sdkId sdkVersion:(NSString *)sdkVersion extParams:(NSDictionary *)extParams;
+
+
 @end

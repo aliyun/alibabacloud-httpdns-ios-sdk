@@ -47,26 +47,49 @@ static NSURLSession *_scheduleCenterSession = nil;
     return [self queryScheduleCenterRecordFromServerSyncWithHostIndex:0];
 }
 
-- (NSDictionary *)queryScheduleCenterRecordFromServerSyncWithHostIndex:(NSInteger)hostIndex {
+
+
+/// 获取调度IP List
+- (NSArray *)getCenterHostList {
     
-    NSDictionary *scheduleCenterRecord = nil;
     NSArray *hostArray;
-    if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) {
+    if (HTTPDNS_INTER) { //国际版
         if (![HttpdnsUtil canUseIPv6_Syn] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
             hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
         } else {
             hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
         }
-    } else {
-        if (![HttpdnsUtil canUseIPv6_Syn] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SERVER_IPV6_LIST]) {
-            hostArray = ALICLOUD_HTTPDNS_SERVER_IPV6_LIST;
-        } else {
-            hostArray = ALICLOUD_HTTPDNS_SERVER_IP_LIST;
+    } else { //国内版
+        if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) { //服务IP缓存已读取
+            if (![HttpdnsUtil canUseIPv6_Syn] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
+                hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
+            } else {
+                hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
+            }
+        } else { //服务IP缓存未读取
+            if (![HttpdnsUtil canUseIPv6_Syn] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SERVER_IPV6_LIST]) {
+                hostArray = ALICLOUD_HTTPDNS_SERVER_IPV6_LIST;
+            } else {
+                hostArray = ALICLOUD_HTTPDNS_SERVER_IP_LIST;
+            }
         }
     }
     
+    return hostArray;
+    
+}
+
+- (NSDictionary *)queryScheduleCenterRecordFromServerSyncWithHostIndex:(NSInteger)hostIndex {
+    
+    NSDictionary *scheduleCenterRecord = nil;
+    NSArray *hostArray = [self getCenterHostList];
+    
     NSInteger maxHostIndex = (hostArray.count - 1);
     if (hostIndex > maxHostIndex) {
+        if (HTTPDNS_INTER) { //国际版不存在降级逻辑 直接return 
+            return nil;
+        }
+        
         //强降级策略 当服务IP轮询更新服务IP
         if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE) {
             //强降级到启动IP
@@ -99,22 +122,8 @@ static NSURLSession *_scheduleCenterSession = nil;
 - (NSString *)scheduleCenterHostFromIPIndex:(NSInteger)index {
     
     NSString *serverHostOrIP = nil;
-    NSArray *hostArray;
+    NSArray *hostArray = [self getCenterHostList];
     
-    if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) {
-        if (![HttpdnsUtil canUseIPv6_Syn] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
-            hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
-        } else {
-            hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
-        }
-    } else {
-        if (![HttpdnsUtil canUseIPv6_Syn] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SERVER_IPV6_LIST]) {
-            hostArray = ALICLOUD_HTTPDNS_SERVER_IPV6_LIST;
-        } else {
-            hostArray = ALICLOUD_HTTPDNS_SERVER_IP_LIST;
-        }
-    }
-
     index = index % hostArray.count;
     serverHostOrIP = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:hostArray defaultValue:nil];
     serverHostOrIP = [HttpdnsUtil getRequestHostFromString:serverHostOrIP];
