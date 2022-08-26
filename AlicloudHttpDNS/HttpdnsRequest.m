@@ -272,6 +272,8 @@ static NSURLSession *_resolveHOSTSession = nil;
         } else {
             serverIp = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:serverIp]];
         }
+    } else if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:serverIp]) {
+        serverIp = [NSString stringWithFormat:@"[%@]", serverIp];
     }
     NSString *requestType = @"d";
     NSString *signatureRequestString = nil;

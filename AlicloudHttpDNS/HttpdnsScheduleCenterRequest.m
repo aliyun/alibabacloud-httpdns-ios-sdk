@@ -139,8 +139,10 @@ static NSURLSession *_scheduleCenterSession = nil;
     NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
     NSString * region = [self urlFormatRegion:[[NSUserDefaults standardUserDefaults] objectForKey:ALICLOUD_HTTPDNS_REGION_KEY]];
-    NSString *url = [NSString stringWithFormat:@"https://%@/%d/ss?%@platform=ios&sdk_version=%@",serverIpOrHost,sharedService.accountID,region,HTTPDNS_IOS_SDK_VERSION];
-    url = [self urlFormatSidNetBssid:url];
+    NSString *urlPath = [NSString stringWithFormat:@"%d/ss?%@platform=ios&sdk_version=%@", sharedService.accountID, region, HTTPDNS_IOS_SDK_VERSION];
+    urlPath = [self urlFormatSidNetBssid:urlPath];
+    urlPath = [urlPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet characterSetWithCharactersInString:@"`#%^{}\"[]|\\<> "].invertedSet];
+    NSString *url = [NSString stringWithFormat:@"https://%@/%@", serverIpOrHost, urlPath];
     return url;
 }
 
@@ -177,7 +179,7 @@ static NSURLSession *_scheduleCenterSession = nil;
 - (NSDictionary *)queryScheduleCenterRecordFromServerWithHostIndex:(NSInteger)hostIndex error:(NSError **)pError {
     
     NSString *fullUrlStr = [self constructRequestURLWithHostIndex:hostIndex];
-    fullUrlStr = [fullUrlStr stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet characterSetWithCharactersInString:@"`#%^{}\"[]|\\<> "].invertedSet];
+//    fullUrlStr = [fullUrlStr stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet characterSetWithCharactersInString:@"`#%^{}\"[]|\\<> "].invertedSet];
     HttpdnsLogDebug("Request URL: %@", fullUrlStr);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                               cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
