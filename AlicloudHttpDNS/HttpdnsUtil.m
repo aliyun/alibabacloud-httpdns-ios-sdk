@@ -89,6 +89,8 @@ _Pragma("clang diagnostic pop") \
         } else {
             requestHost = [NSString stringWithFormat:@"[%@]", string];
         }
+    } else if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:string]) {
+        requestHost = [NSString stringWithFormat:@"[%@]", string];
     }
     return requestHost;
 }
