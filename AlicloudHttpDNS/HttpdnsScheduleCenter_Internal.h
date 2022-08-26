@@ -46,6 +46,8 @@ typedef void (^HttpDnsIdCallback)(NSDictionary *result);
 
 @property (nonatomic, copy) NSArray *IPList;
 
+@property (nonatomic, copy) NSArray *IPv6List;
+
 - (void)setNeedToFetchFromScheduleCenter:(BOOL)needToFetchFromScheduleCenter;
 
 - (void)setScheduleCenterResult:(NSDictionary *)scheduleCenterResult;

@@ -431,13 +431,26 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
     return IPList;
 }
 
+
+- (NSArray *)IPv6List {
+    __block NSArray *IPv6List = nil;
+    dispatch_sync(self.scheduleCenterResultQueue, ^{
+        IPv6List = [_IPv6List copy];
+        if (![HttpdnsUtil isValidArray:IPv6List]) {
+            IPv6List = [NSArray arrayWithArray:ALICLOUD_HTTPDNS_SERVER_IPV6_LIST];
+        }
+    });
+    return IPv6List;
+}
+
+
 - (NSString *)getActivatedServerIPWithIndex:(NSInteger)index {
     NSString *serverIp = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:self.IPList defaultValue:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED];
     return serverIp;
 }
 
 - (NSString *)getActivatedServerIPv6WithAuto {
-    NSString *serverIp = [HttpdnsUtil safeObjectAtIndexOrTheFirst:self.activatedServerIPv6Index array:ALICLOUD_HTTPDNS_SERVER_IPV6_LIST defaultValue:ALICLOUD_HTTPDNS_SERVER_IPV6_ACTIVATED];
+    NSString *serverIp = [HttpdnsUtil safeObjectAtIndexOrTheFirst:self.activatedServerIPv6Index array:self.IPv6List defaultValue:ALICLOUD_HTTPDNS_SERVER_IPV6_ACTIVATED];
     return serverIp;
 }
 
