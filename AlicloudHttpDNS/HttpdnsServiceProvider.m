@@ -62,9 +62,10 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
     dispatch_once(&onceToken, ^{
         _authTimeOffsetSyncDispatchQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.authTimeOffsetSyncDispatchQueue", DISPATCH_QUEUE_SERIAL);
         
-        //注册 UIApplication+ABSHTTPDNSSetting 中的Swizzle 
-        [[UIApplication sharedApplication] onBeforeBootingProtection];
-
+        //注册 UIApplication+ABSHTTPDNSSetting 中的Swizzle
+        if (!HTTPDNS_INTER) {
+            [[UIApplication sharedApplication] onBeforeBootingProtection];
+        }
     });
 }
 

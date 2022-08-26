@@ -34,7 +34,12 @@ FOUNDATION_EXTERN NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
 
 @property (nonatomic, assign, getter=doHaveNewIPList, readonly) BOOL haveNewIPList;
 
+//服务IPv4 list
 @property (nonatomic, copy, readonly) NSArray *IPList;
+
+//服务IPv6 list
+@property (nonatomic, copy, readonly) NSArray *IPv6List;
+
 
 @property (nonatomic, assign) NSInteger activatedServerIPIndex;
 
