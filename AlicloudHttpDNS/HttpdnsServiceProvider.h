@@ -33,6 +33,20 @@ typedef NS_ENUM(NSUInteger, AlicloudHttpDNS_IPType) {
 };
 
 
+
+@protocol HttpdnsTTLDelegate <NSObject>
+
+
+/// 自定义HOST的TTL时长
+/// @return 返回需要自定义的TTL时长
+/// @param host 域名
+/// @param ipType 当前查询的IP类型
+/// @param ttl 当次域名解析返回的TTL
+- (int64_t)httpdnsHost:(NSString *)host ipType:(AlicloudHttpDNS_IPType)ipType ttl:(int64_t)ttl;
+
+@end
+
+
 @interface HttpDnsService: NSObject
 
 @property (nonatomic, assign, readonly) int accountID;
@@ -40,6 +54,8 @@ typedef NS_ENUM(NSUInteger, AlicloudHttpDNS_IPType) {
 @property (nonatomic, copy, readonly) NSString *secretKey;
 
 @property (nonatomic, weak, setter=setDelegateForDegradationFilter:) id<HttpDNSDegradationDelegate> delegate;
+
+@property (nonatomic, weak) id<HttpdnsTTLDelegate> ttlDelegate;
 
 @property (nonatomic, assign) NSTimeInterval timeoutInterval;
 
