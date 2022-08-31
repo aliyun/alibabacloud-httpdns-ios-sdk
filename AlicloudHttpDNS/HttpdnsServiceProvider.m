@@ -550,6 +550,9 @@ static HttpDnsService * _httpDnsClient = nil;
     [HttpdnsLog setLogHandler:logHandler];
 }
 
+- (void)setTestLogHannder:(id<HttpdnsLog_testOnly_protocol>)handler {
+    [HttpdnsLog setTestLogHandler:handler];
+}
 
 - (void)cleanHostCache:(NSArray<NSString *> *)hostArray {
     [_requestScheduler cleanCacheWithHostArray:hostArray];

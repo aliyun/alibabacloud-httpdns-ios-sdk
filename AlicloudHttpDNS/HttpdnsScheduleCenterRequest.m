@@ -181,6 +181,7 @@ static NSURLSession *_scheduleCenterSession = nil;
     NSString *fullUrlStr = [self constructRequestURLWithHostIndex:hostIndex];
 //    fullUrlStr = [fullUrlStr stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet characterSetWithCharactersInString:@"`#%^{}\"[]|\\<> "].invertedSet];
     HttpdnsLogDebug("Request URL: %@", fullUrlStr);
+    HttpdnsLogDebug_TestOnly(@"更新服务IP请求 URL: %@", fullUrlStr);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                               cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                           timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
@@ -189,6 +190,7 @@ static NSURLSession *_scheduleCenterSession = nil;
     NSURLSessionTask *stTask = [_scheduleCenterSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if (error) {
             HttpdnsLogDebug("Network error: %@", error);
+            HttpdnsLogDebug_TestOnly(@"更新服务IP请求网络失败 URL: %@, Error: %@" , response.URL.absoluteString, error);
             errorStrong = error;
         } else {
             id jsonValue = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
@@ -196,6 +198,7 @@ static NSURLSession *_scheduleCenterSession = nil;
             NSInteger statusCode = [(NSHTTPURLResponse *) response statusCode];
             if (statusCode != 200) {
                 HttpdnsLogDebug("ReponseCode %ld.", (long)statusCode);
+                HttpdnsLogDebug_TestOnly(@"更新服务IP请求失败 URL: %@, ReponseCode %ld." , response.URL.absoluteString, (long)statusCode);
                 if (errorStrong) {
                     NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                                   @"Response code not 200, and parse response message error", @"ErrorMessage",
@@ -213,7 +216,7 @@ static NSURLSession *_scheduleCenterSession = nil;
                 }
             } else {
                 HttpdnsLogDebug("Response code 200.");
-                
+                HttpdnsLogDebug_TestOnly(@"更新服务IP请求成功！ URL: %@, result: %@", response.URL.absoluteString, result);
                 //判断当前服务IP是否是特定region下的服务IP
                 NSString *urlRegionKey = @"region=";
                 if ([response.URL.query rangeOfString:urlRegionKey].location != NSNotFound) {
