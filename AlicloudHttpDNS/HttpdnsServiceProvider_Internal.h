@@ -19,6 +19,8 @@
 
 #import "HttpdnsServiceProvider.h"
 #import "HttpdnsRequestScheduler_Internal.h"
+#import "HttpdnsLog_Internal.h"
+
 
 @interface HttpDnsService()
 
@@ -33,6 +35,9 @@
 - (NSArray *)getIpsByHost:(NSString *)host;
 
 - (NSString *)getIpByHostInURLFormat:(NSString *)host;
+
+//设置测试场景下的日志回调
+- (void)setTestLogHannder:(id<HttpdnsLog_testOnly_protocol>)handler;
 
 //+ (void)statIfNeeded;
 
