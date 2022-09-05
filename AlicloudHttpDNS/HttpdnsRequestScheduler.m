@@ -178,6 +178,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 #pragma mark - core method for all public query API
 - (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync queryType:(HttpdnsQueryIPType)queryType {
+    
+    HttpdnsLogDebug_TestOnly(@"开始解析域名: %@ 解析类型: %zd", host, queryType);
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
     host = [hostArray lastObject];
@@ -645,11 +647,13 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             }
             NSError *error;
             HttpdnsLogDebug("Async request for %@ starts...", host);
+            HttpdnsLogDebug_TestOnly(@"异步解析域名: %@", host);
             result = [[HttpdnsRequest new] lookupHostFromServer:CopyHost
                                                           error:&error
                                         activatedServerIPIndex:newActivatedServerIPIndex queryIPType:queryIPType];
             if (error) {
                 HttpdnsLogDebug("Async request for %@ error: %@", host, error);
+                HttpdnsLogDebug_TestOnly(@"解析域名失败 %@ error: %@", host, error);
                 if (shouldRetry) {
                     // 重新调用下 该方法
                     [self executeRequest:CopyHost
@@ -665,6 +669,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 dispatch_sync(_syncDispatchQueue, ^{
                     // 请求启动结束 异步请求完成
                     HttpdnsLogDebug("\n ====== Async request for %@ finishes result:%@ .", host,result);
+                    HttpdnsLogDebug_TestOnly(@" 域名解析 %@ 成功 result:%@ .", host,result); 
                     [self mergeLookupResultToManager:result forHost:CopyHost];
                 });
             }
