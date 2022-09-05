@@ -175,12 +175,14 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
         return;
     }
     HttpdnsLogDebug("begin fetch ip list status");
+    HttpdnsLogDebug_TestOnly(@"开始更新服务IP");
     [self updateIpListAsyncWithCallback:^(NSDictionary *result) {
         if (result) {
             // 隔一段时间请求一次，仅仅从请求成功后开始计时，防止弱网情况下，频频超时但无法访问SC。
             [self setNeedToFetchFromScheduleCenter:NO];
             [self setScheduleCenterResult:result];
             HttpdnsLogDebug("fetch ip list status succeed");
+            HttpdnsLogDebug_TestOnly(@"服务IP更新成功 result: %@", result);
             // 从服务端获取到新的IP列表后，取消 disable状态，置为
             HttpDnsService *serviceProvider = [HttpDnsService sharedInstance];
             HttpdnsRequestScheduler *requestScheduler = serviceProvider.requestScheduler;

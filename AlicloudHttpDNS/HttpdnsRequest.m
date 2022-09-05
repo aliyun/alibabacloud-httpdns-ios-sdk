@@ -402,6 +402,7 @@ static NSURLSession *_resolveHOSTSession = nil;
                  activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     NSString *fullUrlStr = [NSString stringWithFormat:@"https://%@", urlStr];
     HttpdnsLogDebug("Request URL: %@", fullUrlStr);
+    HttpdnsLogDebug_TestOnly(@"开始解析域名 :%@ URL: %@", hostStr, fullUrlStr);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                            cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                        timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
@@ -410,6 +411,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSURLSessionTask *task = [_resolveHOSTSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if (error) {
             HttpdnsLogDebug("Network error: %@", error);
+            HttpdnsLogDebug_TestOnly(@"解析失败域名 :%@ error: %@", hostStr, error);
             errorStrong = error;
         } else {
             id jsonValue = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
@@ -446,6 +448,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     NSString *fullUrlStr = [NSString stringWithFormat:@"http://%@", urlStr];
     HttpdnsLogDebug("Request URL: %@", fullUrlStr);
+    HttpdnsLogDebug_TestOnly(@"开始解析域名 :%@ URL: %@", hostStr, fullUrlStr);
     CFStringRef urlString = (__bridge CFStringRef)fullUrlStr;
     CFURLRef url = CFURLCreateWithString(kCFAllocatorDefault, urlString, NULL);
     CFStringRef requestMethod = CFSTR("GET");
