@@ -32,6 +32,8 @@
 #import <AlicloudUtils/AlicloudIPv6Adapter.h>
 #import "UIApplication+ABSHTTPDNSSetting.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
+#import "HttpdnsIpv6Help.h"
+
 
 
 NSString *const ALICLOUDHDNS_IPV4 = @"ALICLOUDHDNS_IPV4";
@@ -93,6 +95,8 @@ static HttpDnsService * _httpDnsClient = nil;
                          };
     _httpDnsClient.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
     
+    //更新当前网络环境
+    [[HttpdnsIpv6Help sharedInstance] isIPv6only];
 
     
     if (HTTPDNS_INTER) {
