@@ -156,6 +156,19 @@
 		9AF9A6111EC4E9990018063B /* HttpdnsIPRecord.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AF9A60F1EC4E9990018063B /* HttpdnsIPRecord.h */; };
 		9AF9A6121EC4E9990018063B /* HttpdnsIPRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */; };
 		9AF9A6131EC4F5500018063B /* HttpdnsIPRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */; };
+		B001EB3628C741FE00BB2D42 /* HttpdnsIpv6Help.h in Headers */ = {isa = PBXBuildFile; fileRef = B001EB3428C741FE00BB2D42 /* HttpdnsIpv6Help.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		B001EB3728C741FE00BB2D42 /* HttpdnsIpv6Help.m in Sources */ = {isa = PBXBuildFile; fileRef = B001EB3528C741FE00BB2D42 /* HttpdnsIpv6Help.m */; };
+		B001EB3828C741FE00BB2D42 /* HttpdnsIpv6Help.m in Sources */ = {isa = PBXBuildFile; fileRef = B001EB3528C741FE00BB2D42 /* HttpdnsIpv6Help.m */; };
+		B001EB3928C741FE00BB2D42 /* HttpdnsIpv6Help.m in Sources */ = {isa = PBXBuildFile; fileRef = B001EB3528C741FE00BB2D42 /* HttpdnsIpv6Help.m */; };
+		B001EB3C28C746C300BB2D42 /* getgateway.h in Headers */ = {isa = PBXBuildFile; fileRef = B001EB3A28C746C300BB2D42 /* getgateway.h */; };
+		B001EB3D28C746C300BB2D42 /* getgateway.c in Sources */ = {isa = PBXBuildFile; fileRef = B001EB3B28C746C300BB2D42 /* getgateway.c */; };
+		B001EB3E28C746C300BB2D42 /* getgateway.c in Sources */ = {isa = PBXBuildFile; fileRef = B001EB3B28C746C300BB2D42 /* getgateway.c */; };
+		B001EB3F28C746C300BB2D42 /* getgateway.c in Sources */ = {isa = PBXBuildFile; fileRef = B001EB3B28C746C300BB2D42 /* getgateway.c */; };
+		B001EB4228C747FC00BB2D42 /* socket_udp.h in Headers */ = {isa = PBXBuildFile; fileRef = B001EB4028C747FC00BB2D42 /* socket_udp.h */; };
+		B001EB4328C747FC00BB2D42 /* socket_udp.c in Sources */ = {isa = PBXBuildFile; fileRef = B001EB4128C747FC00BB2D42 /* socket_udp.c */; };
+		B001EB4428C747FC00BB2D42 /* socket_udp.c in Sources */ = {isa = PBXBuildFile; fileRef = B001EB4128C747FC00BB2D42 /* socket_udp.c */; };
+		B001EB4528C747FC00BB2D42 /* socket_udp.c in Sources */ = {isa = PBXBuildFile; fileRef = B001EB4128C747FC00BB2D42 /* socket_udp.c */; };
+		B001EB4728C749EA00BB2D42 /* route.h in Headers */ = {isa = PBXBuildFile; fileRef = B001EB4628C749EA00BB2D42 /* route.h */; };
 		B0774601266F99E5009FC52F /* EMASRest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0C70C6B2602ECF200986658 /* EMASRest.framework */; };
 		B0774602266F99EA009FC52F /* AlicloudSender.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0C70C6D2602ECF800986658 /* AlicloudSender.framework */; };
 		B0C70C6C2602ECF200986658 /* EMASRest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0C70C6B2602ECF200986658 /* EMASRest.framework */; };
@@ -277,6 +290,13 @@
 		9AF9A60D1EC4D2EA0018063B /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		9AF9A60F1EC4E9990018063B /* HttpdnsIPRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPRecord.h; sourceTree = "<group>"; };
 		9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsIPRecord.m; sourceTree = "<group>"; };
+		B001EB3428C741FE00BB2D42 /* HttpdnsIpv6Help.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsIpv6Help.h; sourceTree = "<group>"; };
+		B001EB3528C741FE00BB2D42 /* HttpdnsIpv6Help.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsIpv6Help.m; sourceTree = "<group>"; };
+		B001EB3A28C746C300BB2D42 /* getgateway.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = getgateway.h; sourceTree = "<group>"; };
+		B001EB3B28C746C300BB2D42 /* getgateway.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = getgateway.c; sourceTree = "<group>"; };
+		B001EB4028C747FC00BB2D42 /* socket_udp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = socket_udp.h; sourceTree = "<group>"; };
+		B001EB4128C747FC00BB2D42 /* socket_udp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = socket_udp.c; sourceTree = "<group>"; };
+		B001EB4628C749EA00BB2D42 /* route.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = route.h; sourceTree = "<group>"; };
 		B0C70C6B2602ECF200986658 /* EMASRest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = EMASRest.framework; sourceTree = "<group>"; };
 		B0C70C6D2602ECF800986658 /* AlicloudSender.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AlicloudSender.framework; sourceTree = "<group>"; };
 		B0E74130257F7E05002018B8 /* CFHTTPSURLProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CFHTTPSURLProtocol.h; sourceTree = "<group>"; };
@@ -494,6 +514,7 @@
 		9AA0FC591EB9843A00E242DD /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				B001EB4828C74B8500BB2D42 /* IPv6Help */,
 				9AA0FC5E1EB9846D00E242DD /* HttpdnsDatabaseCommon.h */,
 				9AA0FC761EB9B5FD00E242DD /* HttpdnsDatabaseCoordinator.h */,
 				9AA0FC771EB9B5FD00E242DD /* HttpdnsDatabaseCoordinator.m */,
@@ -556,6 +577,20 @@
 			path = HttpdnsDB;
 			sourceTree = "<group>";
 		};
+		B001EB4828C74B8500BB2D42 /* IPv6Help */ = {
+			isa = PBXGroup;
+			children = (
+				B001EB3428C741FE00BB2D42 /* HttpdnsIpv6Help.h */,
+				B001EB3528C741FE00BB2D42 /* HttpdnsIpv6Help.m */,
+				B001EB4628C749EA00BB2D42 /* route.h */,
+				B001EB3B28C746C300BB2D42 /* getgateway.c */,
+				B001EB3A28C746C300BB2D42 /* getgateway.h */,
+				B001EB4128C747FC00BB2D42 /* socket_udp.c */,
+				B001EB4028C747FC00BB2D42 /* socket_udp.h */,
+			);
+			path = IPv6Help;
+			sourceTree = "<group>";
+		};
 		B0E7412F257F7D9A002018B8 /* sni */ = {
 			isa = PBXGroup;
 			children = (
@@ -581,11 +616,15 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B001EB3628C741FE00BB2D42 /* HttpdnsIpv6Help.h in Headers */,
 				9A4D181D1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.h in Headers */,
 				9AF899271E8B5CF600D9CA8E /* HttpdnsRequestScheduler_Internal.h in Headers */,
 				9AE63A031ECDA74D00F9C723 /* HttpdnsDB.h in Headers */,
 				4A36B63821C9EE9C00B1D008 /* HttpdnsLoggerDelegate.h in Headers */,
+				B001EB4228C747FC00BB2D42 /* socket_udp.h in Headers */,
+				B001EB4728C749EA00BB2D42 /* route.h in Headers */,
 				9A80688E1ECD7628006384EB /* HttpdnsHostCacheStore_Internal.h in Headers */,
+				B001EB3C28C746C300BB2D42 /* getgateway.h in Headers */,
 				9A5D5E291E9CB4D400CAC3A6 /* HttpdnsScheduleCenterRequest.h in Headers */,
 				9AE639FB1ECDA74D00F9C723 /* HttpdnsDatabase.h in Headers */,
 				9AA0FC6B1EB987B800E242DD /* HttpdnsIPCacheStore.h in Headers */,
@@ -767,11 +806,14 @@
 				9AA0FC7E1EB9D17700E242DD /* HttpdnsgetNetworkInfoHelper.m in Sources */,
 				2197CACD1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m in Sources */,
 				9AF9A5FC1EC43E2A0018063B /* HttpdnsModel.m in Sources */,
+				B001EB3D28C746C300BB2D42 /* getgateway.c in Sources */,
 				9AC200381F0E169400754CC2 /* UIApplication+ABSHTTPDNSSetting.m in Sources */,
 				9A4E2F551F9E13EA0082866F /* HttpDnsHitService.m in Sources */,
 				9AE63A021ECDA74D00F9C723 /* HttpdnsDatabaseQueue.m in Sources */,
 				9AE639FC1ECDA74D00F9C723 /* HttpdnsDatabase.m in Sources */,
 				9AA0FC641EB9879B00E242DD /* HttpdnsCacheStore.m in Sources */,
+				B001EB4328C747FC00BB2D42 /* socket_udp.c in Sources */,
+				B001EB3728C741FE00BB2D42 /* HttpdnsIpv6Help.m in Sources */,
 				2197CACB1BC7B3D400BDB65B /* HttpdnsRequest.m in Sources */,
 				2197CAC71BC7B3D400BDB65B /* HttpdnsLog.m in Sources */,
 				9AC27F041FDFCB4800DF016A /* HttpdnsTCPSpeedTester.m in Sources */,
@@ -787,6 +829,7 @@
 			files = (
 				4A84996D21A2953200D82C95 /* HttpdnsIPv6Manager.m in Sources */,
 				9A59148B1EA0C1B600A7ED28 /* TestBase.m in Sources */,
+				B001EB4428C747FC00BB2D42 /* socket_udp.c in Sources */,
 				9AE63A0E1ECDAB4400F9C723 /* HttpdnsgetNetworkInfoHelper.m in Sources */,
 				9A5914851EA081AB00A7ED28 /* HttpdnsPersistenceUtils.m in Sources */,
 				9A0903791EA07C0C007B6821 /* HttpdnsScheduleCenterRequest.m in Sources */,
@@ -796,6 +839,7 @@
 				9AE63A0B1ECDAB4400F9C723 /* HttpdnsDatabaseCoordinator.m in Sources */,
 				9A59147D1EA07EA700A7ED28 /* NetworkManager.m in Sources */,
 				9A4E2F571F9F42580082866F /* HttpDnsHitService.m in Sources */,
+				B001EB3828C741FE00BB2D42 /* HttpdnsIpv6Help.m in Sources */,
 				9A5D5E2B1E9D027200CAC3A6 /* HttpdnsScheduleCenter.m in Sources */,
 				9AF9A6021EC4CFE20018063B /* HttpdnsIPCacheStore.m in Sources */,
 				9AE63A0A1ECDAB3A00F9C723 /* HttpdnsResultSet.m in Sources */,
@@ -803,6 +847,7 @@
 				4AF5AB831DCB332800206DD8 /* HttpdnsConfig.m in Sources */,
 				9AE63A071ECDAB3A00F9C723 /* HttpdnsDatabaseAdditions.m in Sources */,
 				4AF5AB841DCB332800206DD8 /* HttpdnsLog.m in Sources */,
+				B001EB3E28C746C300BB2D42 /* getgateway.c in Sources */,
 				9A59147F1EA07EA700A7ED28 /* ScheduleCenterTestHelper.m in Sources */,
 				4AF5AB861DCB332800206DD8 /* HttpdnsRequest.m in Sources */,
 				9AE63A081ECDAB3A00F9C723 /* HttpdnsDatabasePool.m in Sources */,
@@ -829,6 +874,7 @@
 			files = (
 				4AF4AB76211439D300D712DF /* HttpDnsHitService.m in Sources */,
 				4A1C99F02224F3A100614E6E /* TestIPv6ViewController.m in Sources */,
+				B001EB4528C747FC00BB2D42 /* socket_udp.c in Sources */,
 				4AF4AB77211439D300D712DF /* HttpdnsModel.m in Sources */,
 				B0F2B8712803D334004ABD0F /* HTTPDNSCookieManager.m in Sources */,
 				4AF4AB78211439D300D712DF /* HttpdnsHostRecord.m in Sources */,
@@ -838,6 +884,7 @@
 				4AF4AB7C211439D300D712DF /* HttpdnsIPCacheStore.m in Sources */,
 				4AF4AB7D211439D300D712DF /* HttpdnsDatabaseCoordinator.m in Sources */,
 				4AF4AB7E211439D300D712DF /* HttpdnsDatabaseMigrator.m in Sources */,
+				B001EB3928C741FE00BB2D42 /* HttpdnsIpv6Help.m in Sources */,
 				4AF4AB7F211439D300D712DF /* HttpdnsKeyValueStore.m in Sources */,
 				4AF4AB80211439D300D712DF /* HttpdnsgetNetworkInfoHelper.m in Sources */,
 				B0E74132257F7E05002018B8 /* CFHTTPSURLProtocol.m in Sources */,
@@ -845,6 +892,7 @@
 				4AF4AB82211439D300D712DF /* HttpdnsDatabaseAdditions.m in Sources */,
 				4AF4AB83211439D300D712DF /* HttpdnsDatabasePool.m in Sources */,
 				4AF4AB84211439D300D712DF /* HttpdnsDatabaseQueue.m in Sources */,
+				B001EB3F28C746C300BB2D42 /* getgateway.c in Sources */,
 				4AD90CA42138EC21008ECE64 /* HttpdnsIPv6Manager.m in Sources */,
 				4AF4AB85211439D300D712DF /* HttpdnsResultSet.m in Sources */,
 				4AF4AB86211439D300D712DF /* HttpdnsConfig.m in Sources */,
