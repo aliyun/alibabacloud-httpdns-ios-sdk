@@ -83,7 +83,6 @@
 		9A4E2F541F9E13EA0082866F /* HttpDnsHitService.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A4E2F521F9E13EA0082866F /* HttpDnsHitService.h */; };
 		9A4E2F551F9E13EA0082866F /* HttpDnsHitService.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A4E2F531F9E13EA0082866F /* HttpDnsHitService.m */; };
 		9A4E2F571F9F42580082866F /* HttpDnsHitService.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A4E2F531F9E13EA0082866F /* HttpDnsHitService.m */; };
-		9A4E2F591F9F43340082866F /* AlicloudUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A4E2F581F9F43340082866F /* AlicloudUtils.framework */; };
 		9A4E2F5A1F9F43340082866F /* AlicloudUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A4E2F581F9F43340082866F /* AlicloudUtils.framework */; };
 		9A4E2F631F9F5E660082866F /* UTMini.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A4E2F611F9F5E660082866F /* UTMini.framework */; };
 		9A4E2F641F9F5F9F0082866F /* UTMini.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A4E2F611F9F5E660082866F /* UTMini.framework */; };
@@ -169,6 +168,7 @@
 		B001EB4428C747FC00BB2D42 /* socket_udp.c in Sources */ = {isa = PBXBuildFile; fileRef = B001EB4128C747FC00BB2D42 /* socket_udp.c */; };
 		B001EB4528C747FC00BB2D42 /* socket_udp.c in Sources */ = {isa = PBXBuildFile; fileRef = B001EB4128C747FC00BB2D42 /* socket_udp.c */; };
 		B001EB4728C749EA00BB2D42 /* route.h in Headers */ = {isa = PBXBuildFile; fileRef = B001EB4628C749EA00BB2D42 /* route.h */; };
+		B001EB5128C7812200BB2D42 /* AlicloudUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A4E2F581F9F43340082866F /* AlicloudUtils.framework */; };
 		B0774601266F99E5009FC52F /* EMASRest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0C70C6B2602ECF200986658 /* EMASRest.framework */; };
 		B0774602266F99EA009FC52F /* AlicloudSender.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0C70C6D2602ECF800986658 /* AlicloudSender.framework */; };
 		B0C70C6C2602ECF200986658 /* EMASRest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0C70C6B2602ECF200986658 /* EMASRest.framework */; };
@@ -314,8 +314,8 @@
 				9479DFE21CD361EE00C49B32 /* UTDID.framework in Frameworks */,
 				9A4E2F641F9F5F9F0082866F /* UTMini.framework in Frameworks */,
 				B0C70C6C2602ECF200986658 /* EMASRest.framework in Frameworks */,
+				B001EB5128C7812200BB2D42 /* AlicloudUtils.framework in Frameworks */,
 				B0C70C6E2602ECF800986658 /* AlicloudSender.framework in Frameworks */,
-				9A4E2F591F9F43340082866F /* AlicloudUtils.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
