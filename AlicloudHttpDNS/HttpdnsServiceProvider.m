@@ -547,6 +547,38 @@ static HttpDnsService * _httpDnsClient = nil;
     
 }
 
+/// 根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址
+///   设备网络            返回域名IP
+///   IPv4 Only           IPv4
+///   IPv6 Only           IPv6 （如果没有IPv6返回空）
+///   双栈                 IPv4
+/// @param host 要解析的域名
+- (NSString *)autoGetIpByHostAsync:(NSString *)host {
+    AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
+    if ([ipv6Adapter isIPv6OnlyNetwork]) {
+        return [self getIPv6ByHostAsync:host];
+    } else {
+        return [self getIpByHostAsync:host];
+    }
+}
+
+
+/// 根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址组
+///   设备网络            返回域名IP
+///   IPv4 Only           IPv4
+///   IPv6 Only           IPv6 （如果没有Pv6返回空）
+///   双栈                 IPv4
+/// @param host 要解析的域名
+-(NSArray *)autoGetIpsByHostAsync:(NSString *)host {
+    AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
+    if ([ipv6Adapter isIPv6OnlyNetwork]) {
+       return [self getIPv6sByHostAsync:host];
+    } else {
+       return [self getIpsByHostAsync:host];
+    }
+}
+
+
 
 - (void)setLogHandler:(id<HttpdnsLoggerProtocol>)logHandler {
     [HttpdnsLog setLogHandler:logHandler];
