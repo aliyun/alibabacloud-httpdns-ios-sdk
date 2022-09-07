@@ -26,11 +26,11 @@
 extern NSString *const ALICLOUDHDNS_IPV4;
 extern NSString *const ALICLOUDHDNS_IPV6;
 
-typedef NS_ENUM(NSUInteger, AlicloudHttpDNS_IPType) {
-    AlicloudHttpDNS_IPTypeV4,           //ipv4
-    AlicloudHttpDNS_IPTypeV6,           //ipv6
-    AlicloudHttpDNS_IPTypeV64,          //ipv4 + ipv6
-};
+typedef enum {
+    AlicloudHttpDNS_IPTypeV4     = 0,            //ipv4
+    AlicloudHttpDNS_IPTypeV6     = 1,            //ipv6
+    AlicloudHttpDNS_IPTypeV64    = 2,            //ipv4 + ipv6
+} AlicloudHttpDNS_IPType;
 
 
 
@@ -181,6 +181,26 @@ typedef NS_ENUM(NSUInteger, AlicloudHttpDNS_IPType) {
 ///         ALICLOUDHDNS_IPV6: ['xx:xx:xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx:xx:xx']
 ///   }
 - (NSDictionary <NSString *, NSArray *>*)getIPv4_v6ByHostAsync:(NSString *)host;
+
+
+/// 根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址
+/// 使用此API 需要确保 enableIPv6 开关已打开
+///   设备网络            返回域名IP
+///   IPv4 Only           IPv4
+///   IPv6 Only           IPv6 （如果没有IPv6返回空）
+///   双栈                 IPv4
+/// @param host 要解析的域名
+- (NSString *)autoGetIpByHostAsync:(NSString *)host;
+
+
+/// 根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址组
+/// 使用此API 需要确保 enableIPv6 开关已打开
+///   设备网络            返回域名IP
+///   IPv4 Only           IPv4
+///   IPv6 Only           IPv6 （如果没有Pv6返回空）
+///   双栈                 IPv4
+/// @param host 要解析的域名
+-(NSArray *)autoGetIpsByHostAsync:(NSString *)host;
 
 
 
