@@ -21,6 +21,8 @@
 #import "HttpdnsDegradationDelegate.h"
 #import "HttpdnsLoggerDelegate.h"
 
+#import <AlicloudUtils/AlicloudIPv6Adapter.h>
+
 #define ALICLOUD_HTTPDNS_DEPRECATED(explain) __attribute__((deprecated(explain)))
 
 extern NSString *const ALICLOUDHDNS_IPV4;
@@ -202,6 +204,9 @@ typedef enum {
 /// @param host 要解析的域名
 -(NSArray *)autoGetIpsByHostAsync:(NSString *)host;
 
+/// 获取当前网络栈
+/// @result 返回具体的网络栈
+- (AlicloudIPStackType) currentIpStack;
 
 
 /// 清除指定host缓存（内存+沙盒数据库）
