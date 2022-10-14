@@ -576,8 +576,16 @@ static HttpDnsService * _httpDnsClient = nil;
     } else {
        return [self getIpsByHostAsync:host];
     }
+    
 }
 
+/// 获取当前网络栈
+/// @result 返回具体的网络栈
+- (AlicloudIPStackType) currentIpStack {
+    AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
+    AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
+    return stackType;
+}
 
 
 - (void)setLogHandler:(id<HttpdnsLoggerProtocol>)logHandler {
