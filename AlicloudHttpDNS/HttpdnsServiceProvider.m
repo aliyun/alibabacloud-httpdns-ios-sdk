@@ -547,21 +547,6 @@ static HttpDnsService * _httpDnsClient = nil;
     
 }
 
-/// 根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址
-///   设备网络            返回域名IP
-///   IPv4 Only           IPv4
-///   IPv6 Only           IPv6 （如果没有IPv6返回空）
-///   双栈                 IPv4
-/// @param host 要解析的域名
-- (NSString *)autoGetIpByHostAsync:(NSString *)host {
-    AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
-    if ([ipv6Adapter isIPv6OnlyNetwork]) {
-        return [self getIPv6ByHostAsync:host];
-    } else {
-        return [self getIpByHostAsync:host];
-    }
-}
-
 
 /// 根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址组
 ///   设备网络            返回域名IP
@@ -569,14 +554,22 @@ static HttpDnsService * _httpDnsClient = nil;
 ///   IPv6 Only           IPv6 （如果没有Pv6返回空）
 ///   双栈                 IPv4
 /// @param host 要解析的域名
--(NSArray *)autoGetIpsByHostAsync:(NSString *)host {
+-(NSDictionary <NSString *, NSArray *>*)autoGetIpsByHostAsync:(NSString *)host {
     AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
-    if ([ipv6Adapter isIPv6OnlyNetwork]) {
-       return [self getIPv6sByHostAsync:host];
-    } else {
-       return [self getIpsByHostAsync:host];
+    AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
+    
+    NSMutableDictionary *ipv4_ipv6 = [NSMutableDictionary dictionary];;
+    if (stackType == kAlicloudIPdual) {
+        ipv4_ipv6 = [self getIPv4_v6ByHostAsync:host];
+    } else if (stackType == kAlicloudIPv4only) {
+        NSArray* ipv4Ips = [self getIpsByHostAsync:host];
+        [ipv4_ipv6 setObject:ipv4Ips forKey:ALICLOUDHDNS_IPV4];
+    } else if (stackType == kAlicloudIPv6only) {
+        NSArray* ipv6Ips = [self getIPv6sByHostAsync:host];
+        [ipv4_ipv6 setObject:ipv6Ips forKey:ALICLOUDHDNS_IPV6];
     }
     
+    return ipv4_ipv6;
 }
 
 /// 获取当前网络栈

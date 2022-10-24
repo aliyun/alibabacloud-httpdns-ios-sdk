@@ -185,14 +185,6 @@ typedef enum {
 - (NSDictionary <NSString *, NSArray *>*)getIPv4_v6ByHostAsync:(NSString *)host;
 
 
-/// 根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址
-/// 使用此API 需要确保 enableIPv6 开关已打开
-///   设备网络            返回域名IP
-///   IPv4 Only           IPv4
-///   IPv6 Only           IPv6 （如果没有IPv6返回空）
-///   双栈                 IPv4
-/// @param host 要解析的域名
-- (NSString *)autoGetIpByHostAsync:(NSString *)host;
 
 
 /// 根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址组
@@ -200,9 +192,9 @@ typedef enum {
 ///   设备网络            返回域名IP
 ///   IPv4 Only           IPv4
 ///   IPv6 Only           IPv6 （如果没有Pv6返回空）
-///   双栈                 IPv4
+///   双栈                 IPv4/IPV6
 /// @param host 要解析的域名
--(NSArray *)autoGetIpsByHostAsync:(NSString *)host;
+-(NSDictionary <NSString *, NSArray *>*)autoGetIpsByHostAsync:(NSString *)host;
 
 /// 获取当前网络栈
 /// @result 返回具体的网络栈
