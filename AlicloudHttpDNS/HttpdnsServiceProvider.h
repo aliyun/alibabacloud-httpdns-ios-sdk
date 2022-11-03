@@ -194,6 +194,11 @@ typedef enum {
 ///   IPv6 Only           IPv6 （如果没有Pv6返回空）
 ///   双栈                 IPv4/IPV6
 /// @param host 要解析的域名
+/// @result 返回字典类型结构
+///   {
+///         ALICLOUDHDNS_IPV4: ['xxx.xxx.xxx.xxx', 'xxx.xxx.xxx.xxx'],
+///         ALICLOUDHDNS_IPV6: ['xx:xx:xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx:xx:xx']
+///   }
 -(NSDictionary <NSString *, NSArray *>*)autoGetIpsByHostAsync:(NSString *)host;
 
 /// 获取当前网络栈
