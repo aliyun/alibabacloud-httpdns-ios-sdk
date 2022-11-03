@@ -563,10 +563,14 @@ static HttpDnsService * _httpDnsClient = nil;
         ipv4_ipv6 = [self getIPv4_v6ByHostAsync:host];
     } else if (stackType == kAlicloudIPv4only) {
         NSArray* ipv4Ips = [self getIpsByHostAsync:host];
-        [ipv4_ipv6 setObject:ipv4Ips forKey:ALICLOUDHDNS_IPV4];
+        if (ipv4Ips != nil) {
+            [ipv4_ipv6 setObject:ipv4Ips forKey:ALICLOUDHDNS_IPV4];
+        }
     } else if (stackType == kAlicloudIPv6only) {
         NSArray* ipv6Ips = [self getIPv6sByHostAsync:host];
-        [ipv4_ipv6 setObject:ipv6Ips forKey:ALICLOUDHDNS_IPV6];
+        if (ipv6Ips != nil) {
+            [ipv4_ipv6 setObject:ipv6Ips forKey:ALICLOUDHDNS_IPV6];
+        }
     }
     
     return ipv4_ipv6;
