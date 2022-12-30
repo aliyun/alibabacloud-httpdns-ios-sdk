@@ -263,14 +263,14 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
     if (_needFetchFromScheduleCenterStatusPath) {
         return _needFetchFromScheduleCenterStatusPath;
     }
-    dispatch_sync(self.needToFetchFromScheduleCenterQueue, ^{
-        @try {
-            NSString *fileName = ALICLOUD_HTTPDNS_NEED_FETCH_FROM_SCHEDULE_CENTER_STATUS_CACHE_FILE_NAME;
-            NSString *fullPath = [[HttpdnsPersistenceUtils needFetchFromScheduleCenterStatusPatch] stringByAppendingPathComponent:fileName];
-            _needFetchFromScheduleCenterStatusPath = fullPath;
-        } @catch (NSException *exception) {
-        }
-    });
+    
+    @try {
+        NSString *fileName = ALICLOUD_HTTPDNS_NEED_FETCH_FROM_SCHEDULE_CENTER_STATUS_CACHE_FILE_NAME;
+        NSString *fullPath = [[HttpdnsPersistenceUtils needFetchFromScheduleCenterStatusPatch] stringByAppendingPathComponent:fileName];
+        _needFetchFromScheduleCenterStatusPath = fullPath;
+    } @catch (NSException *exception) {
+        HttpdnsLogDebug("needFetchFromScheduleCenterStatusPatch error: %@", exception.reason);
+    }
     return _needFetchFromScheduleCenterStatusPath;
 }
 
