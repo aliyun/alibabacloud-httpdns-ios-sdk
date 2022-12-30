@@ -85,6 +85,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     NSMutableDictionary *_hostManagerDict;
     dispatch_queue_t _syncDispatchQueue;
     NSOperationQueue *_asyncOperationQueue;
+    NSLock *_lock;
 }
 
 + (void)initialize {
@@ -110,6 +111,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         _asyncOperationQueue = [[NSOperationQueue alloc] init];
         [_asyncOperationQueue setMaxConcurrentOperationCount:HTTPDNS_MAX_REQUEST_THREAD_NUM];
         _hostManagerDict = [[NSMutableDictionary alloc] init];
+        _lock = [[NSLock alloc] init];
         [AlicloudIPv6Adapter getInstance];
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(networkChanged:)
@@ -648,25 +650,34 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             NSError *error;
             HttpdnsLogDebug("Async request for %@ starts...", host);
             HttpdnsLogDebug_TestOnly(@"异步解析域名: %@", host);
-            result = [[HttpdnsRequest new] lookupHostFromServer:CopyHost
-                                                          error:&error
-                                        activatedServerIPIndex:newActivatedServerIPIndex queryIPType:queryIPType];
+            @try {
+                [_lock lock];
+                result = [[HttpdnsRequest new] lookupHostFromServer:CopyHost
+                                                              error:&error
+                                            activatedServerIPIndex:newActivatedServerIPIndex queryIPType:queryIPType];
+                [_lock unlock];
+            } @catch (NSException *exception) {
+                HttpdnsLogDebug("lookupHostFromServer error: ", exception.reason);
+            } @finally {
+            
+            }
+            
             if (error) {
                 HttpdnsLogDebug("Async request for %@ error: %@", host, error);
                 HttpdnsLogDebug_TestOnly(@"解析域名失败 %@ error: %@", host, error);
                 if (shouldRetry) {
                     // 重新调用下 该方法
                     [self executeRequest:CopyHost
-                       synchronously:NO
-                          retryCount:hasRetryedCount + 1
-              activatedServerIPIndex:activatedServerIPIndex
-                 error:error queryIPType:queryIPType];
+                        synchronously:NO
+                        retryCount:hasRetryedCount + 1
+                        activatedServerIPIndex:activatedServerIPIndex
+                        error:error queryIPType:queryIPType];
                 } else {
                     // 用户访问引发的嗅探超时的情况，和重试引起的主动嗅探都会访问该方法
                     [self canNotResolveHost:CopyHost error:error isRetry:isRetry activatedServerIPIndex:activatedServerIPIndex];
                 }
             } else {
-                dispatch_sync(_syncDispatchQueue, ^{
+                dispatch_sync(self->_syncDispatchQueue, ^{
                     // 请求启动结束 异步请求完成
                     HttpdnsLogDebug("\n ====== Async request for %@ finishes result:%@ .", host,result);
                     HttpdnsLogDebug_TestOnly(@" 域名解析 %@ 成功 result:%@ .", host,result); 
