@@ -200,7 +200,11 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     
     @synchronized(self) {
         result = [self hostObjectFromCacheForHostName:host];
-        HttpdnsLogDebug("Get from cache: %@", result);
+        @try {
+            HttpdnsLogDebug("Get from cache: %@", result);
+        } @catch (NSException *exception) {
+            HttpdnsLogDebug("Get from cache log error", exception.reason);
+        }
         /**
          * 缓存处理逻辑：
          * 1. 没有缓存对象；
@@ -209,7 +213,11 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
          * 4. 其他。
          */
         if (result == nil) {
-            HttpdnsLogDebug("No available cache for %@ yet.", host);
+            @try {
+                HttpdnsLogDebug("No available cache for %@ yet.", host);
+            } @catch(NSException *exception) {
+                HttpdnsLogDebug("No available cache log error", exception.reason);
+            }
             if ([self isHostsNumberLimitReached]) {
                 return nil;
             }
@@ -222,14 +230,22 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             
         } else if ([self _needToQuery:result ipQueryType:queryType]) {
             if (result.isQuerying) {
-                HttpdnsLogDebug("%@ queryingState: %d", host, [result isQuerying]);
+                @try {
+                    HttpdnsLogDebug("%@ queryingState: %d", host, [result isQuerying]);
+                } @catch (NSException *exception) {
+                }
+                
                 return nil;
             } else {
                 //这种情况下所有的IP都为空，可以直接走后续逻辑
                 needToQuery = YES;
             }
         } else if ([result isExpiredWithQueryIPType:queryType]) {
-            HttpdnsLogDebug("%@ is expired or from DB, queryingState: %d", host, [result isQuerying]);
+            @try {
+                HttpdnsLogDebug("%@ is expired or from DB, queryingState: %d", host, [result isQuerying]);
+            } @catch (NSException *exception) {
+                
+            }
             // 从 FDB 获取
             if (_isExpiredIPEnabled || [result getIsLoadFromDB]) {
                 needToQuery = NO;
