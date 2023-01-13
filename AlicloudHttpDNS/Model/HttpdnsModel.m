@@ -244,13 +244,19 @@
 }
 
 - (NSString *)description {
-    if (![EMASTools isValidArray:_ip6s]) {
-        return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld queryingState = %@ extra = %@ ipRegion = %@ ip6Region = %@",
-                _hostName, _ips, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO", _extra, _ipRegion, _ip6Region];
-    } else {
-        return [NSString stringWithFormat:@"Host = %@ ips = %@ ip6s = %@ lastLookup = %lld ttl = %lld queryingState = %@ extra = %@ ipRegion = %@ ip6Region = %@",
-                _hostName, _ips, _ip6s, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO", _extra, _ipRegion, _ip6Region];
+    @try {
+        if (![EMASTools isValidArray:_ip6s]) {
+            return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld queryingState = %@ extra = %@ ipRegion = %@ ip6Region = %@",
+                    _hostName, _ips, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO", _extra, _ipRegion, _ip6Region];
+        } else {
+            return [NSString stringWithFormat:@"Host = %@ ips = %@ ip6s = %@ lastLookup = %lld ttl = %lld queryingState = %@ extra = %@ ipRegion = %@ ip6Region = %@",
+                    _hostName, _ips, _ip6s, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO", _extra, _ipRegion, _ip6Region];
+        }
+    } @catch (NSException *exception) {
+        NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception.reason);
     }
+    return [NSString stringWithFormat:@"Host = %@", _hostName];
 }
+
 
 @end
