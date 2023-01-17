@@ -166,9 +166,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		2197CA371BC79A4500BDB65B /* AlicloudHttpDNS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AlicloudHttpDNS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2197CA371BC79A4500BDB65B /* AlicloudHttpDNS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = AlicloudHttpDNS.framework; path = "/Users/wangyun/ali_cloud/alicloud-ios-sdk-httpdns/build/Debug-iphoneos/AlicloudHttpDNS.framework"; sourceTree = "<absolute>"; };
 		2197CA3C1BC79A4500BDB65B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2197CA411BC79A4500BDB65B /* AlicloudHttpDNS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AlicloudHttpDNS.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2197CA411BC79A4500BDB65B /* AlicloudHttpDNS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = AlicloudHttpDNS.xctest; path = "/Users/wangyun/ali_cloud/alicloud-ios-sdk-httpdns/build/Debug-iphoneos/AlicloudHttpDNS.xctest"; sourceTree = "<absolute>"; };
 		2197CA481BC79A4500BDB65B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2197CA961BC7AB9B00BDB65B /* HttpdnsUtilTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtilTest.m; sourceTree = "<group>"; };
 		2197CAB11BC7B3D400BDB65B /* AlicloudHttpDNS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AlicloudHttpDNS.h; sourceTree = "<group>"; };
@@ -194,7 +194,7 @@
 		4AC757702223DD280088FF18 /* HttpdnsIP6CacheStoreSQL.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsIP6CacheStoreSQL.h; sourceTree = "<group>"; };
 		4AD90CA02138EC21008ECE64 /* HttpdnsIPv6Manager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPv6Manager.h; sourceTree = "<group>"; };
 		4AD90CA12138EC21008ECE64 /* HttpdnsIPv6Manager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsIPv6Manager.m; sourceTree = "<group>"; };
-		4AF4AB60211439A600D712DF /* AlicloudHttpDNSTestDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlicloudHttpDNSTestDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AF4AB60211439A600D712DF /* AlicloudHttpDNSTestDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = AlicloudHttpDNSTestDemo.app; path = "/Users/wangyun/ali_cloud/alicloud-ios-sdk-httpdns/build/Debug-iphoneos/AlicloudHttpDNSTestDemo.app"; sourceTree = "<absolute>"; };
 		4AF4AB62211439A600D712DF /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		4AF4AB63211439A600D712DF /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		4AF4AB65211439A600D712DF /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
@@ -344,19 +344,8 @@
 				2197CA391BC79A4500BDB65B /* AlicloudHttpDNS */,
 				2197CA451BC79A4500BDB65B /* AlicloudHttpDNSTests */,
 				4AF4AB61211439A600D712DF /* AlicloudHttpDNSTestDemo */,
-				2197CA381BC79A4500BDB65B /* Products */,
 				4AF5AB801DCB32D600206DD8 /* Frameworks */,
 			);
-			sourceTree = "<group>";
-		};
-		2197CA381BC79A4500BDB65B /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				2197CA371BC79A4500BDB65B /* AlicloudHttpDNS.framework */,
-				2197CA411BC79A4500BDB65B /* AlicloudHttpDNS.xctest */,
-				4AF4AB60211439A600D712DF /* AlicloudHttpDNSTestDemo.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		2197CA391BC79A4500BDB65B /* AlicloudHttpDNS */ = {
@@ -706,7 +695,7 @@
 				Base,
 			);
 			mainGroup = 2197CA2D1BC79A4500BDB65B;
-			productRefGroup = 2197CA381BC79A4500BDB65B /* Products */;
+			productRefGroup = 2197CA2D1BC79A4500BDB65B;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
