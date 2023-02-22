@@ -203,7 +203,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         @try {
             HttpdnsLogDebug("Get from cache: %@", result);
         } @catch (NSException *exception) {
-            HttpdnsLogDebug("Get from cache log error", exception.reason);
         }
         /**
          * 缓存处理逻辑：
@@ -216,7 +215,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             @try {
                 HttpdnsLogDebug("No available cache for %@ yet.", host);
             } @catch(NSException *exception) {
-                HttpdnsLogDebug("No available cache log error", exception.reason);
             }
             if ([self isHostsNumberLimitReached]) {
                 return nil;
@@ -244,7 +242,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             @try {
                 HttpdnsLogDebug("%@ is expired or from DB, queryingState: %d", host, [result isQuerying]);
             } @catch (NSException *exception) {
-                
             }
             // 从 FDB 获取
             if (_isExpiredIPEnabled || [result getIsLoadFromDB]) {
@@ -441,7 +438,11 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 //            if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
 //                [old setIp6s:IP6Objects];
 //            }
-            HttpdnsLogDebug("Update %@: %@", host, result);
+            @try {
+                HttpdnsLogDebug("Update %@: %@", host, result);
+            } @catch (NSException *exception) {
+            }
+            
         } else {
             HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
             [hostObject setHostName:host];
@@ -467,7 +468,11 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 //            if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
 //                [hostObject setIp6s:IP6Objects];
 //            }
-            HttpdnsLogDebug("New resolved item: %@: %@", host, result);
+            @try {
+                HttpdnsLogDebug("New resolved item: %@: %@", host, result);
+            } @catch (NSException *exception) {
+            }
+            
             [HttpdnsUtil safeAddValue:hostObject key:host toDict:_hostManagerDict];
         }
         
@@ -480,7 +485,11 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         // TODO:
         [self aysncUpdateIPRankingWithResult:result forHost:CopyHost];
     } else {
-        HttpdnsLogDebug("Can't resolve %@", host);
+        @try {
+            HttpdnsLogDebug("Can't resolve %@", host);
+        } @catch (NSException *exception) {
+        }
+        
     }
 }
 
@@ -633,12 +642,20 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     // 不需要这个 sync 是 NO 同步不处理
     if (sync && shouldRetry) {
         NSError *error;
-        HttpdnsLogDebug("Sync request for %@ starts.", host);
+        @try {
+            HttpdnsLogDebug("Sync request for %@ starts.", host);
+        } @catch (NSException *exception) {
+        }
+        
         HttpdnsHostObject *result = [[HttpdnsRequest new] lookupHostFromServer:CopyHost
                                                             error:&error
                                            activatedServerIPIndex:newActivatedServerIPIndex queryIPType:queryIPType];
         if (error) {
-            HttpdnsLogDebug("Sync request for %@ error: %@", host, error);
+            @try {
+                HttpdnsLogDebug("Sync request for %@ error: %@", host, error);
+            } @catch (NSException *exception) {
+            }
+        
             return [self executeRequest:CopyHost
                           synchronously:YES
                              retryCount:(hasRetryedCount + 1)
@@ -647,7 +664,11 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                     queryIPType:queryIPType];
         } else {
             dispatch_async(_syncDispatchQueue, ^{
-                HttpdnsLogDebug("Sync request for %@ finishes.", host);
+                @try {
+                    HttpdnsLogDebug("Sync request for %@ finishes.", host);
+                } @catch (NSException *exception) {
+                }
+               
                 [self mergeLookupResultToManager:result forHost:host];
             });
             return result;
@@ -667,13 +688,13 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             HttpdnsLogDebug("Async request for %@ starts...", host);
             HttpdnsLogDebug_TestOnly(@"异步解析域名: %@", host);
             @try {
-                [_lock lock];
+                [self->_lock lock];
                 result = [[HttpdnsRequest new] lookupHostFromServer:CopyHost
                                                               error:&error
                                             activatedServerIPIndex:newActivatedServerIPIndex queryIPType:queryIPType];
-                [_lock unlock];
+                [self->_lock unlock];
             } @catch (NSException *exception) {
-                HttpdnsLogDebug("lookupHostFromServer error: ", exception.reason);
+                HttpdnsLogDebug("lookupHostFromServer error: %@", exception.reason);
             } @finally {
             
             }
@@ -695,8 +716,11 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             } else {
                 dispatch_sync(self->_syncDispatchQueue, ^{
                     // 请求启动结束 异步请求完成
-                    HttpdnsLogDebug("\n ====== Async request for %@ finishes result:%@ .", host,result);
-                    HttpdnsLogDebug_TestOnly(@" 域名解析 %@ 成功 result:%@ .", host,result); 
+                    @try {
+                        HttpdnsLogDebug("\n ====== Async request for %@ finishes result:%@ .", host,result);
+                        HttpdnsLogDebug_TestOnly(@" 域名解析 %@ 成功 result:%@ .", host,result);
+                    } @catch (NSException *exception) {
+                    }
                     [self mergeLookupResultToManager:result forHost:CopyHost];
                 });
             }
@@ -761,17 +785,25 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             statusString = @"Unknown";
             break;
     }
-   
-    HttpdnsLogDebug("Network changed, status: %@(%ld), lastNetworkStatus: %ld", statusString, [networkStatus longValue], _lastNetworkStatus);
+    
+    @try {
+        HttpdnsLogDebug("Network changed, status: %@(%ld), lastNetworkStatus: %ld", statusString, [networkStatus longValue], _lastNetworkStatus);
+    } @catch (NSException *exception) {
+    }
+    
     if (_lastNetworkStatus != [networkStatus longValue]) {
         dispatch_async(_syncDispatchQueue, ^{
             if (![statusString isEqualToString:@"None"]) {
-                NSArray *hostArray = [HttpdnsUtil safeAllKeysFromDict:_hostManagerDict];
+                NSArray *hostArray = [HttpdnsUtil safeAllKeysFromDict:self->_hostManagerDict];
                 [self cleanAllHostMemoryCache];
                 //同步操作，防止网络请求成功，更新后，缓存数据再覆盖掉。
                 [self loadIPsFromCacheSyncIfNeeded];
-                if (_isPreResolveAfterNetworkChangedEnabled == YES) {
-                    HttpdnsLogDebug("Network changed, pre resolve for hosts: %@", hostArray);
+                if (self->_isPreResolveAfterNetworkChangedEnabled == YES) {
+                    @try {
+                        HttpdnsLogDebug("Network changed, pre resolve for hosts: %@", hostArray);
+                    } @catch (NSException *exception) {
+                    }
+                    
                     [self addPreResolveHosts:hostArray queryType:HttpdnsQueryIPTypeAuto];
                 }
             }
@@ -816,9 +848,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 - (void)setServerDisable:(BOOL)serverDisable host:(NSString *)host activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     dispatch_async(self.cacheQueue, ^{
         if (!serverDisable) {
-            _lastServerDisableDate = nil;
+            self->_lastServerDisableDate = nil;
         } else {
-            _lastServerDisableDate = [NSDate date];
+            self->_lastServerDisableDate = [NSDate date];
         }
     });
     if (_serverDisable == serverDisable) {
