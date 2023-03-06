@@ -263,15 +263,94 @@ static NSURLSession *_resolveHOSTSession = nil;
     return dic;
 }
 
-- (NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex reallyHostKey:(NSString *)reallyHostKey queryIPType:(HttpdnsQueryIPType)queryIPType {
+- (NSString *)constructV6RequestURLWith:(NSString *)hostsString reallyHostKey:(NSString *)reallyHostKey queryIPType:(HttpdnsQueryIPType)queryIPType {
+    
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *serverIp = @"";
     
+    serverIp = [scheduleCenter getActivatedServerIPv6WithAuto];
+    self.serviceRegion = [scheduleCenter getServiceIPRegion];
+    if ([EMASTools isValidString:self.serviceRegion] && [@[ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2] containsObject:serverIp]) { //如果当前设置region 并且 当次服务IP是国内兜底IP 则直接禁止解析行为
+        return nil;
+    }
+    
+    serverIp = [NSString stringWithFormat:@"[%@]", serverIp];
+    NSString *requestType = @"d";
+    NSString *signatureRequestString = nil;
+    
+    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+
+    NSString *secretKey = sharedService.secretKey;
+    NSUInteger localTimestampOffset = sharedService.authTimeOffset;
+    
+    if ([HttpdnsUtil isValidString:secretKey ]) {
+        requestType = @"sign_d";
+        NSUInteger localTimestamp = (NSUInteger)[[NSDate date] timeIntervalSince1970] ;
+        if (localTimestampOffset != 0) {
+            localTimestamp = localTimestamp + localTimestampOffset;
+        }
+        NSUInteger expiredTimestamp = localTimestamp + HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
+        NSString *expiredTimestampString = [NSString stringWithFormat:@"%@", @(expiredTimestamp)];
+        NSArray *hostArray= [hostsString componentsSeparatedByString:@"&"];
+        NSString *hostStr = [hostArray firstObject];
+        NSString *signOriginString = [NSString stringWithFormat:@"%@-%@-%@", hostStr, secretKey, expiredTimestampString];
+        
+        NSString *sign = [HttpdnsUtil getMD5StringFrom:signOriginString];
+        signatureRequestString = [NSString stringWithFormat:@"&t=%@&s=%@", expiredTimestampString, sign];
+    }
+    
+    NSString *port = HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED ? ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT : ALICLOUD_HTTPDNS_HTTP_SERVER_PORT;
+    
+    NSString *url = [NSString stringWithFormat:@"%@:%@/%d/%@?host=%@",
+                     serverIp, port, sharedService.accountID, requestType, hostsString];
+    
+    if ([HttpdnsUtil isValidString:signatureRequestString]) {
+        url = [NSString stringWithFormat:@"%@%@", url, signatureRequestString];
+    }
+    NSString *versionInfo = [NSString stringWithFormat:@"ios_%@", HTTPDNS_IOS_SDK_VERSION];
+    url = [NSString stringWithFormat:@"%@&sdk=%@", url, versionInfo];
+    
+    // sessionId
+    NSString *sessionId = [HttpdnsUtil generateSessionID];
+    if ([HttpdnsUtil isValidString:sessionId]) {
+        url = [NSString stringWithFormat:@"%@&sid=%@", url, sessionId];
+    }
+    
+    // 添加net和bssid(wifi)
+    NSString *netType = [HttpdnsgetNetworkInfoHelper getNetworkType];
+    if ([HttpdnsUtil isValidString:netType]) {
+        url = [NSString stringWithFormat:@"%@&net=%@", url, netType];
+        if ([HttpdnsgetNetworkInfoHelper isWifiNetwork]) {
+            NSString *bssid = [HttpdnsgetNetworkInfoHelper getWifiBssid];
+            if ([HttpdnsUtil isValidString:bssid]) {
+                url = [NSString stringWithFormat:@"%@&bssid=%@", url, [EMASTools URLEncodedString:bssid]];
+            }
+        }
+    }
+    
+    // 开启IPv6解析结果后，URL处理
+    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        //设置当前域名的查询策略
+        [[HttpdnsIPv6Manager sharedInstance] setQueryHost:reallyHostKey ipQueryType:queryIPType];
+        
+        url = [[HttpdnsIPv6Manager sharedInstance] assembleIPv6ResultURL:url queryHost:reallyHostKey];
+    }
+    
+    return url;
+}
+
+- (NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex reallyHostKey:(NSString *)reallyHostKey queryIPType:(HttpdnsQueryIPType)queryIPType useV4Ip:(bool *) useV4Ip {
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    NSString *serverIp = @"";
+    
+    NSLog(@"=========>0 activatedServerIPIndex is %ld", activatedServerIPIndex);
     if ([HttpdnsUtil canUseIPv6_Syn]) {
         serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
     } else {
         serverIp = [scheduleCenter getActivatedServerIPv6WithAuto];
     }
+    
+    NSLog(@"=========>1 serverIp is %@", serverIp);
     
     
     self.serviceRegion = [scheduleCenter getServiceIPRegion]; //获取当前service IP 的region
@@ -289,6 +368,13 @@ static NSURLSession *_resolveHOSTSession = nil;
         }
     } else if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:serverIp]) {
         serverIp = [NSString stringWithFormat:@"[%@]", serverIp];
+    }
+    
+    NSLog(@"=========>2 serverIp is %@", serverIp);
+    if ([[AlicloudIPv6Adapter getInstance] isIPv4Address:serverIp]) {
+        *useV4Ip = YES;
+    } else {
+        *useV4Ip = NO;
     }
     NSString *requestType = @"d";
     NSString *signatureRequestString = nil;
@@ -373,23 +459,50 @@ static NSURLSession *_resolveHOSTSession = nil;
         [hostMArray removeLastObject];
     }
     NSString * hostsUrl = [hostMArray componentsJoinedByString:@""];
-    NSString *url = [self constructRequestURLWith:hostsUrl activatedServerIPIndex:activatedServerIPIndex reallyHostKey:hostString queryIPType:queryIPType];
+    bool useV4ServerIp;
+    NSString *url = [self constructRequestURLWith:hostsUrl activatedServerIPIndex:activatedServerIPIndex reallyHostKey:hostString queryIPType:queryIPType useV4Ip:&useV4ServerIp];
+    NSLog(@"constructURl is %@", url);
     
     if (![EMASTools isValidString:url]) {
         return nil;
     }
     
     // HTTP / HTTPS  请求
+    
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
         hostObject = [self sendHTTPSRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];
     } else {
         hostObject = [self sendHTTPRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];
     }
     
+    
     NSError *outError = nil;
-    if (error != NULL) {
-        outError = (*error);
-    }
+//    if (error != NULL) {
+//        outError = (*error);
+        // 如果error不为空，证明请求出错，需要判断网络环境是否是双栈，如果是双栈，且之前是由v4地址请求的，则要由v6的serverIp做一次兜底
+//        AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
+//        AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
+//    NSLog(@"=========> useV4Ip: %@", useV4ServerIp ? @"YES": @"NO");
+//        if (stackType == kAlicloudIPdual && useV4ServerIp ) {
+//            url = [self constructV6RequestURLWith:hostsUrl reallyHostKey:hostString queryIPType:queryIPType];
+//            NSLog(@"=========> mock second url is %@", url);
+//            if ([EMASTools isValidString:url]) {
+//                NSError *backupError;
+//                if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
+//                    hostObject = [self sendHTTPSRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
+//                } else {
+//                    hostObject = [self sendHTTPRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
+//                }
+//
+//                NSLog(@"=========> Async request for %@ finishes result:%@ .", hostString, hostObject);
+//
+//                if (backupError != NULL) {
+//                    outError = backupError;
+//                }
+//            }
+//        }
+//    }
+    NSLog(@"=========> Async request for %@ finishes result:%@ .", hostString, hostObject);
     BOOL success = !outError;
     BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
     [HttpDnsHitService bizPerfGetIPWithHost:hostString success:success cacheOpen:cachedIPEnabled];
