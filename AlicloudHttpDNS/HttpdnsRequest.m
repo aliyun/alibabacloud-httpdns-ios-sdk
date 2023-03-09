@@ -343,15 +343,11 @@ static NSURLSession *_resolveHOSTSession = nil;
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *serverIp = @"";
     
-    NSLog(@"=========>0 activatedServerIPIndex is %ld", activatedServerIPIndex);
     if ([HttpdnsUtil canUseIPv6_Syn]) {
         serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
     } else {
         serverIp = [scheduleCenter getActivatedServerIPv6WithAuto];
     }
-    
-    NSLog(@"=========>1 serverIp is %@", serverIp);
-    
     
     self.serviceRegion = [scheduleCenter getServiceIPRegion]; //获取当前service IP 的region
     
@@ -370,7 +366,6 @@ static NSURLSession *_resolveHOSTSession = nil;
         serverIp = [NSString stringWithFormat:@"[%@]", serverIp];
     }
     
-    NSLog(@"=========>2 serverIp is %@", serverIp);
     if ([[AlicloudIPv6Adapter getInstance] isIPv4Address:serverIp]) {
         *useV4Ip = YES;
     } else {
@@ -461,7 +456,6 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSString * hostsUrl = [hostMArray componentsJoinedByString:@""];
     bool useV4ServerIp;
     NSString *url = [self constructRequestURLWith:hostsUrl activatedServerIPIndex:activatedServerIPIndex reallyHostKey:hostString queryIPType:queryIPType useV4Ip:&useV4ServerIp];
-    NSLog(@"constructURl is %@", url);
     
     if (![EMASTools isValidString:url]) {
         return nil;
@@ -477,32 +471,37 @@ static NSURLSession *_resolveHOSTSession = nil;
     
     
     NSError *outError = nil;
-//    if (error != NULL) {
-//        outError = (*error);
-        // 如果error不为空，证明请求出错，需要判断网络环境是否是双栈，如果是双栈，且之前是由v4地址请求的，则要由v6的serverIp做一次兜底
-//        AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
-//        AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
-//    NSLog(@"=========> useV4Ip: %@", useV4ServerIp ? @"YES": @"NO");
-//        if (stackType == kAlicloudIPdual && useV4ServerIp ) {
-//            url = [self constructV6RequestURLWith:hostsUrl reallyHostKey:hostString queryIPType:queryIPType];
-//            NSLog(@"=========> mock second url is %@", url);
-//            if ([EMASTools isValidString:url]) {
-//                NSError *backupError;
-//                if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
-//                    hostObject = [self sendHTTPSRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
-//                } else {
-//                    hostObject = [self sendHTTPRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
-//                }
-//
-//                NSLog(@"=========> Async request for %@ finishes result:%@ .", hostString, hostObject);
-//
-//                if (backupError != NULL) {
-//                    outError = backupError;
-//                }
-//            }
-//        }
-//    }
-    NSLog(@"=========> Async request for %@ finishes result:%@ .", hostString, hostObject);
+    if (error != NULL) {
+        outError = (*error);
+        @try {
+            //如果error不为空，证明请求出错，需要判断网络环境是否是双栈，如果是双栈，且之前是由v4地址请求的，则要由v6的serverIp做一次兜底
+            AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
+            AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
+            if (stackType == kAlicloudIPdual && useV4ServerIp ) {
+                url = [self constructV6RequestURLWith:hostsUrl reallyHostKey:hostString queryIPType:queryIPType];
+                HttpdnsLogDebug("###### backup url is %@", url);
+                if ([EMASTools isValidString:url]) {
+                    NSError *backupError;
+                    if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
+                        hostObject = [self sendHTTPSRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
+                    } else {
+                        hostObject = [self sendHTTPRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
+                    }
+                    if (backupError != NULL) {
+                        outError = backupError;
+                        *error = backupError;
+                        HttpdnsLogDebug("###### backup request error is: %@", backupError);
+                    } else {
+                        HttpdnsLogDebug("###### backup hostObject is: %@", hostObject);
+                        *error = NULL;
+                    }
+                }
+            }
+        } @catch (NSException *exception) {
+            HttpdnsLogDebug("###### backup has exception: %@", exception.reason);
+        }
+        
+    }
     BOOL success = !outError;
     BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
     [HttpDnsHitService bizPerfGetIPWithHost:hostString success:success cacheOpen:cachedIPEnabled];

@@ -526,11 +526,7 @@ static HttpDnsService * _httpDnsClient = nil;
         return nil;
     }
     
-    NSLog(@"getIPv4_v6ByHostAsync");
     HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO queryType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
-    NSLog(@"getIPv4_v6HostAsync v4: %ld", HttpdnsQueryIPTypeIpv4);
-    NSLog(@"getIPv4_v6HostAsync v6: %ld", HttpdnsQueryIPTypeIpv6);
-    NSLog(@"getIPv4_v6HostAsync v4_v6: %ld", HttpdnsQueryIPTypeIpv4 | HttpdnsQueryIPTypeIpv6);
     if (hostObject) {
         NSArray *ip4s = [hostObject getIPStrings];
         NSArray *ip6s = [hostObject getIP6Strings];

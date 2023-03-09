@@ -201,7 +201,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     @synchronized(self) {
         result = [self hostObjectFromCacheForHostName:host];
         @try {
-            HttpdnsLogDebug("Get from cache: %@", result);
+            HttpdnsLogDebug("###### Get from cache: %@", result);
         } @catch (NSException *exception) {
         }
         /**
@@ -213,7 +213,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
          */
         if (result == nil) {
             @try {
-                HttpdnsLogDebug("No available cache for %@ yet.", host);
+                HttpdnsLogDebug("###### No available cache for %@ yet.", host);
             } @catch(NSException *exception) {
             }
             if ([self isHostsNumberLimitReached]) {
@@ -229,7 +229,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         } else if ([self _needToQuery:result ipQueryType:queryType]) {
             if (result.isQuerying) {
                 @try {
-                    HttpdnsLogDebug("%@ queryingState: %d", host, [result isQuerying]);
+                    HttpdnsLogDebug("###### %@ queryingState: %d", host, [result isQuerying]);
                 } @catch (NSException *exception) {
                 }
                 
@@ -240,7 +240,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             }
         } else if ([result isExpiredWithQueryIPType:queryType]) {
             @try {
-                HttpdnsLogDebug("%@ is expired or from DB, queryingState: %d", host, [result isQuerying]);
+                HttpdnsLogDebug("###### %@ is expired or from DB, queryingState: %d", host, [result isQuerying]);
             } @catch (NSException *exception) {
             }
             // 从 FDB 获取
@@ -293,7 +293,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         }
         
     }
-    
     if (needToQuery) {
         if (![result isQuerying]) {
             [result setQueryingState:YES];
@@ -439,7 +438,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 //                [old setIp6s:IP6Objects];
 //            }
             @try {
-                HttpdnsLogDebug("Update %@: %@", host, result);
+                HttpdnsLogDebug("####### Update %@: %@", host, result);
             } @catch (NSException *exception) {
             }
             
@@ -469,7 +468,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 //                [hostObject setIp6s:IP6Objects];
 //            }
             @try {
-                HttpdnsLogDebug("New resolved item: %@: %@", host, result);
+                HttpdnsLogDebug("###### New resolved item: %@: %@", host, result);
             } @catch (NSException *exception) {
             }
             
@@ -486,7 +485,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         [self aysncUpdateIPRankingWithResult:result forHost:CopyHost];
     } else {
         @try {
-            HttpdnsLogDebug("Can't resolve %@", host);
+            HttpdnsLogDebug("###### Can't resolve %@", host);
         } @catch (NSException *exception) {
         }
         
@@ -612,7 +611,11 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     }
     
     if (hasRetryedCount > HTTPDNS_MAX_REQUEST_RETRY_TIME) {
-        HttpdnsLogDebug("Retry count exceed limit, abort!");
+        HttpdnsLogDebug("###### Retry count exceed limit, abort!");
+        HttpdnsHostObject *oldResult = [HttpdnsUtil safeObjectForKey:host dict:self->_hostManagerDict];
+        if (oldResult != NULL) {
+            [oldResult setQueryingState:NO];
+        }
         [self canNotResolveHost:CopyHost error:error isRetry:isRetry activatedServerIPIndex:activatedServerIPIndex];
         return nil;
     }
@@ -700,25 +703,31 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             }
             
             if (error) {
-                HttpdnsLogDebug("Async request for %@ error: %@", host, error);
-                HttpdnsLogDebug_TestOnly(@"解析域名失败 %@ error: %@", host, error);
+                HttpdnsLogDebug("###### Async request for %@ error: %@", host, error);
+                HttpdnsLogDebug_TestOnly(@"###### 解析域名失败 %@ error: %@", host, error);
                 if (shouldRetry) {
                     // 重新调用下 该方法
+                    HttpdnsLogDebug("###### shouldRetry");
                     [self executeRequest:CopyHost
                         synchronously:NO
                         retryCount:hasRetryedCount + 1
                         activatedServerIPIndex:activatedServerIPIndex
                         error:error queryIPType:queryIPType];
                 } else {
+                    HttpdnsHostObject *oldResult = [HttpdnsUtil safeObjectForKey:host dict:self->_hostManagerDict];
+                    if (oldResult != NULL) {
+                        [oldResult setQueryingState:NO];
+                    }
                     // 用户访问引发的嗅探超时的情况，和重试引起的主动嗅探都会访问该方法
                     [self canNotResolveHost:CopyHost error:error isRetry:isRetry activatedServerIPIndex:activatedServerIPIndex];
                 }
+                
             } else {
                 dispatch_sync(self->_syncDispatchQueue, ^{
                     // 请求启动结束 异步请求完成
                     @try {
-                        HttpdnsLogDebug("\n ====== Async request for %@ finishes result:%@ .", host,result);
-                        HttpdnsLogDebug_TestOnly(@" 域名解析 %@ 成功 result:%@ .", host,result);
+                        HttpdnsLogDebug("\n ###### ====== Async request for %@ finishes result:%@ .", host,result);
+                        HttpdnsLogDebug_TestOnly(@" ###### 域名解析 %@ 成功 result:%@ .", host,result);
                     } @catch (NSException *exception) {
                     }
                     [self mergeLookupResultToManager:result forHost:CopyHost];
