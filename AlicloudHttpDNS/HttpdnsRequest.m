@@ -268,7 +268,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *serverIp = @"";
     
-    serverIp = [scheduleCenter getActivatedServerIPv6WithAuto];
+    serverIp = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6;
     self.serviceRegion = [scheduleCenter getServiceIPRegion];
     if ([EMASTools isValidString:self.serviceRegion] && [@[ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2] containsObject:serverIp]) { //如果当前设置region 并且 当次服务IP是国内兜底IP 则直接禁止解析行为
         return nil;
