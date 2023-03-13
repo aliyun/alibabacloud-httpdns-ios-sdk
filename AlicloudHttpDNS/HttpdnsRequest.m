@@ -462,7 +462,6 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     
     // HTTP / HTTPS  请求
-    
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
         hostObject = [self sendHTTPSRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];
     } else {
@@ -473,34 +472,35 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSError *outError = nil;
     if (error != NULL) {
         outError = (*error);
-        @try {
-            //如果error不为空，证明请求出错，需要判断网络环境是否是双栈，如果是双栈，且之前是由v4地址请求的，则要由v6的serverIp做一次兜底
-            AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
-            AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
-            if (stackType == kAlicloudIPdual && useV4ServerIp ) {
-                url = [self constructV6RequestURLWith:hostsUrl reallyHostKey:hostString queryIPType:queryIPType];
-                HttpdnsLogDebug("###### backup url is %@", url);
-                if ([EMASTools isValidString:url]) {
-                    NSError *backupError;
-                    if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
-                        hostObject = [self sendHTTPSRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
-                    } else {
-                        hostObject = [self sendHTTPRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
-                    }
-                    if (backupError != NULL) {
-                        outError = backupError;
-                        *error = backupError;
-                        HttpdnsLogDebug("###### backup request error is: %@", backupError);
-                    } else {
-                        HttpdnsLogDebug("###### backup hostObject is: %@", hostObject);
-                        *error = NULL;
+        if (outError != NULL) {
+            @try {
+                //如果error不为空，证明请求出错，需要判断网络环境是否是双栈，如果是双栈，且之前是由v4地址请求的，则要由v6的serverIp做一次兜底
+                AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
+                AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
+                if (stackType == kAlicloudIPdual && useV4ServerIp ) {
+                    url = [self constructV6RequestURLWith:hostsUrl reallyHostKey:hostString queryIPType:queryIPType];
+                    HttpdnsLogDebug("###### backup url is %@", url);
+                    if ([EMASTools isValidString:url]) {
+                        NSError *backupError;
+                        if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
+                            hostObject = [self sendHTTPSRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
+                        } else {
+                            hostObject = [self sendHTTPRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
+                        }
+                        if (backupError != NULL) {
+                            outError = backupError;
+                            *error = backupError;
+                            HttpdnsLogDebug("###### backup request error is: %@", backupError);
+                        } else {
+                            HttpdnsLogDebug("###### backup hostObject is: %@", hostObject);
+                            *error = NULL;
+                        }
                     }
                 }
+            } @catch (NSException *exception) {
+                HttpdnsLogDebug("###### backup has exception: %@", exception.reason);
             }
-        } @catch (NSException *exception) {
-            HttpdnsLogDebug("###### backup has exception: %@", exception.reason);
         }
-        
     }
     BOOL success = !outError;
     BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
@@ -517,7 +517,8 @@ static NSURLSession *_resolveHOSTSession = nil;
     HttpdnsLogDebug_TestOnly(@"开始解析域名 :%@ URL: %@", hostStr, fullUrlStr);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                            cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
-                                                       timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
+                                                       timeoutInterval:90];
+//                                                       timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
     __block NSDictionary *json = nil;
     __block NSError *errorStrong = nil;
     NSURLSessionTask *task = [_resolveHOSTSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
