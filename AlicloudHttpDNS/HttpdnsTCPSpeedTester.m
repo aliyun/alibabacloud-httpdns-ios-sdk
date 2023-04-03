@@ -70,9 +70,10 @@ static NSString *const ipKey = @"ip";
     if ([[self class] isIPv6OnlyNetwork]) {
         return nil;
     }
-    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
+//    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+//        NSLog(@"###### ==> isAbleToResolveIPv6Result return");
+//        return nil;
+//    }
     if (![HttpdnsUtil isValidArray:IPs]) {
         return nil;
     }
@@ -82,6 +83,7 @@ static NSString *const ipKey = @"ip";
     if (![HttpdnsUtil isValidString:host]) {
         return nil;
     }
+    
     
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
     NSDictionary<NSString *, NSString *> *dataSource = sharedService.IPRankingDataSource;
@@ -102,6 +104,7 @@ static NSString *const ipKey = @"ip";
     NSMutableArray<NSDictionary *> *IPSpeeds = [NSMutableArray arrayWithCapacity:IPs.count];
     for (NSString *ip in IPs) {
         int testSpeed =  [self testSpeedOf:ip port:port];
+        NSLog(@"###### ==> ip: %@ testSpeed is %d", ip, testSpeed);
         if (testSpeed == 0) {
             testSpeed = HTTPDNS_SOCKET_CONNECT_TIMEOUT_RTT;
         }
