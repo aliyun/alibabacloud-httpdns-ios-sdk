@@ -500,7 +500,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 - (void)syncUpdateIPRankingWithResult:(HttpdnsHostObject *)result forHost:(NSString *)host {
-    if (!self.IPRankingEnabled || !self.customIPRankingEnabled) {
+    if (!self.IPRankingEnabled && !self.customIPRankingEnabled) {
         return;
     }
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
@@ -511,7 +511,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 - (void)updateHostManagerDictWithIPs:(NSArray *)IPs host:(NSString *)host {
-    if (!self.IPRankingEnabled) {
+    if (!self.IPRankingEnabled && !self.customIPRankingEnabled) {
         return;
     }
     HttpdnsHostObject *hostObject = [HttpdnsUtil safeObjectForKey:host dict:_hostManagerDict];
