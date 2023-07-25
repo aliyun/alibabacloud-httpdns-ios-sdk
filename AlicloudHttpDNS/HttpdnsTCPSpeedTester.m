@@ -104,7 +104,6 @@ static NSString *const ipKey = @"ip";
     NSMutableArray<NSDictionary *> *IPSpeeds = [NSMutableArray arrayWithCapacity:IPs.count];
     for (NSString *ip in IPs) {
         int testSpeed =  [self testSpeedOf:ip port:port];
-        NSLog(@"###### ==> ip: %@ testSpeed is %d", ip, testSpeed);
         if (testSpeed == 0) {
             testSpeed = HTTPDNS_SOCKET_CONNECT_TIMEOUT_RTT;
         }
