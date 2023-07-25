@@ -444,6 +444,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     [self resetRequestConfigure];
     // 解析主机
     HttpdnsLogDebug("\n ====== Resolve host(%@) over network.", hostString);
+    NSLog(@"##### ====== Resolve host(%@) over network.", hostString);
     HttpdnsHostObject *hostObject = nil;
     
     NSString *copyHostString = hostString;
@@ -515,16 +516,18 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSString *fullUrlStr = [NSString stringWithFormat:@"https://%@", urlStr];
     HttpdnsLogDebug("Request URL: %@", fullUrlStr);
     HttpdnsLogDebug_TestOnly(@"开始解析域名 :%@ URL: %@", hostStr, fullUrlStr);
+    NSLog(@"###### 解析域名请求的地址为: %@", urlStr);
+    NSLog(@"###### 开始解析域名 :%@ URL: %@", hostStr, fullUrlStr);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                            cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
-                                                       timeoutInterval:90];
-//                                                       timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
+                                                       timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
     __block NSDictionary *json = nil;
     __block NSError *errorStrong = nil;
     NSURLSessionTask *task = [_resolveHOSTSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if (error) {
             HttpdnsLogDebug("Network error: %@", error);
             HttpdnsLogDebug_TestOnly(@"解析失败域名 :%@ error: %@", hostStr, error);
+            NSLog(@"###### 解析失败域名 :%@ error: %@", hostStr, error);
             errorStrong = error;
         } else {
             id jsonValue = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
