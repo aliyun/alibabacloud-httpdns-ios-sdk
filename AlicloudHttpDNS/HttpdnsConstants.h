@@ -39,7 +39,7 @@ static NSString *const HTTPDNS_BEACON_APPSECRECT = @"f30fc0937f2b1e9e50a1b7134f1
  3: 内置 调度IP 和 服务IP 和通用版不同
  4: 其他策略基本保持一致
  */
-static BOOL const HTTPDNS_INTER = true;
+static BOOL const HTTPDNS_INTER = false;
 
 // ipv6 only 场景下 调度 服务ip 的策略
 //true: ipv6 only 场景下 调度、服务ip 走ipv4 合成ipv6 方式;
