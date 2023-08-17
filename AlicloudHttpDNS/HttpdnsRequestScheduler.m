@@ -298,6 +298,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [result setQueryingState:YES];
             // 同步废弃 目前无需修改
             if (sync) {
+                //TODO:同步要用锁的形式
                 return [self executeRequest:CopyHost synchronously:YES retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex queryIPType:queryType];
             } else {
                 return [self executeRequest:CopyHost synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex queryIPType:queryType];

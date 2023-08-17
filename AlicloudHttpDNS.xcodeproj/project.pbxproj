@@ -163,12 +163,11 @@
 		B0E74132257F7E05002018B8 /* CFHTTPSURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */; };
 		B0E9EE7924E130A800EF63E6 /* AliyunEmasServices-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B0E9EE7824E130A700EF63E6 /* AliyunEmasServices-Info.plist */; };
 		B0F2B8712803D334004ABD0F /* HTTPDNSCookieManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B0F2B8702803D334004ABD0F /* HTTPDNSCookieManager.m */; };
+		CB1E4EE82A8CBD1B00F01EAC /* HttpDnsLocker.m in Sources */ = {isa = PBXBuildFile; fileRef = CB1E4EE72A8CBD1B00F01EAC /* HttpDnsLocker.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		2197CA371BC79A4500BDB65B /* AlicloudHttpDNS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = AlicloudHttpDNS.framework; path = "/Users/wangyun/ali_cloud/alicloud-ios-sdk-httpdns/build/Debug-iphoneos/AlicloudHttpDNS.framework"; sourceTree = "<absolute>"; };
 		2197CA3C1BC79A4500BDB65B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2197CA411BC79A4500BDB65B /* AlicloudHttpDNS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = AlicloudHttpDNS.xctest; path = "/Users/wangyun/ali_cloud/alicloud-ios-sdk-httpdns/build/Debug-iphoneos/AlicloudHttpDNS.xctest"; sourceTree = "<absolute>"; };
 		2197CA481BC79A4500BDB65B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2197CA961BC7AB9B00BDB65B /* HttpdnsUtilTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtilTest.m; sourceTree = "<group>"; };
 		2197CAB11BC7B3D400BDB65B /* AlicloudHttpDNS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AlicloudHttpDNS.h; sourceTree = "<group>"; };
@@ -194,7 +193,6 @@
 		4AC757702223DD280088FF18 /* HttpdnsIP6CacheStoreSQL.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsIP6CacheStoreSQL.h; sourceTree = "<group>"; };
 		4AD90CA02138EC21008ECE64 /* HttpdnsIPv6Manager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPv6Manager.h; sourceTree = "<group>"; };
 		4AD90CA12138EC21008ECE64 /* HttpdnsIPv6Manager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsIPv6Manager.m; sourceTree = "<group>"; };
-		4AF4AB60211439A600D712DF /* AlicloudHttpDNSTestDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = AlicloudHttpDNSTestDemo.app; path = "/Users/wangyun/ali_cloud/alicloud-ios-sdk-httpdns/build/Debug-iphoneos/AlicloudHttpDNSTestDemo.app"; sourceTree = "<absolute>"; };
 		4AF4AB62211439A600D712DF /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		4AF4AB63211439A600D712DF /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		4AF4AB65211439A600D712DF /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
@@ -284,6 +282,11 @@
 		B0E9EE7824E130A700EF63E6 /* AliyunEmasServices-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "AliyunEmasServices-Info.plist"; sourceTree = "<group>"; };
 		B0F2B86F2803D334004ABD0F /* HTTPDNSCookieManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HTTPDNSCookieManager.h; sourceTree = "<group>"; };
 		B0F2B8702803D334004ABD0F /* HTTPDNSCookieManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HTTPDNSCookieManager.m; sourceTree = "<group>"; };
+		CB1E4EE32A8CA91800F01EAC /* AlicloudHttpDNS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AlicloudHttpDNS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		CB1E4EE42A8CA91800F01EAC /* AlicloudHttpDNS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AlicloudHttpDNS.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CB1E4EE52A8CA91800F01EAC /* AlicloudHttpDNSTestDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlicloudHttpDNSTestDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CB1E4EE62A8CBAD700F01EAC /* HttpDnsLocker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpDnsLocker.h; sourceTree = "<group>"; };
+		CB1E4EE72A8CBD1B00F01EAC /* HttpDnsLocker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpDnsLocker.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -345,6 +348,9 @@
 				2197CA451BC79A4500BDB65B /* AlicloudHttpDNSTests */,
 				4AF4AB61211439A600D712DF /* AlicloudHttpDNSTestDemo */,
 				4AF5AB801DCB32D600206DD8 /* Frameworks */,
+				CB1E4EE32A8CA91800F01EAC /* AlicloudHttpDNS.framework */,
+				CB1E4EE42A8CA91800F01EAC /* AlicloudHttpDNS.xctest */,
+				CB1E4EE52A8CA91800F01EAC /* AlicloudHttpDNSTestDemo.app */,
 			);
 			sourceTree = "<group>";
 		};
@@ -386,6 +392,8 @@
 				9AC200361F0E169400754CC2 /* UIApplication+ABSHTTPDNSSetting.m */,
 				2197CA3C1BC79A4500BDB65B /* Info.plist */,
 				942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */,
+				CB1E4EE62A8CBAD700F01EAC /* HttpDnsLocker.h */,
+				CB1E4EE72A8CBD1B00F01EAC /* HttpDnsLocker.m */,
 			);
 			path = AlicloudHttpDNS;
 			sourceTree = "<group>";
@@ -626,7 +634,7 @@
 			);
 			name = AlicloudHttpDNS;
 			productName = AlicloudHttpDNS;
-			productReference = 2197CA371BC79A4500BDB65B /* AlicloudHttpDNS.framework */;
+			productReference = CB1E4EE32A8CA91800F01EAC /* AlicloudHttpDNS.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		2197CA401BC79A4500BDB65B /* AlicloudHttpDNSTests */ = {
@@ -643,7 +651,7 @@
 			);
 			name = AlicloudHttpDNSTests;
 			productName = AlicloudHttpDNSTests;
-			productReference = 2197CA411BC79A4500BDB65B /* AlicloudHttpDNS.xctest */;
+			productReference = CB1E4EE42A8CA91800F01EAC /* AlicloudHttpDNS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		4AF4AB5F211439A600D712DF /* AlicloudHttpDNSTestDemo */ = {
@@ -660,7 +668,7 @@
 			);
 			name = AlicloudHttpDNSTestDemo;
 			productName = AlicloudHttpDNSTestDemo;
-			productReference = 4AF4AB60211439A600D712DF /* AlicloudHttpDNSTestDemo.app */;
+			productReference = CB1E4EE52A8CA91800F01EAC /* AlicloudHttpDNSTestDemo.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -767,6 +775,7 @@
 				9AF9A6121EC4E9990018063B /* HttpdnsIPRecord.m in Sources */,
 				9AE63A001ECDA74D00F9C723 /* HttpdnsDatabasePool.m in Sources */,
 				2197CAC51BC7B3D400BDB65B /* HttpdnsConfig.m in Sources */,
+				CB1E4EE82A8CBD1B00F01EAC /* HttpDnsLocker.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
