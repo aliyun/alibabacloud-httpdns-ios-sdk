@@ -174,6 +174,8 @@ typedef enum {
 /// @param host 域名
 - (NSArray *)getIPv4ListForHostAsync:(NSString *)host;
 
+- (NSArray *)getIPv4ListForHostSync:(NSString *)host;
+
 /// 异步接口，首次结果可能为空，获取域名对应格式化后的IP (针对ipv6)
 /// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
 /// @param host 域名

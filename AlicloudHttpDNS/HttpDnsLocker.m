@@ -24,18 +24,36 @@
     return self;
 }
 
--(void)lock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType {
-    NSCondition *condition = [[NSCondition alloc] init];
+-(NSCondition *)lock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType {
+    NSCondition *condition;
     if (queryType == HttpdnsQueryIPTypeIpv4) {
-        [_v4LockMap setObject:condition forKey:host];
+        condition = [_v4LockMap objectForKey:host];
+        if (condition == nil) {
+            condition = [[NSCondition alloc] init];
+            [_v4LockMap setObject:condition forKey:host];
+        }
     } else if (queryType == HttpdnsQueryIPTypeIpv6) {
-        [_v6LockMap setObject:condition forKey:host];
+        condition = [_v6LockMap objectForKey:host];
+        if (condition == nil) {
+            condition = [[NSCondition alloc] init];
+            [_v6LockMap setObject:condition forKey:host];
+        }
     } else {
-        [_v4v6LockMap setObject:condition forKey:host];
+        condition = [_v4v6LockMap objectForKey:host];
+        if (condition == nil) {
+            condition = [[NSCondition alloc] init];
+            [_v4v6LockMap setObject:condition forKey:host];
+        }
     }
+    
+    if (condition) {
+        [condition lock];
+    }
+    
+    return condition;
 }
 
--(void)wait:(NSString *)host queryType:(HttpdnsQueryIPType)queryType {
+-(BOOL)wait:(NSString *)host queryType:(HttpdnsQueryIPType)queryType {
     NSCondition *condition;
     if (queryType == HttpdnsQueryIPTypeIpv4) {
         condition = [_v4LockMap objectForKey:host];
@@ -54,36 +72,29 @@
             lockTimeout = serviceTimeout;
         }
         
-        [condition waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:lockTimeout]];
+        NSLog(@"###### lockTimeout is: %f, condition is: %@", lockTimeout, condition);
+        
+        return [condition waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
     }
+    return NO;
 }
 
 -(void)unlock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType {
     NSCondition *condition;
     if (queryType == HttpdnsQueryIPTypeIpv4) {
         condition = [_v4LockMap objectForKey:host];
+        [_v4LockMap removeObjectForKey: host];
     } else if (queryType == HttpdnsQueryIPTypeIpv6) {
         condition = [_v6LockMap objectForKey:host];
+        [_v6LockMap removeObjectForKey:host];
     } else {
         condition = [_v4v6LockMap objectForKey:host];
+        [_v4v6LockMap removeObjectForKey:host];
     }
     if (condition) {
         [condition unlock];
     }
 }
 
--(void)signal:(NSString *)host queryType:(HttpdnsQueryIPType)queryType {
-    NSCondition *condition;
-    if (queryType == HttpdnsQueryIPTypeIpv4) {
-        condition = [_v4LockMap objectForKey:host];
-    } else if (queryType == HttpdnsQueryIPTypeIpv6) {
-        condition = [_v6LockMap objectForKey:host];
-    } else {
-        condition = [_v4v6LockMap objectForKey:host];
-    }
-    if (condition) {
-        [condition signal];
-    }
-}
 
 @end
