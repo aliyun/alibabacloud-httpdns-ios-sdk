@@ -32,6 +32,7 @@
 #import <AlicloudUtils/AlicloudIPv6Adapter.h>
 #import "UIApplication+ABSHTTPDNSSetting.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
+#import "HttpDnsLocker.h"
 
 
 
@@ -56,7 +57,10 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 @property (nonatomic, copy) NSDictionary *globalParamsDic;
 @end
 
-@implementation HttpDnsService
+@implementation HttpDnsService {
+    HttpDnsLocker* _locker;
+}
+
 @synthesize IPRankingDataSource = _IPRankingDataSource;
 
 + (void)initialize {
@@ -69,6 +73,13 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
             [[UIApplication sharedApplication] onBeforeBootingProtection];
         }
     });
+}
+
+- (instancetype)init {
+    if (self = [super init]) {
+        _locker = [[HttpDnsLocker alloc]init];
+    }
+    return self;
 }
 
 #pragma mark singleton
@@ -91,11 +102,11 @@ static HttpDnsService * _httpDnsClient = nil;
     [_httpDnsClient requestScheduler];
     _httpDnsClient.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
     HTTPDNS_EXT_INFO = @{
-                         EXT_INFO_KEY_VERSION : HTTPDNS_IOS_SDK_VERSION,
-                         };
+        EXT_INFO_KEY_VERSION : HTTPDNS_IOS_SDK_VERSION,
+    };
     _httpDnsClient.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
     
-
+    
     
     if (HTTPDNS_INTER) {
         
@@ -169,7 +180,7 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     
     
-
+    
     
 }
 
@@ -184,7 +195,7 @@ static HttpDnsService * _httpDnsClient = nil;
     NSString *sdkVersion;//= HTTPDNS_IOS_SDK_VERSION;
     NSNumber *sdkStatus;
     NSString *sdkId = @"httpdns";
-
+    
     NSString *accountID;
     NSString *secretKey;
     
@@ -310,7 +321,7 @@ static HttpDnsService * _httpDnsClient = nil;
             ipQueryType = HttpdnsQueryIPTypeIpv4;
             break;
     }
-   
+    
     if (![self checkServiceStatus]) {
         return;
     }
@@ -489,8 +500,62 @@ static HttpDnsService * _httpDnsClient = nil;
         HttpdnsLogDebug("The host is illegal.");
         return nil;
     }
-    //TODO:需要检查是不是在主线程，如果是主线程，则不需要加锁逻辑，同时sync传No
-    
+    //需要检查是不是在主线程，如果是主线程，保持异步逻辑
+    if ([NSThread isMainThread]) {
+        NSLog(@"###### isMainThread");
+        //如果是主线程，仍然使用异步的方式，即先查询缓存，如果没有，则发送异步请求
+        HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO queryType:HttpdnsQueryIPTypeIpv4];
+        if (hostObject) {
+            NSArray * ipsObject = [hostObject getIps];
+            NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
+            if ([HttpdnsUtil isValidArray:ipsObject]) {
+                for (HttpdnsIpObject *ipObject in ipsObject) {
+                    [ipsArray addObject:[ipObject getIpString]];
+                }
+                [self bizPerfUserGetIPWithHost:host success:YES];
+                return ipsArray;
+            }
+        }
+        [self bizPerfUserGetIPWithHost:host success:NO];
+        HttpdnsLogDebug("No available IP cached for %@", host);
+        return nil;
+    } else {
+        NSLog(@"###### isNotMainThread");
+        NSMutableArray *ipsArray = nil;
+        __block HttpdnsHostObject *hostObject;
+        double start = [[NSDate date] timeIntervalSince1970]*1000;
+        __block NSCondition *condition = [_locker lock:host queryType:HttpdnsQueryIPTypeIpv4];
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            hostObject = [self->_requestScheduler addSingleHostAndLookup:host synchronously:YES queryType:HttpdnsQueryIPTypeIpv4];
+            double innerEnd = [[NSDate date] timeIntervalSince1970]*1000;
+            NSLog(@"###### inner time delta is: %f", (innerEnd - start));
+            if (condition) {
+                [condition signal];
+            }
+        });
+        
+        BOOL timeout = [_locker wait:host queryType:HttpdnsQueryIPTypeIpv4];
+        double end = [[NSDate date] timeIntervalSince1970]*1000;
+        NSLog(@"###### getIPv4ListForHostSync is timeout: %@ and resolve time delta is %f ms", timeout ? @"NO": @"YES", (end -start));
+        if (!timeout) {
+            HttpdnsLogDebug("getIPv4ListForHostSync for %@ has wait timeout", host);
+        }
+        if (hostObject) {
+            NSArray * ipsObject = [hostObject getIps];
+            ipsArray = [[NSMutableArray alloc] init];
+            if ([HttpdnsUtil isValidArray:ipsObject]) {
+                for (HttpdnsIpObject *ipObject in ipsObject) {
+                    [ipsArray addObject:[ipObject getIpString]];
+                }
+                [self bizPerfUserGetIPWithHost:host success:YES];
+            }
+        }
+        
+        [self bizPerfUserGetIPWithHost:host success:NO];
+        [_locker unlock:host queryType:HttpdnsQueryIPTypeIpv4];
+        condition = nil;
+        return ipsArray;
+    }
     
 }
 
@@ -625,6 +690,83 @@ static HttpDnsService * _httpDnsClient = nil;
     return nil;
 }
 
+- (NSArray *)getIPv6ListForHostSync:(NSString *)host {
+    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        return nil;
+    }
+    
+    if (![self checkServiceStatus]) {
+        return nil;
+    }
+    
+    if ([self _shouldDegradeHTTPDNS:host]) {
+        return nil;
+    }
+    
+    if (!host) {
+        return nil;
+    }
+    
+    if ([HttpdnsUtil isAnIP:host]) {
+        HttpdnsLogDebug("The host is just an IP.");
+        return [NSArray arrayWithObjects:host, nil];
+    }
+    
+    if (![HttpdnsUtil isAHost:host]) {
+        HttpdnsLogDebug("The host is illegal.");
+        return nil;
+    }
+    
+    if ([NSThread isMainThread]) {
+        //如果是主线程，仍然使用异步的方式，即先查询缓存，如果没有，则发送异步请求
+        HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO queryType:HttpdnsQueryIPTypeIpv6];
+        if (hostObject) {
+            NSArray *ipv6List = [hostObject getIp6s];
+            NSMutableArray *ipv6Array = [[NSMutableArray alloc] init];
+            if ([HttpdnsUtil isValidArray:ipv6List]) {
+                for (HttpdnsIpObject *ipv6Obj in ipv6List) {
+                    [ipv6Array addObject:[ipv6Obj getIpString]];
+                }
+                [self bizPerfUserGetIPWithHost:host success:YES];
+                return ipv6Array;
+            }
+        }
+        [self bizPerfUserGetIPWithHost:host success:NO];
+        HttpdnsLogDebug("No available IP cached for %@", host);
+        return nil;
+    } else {
+        NSMutableArray *ipv6Array = nil;
+        __block HttpdnsHostObject *hostObject;
+        __block NSCondition* condition = [_locker lock:host queryType:HttpdnsQueryIPTypeIpv6];
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            hostObject = [self->_requestScheduler addSingleHostAndLookup:host synchronously:YES queryType:HttpdnsQueryIPTypeIpv4];
+            if (condition) {
+                [condition signal];
+            }
+        });
+        
+        BOOL timeout = [_locker wait:host queryType:HttpdnsQueryIPTypeIpv6];
+        if (timeout) {
+            HttpdnsLogDebug("getIPv6ListForHostSync for %@ timeout", host);
+        }
+        if (hostObject) {
+            NSArray * ipv6List = [hostObject getIp6s];
+            ipv6Array = [[NSMutableArray alloc] init];
+            if ([HttpdnsUtil isValidArray:ipv6List]) {
+                for (HttpdnsIpObject *ipv6Obj in ipv6List) {
+                    [ipv6Array addObject:[ipv6Obj getIpString]];
+                }
+                [self bizPerfUserGetIPWithHost:host success:YES];
+            }
+        }
+        [self bizPerfUserGetIPWithHost:host success:NO];
+        HttpdnsLogDebug("No available IP cached for %@", host);
+        [_locker unlock:host queryType:HttpdnsQueryIPTypeIpv6];
+        condition = nil;
+        return ipv6Array;
+    }
+}
+
 - (NSDictionary<NSString *,NSArray *> *)getIPv4_v6ByHostAsync:(NSString *)host {
     
     if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
@@ -733,6 +875,93 @@ static HttpDnsService * _httpDnsClient = nil;
     return nil;
 }
 
+- (NSDictionary <NSString *, NSArray *>*)getHttpDnsResultHostSync:(NSString *)host {
+    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        return nil;
+    }
+    
+    if (![self checkServiceStatus]) {
+        return nil;
+    }
+    
+    if ([self _shouldDegradeHTTPDNS:host]) {
+        return nil;
+    }
+    
+    if (!host) {
+        return nil;
+    }
+    
+    
+    if ([HttpdnsUtil isAnIP:host]) {
+        HttpdnsLogDebug("The host is just an IP.");
+        if ([[AlicloudIPv6Adapter getInstance] isIPv4Address:host]) {
+            return @{ALICLOUDHDNS_IPV4: @[host?:@""]};
+        } else if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:host]) {
+            return @{ALICLOUDHDNS_IPV6: @[host?:@""]};
+        }
+        return nil;
+    }
+    
+    if (![HttpdnsUtil isAHost:host]) {
+        HttpdnsLogDebug("The host is illegal.");
+        return nil;
+    }
+    
+    if ([NSThread isMainThread]) {
+        ///主线程的话仍然是走异步的逻辑
+        HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO queryType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
+        if (hostObject) {
+            NSArray *ip4s = [hostObject getIPStrings];
+            NSArray *ip6s = [hostObject getIP6Strings];
+            NSMutableDictionary *resultMDic = [NSMutableDictionary dictionary];
+            NSLog(@"getIPv4_v6ByHostAsync result is %@", resultMDic);
+            if ([HttpdnsUtil isValidArray:ip4s]) {
+                [resultMDic setObject:ip4s forKey:ALICLOUDHDNS_IPV4];
+            }
+            if ([HttpdnsUtil isValidArray:ip6s]) {
+                [resultMDic setObject:ip6s forKey:ALICLOUDHDNS_IPV6];
+            }
+            [self bizPerfUserGetIPWithHost:host success:YES];
+            return resultMDic;
+        }
+        
+        [self bizPerfUserGetIPWithHost:host success:NO];
+        HttpdnsLogDebug("No available IP cached for %@", host);
+        return nil;
+    } else {
+        NSMutableDictionary *resultMDic = nil;
+        __block HttpdnsHostObject *hostObject;
+        __block NSCondition* condition = [_locker lock:host queryType:HttpdnsQueryIPTypeIpv6|HttpdnsQueryIPTypeIpv4];
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            hostObject = [self->_requestScheduler addSingleHostAndLookup:host synchronously:YES queryType:HttpdnsQueryIPTypeIpv6|HttpdnsQueryIPTypeIpv4];
+            if (condition) {
+                [condition signal];
+            }
+        });
+        BOOL timeout = [_locker wait:host queryType:HttpdnsQueryIPTypeIpv6|HttpdnsQueryIPTypeIpv4];
+        if (timeout) {
+            HttpdnsLogDebug("getHttpDnsResultHostSync for %@ timeout", host);
+        }
+        if (hostObject) {
+            NSArray *ip4s = [hostObject getIPStrings];
+            NSArray *ip6s = [hostObject getIP6Strings];
+            resultMDic = [NSMutableDictionary dictionary];
+            NSLog(@"getHttpDnsResultHostSync result is %@", resultMDic);
+            if ([HttpdnsUtil isValidArray:ip4s]) {
+                [resultMDic setObject:ip4s forKey:ALICLOUDHDNS_IPV4];
+            }
+            if ([HttpdnsUtil isValidArray:ip6s]) {
+                [resultMDic setObject:ip6s forKey:ALICLOUDHDNS_IPV6];
+            }
+            [self bizPerfUserGetIPWithHost:host success:YES];
+        }
+        [_locker unlock:host queryType:HttpdnsQueryIPTypeIpv6|HttpdnsQueryIPTypeIpv4];
+        condition = nil;
+        return resultMDic;
+    }
+}
+
 
 /// 根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址组
 ///   设备网络            返回域名IP
@@ -784,16 +1013,22 @@ static HttpDnsService * _httpDnsClient = nil;
     return httpdnsResult;
 }
 
-- (NSDictionary <NSString *, NSArray *>*)aotuGetHttpDnsResultForHostSync:(NSString *)host {
+- (NSDictionary <NSString *, NSArray *>*) autoGetHttpDnsResultForHostSync:(NSString *)host {
     AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
     AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
     NSMutableDictionary *httpdnsResult = [NSMutableDictionary dictionary];
     if (stackType == kAlicloudIPv4only) {
-        
+        NSArray* ipv4IpList = [self getIPv4ListForHostSync:host];
+        if (ipv4IpList) {
+            [httpdnsResult setObject:ipv4IpList forKey:ALICLOUDHDNS_IPV4];
+        }
     } else if (stackType == kAlicloudIPdual) {
-        
+        httpdnsResult = [self getHttpDnsResultHostSync:host];
     } else if (stackType == kAlicloudIPv6only) {
-        
+        NSArray* ipv6List = [self getIPv6ListForHostSync:host];
+        if (ipv6List) {
+            [httpdnsResult setObject:ipv6List forKey:ALICLOUDHDNS_IPV6];
+        }
     }
     return httpdnsResult;
 }
