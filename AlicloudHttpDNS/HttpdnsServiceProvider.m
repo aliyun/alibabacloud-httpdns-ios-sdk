@@ -549,9 +549,9 @@ static HttpDnsService * _httpDnsClient = nil;
                 }
                 [self bizPerfUserGetIPWithHost:host success:YES];
             }
+        } else {
+            [self bizPerfUserGetIPWithHost:host success:NO];
         }
-        
-        [self bizPerfUserGetIPWithHost:host success:NO];
         [_locker unlock:host queryType:HttpdnsQueryIPTypeIpv4];
         condition = nil;
         return ipsArray;
@@ -739,15 +739,15 @@ static HttpDnsService * _httpDnsClient = nil;
         __block HttpdnsHostObject *hostObject;
         __block NSCondition* condition = [_locker lock:host queryType:HttpdnsQueryIPTypeIpv6];
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            hostObject = [self->_requestScheduler addSingleHostAndLookup:host synchronously:YES queryType:HttpdnsQueryIPTypeIpv4];
+            hostObject = [self->_requestScheduler addSingleHostAndLookup:host synchronously:YES queryType:HttpdnsQueryIPTypeIpv6];
             if (condition) {
                 [condition signal];
             }
         });
         
         BOOL timeout = [_locker wait:host queryType:HttpdnsQueryIPTypeIpv6];
-        if (timeout) {
-            HttpdnsLogDebug("getIPv6ListForHostSync for %@ timeout", host);
+        if (!timeout) {
+            HttpdnsLogDebug("###### getIPv6ListForHostSync for %@ has wait timeout", host);
         }
         if (hostObject) {
             NSArray * ipv6List = [hostObject getIp6s];
@@ -758,9 +758,9 @@ static HttpDnsService * _httpDnsClient = nil;
                 }
                 [self bizPerfUserGetIPWithHost:host success:YES];
             }
+        } else {
+            [self bizPerfUserGetIPWithHost:host success:NO];
         }
-        [self bizPerfUserGetIPWithHost:host success:NO];
-        HttpdnsLogDebug("No available IP cached for %@", host);
         [_locker unlock:host queryType:HttpdnsQueryIPTypeIpv6];
         condition = nil;
         return ipv6Array;
@@ -940,21 +940,23 @@ static HttpDnsService * _httpDnsClient = nil;
             }
         });
         BOOL timeout = [_locker wait:host queryType:HttpdnsQueryIPTypeIpv6|HttpdnsQueryIPTypeIpv4];
-        if (timeout) {
-            HttpdnsLogDebug("getHttpDnsResultHostSync for %@ timeout", host);
+        if (!timeout) {
+            HttpdnsLogDebug("###### getHttpDnsResultHostSync for %@ has wait timeout", host);
         }
         if (hostObject) {
             NSArray *ip4s = [hostObject getIPStrings];
             NSArray *ip6s = [hostObject getIP6Strings];
             resultMDic = [NSMutableDictionary dictionary];
-            NSLog(@"getHttpDnsResultHostSync result is %@", resultMDic);
             if ([HttpdnsUtil isValidArray:ip4s]) {
                 [resultMDic setObject:ip4s forKey:ALICLOUDHDNS_IPV4];
             }
             if ([HttpdnsUtil isValidArray:ip6s]) {
                 [resultMDic setObject:ip6s forKey:ALICLOUDHDNS_IPV6];
             }
+            NSLog(@"###### getHttpDnsResultHostSync result is %@", resultMDic);
             [self bizPerfUserGetIPWithHost:host success:YES];
+        } else {
+            [self bizPerfUserGetIPWithHost:host success:NO];
         }
         [_locker unlock:host queryType:HttpdnsQueryIPTypeIpv6|HttpdnsQueryIPTypeIpv4];
         condition = nil;

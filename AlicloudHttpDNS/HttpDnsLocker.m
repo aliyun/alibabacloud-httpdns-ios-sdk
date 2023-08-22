@@ -64,6 +64,7 @@
     }
     if (condition) {
         NSTimeInterval serviceTimeout = [HttpDnsService sharedInstance].timeoutInterval;
+        NSLog(@"###### httpDnsService timeout is %f", serviceTimeout);
         NSTimeInterval lockTimeout;
         //锁的超时时间最大为5s
         if (serviceTimeout > 5) {
@@ -72,9 +73,9 @@
             lockTimeout = serviceTimeout;
         }
         
-        NSLog(@"###### lockTimeout is: %f, condition is: %@", lockTimeout, condition);
+        NSLog(@"###### final lockTimeout is: %f", lockTimeout);
         
-        return [condition waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+        return [condition waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:lockTimeout]];
     }
     return NO;
 }
