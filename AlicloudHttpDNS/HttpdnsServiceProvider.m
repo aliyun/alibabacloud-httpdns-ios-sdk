@@ -502,7 +502,6 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     //需要检查是不是在主线程，如果是主线程，保持异步逻辑
     if ([NSThread isMainThread]) {
-        NSLog(@"###### isMainThread");
         //如果是主线程，仍然使用异步的方式，即先查询缓存，如果没有，则发送异步请求
         HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO queryType:HttpdnsQueryIPTypeIpv4];
         if (hostObject) {
@@ -520,7 +519,6 @@ static HttpDnsService * _httpDnsClient = nil;
         HttpdnsLogDebug("No available IP cached for %@", host);
         return nil;
     } else {
-        NSLog(@"###### isNotMainThread");
         NSMutableArray *ipsArray = nil;
         __block HttpdnsHostObject *hostObject;
         double start = [[NSDate date] timeIntervalSince1970]*1000;
@@ -528,7 +526,7 @@ static HttpDnsService * _httpDnsClient = nil;
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             hostObject = [self->_requestScheduler addSingleHostAndLookup:host synchronously:YES queryType:HttpdnsQueryIPTypeIpv4];
             double innerEnd = [[NSDate date] timeIntervalSince1970]*1000;
-            NSLog(@"###### inner time delta is: %f", (innerEnd - start));
+            HttpdnsLogDebug(@"###### inner time delta is: %f", (innerEnd - start));
             if (condition) {
                 [condition signal];
             }
@@ -536,7 +534,7 @@ static HttpDnsService * _httpDnsClient = nil;
         
         BOOL timeout = [_locker wait:host queryType:HttpdnsQueryIPTypeIpv4];
         double end = [[NSDate date] timeIntervalSince1970]*1000;
-        NSLog(@"###### getIPv4ListForHostSync is timeout: %@ and resolve time delta is %f ms", timeout ? @"NO": @"YES", (end -start));
+        HttpdnsLogDebug(@"###### getIPv4ListForHostSync is timeout: %@ and resolve time delta is %f ms", timeout ? @"NO": @"YES", (end -start));
         if (!timeout) {
             HttpdnsLogDebug("getIPv4ListForHostSync for %@ has wait timeout", host);
         }
