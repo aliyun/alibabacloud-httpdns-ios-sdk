@@ -174,7 +174,7 @@ typedef enum {
 /// @param host 域名
 - (NSArray *)getIPv4ListForHostAsync:(NSString *)host;
 
-/// NOTE: 同步接口，必须在子线程中执行，否则会转变为异步接口
+/// 获取IPv4地址列表，同步接口，必须在子线程中执行，否则会转变为异步接口
 /// 同步接口有超时机制，超时时间为[HttpDnsService sharedInstance].timeoutInterval, 但是超时上限为5s，
 /// 即使[HttpDnsService sharedInstance].timeoutInterval设置的时间大于5s，同步接口也最多阻塞当前线程5s
 /// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起同步解析请求
@@ -206,7 +206,7 @@ typedef enum {
 /// @param host 域名
 - (NSArray *)getIPv6ListForHostAsync:(NSString *)host;
 
-/// NOTE: 同步接口，必须在子线程中执行，否则会转变为异步接口
+/// 获取IPv6地址列表，同步接口，必须在子线程中执行，否则会转变为异步接口
 /// 同步接口有超时机制，超时时间为[HttpDnsService sharedInstance].timeoutInterval, 但是超时上限为5s，
 /// 即使[HttpDnsService sharedInstance].timeoutInterval设置的时间大于5s，同步接口也最多阻塞当前线程5s
 /// @param host 域名
@@ -273,7 +273,7 @@ typedef enum {
 ///   }
 -(NSDictionary <NSString *, NSArray *>*)autoGetHttpDnsResultForHostAsync:(NSString *)host;
 
-/// NOTE: 同步接口，必须在子线程中执行，否则会转变为异步接口
+/// 根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址组，同步接口，必须在子线程中执行，否则会转变为异步接口
 /// 同步接口有超时机制，超时时间为[HttpDnsService sharedInstance].timeoutInterval, 但是超时上限为5s，
 /// 即使[HttpDnsService sharedInstance].timeoutInterval设置的时间大于5s，同步接口也最多阻塞当前线程5s
 /// 根据当前网络栈自动获取ipv4 ipv6的IP （需要开启ipv6 开关 enableIPv6）
