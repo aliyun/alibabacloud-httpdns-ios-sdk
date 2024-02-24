@@ -1,62 +1,64 @@
-#!/bin/sh
+#!/bin/bash
 
-PROJECT_NAME='AlicloudHttpDNS'
-SRCROOT='.'
+# capture ERR signal
+trap 'echo "An error occurred. Exiting..." && exit 2' ERR
 
-# Sets the target folders and the final framework product.
-# 如果工程名称和Framework的Target名称不一样的话，要自定义FMKNAME
-# 例如: FMK_NAME = "MyFramework"
-FMK_NAME=${PROJECT_NAME}
+BUILD_CONFIG="Release" # Default configuration
 
-# Install dir will be the final output to the framework.
-# The following line create it in the root folder of the current project.
-INSTALL_DIR=${SRCROOT}/Products/${PROJECT_NAME}.framework
-
-# Working dir will be deleted after the framework creation.
-WRK_DIR=build
-DEVICE_DIR=${WRK_DIR}/Release-iphoneos/${FMK_NAME}.framework
-SIMULATOR_DIR=${WRK_DIR}/Release-iphonesimulator/${FMK_NAME}.framework
-
-# -configuration ${CONFIGURATION}
-# Clean and Building both architectures.
-xcodebuild -configuration "Release" -target "${FMK_NAME}" -sdk iphoneos build
-# xcodebuild -configuration "Release" -target "${FMK_NAME}" -sdk iphonesimulator -arch "x86_64" -arch "i386" build
-xcodebuild -configuration "Release" -target "${FMK_NAME}" -sdk iphonesimulator -arch "x86_64" build
-
-# Cleaning the oldest.
-if [ -d "${INSTALL_DIR}" ]
-then
-    rm -rf "${INSTALL_DIR}"
+if [[ $# -gt 0 ]]; then
+  case "$1" in
+    debug)
+      BUILD_CONFIG="Debug"
+      ;;
+    release)
+      BUILD_CONFIG="Release"
+      ;;
+    *)
+      echo "Usage: $0 [debug/release(default)]"
+      exit 1
+      ;;
+  esac
 fi
 
-mkdir -p "${INSTALL_DIR}"
+echo "Building configuration '$BUILD_CONFIG'"
 
-cp -r "${DEVICE_DIR}" ${SRCROOT}/Products/
+FRAMEWORK_NAME='AlicloudHttpDNS'
+FRAMEWORK_VERSION=1.0
+FRAMEWORK_CONFIG="$BUILD_CONFIG"
+PRODUCT_DIR="Products"
+XCFRAMEWORK_PATH="${PRODUCT_DIR}/${FRAMEWORK_NAME}.xcframework"
 
-# Uses the Lipo Tool to merge both binary files (i386 + armv6/armv7) into one Universal final product.
-lipo -create "${DEVICE_DIR}/${FMK_NAME}" "${SIMULATOR_DIR}/${FMK_NAME}" -output "${INSTALL_DIR}/${FMK_NAME}"
+# Ensure PRODUCT_DIR is clean
+rm -rf "$PRODUCT_DIR"
+mkdir -p "$PRODUCT_DIR"
 
-rm -r "${WRK_DIR}"
+build_framework() {
+  sdk="$1"
+  archs=("${@:2}") # Pass in remaining arguments as array
+  arch_flags="${archs[@]/#/-arch }" # Prefix each arch with "-arch"
 
-if [ -d "${INSTALL_DIR}/_CodeSignature" ]
-then
-    rm -rf "${INSTALL_DIR}/_CodeSignature"
-fi
+  xcodebuild build -configuration "$FRAMEWORK_CONFIG" -scheme "$FRAMEWORK_NAME" -sdk "$sdk" $arch_flags
 
-if [ -f "${INSTALL_DIR}/Info.plist" ]
-then
-    rm "${INSTALL_DIR}/Info.plist"
-fi
+  # Directly use the output of xcodebuild -showBuildSettings to avoid re-execution and errors
+  local build_settings
+  build_settings="$(xcodebuild -configuration "$FRAMEWORK_CONFIG" -sdk "$sdk" -arch "${archs[0]}" -showBuildSettings)"
+  local built_products_dir
+  built_products_dir=$(echo "$build_settings" | grep " BUILT_PRODUCTS_DIR =" | sed "s/.*= //")
 
-if [ -d "${INSTALL_DIR}/ALBB.bundle" ]
-then
-    rm -rf "${INSTALL_DIR}/ALBB.bundle"
-fi
+  eval "FRAMEWORK_PATH_${sdk}='${built_products_dir}/${FRAMEWORK_NAME}.framework'"
+}
 
-# 压缩zip
-cd "Products"
-echo "zip  begin......."
-zip -r "httpdns.zip" "${PROJECT_NAME}.framework"
-echo "zip  end......."
+build_framework iphoneos arm64
+build_framework iphonesimulator x86_64 arm64
 
-echo "\nBUILD FINISH."
+DEVICE_FRAMEWORK=$(eval echo \$FRAMEWORK_PATH_iphoneos)
+SIMULATOR_FRAMEWORK=$(eval echo \$FRAMEWORK_PATH_iphonesimulator)
+
+# Create xcframework
+xcodebuild -create-xcframework -framework "$DEVICE_FRAMEWORK" -framework "$SIMULATOR_FRAMEWORK" -output "$XCFRAMEWORK_PATH"
+
+# Remove _CodeSignature directories
+echo "Removing _CodeSignature directories."
+find "$XCFRAMEWORK_PATH" -name '_CodeSignature' -type d -exec rm -rf {} +
+
+echo -e "\nBUILD FINISH."
