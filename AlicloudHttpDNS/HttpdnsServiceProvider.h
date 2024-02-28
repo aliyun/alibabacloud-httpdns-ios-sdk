@@ -155,19 +155,56 @@ typedef enum {
 /// 请参考: 解析异常排查之 “会话追踪方案” https://help.aliyun.com/document_detail/100530.html
 - (NSString *)getSessionId;
 
+
+
 /// 获取域名对应的IP，单IP
 /// @param host 域名
 - (NSString *)getIpByHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated Use -[HttpDnsService getIPv4ForHostAsync:host]");
-
-/// 异步接口，首次结果可能为空，获取域名对应的IPv4地址，单IPv4
-/// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
-/// @param host域名
-- (NSString *)getIPv4ForHostAsync:(NSString *)host;
 
 /// 异步接口，首次结果可能为空，获取域名对应的IP数组，多IP
 /// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
 /// @param host 域名
 - (NSArray *)getIpsByHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated Use -[HttpDnsService getIPv4ListForHostAsync:host]");
+
+/// 异步接口，首次结果可能为空，获取域名对应的ipv6, 单IP （需要开启ipv6 开关 enableIPv6）
+/// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
+/// @param host 域名
+- (NSString *)getIPv6ByHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated Use -[HttpDnsService getIPv6ForHostAsync:host]");
+
+/// 异步接口，首次结果可能为空，获取域名对应的ipv6数组, 多IP （需要开启ipv6 开关 enableIPv6）
+/// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
+/// @param host 域名
+- (NSArray *)getIPv6sByHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated Use -[HttpDnsService getIPv6ListForHostAsync:host]");
+
+/// 同时获取ipv4 ipv6的IP （需要开启ipv6 开关 enableIPv6）
+/// @param host 域名
+/// @result 返回字典类型结构
+///   {
+///         ALICLOUDHDNS_IPV4: ['xxx.xxx.xxx.xxx', 'xxx.xxx.xxx.xxx'],
+///         ALICLOUDHDNS_IPV6: ['xx:xx:xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx:xx:xx']
+///   }
+- (NSDictionary <NSString *, NSArray *>*)getIPv4_v6ByHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated Use -[HttpDnsService getHttpDnsResultHostAsync:host]");
+
+/// 根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址组
+/// 使用此API 需要确保 enableIPv6 开关已打开
+///   设备网络            返回域名IP
+///   IPv4 Only           IPv4
+///   IPv6 Only           IPv6 （如果没有Pv6返回空）
+///   双栈                 IPv4/IPV6
+/// @param host 要解析的域名
+/// @result 返回字典类型结构
+///   {
+///         ALICLOUDHDNS_IPV4: ['xxx.xxx.xxx.xxx', 'xxx.xxx.xxx.xxx'],
+///         ALICLOUDHDNS_IPV6: ['xx:xx:xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx:xx:xx']
+///   }
+-(NSDictionary <NSString *, NSArray *>*)autoGetIpsByHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated Use -[HttpDnsService autoGetHttpDnsResultForHostAsync:host]");
+
+
+
+/// 异步接口，首次结果可能为空，获取域名对应的IPv4地址，单IPv4
+/// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
+/// @param host 域名
+- (NSString *)getIPv4ForHostAsync:(NSString *)host;
 
 /// 异步接口，首次结果可能为空，获取域名对应的IP数组，多IP
 /// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
@@ -181,25 +218,12 @@ typedef enum {
 /// @param host 域名
 - (NSArray *)getIPv4ListForHostSync:(NSString *)host;
 
-/// 异步接口，首次结果可能为空，获取域名对应格式化后的IP (针对ipv6)
-/// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
-/// @param host 域名
-- (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host;
 
-/// 异步接口，首次结果可能为空，获取域名对应的ipv6, 单IP （需要开启ipv6 开关 enableIPv6）
-/// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
-/// @param host 域名
-- (NSString *)getIPv6ByHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated Use -[HttpDnsService getIPv6ForHostAsync:host]");
 
 /// 异步接口，首次结果可能为空，获取域名对应的ipv6, 单IP （需要开启ipv6 开关 enableIPv6）
 /// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
 /// @param host 域名
 - (NSString *)getIPv6ForHostAsync:(NSString *)host;
-
-/// 异步接口，首次结果可能为空，获取域名对应的ipv6数组, 多IP （需要开启ipv6 开关 enableIPv6）
-/// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
-/// @param host 域名
-- (NSArray *)getIPv6sByHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated Use -[HttpDnsService getIPv6ListForHostAsync:host]");
 
 /// 异步接口，首次结果可能为空，获取域名对应的ipv6数组, 多IP （需要开启ipv6 开关 enableIPv6）
 /// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
@@ -212,14 +236,12 @@ typedef enum {
 /// @param host 域名
 - (NSArray *)getIPv6ListForHostSync:(NSString *)host;
 
-/// 同时获取ipv4 ipv6的IP （需要开启ipv6 开关 enableIPv6）
+/// 异步接口，首次结果可能为空，获取域名对应格式化后的IP (针对ipv6)
+/// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
 /// @param host 域名
-/// @result 返回字典类型结构
-///   {
-///         ALICLOUDHDNS_IPV4: ['xxx.xxx.xxx.xxx', 'xxx.xxx.xxx.xxx'],
-///         ALICLOUDHDNS_IPV6: ['xx:xx:xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx:xx:xx']
-///   }
-- (NSDictionary <NSString *, NSArray *>*)getIPv4_v6ByHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated Use -[HttpDnsService getHttpDnsResultHostAsync:host]");
+- (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host;
+
+
 
 /// 异步接口，首次结果可能为空，同时获取ipv4 ipv6的IP （需要开启ipv6 开关 enableIPv6）
 /// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
@@ -245,19 +267,6 @@ typedef enum {
 - (NSDictionary <NSString *, NSArray *>*)getHttpDnsResultHostSync:(NSString *)host;
 
 
-/// 根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址组
-/// 使用此API 需要确保 enableIPv6 开关已打开
-///   设备网络            返回域名IP
-///   IPv4 Only           IPv4
-///   IPv6 Only           IPv6 （如果没有Pv6返回空）
-///   双栈                 IPv4/IPV6
-/// @param host 要解析的域名
-/// @result 返回字典类型结构
-///   {
-///         ALICLOUDHDNS_IPV4: ['xxx.xxx.xxx.xxx', 'xxx.xxx.xxx.xxx'],
-///         ALICLOUDHDNS_IPV6: ['xx:xx:xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx:xx:xx']
-///   }
--(NSDictionary <NSString *, NSArray *>*)autoGetIpsByHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated Use -[HttpDnsService autoGetHttpDnsResultForHostAsync:host]");
 
 /// 异步接口，首次结果可能为空，根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址组
 /// 使用此API 需要确保 enableIPv6 开关已打开
