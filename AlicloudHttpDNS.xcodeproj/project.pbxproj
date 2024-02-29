@@ -55,7 +55,6 @@
 		4AF4AB8E211439D300D712DF /* HttpdnsScheduleCenter.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A4D181C1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.m */; };
 		4AF4AB8F211439D300D712DF /* HttpdnsScheduleCenterRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A5D5E281E9CB4D400CAC3A6 /* HttpdnsScheduleCenterRequest.m */; };
 		4AF4AB90211439D300D712DF /* UIApplication+ABSHTTPDNSSetting.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC200361F0E169400754CC2 /* UIApplication+ABSHTTPDNSSetting.m */; };
-		4AF4AB91211439EA00D712DF /* AlicloudUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AF5AB811DCB32D600206DD8 /* AlicloudUtils.framework */; };
 		4AF4AB96211439F900D712DF /* libresolv.9.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AF4AB95211439F900D712DF /* libresolv.9.tbd */; };
 		4AF4AB9921143A3800D712DF /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AF4AB9821143A3800D712DF /* libz.tbd */; };
 		4AF5AB831DCB332800206DD8 /* HttpdnsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */; };
@@ -311,7 +310,6 @@
 				4AF4AB9921143A3800D712DF /* libz.tbd in Frameworks */,
 				4AF4AB96211439F900D712DF /* libresolv.9.tbd in Frameworks */,
 				94FD625F2B8F0D22001C668D /* UTDID.xcframework in Frameworks */,
-				4AF4AB91211439EA00D712DF /* AlicloudUtils.framework in Frameworks */,
 				94FD62632B8F0D32001C668D /* AlicloudUtils.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -671,8 +669,6 @@
 					};
 					4AF4AB5F211439A600D712DF = {
 						CreatedOnToolsVersion = 9.3.1;
-						DevelopmentTeam = VSW2PKYTD7;
-						ProvisioningStyle = Manual;
 					};
 				};
 			};
@@ -1123,9 +1119,9 @@
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = VSW2PKYTD7;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = SFLQ3557MD;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -1140,7 +1136,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.aliyun.emas.pocdemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = com.aliyun.emas.pocdemo.dev;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -1163,9 +1159,9 @@
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = VSW2PKYTD7;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = SFLQ3557MD;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -1180,7 +1176,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.aliyun.emas.pocdemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = com.aliyun.emas.pocdemo.dev;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

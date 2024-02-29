@@ -444,7 +444,6 @@ static NSURLSession *_resolveHOSTSession = nil;
     [self resetRequestConfigure];
     // 解析主机
     HttpdnsLogDebug("\n ====== Resolve host(%@) over network.", hostString);
-    NSLog(@"##### ====== Resolve host(%@) over network.", hostString);
     HttpdnsHostObject *hostObject = nil;
     
     NSString *copyHostString = hostString;
