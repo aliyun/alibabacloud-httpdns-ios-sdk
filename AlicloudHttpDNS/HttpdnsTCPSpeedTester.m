@@ -193,17 +193,13 @@ static NSString *const ipKey = @"ip";
 
 - (int)testSpeedOf:(NSString *)ip port:(int16_t)port {
     NSString *oldIp = ip;
-    //request time out
     float rtt = 0.0;
-    //sock：将要被设置或者获取选项的套接字。
     int s = 0;
     struct sockaddr_in saddr;
     saddr.sin_family = AF_INET;
-    // MARK: - 设置端口，这里需要根据需要自定义，默认是80端口。
     saddr.sin_port = htons(port);
     saddr.sin_addr.s_addr = inet_addr([ip UTF8String]);
-    //saddr.sin_addr.s_addr = inet_addr("1.1.1.123");
-    if( (s=socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if((s = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         NSLog(@"ERROR:%s:%d, create socket failed.",__FUNCTION__,__LINE__);
         return 0;
     }
@@ -215,9 +211,9 @@ static NSString *const ipKey = @"ip";
     //对于阻塞式套接字，调用connect函数将激发TCP的三次握手过程，而且仅在连接建立成功或者出错时才返回；
     //对于非阻塞式套接字，如果调用connect函数会之间返回-1（表示出错），且错误为EINPROGRESS，表示连接建立，建立启动但是尚未完成；
     //如果返回0，则表示连接已经建立，这通常是在服务器和客户在同一台主机上时发生。
-    int i = connect(s,(struct sockaddr*)&saddr, sizeof(saddr));
-    if(i == 0) {
-        //建立连接成功，返回rtt时间。 因为connect是非阻塞，所以这个时间就是一个函数执行的时间，毫秒级，没必要再测速了。
+    int ret = connect(s,(struct sockaddr*)&saddr, sizeof(saddr));
+    if (ret == 0) {
+        //建立连接成功，返回rtt时间。因为connect是非阻塞，所以这个时间就是一个函数执行的时间，毫秒级，没必要再测速了。
         close(s);
         return 1;
     }
@@ -231,23 +227,23 @@ static NSString *const ipKey = @"ip";
     FD_ZERO(&myset);
     FD_SET(s, &myset);
     
-    // MARK: - 使用select函数，对套接字的IO操作设置超时。
+    // MARK: - 使用select函数，等待socket建连成功，最多等待`HTTPDNS_SOCKET_CONNECT_TIMEOUT`秒
     /**
      select函数
      select是一种IO多路复用机制，它允许进程指示内核等待多个事件的任何一个发生，并且在有一个或者多个事件发生或者经历一段指定的时间后才唤醒它。
      connect本身并不具有设置超时功能，如果想对套接字的IO操作设置超时，可使用select函数。
      **/
-    int maxfdp = s+1;
-    int j = select(maxfdp, NULL, &myset, NULL, &tv);
-    
-    if (j == 0) {
+    int maxfdp = s + 1;
+    ret = select(maxfdp, NULL, &myset, NULL, &tv);
+
+    if (ret == 0) {
         NSLog(@"INFO:%s:%d, test rtt of (%@) timeout.",__FUNCTION__,__LINE__, oldIp);
         rtt = HTTPDNS_SOCKET_CONNECT_TIMEOUT_RTT;
         close(s);
         return rtt;
     }
     
-    if (j < 0) {
+    if (ret < 0) {
         NSLog(@"ERROR:%s:%d, select function error.",__FUNCTION__,__LINE__);
         rtt = 0;
         close(s);
@@ -268,7 +264,7 @@ static NSString *const ipKey = @"ip";
     getsockopt(s, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon);
     //如果有错误信息：
     if (valopt) {
-        NSLog(@"ERROR:%s:%d, select function error.",__FUNCTION__,__LINE__);
+        NSLog(@"ERROR:%s:%d, select function error.", __FUNCTION__, __LINE__);
         rtt = 0;
     } else {
         endTime = [NSDate date];
