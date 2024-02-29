@@ -69,29 +69,27 @@ NSArray *ipv6HostArray = nil;
     _service = [[HttpDnsService alloc] initWithAccountID:170713];
     [_service setLogEnabled:YES];
     [_service setCachedIPEnabled:YES];
-    [_service setExpiredIPEnabled:YES];
+    [_service setExpiredIPEnabled:NO];
     [_service setHTTPSRequestEnabled:YES];
     [_service enableIPv6:YES];
-
-    
 }
 
 
 
-
 - (IBAction)onHost1:(id)sender {
-//    [_service getIpByHostAsync:@"www.aliyun.com"];
-//
-//    NSString *sessionId = [_service getSessionId];
-//    NSLog(@"Get sessionId: %@", sessionId);
-    
-//    [_service setPreResolveHosts:@[@"m.u17.com", @"live-dev-cstest.fzzqxf.com", @"ios-dev-cstest.fzzqxf.com"]];
-    
-    NSString *ip = [_service getIpByHostAsync:@"www.taobao.com"];
-//    [_service getIpsByHostAsync:@"www.taobao.com" withParams:@{@"key1": @"value1", @"key2": @"value2"} withCacheKey:@"cache"];
-    
+    AlicloudIPStackType stackType = [_service currentIpStack];
+    NSLog(@"onHost1, stackType: %d", stackType);
 
-    
+    for (NSString *ipv4Host in ipv4HostArray) {
+        [_service autoGetHttpDnsResultForHostAsync:ipv4Host returnIps:^(NSDictionary<NSString *,NSString *> *result) {
+            NSLog(@"host: %@, result: %@", ipv4Host, result);
+        }];
+    }
+    for (NSString *ipv6Host in ipv6HostArray) {
+        [_service autoGetHttpDnsResultForHostAsync:ipv6Host returnIps:^(NSDictionary<NSString *,NSString *> *result) {
+            NSLog(@"host: %@, result: %@", ipv6Host, result);
+        }];
+    }
 }
 
 - (IBAction)onHost2:(id)sender {
@@ -127,15 +125,6 @@ NSArray *ipv6HostArray = nil;
 
 // IPv6 Stack检测
 - (IBAction)onCheckIPv6Stack:(id)sender {
-//    NSString *preResolveIP = @"106.11.90.200";
-//    BOOL haveIPv6Stack = [_service haveIPv6Stack];
-//    if (haveIPv6Stack) {
-//        NSString *ipv6 = [[AlicloudIPv6Adapter getInstance] getIPv6Address:preResolveIP];
-//        [self showAlert:@"IPv6地址转换" content:ipv6];
-//    }
-//    NSMutableDictionary *mDic = [NSMutableDictionary dictionary];
-//    [mDic setObject:@(1) forKey:@"enable"];
-//    NSLog(@"mDic: %@", mDic);
 }
 
 

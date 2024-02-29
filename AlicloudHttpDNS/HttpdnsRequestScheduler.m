@@ -668,7 +668,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         } else {
             dispatch_async(_syncDispatchQueue, ^{
                 @try {
-                    HttpdnsLogDebug("Sync request for %@ finishes.", host);
+                    HttpdnsLogDebug("Sync request for %@ finished, result: %@", host, result);
                 } @catch (NSException *exception) {
                 }
                
