@@ -59,6 +59,8 @@ typedef enum {
 
 @property (nonatomic, assign) NSTimeInterval timeoutInterval;
 
++ (instancetype)sharedInstance;
+
 - (instancetype)autoInit;
 
 - (instancetype)initWithAccountID:(int)accountID;
@@ -80,8 +82,6 @@ typedef enum {
  * @attention 校正操作在 APP 的一个生命周期内生效，APP 重启后需要重新设置才能重新生效。可以重复设置。
  */
 - (void)setAuthCurrentTime:(NSUInteger)authCurrentTime;
-
-+ (instancetype)sharedInstance;
 
 
 /// 设置持久化缓存功能
