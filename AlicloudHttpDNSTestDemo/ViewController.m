@@ -71,7 +71,7 @@ NSArray *ipv6HostArray = nil;
 
     // ams_test账号139450
     _service = [[HttpDnsService alloc] initWithAccountID:139450];
-    [_service setLogEnabled:NO];
+    [_service setLogEnabled:YES];
     [_service setCachedIPEnabled:YES];
     [_service setExpiredIPEnabled:NO];
     [_service setHTTPSRequestEnabled:YES];
@@ -99,12 +99,9 @@ NSArray *ipv6HostArray = nil;
 }
 
 - (IBAction)onHost2:(id)sender {
-    for (NSString *ipv4Host in ipv4HostArray) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            NSArray *ipRes = [_service getIPv4ListForHostSync:ipv4Host];
-            NSLog(@"host: %@, ip: %@", ipv4Host, ipRes);
-        });
-    }
+    [_service autoGetHttpDnsResultForHostAsync:@"dns.xuyecan1919.tech" returnIps:^(NSDictionary<NSString *,NSString *> *result) {
+        NSLog(@"host2: %@", result);
+    }];
 }
 
 // 开启IPv6解析结果

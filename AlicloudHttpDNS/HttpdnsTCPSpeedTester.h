@@ -20,8 +20,11 @@
 #import <Foundation/Foundation.h>
 #import "HttpdnsSpeedTester.h"
 
-#define HTTPDNS_SOCKET_CONNECT_TIMEOUT 10 //单位秒
-#define HTTPDNS_SOCKET_CONNECT_TIMEOUT_RTT 600000//10分钟 单位毫秒
+// 单位秒，探测超过3秒的IP，已经没有优选必要了
+#define HTTPDNS_SOCKET_CONNECT_TIMEOUT 3
+
+// 10分钟 单位毫秒
+#define HTTPDNS_SOCKET_CONNECT_TIMEOUT_RTT 600000
 
 @interface HttpdnsTCPSpeedTester : NSObject <HttpdnsSpeedTester>
 
