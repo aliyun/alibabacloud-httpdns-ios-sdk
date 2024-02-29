@@ -75,14 +75,15 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
     });
 }
 
+#pragma mark -
+#pragma mark ---------- singleton
+
 - (instancetype)init {
     if (self = [super init]) {
         _locker = [[HttpDnsLocker alloc] init];
     }
     return self;
 }
-
-#pragma mark singleton
 
 static HttpDnsService * _httpDnsClient = nil;
 
@@ -98,16 +99,61 @@ static HttpDnsService * _httpDnsClient = nil;
     return self;
 }
 
-- (void)shareInitWithAccountId:(NSString *)accountId {
++ (instancetype)sharedInstance {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _httpDnsClient = [[self alloc] init];
+    });
+    return _httpDnsClient;
+}
+
+- (instancetype)autoInit {
+    NSString *sdkVersion;//= HTTPDNS_IOS_SDK_VERSION;
+    NSNumber *sdkStatus;
+    NSString *sdkId = @"httpdns";
+
+    NSString *accountID;
+    NSString *secretKey;
+
+    EMASOptions *defaultOptions = [EMASOptions defaultOptions];
+    // Get config
+    accountID = defaultOptions.httpdnsAccountId;
+    secretKey = defaultOptions.httpdnsSecretKey;
+    EMASOptionSDKServiceItem *sdkItem = [defaultOptions sdkServiceItemForSdkId:sdkId];
+    if (sdkItem) {
+        sdkVersion = sdkItem.version;
+        sdkStatus = sdkItem.status;
+    }
+    if ([EMASTools isValidString:accountID]) {
+        return [self initWithAccountID:[accountID intValue] secretKey:secretKey];
+    }
+    NSLog(@"Auto init fail, can not get accountId / secretKey, please check the file named: AliyunEmasServices-Info.plist.");
+    return nil;
+}
+
+- (instancetype)initWithAccountID:(int)accountID {
+    return [self initWithAccountID:accountID secretKey:nil];
+}
+
+- (instancetype)initWithAccountID:(int)accountID secretKey:(NSString *)secretKey {
+    HttpDnsService *instance = [HttpDnsService sharedInstance];
+
+    instance.accountID = accountID;
+    instance.secretKey = secretKey;
+    NSString *accountIdString = [NSString stringWithFormat:@"%@", @(accountID)];
+    [instance configWithAccountId:accountIdString];
+
+    return instance;
+}
+
+- (void)configWithAccountId:(NSString *)accountId {
     [_httpDnsClient requestScheduler];
     _httpDnsClient.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
     HTTPDNS_EXT_INFO = @{
         EXT_INFO_KEY_VERSION : HTTPDNS_IOS_SDK_VERSION,
     };
     _httpDnsClient.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
-    
-    
-    
+
     if (HTTPDNS_INTER) {
         //国际版移除beacon ut AlicloudSender 等依赖
         //设置固定region 为sg
@@ -116,7 +162,6 @@ static HttpDnsService * _httpDnsClient = nil;
         [[HttpdnsScheduleCenter sharedInstance] clearSDKDisableFromBeacon];
         //关闭ut埋点上报
         [HttpDnsHitService disableHitService];
-        
     } else {
         //    /* 日活打点 */
         //    [[self class] statIfNeeded];//旧版日活打点
@@ -172,63 +217,11 @@ static HttpDnsService * _httpDnsClient = nil;
                 }
             }
         }];
-        
     }
-    
-    
-    
-    
 }
 
 #pragma mark -
 #pragma mark -------------- public
-
-+(instancetype)sharedInstance {
-    return [[self alloc] init];
-}
-
-- (instancetype)autoInit {
-    NSString *sdkVersion;//= HTTPDNS_IOS_SDK_VERSION;
-    NSNumber *sdkStatus;
-    NSString *sdkId = @"httpdns";
-    
-    NSString *accountID;
-    NSString *secretKey;
-    
-    EMASOptions *defaultOptions = [EMASOptions defaultOptions];
-    // Get config
-    accountID = defaultOptions.httpdnsAccountId;
-    secretKey = defaultOptions.httpdnsSecretKey;
-    EMASOptionSDKServiceItem *sdkItem = [defaultOptions sdkServiceItemForSdkId:sdkId];
-    if (sdkItem) {
-        sdkVersion = sdkItem.version;
-        sdkStatus = sdkItem.status;
-    }
-    if ([EMASTools isValidString:accountID]) {
-        return [self initWithAccountID:[accountID intValue] secretKey:secretKey];
-    }
-    NSLog(@"Auto init fail, can not get accountId / secretKey, please check the file named: AliyunEmasServices-Info.plist.");
-    return nil;
-}
-
-
-- (instancetype)initWithAccountID:(int)accountID {
-    return [self initWithAccountID:accountID secretKey:nil];
-}
-
-// 鉴权控制台：httpdns.console.aliyun.com
-- (instancetype)initWithAccountID:(int)accountID secretKey:(NSString *)secretKey {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        _httpDnsClient = [super init];
-        _httpDnsClient.accountID = accountID;
-        if ([HttpdnsUtil isValidString:secretKey]) {
-            _httpDnsClient.secretKey = [secretKey copy];
-        }
-    });
-    return _httpDnsClient;
-}
-
 
 - (void)setAuthCurrentTime:(NSUInteger)authCurrentTime {
     if (![self checkServiceStatus]) {
@@ -324,8 +317,6 @@ static HttpDnsService * _httpDnsClient = nil;
     } else {
         [_requestScheduler addPreResolveHosts:hosts queryType:ipQueryType];
     }
-    
-    
 }
 
 - (void)setLogEnabled:(BOOL)enable {
@@ -335,7 +326,6 @@ static HttpDnsService * _httpDnsClient = nil;
         [HttpdnsLog disableLog];
     }
 }
-
 
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable {
     if (![self checkServiceStatus]) {
@@ -351,11 +341,9 @@ static HttpDnsService * _httpDnsClient = nil;
     _IPRankingDataSource = IPRankingDatasource;
 }
 
-
 - (void)enableIPv6:(BOOL)enable {
     [[HttpdnsIPv6Manager sharedInstance] setIPv6ResultEnable:enable];
 }
-
 
 - (void)enableNetworkInfo:(BOOL)enable {
     [HttpdnsgetNetworkInfoHelper setNetworkInfoEnable:enable];
@@ -364,7 +352,6 @@ static HttpDnsService * _httpDnsClient = nil;
 - (void)enableCustomIPRank:(BOOL)enable {
     _requestScheduler.customIPRankingEnabled = enable;
 }
-
 
 - (NSString *)getSessionId {
     return [HttpdnsUtil generateSessionID];
@@ -546,7 +533,6 @@ static HttpDnsService * _httpDnsClient = nil;
         condition = nil;
         return ipsArray;
     }
-    
 }
 
 - (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host {
@@ -1201,21 +1187,11 @@ static HttpDnsService * _httpDnsClient = nil;
 #pragma mark -
 #pragma mark -------------- private
 
-
-- (void)setAccountID:(int)accountID {
-    _accountID = accountID;
-    NSString *accountIdString = [NSString stringWithFormat:@"%@", @(accountID)];
-    [self shareInitWithAccountId:accountIdString];
-}
-
-
 - (void)bizPerfUserGetIPWithHost:(NSString *)host
                          success:(BOOL)success {
     BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
     [HttpDnsHitService bizPerfUserGetIPWithHost:host success:YES cacheOpen:cachedIPEnabled];
 }
-
-
 
 - (NSDictionary *)IPRankingDataSource {
     NSDictionary *IPRankingDataSource = nil;
@@ -1261,7 +1237,6 @@ static HttpDnsService * _httpDnsClient = nil;
     return [arr componentsJoinedByString:@""];
 }
 
-
 - (BOOL)_shouldDegradeHTTPDNS:(NSString *)host {
     if (self.delegate && [self.delegate respondsToSelector:@selector(shouldDegradeHTTPDNS:)]) {
         return [self.delegate shouldDegradeHTTPDNS:host];
@@ -1269,14 +1244,8 @@ static HttpDnsService * _httpDnsClient = nil;
     return NO;
 }
 
-
-
 #pragma mark -
 #pragma mark -------------- HttpdnsRequestScheduler_Internal
-
-//+ (void)statIfNeeded {
-//    [AlicloudReport statAsync:AMSHTTPDNS extInfo:HTTPDNS_EXT_INFO];
-//}
 
 - (NSUInteger)authTimeOffset {
     __block NSUInteger authTimeOffset = 0;
@@ -1342,7 +1311,5 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     return IP;
 }
-
-
 
 @end

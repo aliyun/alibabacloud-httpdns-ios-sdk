@@ -65,13 +65,19 @@ NSArray *ipv6HostArray = nil;
                       @"tv6.ustc.edu.cn",
                       @"ipv6.sjtu.edu.cn"
                       ];
-    
-    _service = [[HttpDnsService alloc] initWithAccountID:170713];
-    [_service setLogEnabled:YES];
+
+    NSString *sessionId = [[HttpDnsService sharedInstance] getSessionId];
+    NSLog(@"Print sessionId: %@", sessionId);
+
+    // ams_test账号139450
+    _service = [[HttpDnsService alloc] initWithAccountID:139450];
+    [_service setLogEnabled:NO];
     [_service setCachedIPEnabled:YES];
     [_service setExpiredIPEnabled:NO];
     [_service setHTTPSRequestEnabled:YES];
     [_service enableIPv6:YES];
+
+    [_service setIPRankingDatasource:@{@"dns.xuyecan1919.tech": @443}];
 }
 
 
@@ -94,8 +100,10 @@ NSArray *ipv6HostArray = nil;
 
 - (IBAction)onHost2:(id)sender {
     for (NSString *ipv4Host in ipv4HostArray) {
-        NSString *ipRes = [_service getIpByHostAsync:ipv4Host];
-        NSLog(@"host: %@, ip: %@", ipv4Host, ipRes);
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            NSArray *ipRes = [_service getIPv4ListForHostSync:ipv4Host];
+            NSLog(@"host: %@, ip: %@", ipv4Host, ipRes);
+        });
     }
 }
 
