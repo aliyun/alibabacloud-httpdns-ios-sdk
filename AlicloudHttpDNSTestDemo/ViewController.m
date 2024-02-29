@@ -87,19 +87,19 @@ NSArray *ipv6HostArray = nil;
     NSLog(@"onHost1, stackType: %d", stackType);
 
     for (NSString *ipv4Host in ipv4HostArray) {
-        [_service autoGetHttpDnsResultForHostAsync:ipv4Host returnIps:^(NSDictionary<NSString *,NSString *> *result) {
+        [_service asyncGetHostByName:ipv4Host completionHandler:^(NSDictionary<NSString *,NSString *> *result) {
             NSLog(@"host: %@, result: %@", ipv4Host, result);
         }];
     }
     for (NSString *ipv6Host in ipv6HostArray) {
-        [_service autoGetHttpDnsResultForHostAsync:ipv6Host returnIps:^(NSDictionary<NSString *,NSString *> *result) {
+        [_service asyncGetHostByName:ipv6Host completionHandler:^(NSDictionary<NSString *,NSString *> *result) {
             NSLog(@"host: %@, result: %@", ipv6Host, result);
         }];
     }
 }
 
 - (IBAction)onHost2:(id)sender {
-    [_service autoGetHttpDnsResultForHostAsync:@"dns.xuyecan1919.tech" returnIps:^(NSDictionary<NSString *,NSString *> *result) {
+    [_service asyncGetHostByName:@"dns.xuyecan1919.tech" completionHandler:^(NSDictionary<NSString *,NSString *> *result) {
         NSLog(@"host2: %@", result);
     }];
 }

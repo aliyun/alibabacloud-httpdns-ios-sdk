@@ -309,7 +309,7 @@ typedef enum {
 ///         "ALICLOUDHDNS_IPV4": "xxx.xxx.xxx.xxx",
 ///         "ALICLOUDHDNS_IPV6": "xx:xx:xx:xx:xx:xx:xx:xx"
 ///   }
-- (void)autoGetHttpDnsResultForHostAsync:(NSString *)host returnIps:(void (^)(NSDictionary <NSString *, NSString *>*))handler;
+- (void)asyncGetHostByName:(NSString *)host completionHandler:(void (^)(NSDictionary <NSString *, NSString *>* result))handler;
 
 
 
