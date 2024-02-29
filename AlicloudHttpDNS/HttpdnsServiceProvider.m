@@ -940,7 +940,7 @@ static HttpDnsService * _httpDnsClient = nil;
     }
 }
 
--(void)autoGetHttpDnsResultForHostAsync:(NSString *)host returnIps:(void (^)(NSDictionary<NSString *,NSString *> *))handler {
+-(void)asyncGetHostByName:(NSString *)host completionHandler:(void (^)(NSDictionary<NSString *,NSString *> *))handler {
     if (!host || ![self checkServiceStatus] || [self _shouldDegradeHTTPDNS:host]) {
         return;
     }
