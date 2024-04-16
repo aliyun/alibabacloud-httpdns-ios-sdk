@@ -15,7 +15,6 @@
 #import "HttpdnsUtil.h"
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsScheduleCenter.h"
-#import "HttpDnsHitService.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
 #import "HttpdnsModel.h"
 
@@ -47,11 +46,8 @@ static NSURLSession *_scheduleCenterSession = nil;
     return [self queryScheduleCenterRecordFromServerSyncWithHostIndex:0];
 }
 
-
-
 /// 获取调度IP List
 - (NSArray *)getCenterHostList {
-    
     NSArray *hostArray;
     if (HTTPDNS_INTER) { //国际版
         if (![HttpdnsUtil canUseIPv6_Syn] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
@@ -80,7 +76,6 @@ static NSURLSession *_scheduleCenterSession = nil;
 }
 
 - (NSDictionary *)queryScheduleCenterRecordFromServerSyncWithHostIndex:(NSInteger)hostIndex {
-    
     NSDictionary *scheduleCenterRecord = nil;
     NSArray *hostArray = [self getCenterHostList];
     
@@ -113,9 +108,6 @@ static NSURLSession *_scheduleCenterSession = nil;
     BOOL success = (scheduleCenterRecord && !error);
     NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
     
-    // 只在请求成功时统计耗
-    [HttpDnsHitService hitSCTimeWithSuccess:success methodStart:methodStart url:serverIpOrHost];
-    
     return scheduleCenterRecord;
 }
 
@@ -135,7 +127,6 @@ static NSURLSession *_scheduleCenterSession = nil;
  * https://203.107.1.1/100000/ss?region=hk&platform=ios&sdk_version=1.6.1&sid=LpmJIA2CUoi4&net=unknown&bssid=
  */
 - (NSString *)constructRequestURLWithHostIndex:(NSInteger)hostIndex {
-    
     NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
     NSString * region = [self urlFormatRegion:[[NSUserDefaults standardUserDefaults] objectForKey:ALICLOUD_HTTPDNS_REGION_KEY]];
@@ -156,7 +147,6 @@ static NSURLSession *_scheduleCenterSession = nil;
 
 // url 添加 sid net 和 bssid
 - (NSString *)urlFormatSidNetBssid:(NSString *)url {
-    
     NSString *sessionId = [HttpdnsUtil generateSessionID];
     if ([HttpdnsUtil isValidString:sessionId]) {
         url = [NSString stringWithFormat:@"%@&sid=%@", url, sessionId];
@@ -177,9 +167,7 @@ static NSURLSession *_scheduleCenterSession = nil;
 
 // 基于 URLSession 发送 HTTPS 请求
 - (NSDictionary *)queryScheduleCenterRecordFromServerWithHostIndex:(NSInteger)hostIndex error:(NSError **)pError {
-    
     NSString *fullUrlStr = [self constructRequestURLWithHostIndex:hostIndex];
-//    fullUrlStr = [fullUrlStr stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet characterSetWithCharactersInString:@"`#%^{}\"[]|\\<> "].invertedSet];
     HttpdnsLogDebug("Request URL: %@", fullUrlStr);
     HttpdnsLogDebug_TestOnly(@"更新服务IP请求 URL: %@", fullUrlStr);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
@@ -247,7 +235,7 @@ static NSURLSession *_scheduleCenterSession = nil;
         *pError = errorStrong;
         NSURL *scAddrURL = [NSURL URLWithString:fullUrlStr];
         NSString *scAddrURLString = scAddrURL.host;
-        [HttpDnsHitService bizhErrScWithScAddr:scAddrURLString errCode:errorStrong.code errMsg:errorStrong.description];
+        HttpdnsLogDebug("request failed with scAddrURLString: %@, code: %ld, desc: %@", scAddrURLString, errorStrong.code, errorStrong.description);
     }
     return nil;
 }

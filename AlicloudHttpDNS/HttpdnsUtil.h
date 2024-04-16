@@ -76,17 +76,11 @@
 + (id)safeAllKeysFromDict:(NSDictionary *)dict;
 + (NSInteger)safeCountFromDict:(NSDictionary *)dict;
 
-
 /**
  在ipv6 only 场景下是否采用ipv4 -> ipv6 方案
  true: 采用ipv4 合成 ipv6
  false: 不采用ipv4合成ipv6， 直接采用ipv6地址
  */
 + (BOOL)canUseIPv6_Syn;
-
-
-/// AlicloudSender 日活上报
-+ (void)AlicloudSenderSendEvent:(NSString *)event appKey:(NSString *)appkey sdkId:(NSString *)sdkId sdkVersion:(NSString *)sdkVersion extParams:(NSDictionary *)extParams;
-
 
 @end

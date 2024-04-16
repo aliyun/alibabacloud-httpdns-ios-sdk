@@ -182,16 +182,6 @@ NSArray *ipv6HostArray = nil;
     return milliSecond;
 }
 
-- (IBAction)onBeaconDisable:(id)sender {
-    [_sc setSDKDisableFromBeacon];
-    [self showAlert:@"beacon" content:@"set sdk disable"];
-}
-
-- (IBAction)onBeaconEnable:(id)sender {
-    [_sc clearSDKDisableFromBeacon];
-    [self showAlert:@"beacon" content:@"set sdk enable"];
-}
-
 - (IBAction)onResolveIP:(id)sender {
     NSString *host = @"www.aliyun.com";
     NSString *ip = [_service getIpByHostAsync:host];

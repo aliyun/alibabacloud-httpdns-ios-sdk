@@ -3,15 +3,16 @@
 # capture ERR signal
 trap 'echo "An error occurred. Exiting..." && exit 2' ERR
 
-BUILD_CONFIG="Release" # Default configuration
+FRAMEWORK_NAME='AlicloudHttpDNS'
+FRAMEWORK_CONFIG="Release"
 
 if [[ $# -gt 0 ]]; then
   case "$1" in
     debug)
-      BUILD_CONFIG="Debug"
+      FRAMEWORK_CONFIG="Debug"
       ;;
     release)
-      BUILD_CONFIG="Release"
+      FRAMEWORK_CONFIG="Release"
       ;;
     *)
       echo "Usage: $0 [debug/release(default)]"
@@ -20,11 +21,8 @@ if [[ $# -gt 0 ]]; then
   esac
 fi
 
-echo "Building configuration '$BUILD_CONFIG'"
+echo "Building configuration '$FRAMEWORK_CONFIG'"
 
-FRAMEWORK_NAME='AlicloudHttpDNS'
-FRAMEWORK_VERSION=1.0
-FRAMEWORK_CONFIG="$BUILD_CONFIG"
 PRODUCT_DIR="Products"
 XCFRAMEWORK_PATH="${PRODUCT_DIR}/${FRAMEWORK_NAME}.xcframework"
 

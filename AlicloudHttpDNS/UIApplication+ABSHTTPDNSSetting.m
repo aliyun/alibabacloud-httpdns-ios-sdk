@@ -11,7 +11,6 @@
 #import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsLog.h"
-#import "HttpDnsHitService.h"
 #import "HttpdnsConstants.h"
 #import "AlicloudHttpDNS.h"
 
@@ -19,13 +18,6 @@ NSString *const ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTEXT = @"ALICLOUD_HTTPDNS
 NSUInteger const ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTINUOUS_CRASH_ON_LAUNCH_NEED_TO_FIX = 2;
 
 @implementation UIApplication (ABSHTTPDNSSetting)
-
-//+ (void)load {
-//    static dispatch_once_t onceToken;
-//    dispatch_once(&onceToken, ^{
-//        [self abs_swizzleSetDelegate];
-//    });
-//}
 
 + (void)abs_swizzleSetDelegate {
     static dispatch_once_t onceToken;
@@ -74,8 +66,6 @@ BOOL abs_httpdns_classMethodSwizzle(Class aClass, SEL originalSelector, SEL swiz
                                                                           //成功情况暂不处理
                                                                       } onCrash:^(NSUInteger crashCount) {
                                                                           if (crashCount >= ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTINUOUS_CRASH_ON_LAUNCH_NEED_TO_FIX ) {
-                                                                              NSString *log = [NSString stringWithFormat:@"booting protection"];
-                                                                              [HttpDnsHitService bizContinuousBootingCrashWithLog:log];
                                                                               [HttpdnsPersistenceUtils deleteAllCacheFiles];
                                                                           }
                                                                       }];

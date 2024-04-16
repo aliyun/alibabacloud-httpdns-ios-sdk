@@ -9,7 +9,6 @@
 #import <AlicloudUtils/AlicloudIPv6Adapter.h>
 #import <AlicloudUtils/EMASTools.h>
 #import "HttpdnsIPv6Manager.h"
-#import "HttpDnsHitService.h"
 #import "HttpdnsUtil.h"
 
 
@@ -58,7 +57,6 @@ static NSString *const QueryCacheIPV6Key = @"QueryCacheIPV6Key";
 
 - (void)setIPv6ResultEnable:(BOOL)enable {
     _usersetIPv6ResultEnable = enable;
-    [HttpDnsHitService bizIPv6Enable:enable];
 }
 
 - (NSString *)assembleIPv6ResultURL:(NSString *)originURL queryHost:(NSString *)queryHost {
