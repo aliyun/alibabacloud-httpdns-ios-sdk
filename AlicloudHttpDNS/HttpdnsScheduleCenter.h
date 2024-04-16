@@ -25,11 +25,6 @@ FOUNDATION_EXTERN NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
 
 @interface HttpdnsScheduleCenter : NSObject
 
-/*!
- * 停服
- */
-@property (nonatomic, assign, getter=isStopService, readonly) BOOL stopService;
-
 @property (nonatomic, copy, readonly) NSDictionary *scheduleCenterResult;
 
 @property (nonatomic, assign, getter=doHaveNewIPList, readonly) BOOL haveNewIPList;
@@ -82,8 +77,5 @@ FOUNDATION_EXTERN NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
 
 /// 返回当前服务IP region
 - (NSString *)getServiceIPRegion;
-
-- (void)setSDKDisableFromBeacon;
-- (void)clearSDKDisableFromBeacon;
 
 @end

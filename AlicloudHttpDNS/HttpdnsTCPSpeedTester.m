@@ -27,7 +27,6 @@
 #import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsServiceProvider_Internal.h"
 #import "HttpdnsUtil.h"
-#import "HttpDnsHitService.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsLog_Internal.h"
 
@@ -164,27 +163,6 @@ static NSString *const ipKey = @"ip";
         NSDictionary *defaultIpCostDict = defaultIpCostArray[0];
         defaultIpCost = defaultIpCostDict[testSpeedKey];
     }
-    [self asyncHitWithHost:host
-                 defaultIp:defaultIp
-                selectedIp:selectedIp
-             defaultIpCost:defaultIpCost
-            selectedIpCost:selectedIpCost
-                   ipCount:@(ipCount)];
-}
-
-- (void)asyncHitWithHost:(NSString *)host
-               defaultIp:(NSString *)defaultIp
-              selectedIp:(NSString *)selectedIp
-           defaultIpCost:(NSNumber *)defaultIpCost
-          selectedIpCost:(NSNumber *)selectedIpCost
-                 ipCount:(NSNumber *)ipCount {
-    //TODO: 上传日志
-    [HttpDnsHitService bizIPSelectionWithHost:host
-                                    defaultIp:defaultIp
-                                   selectedIp:selectedIp
-                                defaultIpCost:defaultIpCost
-                               selectedIpCost:selectedIpCost
-                                    ipCount:ipCount];
 }
 
 + (BOOL)isIPv6OnlyNetwork {

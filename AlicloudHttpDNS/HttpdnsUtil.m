@@ -439,40 +439,4 @@ _Pragma("clang diagnostic pop") \
     return true;
 }
 
-
-
-+ (void)AlicloudSenderSendEvent:(NSString *)event appKey:(NSString *)appkey sdkId:(NSString *)sdkId sdkVersion:(NSString *)sdkVersion extParams:(NSDictionary *)extParams {
-    
-    
-    Class AlicloudSenderClass = NSClassFromString(@"AlicloudSender");
-    if (!AlicloudSenderClass) {
-        return;
-    }
-    
-    SEL instanceSEL = NSSelectorFromString(@"shareInstance");
-    id senderObj = nil;
-    if ([AlicloudSenderClass respondsToSelector:instanceSEL]) {
-        HTTPDNSUTIL_SuppressPerformSelectorLeakWarning(senderObj = [AlicloudSenderClass performSelector:instanceSEL];);
-    }
-    
-    if (senderObj) {
-        SEL senderSelector = NSSelectorFromString(@"sendEvent:appKey:sdkId:sdkVersion:extParams:");
-        if ([senderObj respondsToSelector:senderSelector]) {
-            NSInvocation *inv = [NSInvocation invocationWithMethodSignature:[senderObj methodSignatureForSelector:senderSelector]];
-            [inv setTarget:senderObj];
-            [inv setSelector:senderSelector];
-            [inv setArgument:&event atIndex:2];
-            [inv setArgument:&appkey atIndex:3];
-            [inv setArgument:&sdkId atIndex:4];
-            [inv setArgument:&sdkVersion atIndex:5];
-            [inv setArgument:&extParams atIndex:6];
-            [inv invoke];
-        }
-    }
-    
-    
-    
-    
-}
-
 @end

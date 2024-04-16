@@ -32,7 +32,6 @@
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsIPRecord.h"
 #import "HttpdnsUtil.h"
-#import "HttpDnsHitService.h"
 #import "HttpdnsTCPSpeedTester.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
 #import "HttpdnsIPv6Manager.h"
@@ -303,19 +302,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 return [self executeRequest:CopyHost synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex queryIPType:queryType];
             }
         }
-    } else {
-        [self bizPerfGetIPWithHost:host success:YES];
     }
     return result;
 }
-
-- (void)bizPerfGetIPWithHost:(NSString *)host
-                         success:(BOOL)success {
-    BOOL cachedIPEnabled = [self _getCachedIPEnabled];
-    [HttpDnsHitService bizPerfUserGetIPWithHost:host success:YES cacheOpen:cachedIPEnabled];
-}
-
-
 
 /// 判断当前hostObject 是否需要开启查询
 - (BOOL)_needToQuery:(HttpdnsHostObject *)hostObject ipQueryType:(HttpdnsQueryIPType)queryType {
@@ -549,7 +538,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
  */
 - (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     NSDictionary *userInfo = error.userInfo;
-    [HttpDnsHitService bizErrSrvWithSrvAddrIndex:activatedServerIPIndex errCode:error.code errMsg:error.description];
     //403 ServiceLevelDeny 错误强制更新，不触发disable机制。
     BOOL isServiceLevelDeny;
     NSString *errorMessage = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY dict:userInfo];
@@ -569,7 +557,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     host = [hostArray lastObject];
     
     if (isRetry && isTimeoutError) {
-        [HttpDnsHitService bizLocalDisableWithHost:host srvAddrIndex:activatedServerIPIndex];
         [self setServerDisable:YES host:CopyHost activatedServerIPIndex:activatedServerIPIndex];
     }
     [self mergeLookupResultToManager:nil forHost:CopyHost];
@@ -595,11 +582,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     
     if (![HttpdnsUtil isAbleToRequest]) {
-        return nil;
-    }
-    
-    if (scheduleCenter.isStopService) {
-        HttpdnsLogDebug("SDK disable, return nil.");
         return nil;
     }
     
@@ -839,9 +821,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
     host = [hostArray lastObject];
-    [HttpDnsHitService bizSnifferWithHost:host
-                         srvAddrIndex:activatedServerIPIndex];
-    
     //获取当前域名的查询策略
     HttpdnsQueryIPType queryIPType = [[HttpdnsIPv6Manager sharedInstance] getQueryHostIPType:host];
     [self executeRequest:CopyHost synchronously:NO retryCount:0 activatedServerIPIndex:activatedServerIPIndex queryIPType:queryIPType];

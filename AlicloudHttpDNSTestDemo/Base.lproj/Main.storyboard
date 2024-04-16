@@ -52,7 +52,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DVu-Bp-HIt">
-                                <rect key="frame" x="127" y="314" width="123" height="30"/>
+                                <rect key="frame" x="113" y="336" width="149" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="开启IPv6解析结果"/>
                                 <connections>
@@ -60,23 +60,15 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cog-wf-nte">
-                                <rect key="frame" x="127" y="374" width="123" height="30"/>
+                                <rect key="frame" x="116" y="374" width="141" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="开启IPv6链路解析"/>
                                 <connections>
                                     <action selector="onIPv6Resolve:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ttQ-qf-ozf"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iLU-g0-Nge">
-                                <rect key="frame" x="143" y="437" width="92" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="IPv6域名解析"/>
-                                <connections>
-                                    <action selector="onStartIPv6Resolve:" destination="BYZ-38-t0r" eventType="touchUpInside" id="m4R-qm-HNS"/>
-                                </connections>
-                            </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3Qj-wB-isM">
-                                <rect key="frame" x="137" y="497" width="104" height="30"/>
+                                <rect key="frame" x="121" y="497" width="134" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="IPv6 Stack检测"/>
                                 <connections>
@@ -84,24 +76,8 @@
                                     <action selector="onStartIPv6Resolve:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ZMq-SJ-TiH"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xk3-Ym-1cP">
-                                <rect key="frame" x="135" y="349" width="106" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Beacon Disable"/>
-                                <connections>
-                                    <action selector="onBeaconDisable:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Vfu-7q-c3D"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HFU-AI-XuV">
-                                <rect key="frame" x="137" y="403" width="102" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Beacon Enable"/>
-                                <connections>
-                                    <action selector="onBeaconEnable:" destination="BYZ-38-t0r" eventType="touchUpInside" id="rT0-a0-UXi"/>
-                                </connections>
-                            </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="z2f-cr-DLq">
-                                <rect key="frame" x="153" y="453" width="71" height="30"/>
+                                <rect key="frame" x="152" y="465" width="71" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Resolve IP"/>
                                 <connections>
@@ -109,7 +85,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QLj-UN-o34">
-                                <rect key="frame" x="155" y="535" width="62" height="30"/>
+                                <rect key="frame" x="144" y="535" width="86" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="IPv6测试"/>
                                 <connections>
@@ -122,6 +98,14 @@
                                 <state key="normal" title="Host1"/>
                                 <connections>
                                     <action selector="onHost1:" destination="BYZ-38-t0r" eventType="touchUpInside" id="42H-vO-YcA"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iLU-g0-Nge">
+                                <rect key="frame" x="121" y="437" width="133" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="IPv6域名解析"/>
+                                <connections>
+                                    <action selector="onStartIPv6Resolve:" destination="BYZ-38-t0r" eventType="touchUpInside" id="m4R-qm-HNS"/>
                                 </connections>
                             </button>
                         </subviews>

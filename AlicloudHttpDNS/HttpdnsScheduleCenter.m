@@ -140,7 +140,6 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
     }
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
-        
         //判断本地region 和 缓存的服务IP池的region是否匹配，如果不匹配则更新
         NSDictionary *scheduleCenterResult = [HttpdnsPersistenceUtils getJSONFromDirectory:[HttpdnsPersistenceUtils scheduleCenterResultPath]
                                                                             fileName:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_RESULT_CACHE_FILE_NAME];
@@ -291,9 +290,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
     ALICLOUD_HTTPDNS_NEED_FETCH_IP_LIST_STATUS_CACHE_TIMEOUT_INTERVAL = 24 * 60 * 60; /**< 一天 */
     ALICLOUD_HTTPDNS_ABLE_TO_CONNECT_SCHEDULE_CENTER_INTERVAL = 5 * 60; /**< 五分钟 */
     
-    
     if (HTTPDNS_INTER) { //国际版
-        
         //内置ipv4 调度ip(启动ip)
         ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = @[
             ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IP,
@@ -309,7 +306,6 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
             ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST,
         ];
     } else { //国内版
-        
         //内置ipv4 调度ip(启动ip)
         ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = @[
             ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP,
@@ -324,8 +320,6 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
             ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST,
         ];
     }
-    
-   
 }
 
 - (void)initActivatedServerIPIndex {
@@ -358,19 +352,6 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
     });
 }
 
-- (void)setSDKDisableFromBeacon {
-    NSDictionary *manualDisable = @{
-                                    ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_KEY : ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_DISABLE_VALUE
-                                    };
-    [self setScheduleCenterResult:manualDisable];
-}
-
-- (void)clearSDKDisableFromBeacon {
-    if (_stopService) {
-        [self setScheduleCenterResult:nil];
-    }
-}
-
 - (void)setScheduleCenterResult:(NSDictionary *)scheduleCenterResult {
     dispatch_async(self.scheduleCenterResultQueue, ^{
         
@@ -391,11 +372,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
 - (void)setScheduleCenterResultAndOtherStatus:(NSDictionary *)scheduleCenterResult {
     dispatch_async(self.scheduleCenterResultQueue, ^{
         _scheduleCenterResult = scheduleCenterResult;
-        NSString *stopServiceValue = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_KEY dict:_scheduleCenterResult];
-        if ([HttpdnsUtil isValidString:stopServiceValue]) {
-            _stopService =  ([stopServiceValue isEqualToString:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_DISABLE_VALUE]);
-        }
-        
+
         NSArray *result = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IP_KEY dict:_scheduleCenterResult];
         NSArray *result_ipv6 = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IPV6_KEY dict:_scheduleCenterResult];
         
@@ -405,7 +382,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
             ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE = YES;
             _IPList = [result copy];
             //设置当前服务IP对应的region
-            ALICLOUD_HTTPDNS_SERVER_IP_REGION = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_REGION_KEY dict:_scheduleCenterResult]?:@"";
+            ALICLOUD_HTTPDNS_SERVER_IP_REGION = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_REGION_KEY dict:_scheduleCenterResult] ?: @"";
         }
         
         //设置ipv6 服务ip
@@ -423,10 +400,6 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
         scheduleCenterResult = _scheduleCenterResult;
     });
     return scheduleCenterResult;
-}
-
-- (BOOL)isStopService {
-    return _stopService;
 }
 
 - (NSArray *)IPList {
@@ -552,7 +525,6 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
     ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = @[
                                                    @"100.100.100.100",
                                                    @"101.101.101.101",
-//                                                   ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
                                                    ];
 }
 

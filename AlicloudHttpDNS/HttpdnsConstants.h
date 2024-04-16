@@ -110,27 +110,12 @@ static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_PARAMER_VERSION_
 //app_name
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_PARAMER_APP_KEY = @"app_name";  /**< bundle id */
 
-//requst result
-
-//SCHEDULE_CENTER configure
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_KEY = @"service_status";
-
 //ipv4 key
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IP_KEY = @"service_ip";
 //ipv6 key
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IPV6_KEY = @"service_ipv6";
 
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_REGION_KEY = @"service_region";  //服务IP对应的region
-
-//"service_status": "enable"
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_ENABLE_VALUE = @"enable";
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_DISABLE_VALUE = @"disable";
-
-static NSString *const ALICLOUD_HTTPDNS_BEACON_REQUEST_PARAM_ACCOUNTID = @"accountId";
-static NSString *const ALICLOUD_HTTPDNS_BEACON_STATUS_KEY = @"status";
-static NSString *const ALICLOUD_HTTPDNS_BEACON_SDK_DISABLE = @"disabled";
-
-
 
 static NSString *const ALICLOUD_HTTPDNS_REGION_KEY = @"HttpdnsRegion";
 

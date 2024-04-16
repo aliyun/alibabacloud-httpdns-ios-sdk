@@ -29,7 +29,6 @@
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsConstants.h"
 #import "AlicloudHttpDNS.h"
-#import "HttpDnsHitService.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsConfig.h"
@@ -504,7 +503,6 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     BOOL success = !outError;
     BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
-    [HttpDnsHitService bizPerfGetIPWithHost:hostString success:success cacheOpen:cachedIPEnabled];
     return hostObject;
 }
 
@@ -578,9 +576,6 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSDate *methodStart = [NSDate date];
     dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
     *error = self.networkError;
-    if (!self.networkError) {
-        [HttpDnsHitService hitSRVTimeWithSuccess:YES methodStart:methodStart url:fullUrlStr];
-    }
     [self.requestScheduler changeToNextServerIPIfNeededWithError:self.networkError
                                                      fromIPIndex:activatedServerIPIndex
                                                          isHTTPS:NO];
