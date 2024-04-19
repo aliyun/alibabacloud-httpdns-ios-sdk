@@ -1,19 +1,20 @@
 Pod::Spec.new do |s|
-
   s.name         = "AlicloudHTTPDNS"
-  s.version      = "2.0.8"
+  s.version      = "2.1.0-nout"
   s.summary      = "Aliyun Mobile Service HTTPDNS iOS SDK."
   s.homepage     = "https://www.aliyun.com/product/httpdns"
   s.author       = { "junmo" => "lingkun.lk@alibaba-inc.com" }
+
+  s.source       = { :http => "https://ios-repo.oss-cn-shanghai.aliyuncs.com/httpdns/2.1.0-nout/httpdns.zip#02545e790b19935b8e5a10fbe45d9c137aaac56e" }
+  s.vendored_frameworks = 'httpdns/AlicloudHttpDNS.xcframework'
+
   s.platform     = :ios
-  s.ios.deployment_target = '7.0'
-  s.source       = { :http => "framework_url" }
-  s.vendored_frameworks = 'httpdns/AlicloudHttpDNS.framework'
-  s.source_files = 'AlicloudHttpDNS/*','AlicloudHttpDNS/**/*','AlicloudHttpDNS/**/**/*'
-  s.library = 'sqlite3.0'
+  s.ios.deployment_target = '12.0'
+
+  s.frameworks = 'CoreTelephony', 'SystemConfiguration'
+  s.libraries = 'sqlite3.0', 'resolv'
   s.xcconfig = { 'OTHER_LDFLAGS' => '$(inherited) -ObjC -lz' }
+
   s.dependency "AlicloudUtils"
   s.dependency "AlicloudUT"
-  s.dependency "AlicloudSender"
-
 end
