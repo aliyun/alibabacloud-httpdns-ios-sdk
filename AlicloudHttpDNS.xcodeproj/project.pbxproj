@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -62,6 +62,7 @@
 		4AF5AB871DCB332800206DD8 /* HttpdnsRequestScheduler.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABB1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m */; };
 		4AF5AB881DCB332800206DD8 /* HttpdnsServiceProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */; };
 		4AF5AB891DCB332800206DD8 /* HttpdnsUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */; };
+		51316FBED914130E3A7C3F64 /* Pods_AlicloudHttpDNS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4B3FB631C77ADFECC3DDFFD /* Pods_AlicloudHttpDNS.framework */; };
 		942376DD1C5764C700736E50 /* HttpdnsServiceProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CABC1BC7B3D400BDB65B /* HttpdnsServiceProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		942376DE1C5764CF00736E50 /* HttpdnsDegradationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9459140E1CEB5D8C00D95CF7 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9459140D1CEB5D8C00D95CF7 /* SystemConfiguration.framework */; };
@@ -69,12 +70,6 @@
 		945914121CEB5D9C00D95CF7 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 945914111CEB5D9C00D95CF7 /* libresolv.tbd */; };
 		946229911C5509D800B7C13E /* HttpdnsServiceProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */; };
 		94FD62532B8E3659001C668D /* HttpDnsLocker.m in Sources */ = {isa = PBXBuildFile; fileRef = CB1E4EE72A8CBD1B00F01EAC /* HttpDnsLocker.m */; };
-		94FD625D2B8F0D22001C668D /* UTDID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94FD625C2B8F0D22001C668D /* UTDID.xcframework */; };
-		94FD625E2B8F0D22001C668D /* UTDID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94FD625C2B8F0D22001C668D /* UTDID.xcframework */; };
-		94FD625F2B8F0D22001C668D /* UTDID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94FD625C2B8F0D22001C668D /* UTDID.xcframework */; };
-		94FD62612B8F0D32001C668D /* AlicloudUtils.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94FD62602B8F0D32001C668D /* AlicloudUtils.xcframework */; };
-		94FD62622B8F0D32001C668D /* AlicloudUtils.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94FD62602B8F0D32001C668D /* AlicloudUtils.xcframework */; };
-		94FD62632B8F0D32001C668D /* AlicloudUtils.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94FD62602B8F0D32001C668D /* AlicloudUtils.xcframework */; };
 		9A0903791EA07C0C007B6821 /* HttpdnsScheduleCenterRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A5D5E281E9CB4D400CAC3A6 /* HttpdnsScheduleCenterRequest.m */; };
 		9A09D7821FF2033200585632 /* HttpdnsTCPSpeedTester.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC27F021FDFCB4800DF016A /* HttpdnsTCPSpeedTester.m */; };
 		9A24A85C1F179CEB00BDA719 /* UIApplication+ABSHTTPDNSSetting.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC200361F0E169400754CC2 /* UIApplication+ABSHTTPDNSSetting.m */; };
@@ -194,13 +189,11 @@
 		4AF4AB71211439A800D712DF /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		4AF4AB95211439F900D712DF /* libresolv.9.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.9.tbd; path = usr/lib/libresolv.9.tbd; sourceTree = SDKROOT; };
 		4AF4AB9821143A3800D712DF /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
-		4AF5AB811DCB32D600206DD8 /* AlicloudUtils.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AlicloudUtils.framework; sourceTree = "<group>"; };
+		7906909A2F5D81220562F688 /* Pods-AlicloudHttpDNS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AlicloudHttpDNS.release.xcconfig"; path = "Target Support Files/Pods-AlicloudHttpDNS/Pods-AlicloudHttpDNS.release.xcconfig"; sourceTree = "<group>"; };
 		942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsDegradationDelegate.h; sourceTree = "<group>"; };
 		9459140D1CEB5D8C00D95CF7 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		9459140F1CEB5D9400D95CF7 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
 		945914111CEB5D9C00D95CF7 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
-		94FD625C2B8F0D22001C668D /* UTDID.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = UTDID.xcframework; sourceTree = "<group>"; };
-		94FD62602B8F0D32001C668D /* AlicloudUtils.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = AlicloudUtils.xcframework; sourceTree = "<group>"; };
 		9A4D18191E8F8FE1001E45B4 /* HttpdnsConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsConstants.h; sourceTree = "<group>"; };
 		9A4D181B1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsScheduleCenter.h; sourceTree = "<group>"; };
 		9A4D181C1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsScheduleCenter.m; sourceTree = "<group>"; };
@@ -262,11 +255,13 @@
 		9AF9A60D1EC4D2EA0018063B /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		9AF9A60F1EC4E9990018063B /* HttpdnsIPRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPRecord.h; sourceTree = "<group>"; };
 		9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsIPRecord.m; sourceTree = "<group>"; };
+		A4B3FB631C77ADFECC3DDFFD /* Pods_AlicloudHttpDNS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AlicloudHttpDNS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0E74130257F7E05002018B8 /* CFHTTPSURLProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CFHTTPSURLProtocol.h; sourceTree = "<group>"; };
 		B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CFHTTPSURLProtocol.m; sourceTree = "<group>"; };
 		B0E9EE7824E130A700EF63E6 /* AliyunEmasServices-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "AliyunEmasServices-Info.plist"; sourceTree = "<group>"; };
 		B0F2B86F2803D334004ABD0F /* HTTPDNSCookieManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HTTPDNSCookieManager.h; sourceTree = "<group>"; };
 		B0F2B8702803D334004ABD0F /* HTTPDNSCookieManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HTTPDNSCookieManager.m; sourceTree = "<group>"; };
+		C4B42C273C121A061348284B /* Pods-AlicloudHttpDNS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AlicloudHttpDNS.debug.xcconfig"; path = "Target Support Files/Pods-AlicloudHttpDNS/Pods-AlicloudHttpDNS.debug.xcconfig"; sourceTree = "<group>"; };
 		CB1E4EE32A8CA91800F01EAC /* AlicloudHttpDNS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AlicloudHttpDNS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB1E4EE42A8CA91800F01EAC /* AlicloudHttpDNS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AlicloudHttpDNS.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB1E4EE52A8CA91800F01EAC /* AlicloudHttpDNSTestDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlicloudHttpDNSTestDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -279,8 +274,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				94FD62612B8F0D32001C668D /* AlicloudUtils.xcframework in Frameworks */,
-				94FD625D2B8F0D22001C668D /* UTDID.xcframework in Frameworks */,
+				51316FBED914130E3A7C3F64 /* Pods_AlicloudHttpDNS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -290,9 +284,7 @@
 			files = (
 				9AF9A60E1EC4D2EA0018063B /* libsqlite3.tbd in Frameworks */,
 				945914121CEB5D9C00D95CF7 /* libresolv.tbd in Frameworks */,
-				94FD625E2B8F0D22001C668D /* UTDID.xcframework in Frameworks */,
 				945914101CEB5D9400D95CF7 /* CoreTelephony.framework in Frameworks */,
-				94FD62622B8F0D32001C668D /* AlicloudUtils.xcframework in Frameworks */,
 				9459140E1CEB5D8C00D95CF7 /* SystemConfiguration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -303,8 +295,6 @@
 			files = (
 				4AF4AB9921143A3800D712DF /* libz.tbd in Frameworks */,
 				4AF4AB96211439F900D712DF /* libresolv.9.tbd in Frameworks */,
-				94FD625F2B8F0D22001C668D /* UTDID.xcframework in Frameworks */,
-				94FD62632B8F0D32001C668D /* AlicloudUtils.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -315,8 +305,6 @@
 			isa = PBXGroup;
 			children = (
 				945914111CEB5D9C00D95CF7 /* libresolv.tbd */,
-				94FD625C2B8F0D22001C668D /* UTDID.xcframework */,
-				94FD62602B8F0D32001C668D /* AlicloudUtils.xcframework */,
 				9459140F1CEB5D9400D95CF7 /* CoreTelephony.framework */,
 				9459140D1CEB5D8C00D95CF7 /* SystemConfiguration.framework */,
 				2197CA391BC79A4500BDB65B /* AlicloudHttpDNS */,
@@ -326,6 +314,7 @@
 				CB1E4EE32A8CA91800F01EAC /* AlicloudHttpDNS.framework */,
 				CB1E4EE42A8CA91800F01EAC /* AlicloudHttpDNS.xctest */,
 				CB1E4EE52A8CA91800F01EAC /* AlicloudHttpDNSTestDemo.app */,
+				F9586D08E3A988B948DFF1AC /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -440,7 +429,7 @@
 				4AF4AB9821143A3800D712DF /* libz.tbd */,
 				4AF4AB95211439F900D712DF /* libresolv.9.tbd */,
 				9AF9A60D1EC4D2EA0018063B /* libsqlite3.tbd */,
-				4AF5AB811DCB32D600206DD8 /* AlicloudUtils.framework */,
+				A4B3FB631C77ADFECC3DDFFD /* Pods_AlicloudHttpDNS.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -536,6 +525,15 @@
 			path = cookie;
 			sourceTree = "<group>";
 		};
+		F9586D08E3A988B948DFF1AC /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				C4B42C273C121A061348284B /* Pods-AlicloudHttpDNS.debug.xcconfig */,
+				7906909A2F5D81220562F688 /* Pods-AlicloudHttpDNS.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -587,6 +585,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2197CA4B1BC79A4500BDB65B /* Build configuration list for PBXNativeTarget "AlicloudHttpDNS" */;
 			buildPhases = (
+				5342929F183A2BE67A5D3A96 /* [CP] Check Pods Manifest.lock */,
 				2197CA321BC79A4500BDB65B /* Sources */,
 				2197CA331BC79A4500BDB65B /* Frameworks */,
 				2197CA341BC79A4500BDB65B /* Headers */,
@@ -652,6 +651,8 @@
 					};
 					4AF4AB5F211439A600D712DF = {
 						CreatedOnToolsVersion = 9.3.1;
+						DevelopmentTeam = SFLQ3557MD;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -703,6 +704,31 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		5342929F183A2BE67A5D3A96 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-AlicloudHttpDNS-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		2197CA321BC79A4500BDB65B /* Sources */ = {
@@ -958,6 +984,7 @@
 		};
 		2197CA4C1BC79A4500BDB65B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C4B42C273C121A061348284B /* Pods-AlicloudHttpDNS.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULE_DEBUGGING = NO;
 				CODE_SIGN_IDENTITY = "";
@@ -968,21 +995,20 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_BITCODE = YES;
-				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_GENERATE_TEST_COVERAGE_FILES = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
 				INFOPLIST_FILE = "$(SRCROOT)/AlicloudHttpDNS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = staticlib;
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "-fembed-bitcode";
-				OTHER_LDFLAGS = "-ObjC";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.alibaba.sdk.ios.AlicloudHttpDNS;
 				PRODUCT_NAME = AlicloudHttpDNS;
 				SKIP_INSTALL = YES;
@@ -992,6 +1018,7 @@
 		};
 		2197CA4D1BC79A4500BDB65B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7906909A2F5D81220562F688 /* Pods-AlicloudHttpDNS.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULE_DEBUGGING = NO;
 				CODE_SIGN_IDENTITY = "";
@@ -1002,20 +1029,19 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_BITCODE = YES;
-				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_GENERATE_TEST_COVERAGE_FILES = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				INFOPLIST_FILE = "$(SRCROOT)/AlicloudHttpDNS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = staticlib;
 				OTHER_CFLAGS = "-fembed-bitcode";
-				OTHER_LDFLAGS = "-ObjC";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.alibaba.sdk.ios.AlicloudHttpDNS;
 				PRODUCT_NAME = AlicloudHttpDNS;
 				SKIP_INSTALL = YES;
@@ -1037,11 +1063,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				INFOPLIST_FILE = AlicloudHttpDNSTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"-ObjC",
@@ -1066,11 +1088,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				INFOPLIST_FILE = AlicloudHttpDNSTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					"-ObjC",
@@ -1109,10 +1127,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = AlicloudHttpDNSTestDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.aliyun.emas.pocdemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1149,10 +1164,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = AlicloudHttpDNSTestDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.aliyun.emas.pocdemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";

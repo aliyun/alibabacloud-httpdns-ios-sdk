@@ -18,6 +18,11 @@ src/aws-ios-sdk-*.zip
 xcuserdata
 *.xccheckout
 
+# cocoapods
+######################
+Pods/
+*.xcworkspace
+
 # Patched code #
 ######################
 *.bak

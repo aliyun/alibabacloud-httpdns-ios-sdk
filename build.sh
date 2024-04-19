@@ -35,13 +35,15 @@ build_framework() {
   archs=("${@:2}") # Pass in remaining arguments as array
   arch_flags="${archs[@]/#/-arch }" # Prefix each arch with "-arch"
 
-  xcodebuild build -configuration "$FRAMEWORK_CONFIG" -scheme "$FRAMEWORK_NAME" -sdk "$sdk" $arch_flags
+  xcodebuild -workspace "${FRAMEWORK_NAME}.xcworkspace" -configuration "$FRAMEWORK_CONFIG" -scheme "$FRAMEWORK_NAME" -sdk "$sdk" $arch_flags build
 
   # Directly use the output of xcodebuild -showBuildSettings to avoid re-execution and errors
   local build_settings
-  build_settings="$(xcodebuild -configuration "$FRAMEWORK_CONFIG" -sdk "$sdk" -arch "${archs[0]}" -showBuildSettings)"
   local built_products_dir
+
+  build_settings="$(xcodebuild -workspace "${FRAMEWORK_NAME}.xcworkspace" -configuration "$FRAMEWORK_CONFIG" -scheme "$FRAMEWORK_NAME" -sdk "$sdk" $arch_flags -showBuildSettings)"
   built_products_dir=$(echo "$build_settings" | grep " BUILT_PRODUCTS_DIR =" | sed "s/.*= //")
+  echo "built_products_dir: ${built_products_dir}"
 
   eval "FRAMEWORK_PATH_${sdk}='${built_products_dir}/${FRAMEWORK_NAME}.framework'"
 }

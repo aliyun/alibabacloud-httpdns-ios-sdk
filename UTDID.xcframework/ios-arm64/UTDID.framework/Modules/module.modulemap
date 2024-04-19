@@ -1,6 +1,0 @@
-framework module UTDID {
-  umbrella header "UTDID.h"
-
-  export *
-  module * { export * }
-}
