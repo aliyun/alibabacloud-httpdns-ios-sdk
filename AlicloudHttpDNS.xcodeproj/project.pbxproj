@@ -63,10 +63,9 @@
 		4AF5AB881DCB332800206DD8 /* HttpdnsServiceProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */; };
 		4AF5AB891DCB332800206DD8 /* HttpdnsUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */; };
 		51316FBED914130E3A7C3F64 /* Pods_AlicloudHttpDNS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4B3FB631C77ADFECC3DDFFD /* Pods_AlicloudHttpDNS.framework */; };
+		7EB5412D2BD5FBFB001DFF47 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 7EB5412B2BD5FBFB001DFF47 /* PrivacyInfo.xcprivacy */; };
 		942376DD1C5764C700736E50 /* HttpdnsServiceProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CABC1BC7B3D400BDB65B /* HttpdnsServiceProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		942376DE1C5764CF00736E50 /* HttpdnsDegradationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		9459140E1CEB5D8C00D95CF7 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9459140D1CEB5D8C00D95CF7 /* SystemConfiguration.framework */; };
-		945914101CEB5D9400D95CF7 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9459140F1CEB5D9400D95CF7 /* CoreTelephony.framework */; };
 		945914121CEB5D9C00D95CF7 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 945914111CEB5D9C00D95CF7 /* libresolv.tbd */; };
 		946229911C5509D800B7C13E /* HttpdnsServiceProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */; };
 		94FD62532B8E3659001C668D /* HttpDnsLocker.m in Sources */ = {isa = PBXBuildFile; fileRef = CB1E4EE72A8CBD1B00F01EAC /* HttpDnsLocker.m */; };
@@ -190,9 +189,8 @@
 		4AF4AB95211439F900D712DF /* libresolv.9.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.9.tbd; path = usr/lib/libresolv.9.tbd; sourceTree = SDKROOT; };
 		4AF4AB9821143A3800D712DF /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		7906909A2F5D81220562F688 /* Pods-AlicloudHttpDNS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AlicloudHttpDNS.release.xcconfig"; path = "Target Support Files/Pods-AlicloudHttpDNS/Pods-AlicloudHttpDNS.release.xcconfig"; sourceTree = "<group>"; };
+		7EB5412B2BD5FBFB001DFF47 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsDegradationDelegate.h; sourceTree = "<group>"; };
-		9459140D1CEB5D8C00D95CF7 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
-		9459140F1CEB5D9400D95CF7 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
 		945914111CEB5D9C00D95CF7 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
 		9A4D18191E8F8FE1001E45B4 /* HttpdnsConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsConstants.h; sourceTree = "<group>"; };
 		9A4D181B1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsScheduleCenter.h; sourceTree = "<group>"; };
@@ -284,8 +282,6 @@
 			files = (
 				9AF9A60E1EC4D2EA0018063B /* libsqlite3.tbd in Frameworks */,
 				945914121CEB5D9C00D95CF7 /* libresolv.tbd in Frameworks */,
-				945914101CEB5D9400D95CF7 /* CoreTelephony.framework in Frameworks */,
-				9459140E1CEB5D8C00D95CF7 /* SystemConfiguration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -304,9 +300,8 @@
 		2197CA2D1BC79A4500BDB65B = {
 			isa = PBXGroup;
 			children = (
+				7EB5412C2BD5FBFB001DFF47 /* resource */,
 				945914111CEB5D9C00D95CF7 /* libresolv.tbd */,
-				9459140F1CEB5D9400D95CF7 /* CoreTelephony.framework */,
-				9459140D1CEB5D8C00D95CF7 /* SystemConfiguration.framework */,
 				2197CA391BC79A4500BDB65B /* AlicloudHttpDNS */,
 				2197CA451BC79A4500BDB65B /* AlicloudHttpDNSTests */,
 				4AF4AB61211439A600D712DF /* AlicloudHttpDNSTestDemo */,
@@ -432,6 +427,14 @@
 				A4B3FB631C77ADFECC3DDFFD /* Pods_AlicloudHttpDNS.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7EB5412C2BD5FBFB001DFF47 /* resource */ = {
+			isa = PBXGroup;
+			children = (
+				7EB5412B2BD5FBFB001DFF47 /* PrivacyInfo.xcprivacy */,
+			);
+			path = resource;
 			sourceTree = "<group>";
 		};
 		9AA0FC411EB97D1E00E242DD /* ThirdParty */ = {
@@ -700,6 +703,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7EB5412D2BD5FBFB001DFF47 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

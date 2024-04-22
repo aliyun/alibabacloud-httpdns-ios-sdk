@@ -7,8 +7,8 @@ platform :ios, '12.0'
 
 target 'AlicloudHttpDNS' do
 
-  pod 'AlicloudUtils', '1.4.1-nout'
-  pod 'AlicloudUTDID', '~> 1.5.0.95'
+  pod 'AlicloudUtils', '1.4.1-private'
+  pod 'AlicloudUTDID', '1.5.0.95-private'
 
 end
 
