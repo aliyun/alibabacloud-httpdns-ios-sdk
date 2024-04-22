@@ -1,11 +1,11 @@
 Pod::Spec.new do |s|
   s.name         = "AlicloudHTTPDNS"
-  s.version      = "2.1.0-nout"
+  s.version      = "2.1.0-private"
   s.summary      = "Aliyun Mobile Service HTTPDNS iOS SDK."
   s.homepage     = "https://www.aliyun.com/product/httpdns"
   s.author       = { "junmo" => "lingkun.lk@alibaba-inc.com" }
 
-  s.source       = { :http => "https://ios-repo.oss-cn-shanghai.aliyuncs.com/httpdns/2.1.0-nout/httpdns.zip#02545e790b19935b8e5a10fbe45d9c137aaac56e" }
+  s.source       = { :http => "framework_url" }
   s.vendored_frameworks = 'httpdns/AlicloudHttpDNS.xcframework'
 
   s.platform     = :ios
