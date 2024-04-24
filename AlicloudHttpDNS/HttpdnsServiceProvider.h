@@ -294,22 +294,22 @@ typedef enum {
 - (NSDictionary <NSString *, NSArray *>*)autoGetHttpDnsResultForHostSync:(NSString *)host;
 
 
-
-/// 异步接口，根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址
-/// 如果设置了IP优选，则返回探测质量最好的IP
-/// 否则，返回解析结果的第1个IP
-/// 使用此API 需要确保 enableIPv6 开关已打开
-///   设备网络            返回域名IP
-///   IPv4 Only           IPv4
-///   IPv6 Only           IPv6 （如果没有Pv6返回空）
-///   双栈                 IPv4/IPV6
-/// @param host 要解析的域名
-/// @result 返回字典类型结构
-///   {
-///         "ALICLOUDHDNS_IPV4": "xxx.xxx.xxx.xxx",
-///         "ALICLOUDHDNS_IPV6": "xx:xx:xx:xx:xx:xx:xx:xx"
-///   }
-- (void)asyncGetHostByName:(NSString *)host completionHandler:(void (^)(NSDictionary <NSString *, NSString *>* result))handler;
+// 
+// /// 异步接口，根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址
+// /// 如果设置了IP优选，则返回探测质量最好的IP
+// /// 否则，返回解析结果的第1个IP
+// /// 使用此API 需要确保 enableIPv6 开关已打开
+// ///   设备网络            返回域名IP
+// ///   IPv4 Only           IPv4
+// ///   IPv6 Only           IPv6 （如果没有Pv6返回空）
+// ///   双栈                 IPv4/IPV6
+// /// @param host 要解析的域名
+// /// @result 返回字典类型结构
+// ///   {
+// ///         "ALICLOUDHDNS_IPV4": "xxx.xxx.xxx.xxx",
+// ///         "ALICLOUDHDNS_IPV6": "xx:xx:xx:xx:xx:xx:xx:xx"
+// ///   }
+// - (void)asyncGetHostByName:(NSString *)host completionHandler:(void (^)(NSDictionary <NSString *, NSString *>* result))handler;
 
 
 

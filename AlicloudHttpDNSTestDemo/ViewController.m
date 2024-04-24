@@ -86,22 +86,22 @@ NSArray *ipv6HostArray = nil;
     AlicloudIPStackType stackType = [_service currentIpStack];
     NSLog(@"onHost1, stackType: %d", stackType);
 
-    for (NSString *ipv4Host in ipv4HostArray) {
-        [_service asyncGetHostByName:ipv4Host completionHandler:^(NSDictionary<NSString *,NSString *> *result) {
-            NSLog(@"host: %@, result: %@", ipv4Host, result);
-        }];
-    }
-    for (NSString *ipv6Host in ipv6HostArray) {
-        [_service asyncGetHostByName:ipv6Host completionHandler:^(NSDictionary<NSString *,NSString *> *result) {
-            NSLog(@"host: %@, result: %@", ipv6Host, result);
-        }];
-    }
+    // for (NSString *ipv4Host in ipv4HostArray) {
+    //     [_service asyncGetHostByName:ipv4Host completionHandler:^(NSDictionary<NSString *,NSString *> *result) {
+    //         NSLog(@"host: %@, result: %@", ipv4Host, result);
+    //     }];
+    // }
+    // for (NSString *ipv6Host in ipv6HostArray) {
+    //     [_service asyncGetHostByName:ipv6Host completionHandler:^(NSDictionary<NSString *,NSString *> *result) {
+    //         NSLog(@"host: %@, result: %@", ipv6Host, result);
+    //     }];
+    // }
 }
 
 - (IBAction)onHost2:(id)sender {
-    [_service asyncGetHostByName:@"dns.xuyecan1919.tech" completionHandler:^(NSDictionary<NSString *,NSString *> *result) {
-        NSLog(@"host2: %@", result);
-    }];
+    // [_service asyncGetHostByName:@"dns.xuyecan1919.tech" completionHandler:^(NSDictionary<NSString *,NSString *> *result) {
+    //     NSLog(@"host2: %@", result);
+    // }];
 }
 
 // 开启IPv6解析结果

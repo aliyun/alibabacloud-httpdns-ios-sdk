@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		05924C12336426C1A7D80814 /* Pods_AlicloudHttpDNSTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8EEBAFF15245D1ACB55D78D1 /* Pods_AlicloudHttpDNSTests.framework */; };
 		2197CA9E1BC7AB9B00BDB65B /* HttpdnsUtilTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CA961BC7AB9B00BDB65B /* HttpdnsUtilTest.m */; };
 		2197CAC31BC7B3D400BDB65B /* AlicloudHttpDNS.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB11BC7B3D400BDB65B /* AlicloudHttpDNS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2197CAC51BC7B3D400BDB65B /* HttpdnsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */; };
@@ -63,6 +64,7 @@
 		4AF5AB881DCB332800206DD8 /* HttpdnsServiceProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */; };
 		4AF5AB891DCB332800206DD8 /* HttpdnsUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */; };
 		51316FBED914130E3A7C3F64 /* Pods_AlicloudHttpDNS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4B3FB631C77ADFECC3DDFFD /* Pods_AlicloudHttpDNS.framework */; };
+		74EE374FF5155CA604D7CACE /* Pods_AlicloudHttpDNSTestDemo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 59D7A169D57B42E1B9D1657D /* Pods_AlicloudHttpDNSTestDemo.framework */; };
 		7EB5412D2BD5FBFB001DFF47 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 7EB5412B2BD5FBFB001DFF47 /* PrivacyInfo.xcprivacy */; };
 		942376DD1C5764C700736E50 /* HttpdnsServiceProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CABC1BC7B3D400BDB65B /* HttpdnsServiceProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		942376DE1C5764CF00736E50 /* HttpdnsDegradationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -151,6 +153,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		083C3DAADE200F35A3B623C7 /* Pods-AlicloudHttpDNSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AlicloudHttpDNSTests.release.xcconfig"; path = "Target Support Files/Pods-AlicloudHttpDNSTests/Pods-AlicloudHttpDNSTests.release.xcconfig"; sourceTree = "<group>"; };
 		2197CA3C1BC79A4500BDB65B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2197CA481BC79A4500BDB65B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2197CA961BC7AB9B00BDB65B /* HttpdnsUtilTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtilTest.m; sourceTree = "<group>"; };
@@ -167,6 +170,7 @@
 		2197CABD1BC7B3D400BDB65B /* HttpdnsServiceProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsServiceProvider.m; sourceTree = "<group>"; };
 		2197CABE1BC7B3D400BDB65B /* HttpdnsUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsUtil.h; sourceTree = "<group>"; };
 		2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtil.m; sourceTree = "<group>"; };
+		30AAC2745C9ECF6E017DAD70 /* Pods-AlicloudHttpDNSTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AlicloudHttpDNSTests.debug.xcconfig"; path = "Target Support Files/Pods-AlicloudHttpDNSTests/Pods-AlicloudHttpDNSTests.debug.xcconfig"; sourceTree = "<group>"; };
 		4A1C99EE2224F3A100614E6E /* TestIPv6ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestIPv6ViewController.h; sourceTree = "<group>"; };
 		4A1C99EF2224F3A100614E6E /* TestIPv6ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestIPv6ViewController.m; sourceTree = "<group>"; };
 		4A2489C321CA0DEE00AAC6EB /* MyLoggerHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MyLoggerHandler.h; sourceTree = "<group>"; };
@@ -188,8 +192,11 @@
 		4AF4AB71211439A800D712DF /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		4AF4AB95211439F900D712DF /* libresolv.9.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.9.tbd; path = usr/lib/libresolv.9.tbd; sourceTree = SDKROOT; };
 		4AF4AB9821143A3800D712DF /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		59D7A169D57B42E1B9D1657D /* Pods_AlicloudHttpDNSTestDemo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AlicloudHttpDNSTestDemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		72882C5843A71B931091B6A8 /* Pods-AlicloudHttpDNSTestDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AlicloudHttpDNSTestDemo.debug.xcconfig"; path = "Target Support Files/Pods-AlicloudHttpDNSTestDemo/Pods-AlicloudHttpDNSTestDemo.debug.xcconfig"; sourceTree = "<group>"; };
 		7906909A2F5D81220562F688 /* Pods-AlicloudHttpDNS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AlicloudHttpDNS.release.xcconfig"; path = "Target Support Files/Pods-AlicloudHttpDNS/Pods-AlicloudHttpDNS.release.xcconfig"; sourceTree = "<group>"; };
 		7EB5412B2BD5FBFB001DFF47 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		8EEBAFF15245D1ACB55D78D1 /* Pods_AlicloudHttpDNSTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AlicloudHttpDNSTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsDegradationDelegate.h; sourceTree = "<group>"; };
 		945914111CEB5D9C00D95CF7 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
 		9A4D18191E8F8FE1001E45B4 /* HttpdnsConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsConstants.h; sourceTree = "<group>"; };
@@ -254,6 +261,7 @@
 		9AF9A60F1EC4E9990018063B /* HttpdnsIPRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPRecord.h; sourceTree = "<group>"; };
 		9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsIPRecord.m; sourceTree = "<group>"; };
 		A4B3FB631C77ADFECC3DDFFD /* Pods_AlicloudHttpDNS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AlicloudHttpDNS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB90FEC6764903C3897D52D5 /* Pods-AlicloudHttpDNSTestDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AlicloudHttpDNSTestDemo.release.xcconfig"; path = "Target Support Files/Pods-AlicloudHttpDNSTestDemo/Pods-AlicloudHttpDNSTestDemo.release.xcconfig"; sourceTree = "<group>"; };
 		B0E74130257F7E05002018B8 /* CFHTTPSURLProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CFHTTPSURLProtocol.h; sourceTree = "<group>"; };
 		B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CFHTTPSURLProtocol.m; sourceTree = "<group>"; };
 		B0E9EE7824E130A700EF63E6 /* AliyunEmasServices-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "AliyunEmasServices-Info.plist"; sourceTree = "<group>"; };
@@ -282,6 +290,7 @@
 			files = (
 				9AF9A60E1EC4D2EA0018063B /* libsqlite3.tbd in Frameworks */,
 				945914121CEB5D9C00D95CF7 /* libresolv.tbd in Frameworks */,
+				05924C12336426C1A7D80814 /* Pods_AlicloudHttpDNSTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -291,6 +300,7 @@
 			files = (
 				4AF4AB9921143A3800D712DF /* libz.tbd in Frameworks */,
 				4AF4AB96211439F900D712DF /* libresolv.9.tbd in Frameworks */,
+				74EE374FF5155CA604D7CACE /* Pods_AlicloudHttpDNSTestDemo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -425,6 +435,8 @@
 				4AF4AB95211439F900D712DF /* libresolv.9.tbd */,
 				9AF9A60D1EC4D2EA0018063B /* libsqlite3.tbd */,
 				A4B3FB631C77ADFECC3DDFFD /* Pods_AlicloudHttpDNS.framework */,
+				59D7A169D57B42E1B9D1657D /* Pods_AlicloudHttpDNSTestDemo.framework */,
+				8EEBAFF15245D1ACB55D78D1 /* Pods_AlicloudHttpDNSTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -533,6 +545,10 @@
 			children = (
 				C4B42C273C121A061348284B /* Pods-AlicloudHttpDNS.debug.xcconfig */,
 				7906909A2F5D81220562F688 /* Pods-AlicloudHttpDNS.release.xcconfig */,
+				72882C5843A71B931091B6A8 /* Pods-AlicloudHttpDNSTestDemo.debug.xcconfig */,
+				AB90FEC6764903C3897D52D5 /* Pods-AlicloudHttpDNSTestDemo.release.xcconfig */,
+				30AAC2745C9ECF6E017DAD70 /* Pods-AlicloudHttpDNSTests.debug.xcconfig */,
+				083C3DAADE200F35A3B623C7 /* Pods-AlicloudHttpDNSTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -607,6 +623,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2197CA4E1BC79A4500BDB65B /* Build configuration list for PBXNativeTarget "AlicloudHttpDNSTests" */;
 			buildPhases = (
+				CFF4BDC7F5B45F5CB3228287 /* [CP] Check Pods Manifest.lock */,
 				2197CA3D1BC79A4500BDB65B /* Sources */,
 				2197CA3E1BC79A4500BDB65B /* Frameworks */,
 				2197CA3F1BC79A4500BDB65B /* Resources */,
@@ -624,6 +641,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4AF4AB73211439A800D712DF /* Build configuration list for PBXNativeTarget "AlicloudHttpDNSTestDemo" */;
 			buildPhases = (
+				AB20B3D3C0E8B75B59D2124F /* [CP] Check Pods Manifest.lock */,
 				4AF4AB5C211439A600D712DF /* Sources */,
 				4AF4AB5D211439A600D712DF /* Frameworks */,
 				4AF4AB5E211439A600D712DF /* Resources */,
@@ -726,6 +744,50 @@
 			);
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/Pods-AlicloudHttpDNS-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		AB20B3D3C0E8B75B59D2124F /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-AlicloudHttpDNSTestDemo-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		CFF4BDC7F5B45F5CB3228287 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-AlicloudHttpDNSTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1055,6 +1117,7 @@
 		};
 		2197CA4F1BC79A4500BDB65B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 30AAC2745C9ECF6E017DAD70 /* Pods-AlicloudHttpDNSTests.debug.xcconfig */;
 			buildSettings = {
 				COMPILER_INDEX_STORE_ENABLE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1080,6 +1143,7 @@
 		};
 		2197CA501BC79A4500BDB65B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 083C3DAADE200F35A3B623C7 /* Pods-AlicloudHttpDNSTests.release.xcconfig */;
 			buildSettings = {
 				COMPILER_INDEX_STORE_ENABLE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1105,6 +1169,7 @@
 		};
 		4AF4AB74211439A800D712DF /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 72882C5843A71B931091B6A8 /* Pods-AlicloudHttpDNSTestDemo.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1142,6 +1207,7 @@
 		};
 		4AF4AB75211439A800D712DF /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AB90FEC6764903C3897D52D5 /* Pods-AlicloudHttpDNSTestDemo.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ANALYZER_NONNULL = YES;
