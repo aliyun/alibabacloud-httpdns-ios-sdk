@@ -5,11 +5,21 @@ use_frameworks!
 
 platform :ios, '12.0'
 
+def shared_pods
+  pod 'AlicloudUtils', '2.0.0'
+  pod 'AlicloudUTDID', '1.6.0'
+end
+
 target 'AlicloudHttpDNS' do
+  shared_pods
+end
 
-  pod 'AlicloudUtils', '1.4.1-private'
-  pod 'AlicloudUTDID', '1.5.0.95-private'
+target 'AlicloudHttpDNSTestDemo' do
+  shared_pods
+end
 
+target 'AlicloudHttpDNSTests' do
+  shared_pods
 end
 
 post_install do |installer|
