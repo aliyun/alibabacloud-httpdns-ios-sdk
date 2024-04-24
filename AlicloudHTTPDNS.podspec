@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "AlicloudHTTPDNS"
-  s.version      = "2.1.0-private"
+  s.version      = "2.2.0-private"
   s.summary      = "Aliyun Mobile Service HTTPDNS iOS SDK."
   s.homepage     = "https://www.aliyun.com/product/httpdns"
   s.author       = { "junmo" => "lingkun.lk@alibaba-inc.com" }
