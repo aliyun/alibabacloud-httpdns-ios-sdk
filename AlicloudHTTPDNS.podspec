@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "AlicloudHTTPDNS"
-  s.version      = "2.2.0.2-private"
+  s.version      = "2.2.0"
   s.summary      = "Aliyun Mobile Service HTTPDNS iOS SDK."
   s.homepage     = "https://www.aliyun.com/product/httpdns"
   s.author       = { "junmo" => "lingkun.lk@alibaba-inc.com" }
@@ -16,5 +16,4 @@ Pod::Spec.new do |s|
   s.xcconfig = { 'OTHER_LDFLAGS' => '$(inherited) -ObjC -lz' }
 
   s.dependency "AlicloudUtils"
-  s.dependency "AlicloudUT"
 end

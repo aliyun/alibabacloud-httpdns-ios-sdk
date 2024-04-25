@@ -7,7 +7,6 @@ platform :ios, '12.0'
 
 def shared_pods
   pod 'AlicloudUtils', '2.0.0'
-  pod 'AlicloudUTDID', '1.6.0'
 end
 
 target 'AlicloudHttpDNS' do
