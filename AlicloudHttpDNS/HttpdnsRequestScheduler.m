@@ -787,6 +787,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             if (![statusString isEqualToString:@"None"]) {
                 NSArray *hostArray = [HttpdnsUtil safeAllKeysFromDict:self->_hostManagerDict];
                 [self cleanAllHostMemoryCache];
+                [self resetServerDisableDate];
                 //同步操作，防止网络请求成功，更新后，缓存数据再覆盖掉。
                 [self loadIPsFromCacheSyncIfNeeded];
                 if (self->_isPreResolveAfterNetworkChangedEnabled == YES) {
@@ -871,6 +872,12 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     return lastServerDisableDate;
 }
 
+- (void)resetServerDisableDate {
+    dispatch_sync(self.cacheQueue, ^{
+        _lastServerDisableDate = nil;
+    });
+}
+
 - (NSString *)disableStatusPath {
     @synchronized(self) {
         if (_disableStatusPath) {
@@ -896,7 +903,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (scheduleCenter.isConnectingWithScheduleCenter) {
         return NO;
     }
-    //需要考虑首次启动，值恒为nil，或者网络正常情况下。
+    // 需要考虑首次启动，值恒为nil，或者网络变化后，都可以允许网络探测
     if (!self.lastServerDisableDate) {
         return YES;
     }
