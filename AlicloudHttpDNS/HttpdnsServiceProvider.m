@@ -294,11 +294,11 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     
     if ([HttpdnsUtil isAnIP:host]) {
-        HttpdnsLogDebug("The host is just an IP.");
+        HttpdnsLogDebug("The host is just an IP: %@", host);
         return [NSArray arrayWithObjects:host, nil];
     }
     if (![HttpdnsUtil isAHost:host]) {
-        HttpdnsLogDebug("The host is illegal.");
+        HttpdnsLogDebug("The host is illegal: %@", host);
         return nil;
     }
     
@@ -327,7 +327,7 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     
     if ([HttpdnsUtil isAnIP:host]) {
-        HttpdnsLogDebug("The host is just an IP.");
+        HttpdnsLogDebug("The host is just an IP: %@", host);
         return [NSArray arrayWithObjects:host, nil];
     }
     if (![HttpdnsUtil isAHost:host]) {
@@ -360,11 +360,11 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     
     if ([HttpdnsUtil isAnIP:host]) {
-        HttpdnsLogDebug("The host is just an IP.");
+        HttpdnsLogDebug("The host is just an IP: %@", host);
         return [NSArray arrayWithObjects:host, nil];
     }
     if (![HttpdnsUtil isAHost:host]) {
-        HttpdnsLogDebug("The host is illegal.");
+        HttpdnsLogDebug("The host is illegal: %@", host);
         return nil;
     }
     //需要检查是不是在主线程，如果是主线程，保持异步逻辑
@@ -464,12 +464,12 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     
     if ([HttpdnsUtil isAnIP:host]) {
-        HttpdnsLogDebug("The host is just an IP.");
+        HttpdnsLogDebug("The host is just an IP: %@", host);
         return [NSArray arrayWithObjects:host, nil];
     }
     
     if (![HttpdnsUtil isAHost:host]) {
-        HttpdnsLogDebug("The host is illegal.");
+        HttpdnsLogDebug("The host is illegal: %@", host);
         return nil;
     }
     
@@ -502,12 +502,12 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     
     if ([HttpdnsUtil isAnIP:host]) {
-        HttpdnsLogDebug("The host is just an IP.");
+        HttpdnsLogDebug("The host is just an IP: %@", host);
         return [NSArray arrayWithObjects:host, nil];
     }
     
     if (![HttpdnsUtil isAHost:host]) {
-        HttpdnsLogDebug("The host is illegal.");
+        HttpdnsLogDebug("The host is illegal: %@", host);
         return nil;
     }
     HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO queryType:HttpdnsQueryIPTypeIpv6];
@@ -539,12 +539,12 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     
     if ([HttpdnsUtil isAnIP:host]) {
-        HttpdnsLogDebug("The host is just an IP.");
+        HttpdnsLogDebug("The host is just an IP: %@", host);
         return [NSArray arrayWithObjects:host, nil];
     }
     
     if (![HttpdnsUtil isAHost:host]) {
-        HttpdnsLogDebug("The host is illegal.");
+        HttpdnsLogDebug("The host is illegal: %@", host);
         return nil;
     }
     
@@ -608,7 +608,7 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     
     if ([HttpdnsUtil isAnIP:host]) {
-        HttpdnsLogDebug("The host is just an IP.");
+        HttpdnsLogDebug("The host is just an IP: %@", host);
         if ([[AlicloudIPv6Adapter getInstance] isIPv4Address:host]) {
             return @{ALICLOUDHDNS_IPV4: @[host?:@""]};
         } else if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:host]) {
@@ -618,7 +618,7 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     
     if (![HttpdnsUtil isAHost:host]) {
-        HttpdnsLogDebug("The host is illegal.");
+        HttpdnsLogDebug("The host is illegal: %@", host);
         return nil;
     }
     
@@ -656,7 +656,7 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     
     if ([HttpdnsUtil isAnIP:host]) {
-        HttpdnsLogDebug("The host is just an IP.");
+        HttpdnsLogDebug("The host is just an IP: %@", host);
         if ([[AlicloudIPv6Adapter getInstance] isIPv4Address:host]) {
             return @{ALICLOUDHDNS_IPV4: @[host?:@""]};
         } else if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:host]) {
@@ -666,7 +666,7 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     
     if (![HttpdnsUtil isAHost:host]) {
-        HttpdnsLogDebug("The host is illegal.");
+        HttpdnsLogDebug("The host is illegal: %@", host);
         return nil;
     }
     HttpdnsHostObject *hostObject = [_requestScheduler addSingleHostAndLookup:host synchronously:NO queryType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
@@ -702,7 +702,7 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     
     if ([HttpdnsUtil isAnIP:host]) {
-        HttpdnsLogDebug("The host is just an IP.");
+        HttpdnsLogDebug("The host is just an IP: %@", host);
         if ([[AlicloudIPv6Adapter getInstance] isIPv4Address:host]) {
             return @{ALICLOUDHDNS_IPV4: @[host?:@""]};
         } else if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:host]) {
@@ -712,7 +712,7 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     
     if (![HttpdnsUtil isAHost:host]) {
-        HttpdnsLogDebug("The host is illegal.");
+        HttpdnsLogDebug("The host is illegal: %@", host);
         return nil;
     }
     
@@ -939,11 +939,11 @@ static HttpDnsService * _httpDnsClient = nil;
         return nil;
     }
     if ([HttpdnsUtil isAnIP:host]) {
-        HttpdnsLogDebug("The host is just an IP.");
+        HttpdnsLogDebug("The host is just an IP: %@", host);
         return [NSDictionary dictionaryWithObject:host forKey:@"host"];
     }
     if (![HttpdnsUtil isAHost:host]) {
-        HttpdnsLogDebug("The host is illegal.");
+        HttpdnsLogDebug("The host is illegal: %@", host);
         return nil;
     }
     
@@ -1082,12 +1082,12 @@ static HttpDnsService * _httpDnsClient = nil;
     }
     
     if ([HttpdnsUtil isAnIP:host]) {
-        HttpdnsLogDebug("The host is just an IP.");
+        HttpdnsLogDebug("The host is just an IP: %@", host);
         return [NSArray arrayWithObjects:host, nil];
     }
     
     if (![HttpdnsUtil isAHost:host]) {
-        HttpdnsLogDebug("The host is illegal.");
+        HttpdnsLogDebug("The host is illegal: %@", host);
         return nil;
     }
     
