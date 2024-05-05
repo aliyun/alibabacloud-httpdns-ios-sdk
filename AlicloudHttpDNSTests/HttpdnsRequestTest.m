@@ -793,10 +793,10 @@
     //内部缓存开关，不触发加载DB到内存的操作
     [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
     [requestScheduler loadIPsFromCacheSyncIfNeeded];
-    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
     HttpdnsHostRecord *hostRecord = [hostCacheStore hostRecordsWithCurrentCarrierForHost:hostName];
     
-    HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore new];
+    HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore sharedInstance];
     NSArray<HttpdnsIPRecord *> *IPRecords = [IPCacheStore IPRecordsForHostID:hostRecord.hostRecordId];
     HttpdnsIPRecord *IPRecord = IPRecords[0];
     //    XCTAssertNotNil([service getIpByHost:hostName]);
@@ -829,7 +829,7 @@
     [requestScheduler cleanAllHostMemoryCache];
     [requestScheduler loadIPsFromCacheSyncIfNeeded];
     HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:hostName IPs:@[] IP6s:@[] TTL:0];
-    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
     [hostCacheStore insertHostRecords:@[hostRecord]];
     
     [requestScheduler cleanAllHostMemoryCache];
@@ -875,10 +875,10 @@
         XCTAssertTrue([IP1 isEqualToString:IP2]);
     }
     
-    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
     HttpdnsHostRecord *hostRecord = [hostCacheStore hostRecordsWithCurrentCarrierForHost:hostName];
     
-    HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore new];
+    HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore sharedInstance];
     NSArray<HttpdnsIPRecord *> *IPRecords = [IPCacheStore IPRecordsForHostID:hostRecord.hostRecordId];
     HttpdnsIPRecord *IPRecord = IPRecords[0];
     //    XCTAssertNotNil([service getIpByHost:hostName]);
@@ -946,7 +946,7 @@
     
     //内部缓存开关，不触发加载DB到内存的操作
     [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
-    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
     //XCTAssertNotNil([service getIpByHostAsync:hostName]);
     
     [HttpdnsHostCacheStoreTestHelper shortCacheExpireTime];

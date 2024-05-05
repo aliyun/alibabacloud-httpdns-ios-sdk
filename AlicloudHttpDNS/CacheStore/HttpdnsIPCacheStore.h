@@ -13,8 +13,6 @@
 
 @interface HttpdnsIPCacheStore : HttpdnsCacheStore
 
-@property (nonatomic, copy) NSString *host;
-
 + (instancetype)sharedInstance;
 
 - (void)insertIPs:(NSArray<NSString *> *)IPs hostRecordId:(NSUInteger)hostRecordId TTL:(int64_t)TTL ipRegion:(NSString *)ipRegion;

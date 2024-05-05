@@ -1028,7 +1028,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     }
     dispatch_async([HttpdnsRequestScheduler hostCacheQueue], ^{
         HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord sdnsHostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL Extra:extra ipRegion:ipRegion ip6Region:ip6Region];
-        HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+        HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
         [hostCacheStore insertHostRecords:@[hostRecord]];
     });
 }
