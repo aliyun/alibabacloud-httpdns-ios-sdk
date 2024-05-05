@@ -50,8 +50,6 @@
             [db executeUpdate:ALICLOUD_HTTPDNS_SQL_ADD_IP_COLUMN_IP6_REGION];
         }
         [result_ip6 close];
-        
-        
     }));
 }
 
@@ -156,7 +154,6 @@
     return record;
 }
 
-
 - (void)cleanIPRecord {
     [HttpdnsUtil warnMainThreadIfNecessary];
     ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
@@ -170,8 +167,5 @@
         [db executeUpdate:ALICLOUD_HTTPDNS_SQL_CLEAN_IP6_RECORD_TABLE];
     }));
 }
-
-
-
 
 @end

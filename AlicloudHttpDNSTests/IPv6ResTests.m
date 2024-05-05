@@ -146,7 +146,7 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     [httpdns enableIPv6:YES];
     
     // 有效v4
-    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
     HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[ testIPv4 ] IP6s: @[] TTL:3600];
     [hostCacheStore insertHostRecords:@[hostRecord]];
     [httpdns setCachedIPEnabled:YES];
@@ -237,7 +237,7 @@ HttpdnsRequestScheduler *requestScheduler = nil;
 
 - (void)cleanMemoryAndCache:(NSString *)testHost {
     [requestScheduler cleanAllHostMemoryCache];
-    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore new];
+    HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
     // IPs为nil时，执行删除动作
     HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[] IP6s:@[] TTL:0];
     [hostCacheStore insertHostRecords:@[hostRecord]];
