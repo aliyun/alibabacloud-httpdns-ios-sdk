@@ -34,6 +34,13 @@ typedef enum {
     AlicloudHttpDNS_IPTypeV64    = 2,            //ipv4 + ipv6
 } AlicloudHttpDNS_IPType;
 
+
+typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
+    HttpdnsQueryIPTypeAuto = 0 << 0,
+    HttpdnsQueryIPTypeIpv4 = 1 << 0,
+    HttpdnsQueryIPTypeIpv6 = 1 << 1,
+};
+
 @protocol HttpdnsTTLDelegate <NSObject>
 
 

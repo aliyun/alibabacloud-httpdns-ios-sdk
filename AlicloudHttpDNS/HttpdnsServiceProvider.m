@@ -1015,7 +1015,7 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (NSString *)limitPapams:(NSDictionary<NSString *, NSString *> *)params {
-    NSString *str = @"^[A-Za-z0-9\-_]+";
+    NSString *str = @"^[A-Za-z0-9-_]+";
     NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", str];
     NSMutableArray *arr = [[NSMutableArray alloc] initWithCapacity:0];
     

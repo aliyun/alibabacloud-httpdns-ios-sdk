@@ -7,13 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
-
-typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
-    HttpdnsQueryIPTypeAuto = 0 << 0,
-    HttpdnsQueryIPTypeIpv4 = 1 << 0,
-    HttpdnsQueryIPTypeIpv6 = 1 << 1,
-};
+#import "HttpdnsServiceProvider.h"
 
 @interface HttpdnsIPv6Manager : NSObject
 
