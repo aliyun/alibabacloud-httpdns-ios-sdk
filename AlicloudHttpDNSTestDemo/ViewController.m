@@ -7,13 +7,13 @@
 //
 
 #import "ViewController.h"
-#import "HttpdnsServiceProvider.h"
+#import "HttpdnsService.h"
 #import "HttpdnsUtil.h"
 #import "MyLoggerHandler.h"
 #import "HttpdnsScheduleCenter.h"
 #import "TestIPv6ViewController.h"
 
-#import "HttpdnsServiceProvider_Internal.h"
+#import "HttpdnsService_Internal.h"
 
 #import <AlicloudUtils/AlicloudIPv6Adapter.h>
 

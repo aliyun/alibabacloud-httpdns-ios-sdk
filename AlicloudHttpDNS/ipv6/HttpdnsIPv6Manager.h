@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "HttpdnsServiceProvider.h"
+#import "HttpdnsService.h"
 
 @interface HttpdnsIPv6Manager : NSObject
 

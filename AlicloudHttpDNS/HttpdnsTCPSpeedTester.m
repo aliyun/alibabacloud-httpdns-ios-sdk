@@ -25,7 +25,7 @@
 #import <netdb.h>
 #include <sys/time.h>
 #import "AlicloudUtils/AlicloudUtils.h"
-#import "HttpdnsServiceProvider_Internal.h"
+#import "HttpdnsService_Internal.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsLog_Internal.h"
