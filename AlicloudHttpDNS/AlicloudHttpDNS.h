@@ -23,5 +23,5 @@ static NSString *const HTTPDNS_IOS_SDK_VERSION = @"2.2.0";
 
 #import <Foundation/Foundation.h>
 #import "HttpdnsLoggerDelegate.h"
-#import "HttpdnsServiceProvider.h"
+#import "HttpdnsService.h"
 #import "HttpdnsDegradationDelegate.h"

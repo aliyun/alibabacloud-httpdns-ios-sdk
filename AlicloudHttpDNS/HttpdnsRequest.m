@@ -17,14 +17,14 @@
  * under the License.
  */
 
-#import "HttpdnsServiceProvider.h"
+#import "HttpdnsService.h"
 #import "HttpdnsModel.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsPersistenceUtils.h"
-#import "HttpdnsServiceProvider_Internal.h"
+#import "HttpdnsService_Internal.h"
 #import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsConstants.h"

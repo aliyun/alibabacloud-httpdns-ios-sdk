@@ -8,7 +8,7 @@
 
 #import "HttpdnsCacheStore.h"
 #import "HttpdnsPersistenceUtils.h"
-#import "HttpdnsServiceProvider.h"
+#import "HttpdnsService.h"
 
 @interface HttpdnsCacheStore()
 

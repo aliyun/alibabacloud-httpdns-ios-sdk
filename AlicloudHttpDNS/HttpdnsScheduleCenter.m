@@ -22,7 +22,7 @@
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsConstants.h"
 #import "HttpdnsRequestScheduler_Internal.h"
-#import "HttpdnsServiceProvider_Internal.h"
+#import "HttpdnsService_Internal.h"
 #import "HttpdnsScheduleCenterRequest.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsScheduleCenter_Internal.h"

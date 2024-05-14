@@ -9,8 +9,8 @@
 #import "TestIPv6ViewController.h"
 #import <AlicloudUtils/AlicloudUtils.h>
 #import "HttpdnsRequestScheduler.h"
-#import "HttpdnsServiceProvider.h"
-#import "HttpdnsServiceProvider_Internal.h"
+#import "HttpdnsService.h"
+#import "HttpdnsService_Internal.h"
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsHostCacheStore.h"
 

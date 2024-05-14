@@ -17,7 +17,7 @@
  * under the License.
  */
 #import <AlicloudUtils/AlicloudUtils.h>
-#import "HttpdnsServiceProvider_Internal.h"
+#import "HttpdnsService_Internal.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsModel.h"
@@ -878,7 +878,7 @@ static HttpDnsService * _httpDnsClient = nil;
     return httpdnsResult;
 }
 
-- (NSDictionary <NSString *, NSArray *>*) autoGetHttpDnsResultForHostSync:(NSString *)host {
+- (NSDictionary <NSString *, NSArray *>*)autoGetHttpDnsResultForHostSync:(NSString *)host {
     AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
     AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
     NSMutableDictionary *httpdnsResult = [NSMutableDictionary dictionary];
@@ -899,7 +899,7 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 
-- (AlicloudIPStackType) currentIpStack {
+- (AlicloudIPStackType)currentIpStack {
     AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
     AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
     return stackType;

@@ -21,7 +21,7 @@
 #import "HttpdnsLog_Internal.h"
 #import "CommonCrypto/CommonCrypto.h"
 #import "arpa/inet.h"
-#import "HttpdnsServiceProvider_Internal.h"
+#import "HttpdnsService_Internal.h"
 #import "UIApplication+ABSHTTPDNSSetting.h"
 #import "HttpdnsConstants.h"
 #import "HttpdnsRequest.h"

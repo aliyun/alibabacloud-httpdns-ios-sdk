@@ -18,7 +18,7 @@
  */
 
 #import "HttpdnsPersistenceUtils.h"
-#import "HttpdnsServiceProvider.h"
+#import "HttpdnsService.h"
 #import "HttpdnsUtil.h"
 
 static NSString *const ALICLOUD_HTTPDNS_ROOT_DIR_NAME = @"HTTPDNS";

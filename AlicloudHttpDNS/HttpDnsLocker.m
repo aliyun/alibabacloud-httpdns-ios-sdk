@@ -7,7 +7,7 @@
 //
 
 #import "HttpDnsLocker.h"
-#import "HttpdnsServiceProvider.h"
+#import "HttpdnsService.h"
 
 @implementation HttpDnsLocker {
     NSMutableDictionary<NSString*, NSCondition*> *_v4LockMap;

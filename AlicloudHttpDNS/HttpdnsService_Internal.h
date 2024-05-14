@@ -17,7 +17,7 @@
  * under the License.
  */
 
-#import "HttpdnsServiceProvider.h"
+#import "HttpdnsService.h"
 #import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsLog_Internal.h"
 
