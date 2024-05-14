@@ -322,7 +322,7 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 
 /// 获取当前网络栈
 /// @result 返回具体的网络栈
-- (AlicloudIPStackType) currentIpStack;
+- (AlicloudIPStackType)currentIpStack;
 
 
 /// 清除指定host缓存（内存+沙盒数据库）
