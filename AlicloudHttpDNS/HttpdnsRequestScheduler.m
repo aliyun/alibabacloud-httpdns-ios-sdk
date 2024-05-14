@@ -332,47 +332,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     return NO;
 }
 
-
-///// 判断当前命中的IP是否和当前region能匹配
-///// @param hostObject 命中IP对象
-///// @param queryType 查询类型
-//- (BOOL)_regionMatch:(HttpdnsHostObject *)hostObject ipQueryType:(HttpdnsQueryIPType)queryType {
-//    
-//    BOOL regionMatchFlag = YES;
-//    
-//    if (!self.customRegion) {
-//        self.customRegion = @"";
-//    }
-//    
-//    if (!hostObject.ipRegion) {
-//        hostObject.ipRegion = @"";
-//    }
-//    
-//    if (!hostObject.ip6Region) {
-//        hostObject.ip6Region = @"";
-//    }
-//    
-//    
-//    if (queryType & HttpdnsQueryIPTypeIpv4) {
-//        if(![self.customRegion isEqualToString:hostObject.ipRegion]) {
-//            hostObject.ips = @[]; //清空ipv4
-//            regionMatchFlag = NO;
-//        }
-//    }
-//    
-//    
-//    if (queryType & HttpdnsQueryIPTypeIpv6) {
-//        if(![self.customRegion isEqualToString:hostObject.ip6Region]) {
-//            hostObject.ip6s = @[]; //清空ipv6
-//            regionMatchFlag = NO;
-//        }
-//    }
-//    
-//  
-//    return regionMatchFlag;
-//}
-
-
 - (void)mergeLookupResultToManager:(HttpdnsHostObject *)result forHost:(NSString *)host {
     
     NSString * CopyHost = host;
@@ -423,9 +382,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 [old setExtra:Extra];
             }
                 
-//            if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
-//                [old setIp6s:IP6Objects];
-//            }
             @try {
                 HttpdnsLogDebug("####### Update %@: %@", host, result);
             } @catch (NSException *exception) {
@@ -453,9 +409,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 [hostObject setExtra:Extra];
             }
             
-//            if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result] && [EMASTools isValidArray:IP6Objects]) {
-//                [hostObject setIp6s:IP6Objects];
-//            }
             @try {
                 HttpdnsLogDebug("###### New resolved item: %@: %@", host, result);
             } @catch (NSException *exception) {
