@@ -39,7 +39,5 @@
 //设置测试场景下的日志回调
 - (void)setTestLogHannder:(id<HttpdnsLog_testOnly_protocol>)handler;
 
-//+ (void)statIfNeeded;
-
 @end
 

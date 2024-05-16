@@ -155,7 +155,7 @@ static dispatch_queue_t _fileCacheQueue = 0;
     NSFileManager *fileMgr = [[NSFileManager alloc] init];
     __block NSError *error = nil;
     NSArray *directoryContents = [fileMgr contentsOfDirectoryAtPath:dirPath error:&error];
-    if (error == nil) {
+    if (!error) {
         success = YES;
         for (NSString *path in directoryContents) {
             NSString *fullPath = [dirPath stringByAppendingPathComponent:path];

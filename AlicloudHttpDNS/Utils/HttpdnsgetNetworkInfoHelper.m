@@ -51,7 +51,7 @@ static BOOL networkInfoEnable = NO;
         NSString *currentWifiHotSpotName = [self getCurrentWifiHotSpotName];
         NSString *networkName = ALICLOUD_HTTPDNS_NETWORK_FROME_WIFI_SSID(HttpdnsCarrierTypeWifi, @"0");
         if (currentWifiHotSpotName.length == 0 || !currentWifiHotSpotName) {
-            HttpdnsLogDebug("Get wifi name failed!");
+            HttpdnsLogDebug("unable to get wifi name, default: %@", networkName);
             //若读不到WIFI名字，则默认为2-0
             return networkName;
         }

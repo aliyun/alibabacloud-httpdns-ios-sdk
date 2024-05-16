@@ -144,10 +144,10 @@
  * 从网络初始化
  */
 - (instancetype)initWithHostSdns:(NSString *)host
-                         IPs:(NSArray<NSString *> *)IPs
-                        IP6s:(NSArray<NSString *> *)IP6s
-                         TTL:(int64_t)TTL
-                        Extra:(NSDictionary *)extra
+                             IPs:(NSArray<NSString *> *)IPs
+                            IP6s:(NSArray<NSString *> *)IP6s
+                             TTL:(int64_t)TTL
+                           Extra:(NSDictionary *)extra
                         ipRegion:(NSString *)ipRegion
                        ip6Region:(NSString *)ip6Region {
     if (self = [super init]) {
@@ -166,12 +166,12 @@
  * 从网络初始化
  */
 + (instancetype)sdnsHostRecordWithHost:(NSString *)host
-                               IPs:(NSArray<NSString *> *)IPs
-                              IP6s:(NSArray<NSString *> *)IP6s
-                               TTL:(int64_t)TTL
-                             Extra:(NSDictionary *)extra
-                          ipRegion:(NSString *)ipRegion
-                         ip6Region:(NSString *)ip6Region{
+                                   IPs:(NSArray<NSString *> *)IPs
+                                  IP6s:(NSArray<NSString *> *)IP6s
+                                   TTL:(int64_t)TTL
+                                 Extra:(NSDictionary *)extra
+                              ipRegion:(NSString *)ipRegion
+                             ip6Region:(NSString *)ip6Region{
     HttpdnsHostRecord *hostRecord = [[HttpdnsHostRecord alloc] initWithHostSdns:host IPs:IPs IP6s:IP6s TTL:TTL Extra:extra ipRegion:ipRegion ip6Region:ipRegion];
     return hostRecord;
 }

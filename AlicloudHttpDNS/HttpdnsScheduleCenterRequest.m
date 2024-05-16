@@ -184,6 +184,7 @@ static NSURLSession *_scheduleCenterSession = nil;
             id jsonValue = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
             result = [HttpdnsUtil getValidDictionaryFromJson:jsonValue];
             NSInteger statusCode = [(NSHTTPURLResponse *) response statusCode];
+            HttpdnsLogDebug("Response code: %ld", statusCode);
             if (statusCode != 200) {
                 HttpdnsLogDebug("ReponseCode %ld.", (long)statusCode);
                 HttpdnsLogDebug_TestOnly(@"更新服务IP请求失败 URL: %@, ReponseCode %ld." , response.URL.absoluteString, (long)statusCode);
@@ -203,7 +204,6 @@ static NSURLSession *_scheduleCenterSession = nil;
                     errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10003 userInfo:dict];
                 }
             } else {
-                HttpdnsLogDebug("Response code 200.");
                 HttpdnsLogDebug_TestOnly(@"更新服务IP请求成功！ URL: %@, result: %@", response.URL.absoluteString, result);
                 //判断当前服务IP是否是特定region下的服务IP
                 NSString *urlRegionKey = @"region=";

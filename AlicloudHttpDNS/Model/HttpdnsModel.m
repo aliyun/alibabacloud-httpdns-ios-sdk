@@ -69,7 +69,6 @@
     _isLoadFromDB = NO;
     _ips = nil;
     _ip6s = nil;
-    _queryingState = NO;
     _extra = nil;
     _ipRegion = @"";
     _ip6Region = @"";
@@ -86,7 +85,6 @@
         _v6ttl = [aDecoder decodeInt64ForKey:@"v6ttl"];
         _ips = [aDecoder decodeObjectForKey:@"ips"];
         _ip6s = [aDecoder decodeObjectForKey:@"ip6s"];
-        _queryingState = [aDecoder decodeBoolForKey:@"queryingState"];
         _extra = [aDecoder decodeObjectForKey:@"extra"];
         _ipRegion = [aDecoder decodeObjectForKey:@"ipRegion"];
         _ip6Region = [aDecoder decodeObjectForKey:@"ip6Region"];
@@ -105,42 +103,58 @@
     [aCoder encodeInt64:_lastIPv6LookupTime forKey:@"lastIPv6LookupTime"];
     [aCoder encodeObject:_ips forKey:@"ips"];
     [aCoder encodeObject:_ip6s forKey:@"ip6s"];
-    [aCoder encodeBool:_queryingState forKey:@"queryingState"];
     [aCoder encodeObject:_hostName forKey:@"extra"];
     [aCoder encodeObject:_ipRegion forKey:@"ipRegion"];
     [aCoder encodeObject:_ip6Region forKey:@"ip6Region"];
     
 }
 
-- (BOOL)isExpiredWithQueryIPType:(HttpdnsQueryIPType)queryIPType {
-    if (_ttl == -1) {
-        HttpdnsLogDebug("This should never happen!!!");
-        return NO;
+- (BOOL)isIpEmptyUnderQueryIpType:(HttpdnsQueryIPType)queryType {
+    if (queryType & HttpdnsQueryIPTypeIpv4) {
+        if (![HttpdnsUtil isValidArray:[self getIps]]) {
+            return YES;
+        }
+
+    } else if (queryType & HttpdnsQueryIPTypeIpv6) {
+        if (![HttpdnsUtil isValidArray:[self getIp6s]]) {
+            return YES;
+        }
     }
+    return NO;
+}
+
+- (BOOL)isExpiredUnderQueryIpType:(HttpdnsQueryIPType)queryIPType {
     if (_isLoadFromDB) {
+        // TODO 要考虑下，从DB查出来是不是可能还没过期
         return YES;
     }
-    
+
     int64_t currentEpoch = (int64_t)[[[NSDate alloc] init] timeIntervalSince1970];
-    if (queryIPType & HttpdnsQueryIPTypeIpv4 && queryIPType & HttpdnsQueryIPTypeIpv6) {
-        
-        if (_lastIPv4LookupTime + _v4ttl <= currentEpoch) {
+    if (queryIPType & HttpdnsQueryIPTypeIpv4 && _lastIPv4LookupTime + _v4ttl <= currentEpoch) {
+        return YES;
+    }
+    if (queryIPType & HttpdnsQueryIPTypeIpv6 && _lastIPv6LookupTime + _v6ttl <= currentEpoch) {
+        return YES;
+    }
+    return NO;
+}
+
+- (BOOL)isRegionNotMatch:(NSString *)region underQueryIpType:(HttpdnsQueryIPType)queryType {
+    if (queryType & HttpdnsQueryIPTypeIpv4) {
+        if (![self ipRegion]) {
+            self.ipRegion = @"";
+        }
+        if (![region isEqualToString:[self ipRegion]]) {
             return YES;
         }
-        
-        if (_lastIPv6LookupTime + _v6ttl <= currentEpoch) {
+    } else if (queryType & HttpdnsQueryIPTypeIpv6) {
+        if (![self ip6Region]) {
+            self.ip6Region = @"";
+        }
+        if (![region isEqualToString:[self ip6Region]]) {
             return YES;
-        }
-        
-    } else {
-        if (queryIPType & HttpdnsQueryIPTypeIpv4) {
-            return (_lastIPv4LookupTime + _v4ttl <= currentEpoch);
-        }
-        if (queryIPType & HttpdnsQueryIPTypeIpv6) {
-            return (_lastIPv6LookupTime + _v6ttl <= currentEpoch);
         }
     }
-    
     return NO;
 }
 
@@ -246,17 +260,16 @@
 - (NSString *)description {
     @try {
         if (![EMASTools isValidArray:_ip6s]) {
-            return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld queryingState = %@ extra = %@ ipRegion = %@ ip6Region = %@",
-                    _hostName, _ips, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO", _extra, _ipRegion, _ip6Region];
+            return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld extra = %@ ipRegion = %@ ip6Region = %@",
+                    _hostName, _ips, _lastLookupTime, _ttl, _extra, _ipRegion, _ip6Region];
         } else {
-            return [NSString stringWithFormat:@"Host = %@ ips = %@ ip6s = %@ lastLookup = %lld ttl = %lld queryingState = %@ extra = %@ ipRegion = %@ ip6Region = %@",
-                    _hostName, _ips, _ip6s, _lastLookupTime, _ttl, _queryingState ? @"YES" : @"NO", _extra, _ipRegion, _ip6Region];
+            return [NSString stringWithFormat:@"Host = %@ ips = %@ ip6s = %@ lastLookup = %lld ttl = %lld extra = %@ ipRegion = %@ ip6Region = %@",
+                    _hostName, _ips, _ip6s, _lastLookupTime, _ttl, _extra, _ipRegion, _ip6Region];
         }
     } @catch (NSException *exception) {
         NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception.reason);
     }
     return @"HttpdnsHostObject";
 }
-
 
 @end

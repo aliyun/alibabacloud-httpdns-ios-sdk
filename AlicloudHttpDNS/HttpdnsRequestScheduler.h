@@ -41,7 +41,7 @@ FOUNDATION_EXTERN NSString *ALICLOUD_HTTPDNS_SERVER_IP_REGION;
 
 - (void)addPreResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType;
 
-- (HttpdnsHostObject *)addSingleHostAndLookup:(NSString *)host synchronously:(BOOL)sync queryType:(HttpdnsQueryIPType)queryType;
+- (HttpdnsHostObject *)resolveHost:(NSString *)host synchronously:(BOOL)sync queryType:(HttpdnsQueryIPType)queryType;
 
 
 /// 获取当前域名的HostObject

@@ -113,14 +113,6 @@ _Pragma("clang diagnostic pop") \
     return isReachableViaWWAN;
 }
 
-+ (BOOL)isAbleToRequest {
-    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    if (!sharedService.accountID || sharedService.accountID == 0) {
-        return NO;
-    }
-    return YES;
-}
-
 + (NSDictionary *)getValidDictionaryFromJson:(id)jsonValue {
     NSDictionary *dictionaryValueFromJson = nil;
     if ([jsonValue isKindOfClass:[NSDictionary class]]) {
@@ -281,7 +273,6 @@ _Pragma("clang diagnostic pop") \
 + (NSError *)getErrorFromError:(NSError *)error statusCode:(NSInteger)statusCode json:(NSDictionary *)json isHTTPS:(BOOL)isHTTPS {
     NSError *errorStrong = [error copy];
     if (statusCode != 200) {
-        HttpdnsLogDebug("ReponseCode %ld.", (long)statusCode);
         if (errorStrong) {
             NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                   @"Response code not 200, and parse response message error", ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY,
@@ -302,8 +293,6 @@ _Pragma("clang diagnostic pop") \
             NSInteger code = isHTTPS ? ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE : ALICLOUD_HTTPDNS_HTTP_COMMON_ERROR_CODE;
             errorStrong = [NSError errorWithDomain:domainString code:code userInfo:dict];
         }
-    } else {
-        HttpdnsLogDebug("Response code 200.");
     }
     return errorStrong;
 }

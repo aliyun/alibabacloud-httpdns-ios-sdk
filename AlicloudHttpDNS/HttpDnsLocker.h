@@ -14,11 +14,11 @@
 
 @interface HttpDnsLocker : NSObject
 
--(NSCondition *)lock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType;
++ (instancetype)sharedInstance;
 
--(BOOL)wait:(NSString *)host queryType:(HttpdnsQueryIPType)queryType;
+- (void)lock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType;
 
--(void)unlock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType;
+- (void)unlock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType;
 
 @end
 

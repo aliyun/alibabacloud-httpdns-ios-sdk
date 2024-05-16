@@ -54,17 +54,18 @@
 @property (nonatomic, strong, setter=setExtra:, getter=getExtra) NSDictionary *extra;
 
 // 标识是否从持久化缓存加载
-@property (nonatomic, assign, setter=setIsLoadFromDB:, getter=getIsLoadFromDB) BOOL isLoadFromDB;
+@property (nonatomic, assign, setter=setIsLoadFromDB:, getter=isLoadFromDB) BOOL isLoadFromDB;
 
-/*!
- * 查询成功后的本地时间戳
- */
+// 查询成功后的本地时间戳
 @property (nonatomic, getter=getLastLookupTime, setter=setLastLookupTime:) int64_t lastLookupTime;
-@property (atomic, setter=setQueryingState:, getter=isQuerying) BOOL queryingState;
 
 - (instancetype)init;
 
-- (BOOL)isExpiredWithQueryIPType:(HttpdnsQueryIPType)queryIPType;
+- (BOOL)isIpEmptyUnderQueryIpType:(HttpdnsQueryIPType)queryType;
+
+- (BOOL)isExpiredUnderQueryIpType:(HttpdnsQueryIPType)queryIPType;
+
+- (BOOL)isRegionNotMatch:(NSString *)region underQueryIpType:(HttpdnsQueryIPType)queryType;
 
 + (instancetype)hostObjectWithHostRecord:(HttpdnsHostRecord *)IPRecord;
 

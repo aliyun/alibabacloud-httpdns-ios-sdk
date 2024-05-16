@@ -21,7 +21,7 @@ if ([HttpdnsLog validLogHandler]) {\
 }\
 if ([HttpdnsLog isEnabled]) {\
     @try {\
-        NSLog((@"%s [Line %d] " frmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);\
+        NSLog((@"HTTPDNSSDKLOG - " frmt), ##__VA_ARGS__);\
     } @catch (NSException *exception){\
     }\
 }
