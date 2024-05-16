@@ -137,9 +137,10 @@ static NSURLSession *_resolveHOSTSession = nil;
 #pragma mark LookupIpAction
 
 - (HttpdnsHostObject *)parseHostInfoFromHttpResponse:(NSDictionary *)json withHostStr:(NSString *)hostStr {
-    if (json == nil) {
+    if (!json) {
         return nil;
-    }    
+    }
+
     NSString *hostName;
     NSArray *ips;
     NSArray *ip6s;
@@ -153,10 +154,6 @@ static NSURLSession *_resolveHOSTSession = nil;
     ips = [HttpdnsUtil safeObjectForKey:@"ips" dict:json];
     ip6s = [HttpdnsUtil safeObjectForKey:@"ipsv6" dict:json];
     if ((![HttpdnsUtil isValidArray:ips] && ![HttpdnsUtil isValidArray:ip6s]) || ![HttpdnsUtil isValidString:hostName]) {
-        HttpdnsHostObject *cacheHostObject = [self.requestScheduler hostObjectFromCacheForHostName:hostStr];
-        if (cacheHostObject) {
-            [cacheHostObject setQueryingState:NO];
-        }
         HttpdnsLogDebug("IP list is empty for host %@", hostName);
         return nil;
     }
@@ -226,10 +223,8 @@ static NSURLSession *_resolveHOSTSession = nil;
         hostObject.lastIPv6LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
         hostObject.ip6Region = self.serviceRegion;
     }
-    
-    
+
     [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
-    [hostObject setQueryingState:NO];
     if (![EMASTools isValidArray:ip6Array]) {
         HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@", [hostObject getHostName], [hostObject getTTL], ipArray);
     } else {
@@ -263,7 +258,6 @@ static NSURLSession *_resolveHOSTSession = nil;
 }
 
 - (NSString *)constructV6RequestURLWith:(NSString *)hostsString reallyHostKey:(NSString *)reallyHostKey queryIPType:(HttpdnsQueryIPType)queryIPType {
-    
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *serverIp = @"";
     
@@ -439,12 +433,11 @@ static NSURLSession *_resolveHOSTSession = nil;
 }
 
 - (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex queryIPType:(HttpdnsQueryIPType)queryIPType{
-    // 配置设置
+
     [self resetRequestConfigure];
-    // 解析主机
-    HttpdnsLogDebug("\n ====== Resolve host(%@) over network.", hostString);
-    HttpdnsHostObject *hostObject = nil;
-    
+
+    HttpdnsLogDebug("lookupHostFromServer, host: %@, queryIpType: %ld", hostString, queryIPType);
+
     NSString *copyHostString = hostString;
     NSArray *hostArray= [hostString componentsSeparatedByString:@"]"];
     hostString = [hostArray lastObject];
@@ -455,54 +448,53 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSString * hostsUrl = [hostMArray componentsJoinedByString:@""];
     bool useV4ServerIp;
     NSString *url = [self constructRequestURLWith:hostsUrl activatedServerIPIndex:activatedServerIPIndex reallyHostKey:hostString queryIPType:queryIPType useV4Ip:&useV4ServerIp];
-    
+
     if (![EMASTools isValidString:url]) {
         return nil;
     }
-    
-    // HTTP / HTTPS  请求
+
+    HttpdnsHostObject *hostObject = nil;
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
         hostObject = [self sendHTTPSRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];
     } else {
+        // 为了走HTTP时不强依赖用户的ATS配置，这里走使用CFHTTP实现的网络请求方式
         hostObject = [self sendHTTPRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];
     }
-    
-    
-    NSError *outError = nil;
-    if (error != NULL) {
-        outError = (*error);
-        if (outError != NULL) {
-            @try {
-                //如果error不为空，证明请求出错，需要判断网络环境是否是双栈，如果是双栈，且之前是由v4地址请求的，则要由v6的serverIp做一次兜底
-                AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
-                AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
-                if (stackType == kAlicloudIPdual && useV4ServerIp ) {
-                    url = [self constructV6RequestURLWith:hostsUrl reallyHostKey:hostString queryIPType:queryIPType];
-                    HttpdnsLogDebug("###### backup url is %@", url);
-                    if ([EMASTools isValidString:url]) {
-                        NSError *backupError;
-                        if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
-                            hostObject = [self sendHTTPSRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
-                        } else {
-                            hostObject = [self sendHTTPRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
-                        }
-                        if (backupError != NULL) {
-                            outError = backupError;
-                            *error = backupError;
-                            HttpdnsLogDebug("###### backup request error is: %@", backupError);
-                        } else {
-                            HttpdnsLogDebug("###### backup hostObject is: %@", hostObject);
-                            *error = NULL;
-                        }
-                    }
+
+    if (!(*error)) {
+        return hostObject;
+    }
+
+    HttpdnsLogDebug("lookupHostFromServer failed, host: %@, error: %@", hostString, *error);
+
+    NSError *outError = (*error);
+    @try {
+        // 请求出错，需要判断网络环境是否是双栈，如果是双栈，且之前是由v4地址请求的，则要由v6的serverIp做一次兜底
+        AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
+        AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
+        if (stackType == kAlicloudIPdual && useV4ServerIp) {
+            url = [self constructV6RequestURLWith:hostsUrl reallyHostKey:hostString queryIPType:queryIPType];
+            HttpdnsLogDebug("lookupHostFromServer by ipv4 server failed, construct ipv6 backup url: %@", url);
+            if ([EMASTools isValidString:url]) {
+                NSError *backupError;
+                if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
+                    hostObject = [self sendHTTPSRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
+                } else {
+                    hostObject = [self sendHTTPRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
                 }
-            } @catch (NSException *exception) {
-                HttpdnsLogDebug("###### backup has exception: %@", exception.reason);
+                if (backupError) {
+                    outError = backupError;
+                    *error = backupError;
+                    HttpdnsLogDebug("lookupHostFromServer failed again by ipv6 server, error: %@", backupError);
+                } else {
+                    HttpdnsLogDebug("lookupHostFromServer success by ipv6 server, result: %@", hostObject);
+                    *error = nil;
+                }
             }
         }
+    } @catch (NSException *exception) {
+        HttpdnsLogDebug("lookupHostFromServer failed again by ipv6 server, exception: %@", exception.reason);
     }
-    BOOL success = !outError;
-    BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
     return hostObject;
 }
 
@@ -511,25 +503,31 @@ static NSURLSession *_resolveHOSTSession = nil;
                                   error:(NSError **)pError
                  activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     NSString *fullUrlStr = [NSString stringWithFormat:@"https://%@", urlStr];
-    HttpdnsLogDebug("Request URL: %@", fullUrlStr);
-    HttpdnsLogDebug_TestOnly(@"开始解析域名 :%@ URL: %@", hostStr, fullUrlStr);
+    HttpdnsLogDebug("HTTPS request URL: %@", fullUrlStr);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                            cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                        timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
     __block NSDictionary *json = nil;
     __block NSError *errorStrong = nil;
+    __weak typeof(self) weakSelf = self;
     NSURLSessionTask *task = [_resolveHOSTSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
         if (error) {
-            HttpdnsLogDebug("Network error: %@", error);
-            HttpdnsLogDebug_TestOnly(@"解析失败域名 :%@ error: %@", hostStr, error);
+            HttpdnsLogDebug("HTTPS request network error, host: %@, error: %@", hostStr, error);
             errorStrong = error;
         } else {
-            id jsonValue = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
-            json = [HttpdnsUtil getValidDictionaryFromJson:jsonValue];
-            NSInteger statusCode = [(NSHTTPURLResponse *) response statusCode];
-            errorStrong = [HttpdnsUtil getErrorFromError:errorStrong statusCode:statusCode json:json isHTTPS:YES];
+            NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
+            HttpdnsLogDebug("Response code: %ld", statusCode);
+            if (statusCode == 200) {
+                id jsonValue = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
+                if (!errorStrong) {
+                    json = [HttpdnsUtil getValidDictionaryFromJson:jsonValue];
+                }
+            } else {
+                errorStrong = [HttpdnsUtil getErrorFromError:errorStrong statusCode:statusCode json:json isHTTPS:YES];
+            }
         }
-        dispatch_semaphore_signal(_sem);
+        dispatch_semaphore_signal(strongSelf->_sem);
     }];
     [task resume];
     dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
@@ -549,7 +547,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 - (HttpdnsHostObject *)sendHTTPRequest:(NSString *)urlStr
                                   host:(NSString *)hostStr
                                  error:(NSError **)error
- activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
+                activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     if (!error) {
         return nil;
     }
@@ -557,8 +555,7 @@ static NSURLSession *_resolveHOSTSession = nil;
         return nil;
     }
     NSString *fullUrlStr = [NSString stringWithFormat:@"http://%@", urlStr];
-    HttpdnsLogDebug("Request URL: %@", fullUrlStr);
-    HttpdnsLogDebug_TestOnly(@"开始解析域名 :%@ URL: %@", hostStr, fullUrlStr);
+    HttpdnsLogDebug("Resolve host via HTTP request, host: %@, fullUrl: %@", hostStr, fullUrlStr);
     CFStringRef urlString = (__bridge CFStringRef)fullUrlStr;
     CFURLRef url = CFURLCreateWithString(kCFAllocatorDefault, urlString, NULL);
     CFStringRef requestMethod = CFSTR("GET");
@@ -573,8 +570,9 @@ static NSURLSession *_resolveHOSTSession = nil;
     CFRelease(request);
     CFRelease(requestMethod);
     request = NULL;
-    NSDate *methodStart = [NSDate date];
+
     dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
+
     *error = self.networkError;
     [self.requestScheduler changeToNextServerIPIfNeededWithError:self.networkError
                                                      fromIPIndex:activatedServerIPIndex
@@ -682,6 +680,7 @@ static NSURLSession *_resolveHOSTSession = nil;
                     json = [HttpdnsUtil getValidDictionaryFromJson:jsonValue];
                     _httpJSONDict = json;
                 }
+                HttpdnsLogDebug("Response code: %ld", statusCode);
                 if (statusCode != 200) {
                     errorStrong = [HttpdnsUtil getErrorFromError:errorStrong statusCode:statusCode json:json isHTTPS:NO];
                     self.networkError = errorStrong;
@@ -691,9 +690,7 @@ static NSURLSession *_resolveHOSTSession = nil;
                     dispatch_semaphore_signal(_sem);
                     return;
                 }
-                HttpdnsLogDebug("Response code 200.");
             }
-            
         }
             break;
         case NSStreamEventErrorOccurred:

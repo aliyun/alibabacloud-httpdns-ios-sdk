@@ -135,10 +135,6 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
 }
 
 - (void)upateIPListIfNeededAsync {
-    if (![HttpdnsUtil isAbleToRequest]) {
-        return;
-    }
-
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
         //判断本地region 和 缓存的服务IP池的region是否匹配，如果不匹配则更新
         NSDictionary *scheduleCenterResult = [HttpdnsPersistenceUtils getJSONFromDirectory:[HttpdnsPersistenceUtils scheduleCenterResultPath]

@@ -13,8 +13,6 @@
 #import "HttpdnsScheduleCenter.h"
 #import "TestIPv6ViewController.h"
 
-#import "HttpdnsService_Internal.h"
-
 #import <AlicloudUtils/AlicloudIPv6Adapter.h>
 
 NSArray *ipv4HostArray = nil;
@@ -78,24 +76,14 @@ NSArray *ipv6HostArray = nil;
     [_service enableIPv6:YES];
 
     [_service setIPRankingDatasource:@{@"dns.xuyecan1919.tech": @443}];
+    [_service setPreResolveHosts:@[@"dns.xuyecan1919.tech"]];
 }
 
 
-
 - (IBAction)onHost1:(id)sender {
-    AlicloudIPStackType stackType = [_service currentIpStack];
-    NSLog(@"onHost1, stackType: %d", stackType);
-
-    // for (NSString *ipv4Host in ipv4HostArray) {
-    //     [_service asyncGetHostByName:ipv4Host completionHandler:^(NSDictionary<NSString *,NSString *> *result) {
-    //         NSLog(@"host: %@, result: %@", ipv4Host, result);
-    //     }];
-    // }
-    // for (NSString *ipv6Host in ipv6HostArray) {
-    //     [_service asyncGetHostByName:ipv6Host completionHandler:^(NSDictionary<NSString *,NSString *> *result) {
-    //         NSLog(@"host: %@, result: %@", ipv6Host, result);
-    //     }];
-    // }
+    HttpDnsService *service = [HttpDnsService sharedInstance];
+    HttpDnsResult *result = [service resolveHostSync:@"dns.xuyecan1919.tech" byIpType:HttpdnsQueryIPTypeAuto];
+    NSLog(@"result: %@, firstIp: %@", result, [result firstIpv4Address]);
 }
 
 - (IBAction)onHost2:(id)sender {
@@ -222,14 +210,6 @@ NSArray *ipv6HostArray = nil;
     NSDictionary *ipvsDic = [_service getIPv4_v6ByHostAsync:@"www.taobao.com"];
     NSLog(@"ipv4:--------%@++++ipv4:--------%@",[ipvsDic objectForKey:ALICLOUDHDNS_IPV4], [ipvsDic objectForKey:ALICLOUDHDNS_IPV6]);
     
-    //预加载
-    
-    //AlicloudHttpDNS_IPTypeV4,           //ipv4
-    //AlicloudHttpDNS_IPTypeV6,           //ipv6
-    //AlicloudHttpDNS_IPTypeV64,          //ipv4 + ipv6
-    
-//    [_service setPreResolveHosts:@[@"www.taobao.com", @"www.tmall.com"] queryIPType: AlicloudHttpDNS_IPTypeV64];
-//    [_service.requestScheduler addPreResolveHosts:@[@"www.taobao.com", @"www.tmall.com"] queryType:HttpdnsQueryIPTypeAuto];
 }
 
 

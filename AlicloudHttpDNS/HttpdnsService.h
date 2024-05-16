@@ -18,6 +18,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "HttpDnsResult.h"
 #import "HttpdnsDegradationDelegate.h"
 #import "HttpdnsLoggerDelegate.h"
 
@@ -53,7 +54,6 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 
 @end
 
-
 @interface HttpDnsService: NSObject
 
 @property (nonatomic, assign, readonly) int accountID;
@@ -84,7 +84,7 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 
 /*!
  * @brief 校正 App 签名时间
- * @param authCurrentTime 用于校正的时间戳，正整数。 
+ * @param authCurrentTime 用于校正的时间戳，正整数。
  * @details 不进行该操作，将以设备时间为准，为`(NSUInteger)[[NSDate date] timeIntervalSince1970]`。进行该操作后，如果有偏差，每次网络请求都会对设备时间进行矫正。
  * @attention 校正操作在 APP 的一个生命周期内生效，APP 重启后需要重新设置才能重新生效。可以重复设置。
  */
@@ -160,7 +160,11 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 /// 请参考: 解析异常排查之 “会话追踪方案” https://help.aliyun.com/document_detail/100530.html
 - (NSString *)getSessionId;
 
+- (HttpDnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType;
 
+- (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType completionHandler:(void (^)(HttpDnsResult *))handler;
+
+- (HttpDnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType;
 
 /// 获取域名对应的IP，单IP
 /// @param host 域名
@@ -301,7 +305,7 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 - (NSDictionary <NSString *, NSArray *>*)autoGetHttpDnsResultForHostSync:(NSString *)host;
 
 
-// 
+//
 // /// 异步接口，根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址
 // /// 如果设置了IP优选，则返回探测质量最好的IP
 // /// 否则，返回解析结果的第1个IP
@@ -339,8 +343,8 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 
 @end
 
-@interface HttpDnsService (HttpdnsDeprecated)
-
-- (void)setAccountID:(int)accountID ALICLOUD_HTTPDNS_DEPRECATED("Deprecated in v1.5.2. Use -[HttpDnsService initWithAccountID:] instead.");
-
-@end
+// @interface HttpDnsService (HttpdnsDeprecated)
+// 
+// - (void)setAccountID:(int)accountID ALICLOUD_HTTPDNS_DEPRECATED("Deprecated in v1.5.2. Use -[HttpDnsService initWithAccountID:] instead.");
+// 
+// @end

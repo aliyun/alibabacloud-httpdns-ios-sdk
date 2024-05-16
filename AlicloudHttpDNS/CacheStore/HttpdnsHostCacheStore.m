@@ -60,10 +60,9 @@
 
 - (void)insertHostRecords:(NSArray<HttpdnsHostRecord *> *)hostRecords maxAge:(NSTimeInterval)maxAge {
     [HttpdnsUtil warnMainThreadIfNecessary];
-    /** 当前网络运营商名字，或者wifi名字 */
+    // 当前网络运营商名字，或者wifi名字
     NSString *carrier = [HttpdnsgetNetworkInfoHelper getNetworkName];
-    HttpdnsLogDebug("network named : %@", carrier);
-    //当在断网状态下，carrier为nil
+    // 当在断网状态下，carrier为nil
     if (!carrier || carrier.length == 0) {
         return;
     }

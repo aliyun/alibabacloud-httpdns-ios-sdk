@@ -10,9 +10,18 @@
 #import "HttpdnsService.h"
 
 @implementation HttpDnsLocker {
-    NSMutableDictionary<NSString*, NSCondition*> *_v4LockMap;
-    NSMutableDictionary<NSString*, NSCondition*> *_v6LockMap;
-    NSMutableDictionary<NSString*, NSCondition*> *_v4v6LockMap;
+    NSMutableDictionary<NSString*, NSLock*> *_v4LockMap;
+    NSMutableDictionary<NSString*, NSLock*> *_v6LockMap;
+    NSMutableDictionary<NSString*, NSLock*> *_v4v6LockMap;
+}
+
++ (instancetype)sharedInstance {
+    static HttpDnsLocker *locker = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        locker = [[HttpDnsLocker alloc] init];
+    });
+    return locker;
 }
 
 - (instancetype)init {
@@ -24,78 +33,44 @@
     return self;
 }
 
--(NSCondition *)lock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType {
-    NSCondition *condition;
-    if (queryType == HttpdnsQueryIPTypeIpv4) {
-        condition = [_v4LockMap objectForKey:host];
-        if (condition == nil) {
-            condition = [[NSCondition alloc] init];
-            [_v4LockMap setObject:condition forKey:host];
-        }
-    } else if (queryType == HttpdnsQueryIPTypeIpv6) {
-        condition = [_v6LockMap objectForKey:host];
-        if (condition == nil) {
-            condition = [[NSCondition alloc] init];
-            [_v6LockMap setObject:condition forKey:host];
-        }
-    } else {
-        condition = [_v4v6LockMap objectForKey:host];
-        if (condition == nil) {
-            condition = [[NSCondition alloc] init];
-            [_v4v6LockMap setObject:condition forKey:host];
-        }
-    }
-    
+- (void)lock:(NSString *)host queryType:(HttpdnsQueryIPType)queryIpType {
+    NSLock *condition = [self getLock:host queryType:queryIpType];
+
     if (condition) {
         [condition lock];
     }
-    
-    return condition;
 }
 
--(BOOL)wait:(NSString *)host queryType:(HttpdnsQueryIPType)queryType {
-    NSCondition *condition;
-    if (queryType == HttpdnsQueryIPTypeIpv4) {
-        condition = [_v4LockMap objectForKey:host];
-    } else if (queryType == HttpdnsQueryIPTypeIpv6) {
-        condition = [_v6LockMap objectForKey:host];
-    } else {
-        condition = [_v4v6LockMap objectForKey:host];
-    }
-    if (condition) {
-        NSTimeInterval serviceTimeout = [HttpDnsService sharedInstance].timeoutInterval;
-        NSLog(@"###### httpDnsService timeout is %f", serviceTimeout);
-        NSTimeInterval lockTimeout;
-        //锁的超时时间最大为5s
-        if (serviceTimeout > 5) {
-            lockTimeout = 5;
-        } else {
-            lockTimeout = serviceTimeout;
-        }
-        
-        NSLog(@"###### final lockTimeout is: %f", lockTimeout);
-        
-        return [condition waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:lockTimeout]];
-    }
-    return NO;
-}
-
--(void)unlock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType {
-    NSCondition *condition;
-    if (queryType == HttpdnsQueryIPTypeIpv4) {
-        condition = [_v4LockMap objectForKey:host];
-        [_v4LockMap removeObjectForKey: host];
-    } else if (queryType == HttpdnsQueryIPTypeIpv6) {
-        condition = [_v6LockMap objectForKey:host];
-        [_v6LockMap removeObjectForKey:host];
-    } else {
-        condition = [_v4v6LockMap objectForKey:host];
-        [_v4v6LockMap removeObjectForKey:host];
-    }
+- (void)unlock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType {
+    NSLock *condition = [self getLock:host queryType:queryType];
     if (condition) {
         [condition unlock];
     }
 }
 
+- (NSLock *)getLock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType {
+    if (queryType == HttpdnsQueryIPTypeIpv4) {
+        NSLock *condition = [_v4LockMap objectForKey:host];
+        if (!condition) {
+            condition = [[NSLock alloc] init];
+            [_v4LockMap setObject:condition forKey:host];
+        }
+        return condition;
+    } else if (queryType == HttpdnsQueryIPTypeIpv6) {
+        NSLock *condition = [_v6LockMap objectForKey:host];
+        if (!condition) {
+            condition = [[NSLock alloc] init];
+            [_v6LockMap setObject:condition forKey:host];
+        }
+        return condition;
+    } else {
+        NSLock *condition = [_v4v6LockMap objectForKey:host];
+        if (!condition) {
+            condition = [[NSLock alloc] init];
+            [_v4v6LockMap setObject:condition forKey:host];
+        }
+        return condition;
+    }
+}
 
 @end
