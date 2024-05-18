@@ -63,7 +63,7 @@ static BOOL networkInfoEnable = NO;
         NSString *networkName = [self checkMobileOperator];
         return networkName;
     }
-    
+
     HttpdnsLogDebug("Get network name failed!");
     return nil;
 }

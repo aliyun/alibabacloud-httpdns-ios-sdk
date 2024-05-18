@@ -31,18 +31,18 @@
  *  @return YES:拦截处理; NO:不拦截处理
  */
 + (BOOL)canInitWithRequest:(NSURLRequest *)request {
-    
+
     // 防止无限循环
     if ([NSURLProtocol propertyForKey:kReuqestIdentifiers inRequest:request]) {
         return NO;
     }
-    
+
     // 只处理https
     NSString *urlString = request.URL.absoluteString;
     if ([urlString hasPrefix:@"https"]) {
         return YES;
     }
-    
+
     return NO;
 }
 
@@ -57,10 +57,10 @@
 - (void)startLoading {
     NSMutableURLRequest *mutableRequest = [self.request mutableCopy];
     self.mutableRequest = mutableRequest;
-    
+
     // 防止无限循环,表示该请求已经被处理
     [NSURLProtocol setProperty:@(YES) forKey:kReuqestIdentifiers inRequest:mutableRequest];
-    
+
     // 发送请求
     [self startRequest];
 }
@@ -80,23 +80,23 @@
     // 创建请求
     CFHTTPMessageRef requestRef = [self createCFRequest];
     CFAutorelease(requestRef);
-    
+
     // 添加请求头
     [self addHeadersToRequestRef:requestRef];
-    
+
     // 添加请求体
     [self addBodyToRequestRef:requestRef];
 
     // 创建CFHTTPMessage对象的输入流
     CFReadStreamRef readStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, requestRef);
     self.inputStream = (__bridge_transfer NSInputStream *) readStream;
-    
+
     // 设置SNI
     [self setupSNI];
 
     // 设置Runloop
     [self setupRunloop];
-    
+
     // 打开输入流
     [self.inputStream open];
 }
@@ -106,13 +106,13 @@
     CFStringRef urlStringRef = (__bridge CFStringRef) [self.mutableRequest.URL absoluteString];
     CFURLRef urlRef = CFURLCreateWithString(kCFAllocatorDefault, urlStringRef, NULL);
     CFAutorelease(urlRef);
-    
+
     // HTTP method
     CFStringRef methodRef = (__bridge CFStringRef) self.mutableRequest.HTTPMethod;
-    
+
     // 创建request
     CFHTTPMessageRef requestRef = CFHTTPMessageCreateRequest(kCFAllocatorDefault, methodRef, urlRef, kCFHTTPVersion1_1);
-    
+
     return requestRef;
 }
 
@@ -140,7 +140,7 @@
         // 使用NSURLSession发POST请求时，将原始HTTPBody从header中取出
         bodyDataRef = (__bridge_retained CFDataRef) [headFields[@"originalBody"] dataUsingEncoding:NSUTF8StringEncoding];
     }
-    
+
     CFHTTPMessageSetBody(requestRef, bodyDataRef);
     CFRelease(bodyDataRef);
 }
@@ -164,7 +164,7 @@
         // 保存当前线程的runloop，这对于重定向的请求很关键
         self.runloop = [NSRunLoop currentRunLoop];
     }
-    
+
     // 将请求放入当前runloop的事件队列
     [self.inputStream scheduleInRunLoop:self.runloop forMode:NSRunLoopCommonModes];
 }
@@ -177,17 +177,17 @@
     CFReadStreamRef readStream = (__bridge CFReadStreamRef) self.inputStream;
     CFHTTPMessageRef messageRef = (CFHTTPMessageRef) CFReadStreamCopyProperty(readStream, kCFStreamPropertyHTTPResponseHeader);
     CFAutorelease(messageRef);
-    
+
     // 头部信息不完整，关闭inputstream，通知client
     if (!CFHTTPMessageIsHeaderComplete(messageRef)) {
         [self closeInputStream];
         [self.client URLProtocolDidFinishLoading:self];
         return;
     }
-    
+
     // 把当前请求关闭
     [self closeInputStream];
-    
+
     // 通知上层响应结束
     [self.client URLProtocolDidFinishLoading:self];
 }
@@ -203,13 +203,13 @@
         self.mutableRequest.HTTPMethod = @"GET";
         self.mutableRequest.HTTPBody = nil;
     }
-    
+
     //TODO: 内部处理，将url中的host通过HTTPDNS转换为IP
     {
-        
+
     }
-    
-   
+
+
     [self startRequest];
 }
 
@@ -225,7 +225,7 @@
 
 #pragma mark - NSStreamDelegate
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode {
-    
+
     switch (eventCode) {
         case NSStreamEventHasBytesAvailable: {
             // stream类型校验
@@ -234,7 +234,7 @@
             }
             NSInputStream *inputStream = (NSInputStream *) aStream;
             CFReadStreamRef readStream = (__bridge CFReadStreamRef) inputStream;
-            
+
             // 响应头完整性校验
             CFHTTPMessageRef messageRef = (CFHTTPMessageRef) CFReadStreamCopyProperty(readStream, kCFStreamPropertyHTTPResponseHeader);
             CFAutorelease(messageRef);
@@ -242,28 +242,28 @@
                 return;
             }
             CFIndex statusCode = CFHTTPMessageGetResponseStatusCode(messageRef);
-            
+
             // 已经https校验了，直接读取数据
             if ([self hasEvaluatedStreamSuccess:aStream]) {
-                
+
                 [self readInputStream:inputStream statusCode:statusCode];
-                
+
             } else {
                 // 添加校验标记
                 objc_setAssociatedObject(aStream, kHasEvaluatedStream, [NSNumber numberWithBool:YES], OBJC_ASSOCIATION_RETAIN);
-                
+
                 if ([self evaluateStreamSuccess:aStream]) {     // 校验成功，则读取数据
                     // 非重定向
                     if (![self isRedirectCode:statusCode]) {
                         // 第一次获取到数据
                         [self streamResponseOnce:messageRef];
-                        
+
                         [self readInputStream:inputStream statusCode:statusCode];
-        
+
                     } else {    // 重定向
                         // 关闭流
                         [self closeStream:aStream];
-                        
+
                         [self handleRedirect:messageRef];
                     }
                 } else {
@@ -274,19 +274,19 @@
             }
         }
             break;
-            
+
         case NSStreamEventErrorOccurred: {
             [self closeStream:aStream];
             // 通知client发生错误了
             [self.client URLProtocol:self didFailWithError:[aStream streamError]];
         }
             break;
-        
+
         case NSStreamEventEndEncountered: {
             [self endResponse];
         }
             break;
-            
+
         default:
             break;
     }
@@ -304,14 +304,14 @@
     // 读取响应头
     CFDictionaryRef headerFieldsRef = CFHTTPMessageCopyAllHeaderFields(message);
     NSDictionary *headDict = (__bridge_transfer NSDictionary *)headerFieldsRef;
-    
+
     // 读取http version
     CFStringRef httpVersionRef = CFHTTPMessageCopyVersion(message);
     NSString *httpVersion = (__bridge_transfer NSString *)httpVersionRef;
-    
+
     // 读取状态码
     CFIndex statusCode = CFHTTPMessageGetResponseStatusCode(message);
-    
+
     // 非重定向的数据，才上报
     if (![self isRedirectCode:statusCode]) {
         NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:self.mutableRequest.URL statusCode:statusCode HTTPVersion: httpVersion headerFields:headDict];
@@ -330,7 +330,7 @@
     } else {
         [policies addObject:(__bridge_transfer id) SecPolicyCreateBasicX509()];
     }
-   
+
     // 证书校验
     SecTrustSetPolicies(trust, (__bridge CFArrayRef) policies);
     if (SecTrustEvaluate(trust, &res) != errSecSuccess) {
@@ -346,14 +346,14 @@
     UInt8 buffer[16 * 1024];
     UInt8 *buf = NULL;
     NSUInteger length = 0;
-    
+
     if (![aInputStream getBuffer:&buf length:&length]) {
         NSInteger amount = [self.inputStream read:buffer maxLength:sizeof(buffer)];
         buf = buffer;
         length = amount;
     }
     NSData *data = [[NSData alloc] initWithBytes:buf length:length];
-    
+
     // 非重定向，数据才上报
     if (![self isRedirectCode:statusCode]) {
         [self.client URLProtocol:self didLoadData:data];
@@ -371,23 +371,23 @@
     // 响应头
     CFDictionaryRef headerFieldsRef = CFHTTPMessageCopyAllHeaderFields(messageRef);
     NSDictionary *headDict = (__bridge_transfer NSDictionary *)headerFieldsRef;
-    
+
     // 响应头的loction
     NSString *location = headDict[@"Location"];
     if (!location)
         location = headDict[@"location"];
     NSURL *redirectUrl = [[NSURL alloc] initWithString:location];
-    
+
     // 读取http version
     CFStringRef httpVersionRef = CFHTTPMessageCopyVersion(messageRef);
     NSString *httpVersion = (__bridge_transfer NSString *)httpVersionRef;
-    
+
     // 读取状态码
     CFIndex statusCode = CFHTTPMessageGetResponseStatusCode(messageRef);
-    
+
     // 生成response
     NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:self.mutableRequest.URL statusCode:statusCode HTTPVersion: httpVersion headerFields:headDict];
-    
+
     if ([self.client respondsToSelector:@selector(URLProtocol:wasRedirectedToRequest:redirectResponse:)]) {
         // 通知上层进行redirect
         [self.client URLProtocol:self wasRedirectedToRequest:[NSURLRequest requestWithURL:redirectUrl] redirectResponse:response];

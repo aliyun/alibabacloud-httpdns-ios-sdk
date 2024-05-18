@@ -50,7 +50,7 @@ _Pragma("clang diagnostic pop") \
 
 + (BOOL)isAnIP:(NSString *)candidate {
     const char *utf8 = [candidate UTF8String];
-    
+
     // Check valid IPv4.
     struct in_addr dst;
     int success = inet_pton(AF_INET, utf8, &(dst.s_addr));
@@ -68,7 +68,7 @@ _Pragma("clang diagnostic pop") \
     dispatch_once(&once_token, ^{
         hostExpression = [[NSRegularExpression alloc] initWithPattern:@"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$" options:NSRegularExpressionCaseInsensitive error:nil];
     });
-    
+
     if (!host.length) {
         return NO;
     }
@@ -211,7 +211,7 @@ _Pragma("clang diagnostic pop") \
     if (!isKindOf) {
         return NO;
     }
-    
+
     NSInteger stringLength = 0;
     @try {
         stringLength = [notValidString length];
@@ -260,13 +260,13 @@ _Pragma("clang diagnostic pop") \
 + (NSString *)getMD5StringFrom:(NSString *)originString {
     const char * pointer = [originString UTF8String];
     unsigned char md5Buffer[CC_MD5_DIGEST_LENGTH];
-    
+
     CC_MD5(pointer, (CC_LONG)strlen(pointer), md5Buffer);
-    
+
     NSMutableString *string = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
     for (int i = 0; i < CC_MD5_DIGEST_LENGTH; i++)
         [string appendFormat:@"%02x",md5Buffer[i]];
-    
+
     return [string copy];
 }
 
@@ -288,7 +288,7 @@ _Pragma("clang diagnostic pop") \
                 dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                         errCode, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
             }
-            
+
             NSString *domainString = [NSString stringWithFormat:@"httpdns.request.lookupAllHostsFromServer-%@", isHTTPS? @"HTTPS": @"HTTP"];
             NSInteger code = isHTTPS ? ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE : ALICLOUD_HTTPDNS_HTTP_COMMON_ERROR_CODE;
             errorStrong = [NSError errorWithDomain:domainString code:code userInfo:dict];
@@ -301,7 +301,7 @@ _Pragma("clang diagnostic pop") \
  生成sessionId
  App打开生命周期只生成一次，不做持久化
  sessionId为12位，采用base62编码
- 
+
  @return 返回sessionId
  */
 + (NSString *)generateSessionID {
@@ -421,7 +421,7 @@ _Pragma("clang diagnostic pop") \
 }
 
 + (BOOL)canUseIPv6_Syn {
-    
+
     if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
         return HTTPDNS_IPV6_SYN;
     }

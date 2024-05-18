@@ -94,13 +94,13 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 + (void)initialize {
     static dispatch_once_t onceToken;
-    
+
     dispatch_once(&onceToken, ^{
         _hostCacheQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.hostCacheQueue", DISPATCH_QUEUE_SERIAL);
         _syncLoadCacheQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.syncLoadCacheQueue", DISPATCH_QUEUE_SERIAL);
         _asyncResolveHostQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.asyncResolveHostQueue", DISPATCH_QUEUE_CONCURRENT);
     });
-    
+
     [self configureServerIPsAndResetActivatedIPTime];
 }
 
@@ -147,7 +147,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             //本地无缓存，常见于第一次安装，或者未发生过 DNS 故障。
             return;
         }
-        
+
        strongSelf.serverDisable = [[HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS dict:json] boolValue];
         if (strongSelf.serverDisable) {
             HttpdnsLogDebug("HTTPDNS is disabled");
@@ -187,7 +187,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (![HttpdnsUtil isValidString:cacheKey]) {
         return nil;
     }
-    
+
     BOOL needToQuery = NO;
     BOOL needToWaitForResult = NO;
 
@@ -265,7 +265,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     NSString * originalHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
     host = [hostArray lastObject];
-    
+
     if (!result) {
         return;
     }
@@ -408,18 +408,18 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if ([HttpdnsUtil isValidString:errorMessage]) {
         isServiceLevelDeny = [errorMessage isEqualToString:ALICLOUD_HTTPDNS_ERROR_SERVICE_LEVEL_DENY];
     }
-    
+
     if (isServiceLevelDeny) {
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
         [scheduleCenter forceUpdateIpListAsync];
         return;
     }
-    
+
     BOOL isTimeoutError = [self isTimeoutError:error isHTTPS:HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED];
     NSString * CopyHost = host;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
     host = [hostArray lastObject];
-    
+
     if (isRetry && isTimeoutError) {
         [self setServerDisable:YES host:CopyHost activatedServerIPIndex:activatedServerIPIndex];
     }
@@ -440,11 +440,11 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         [self canNotResolveHost:originalHost error:error isRetry:YES activatedServerIPIndex:activatedServerIPIndex];
         return nil;
     }
-    
+
     if ([self isDisableToServer]) {
         return nil;
     }
-    
+
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSInteger newActivatedServerIPIndex = [scheduleCenter nextServerIPIndexFromIPIndex:activatedServerIPIndex increase:hasRetryedCount];
 
@@ -511,9 +511,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 - (void)networkChanged:(NSNotification *)notification {
     NSNumber *networkStatus = [notification object];
-    
+
     [HttpdnsgetNetworkInfoHelper updateNetworkStatus:(AlicloudNetworkStatus)[networkStatus intValue]];
-    
+
     __block NSString *statusString = nil;
     switch ([networkStatus longValue]) {
         case 0:
@@ -529,12 +529,12 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             statusString = @"Unknown";
             break;
     }
-    
+
     @try {
         HttpdnsLogDebug("Network changed, status: %@(%ld), lastNetworkStatus: %ld", statusString, [networkStatus longValue], _lastNetworkStatus);
     } @catch (NSException *exception) {
     }
-    
+
     if (_lastNetworkStatus != [networkStatus longValue]) {
         dispatch_async(_syncDispatchQueue, ^{
             if (![statusString isEqualToString:@"None"]) {
@@ -548,7 +548,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                         HttpdnsLogDebug("Network changed, pre resolve for hosts: %@", hostArray);
                     } @catch (NSException *exception) {
                     }
-                    
+
                     [self addPreResolveHosts:hostArray queryType:HttpdnsQueryIPTypeAuto];
                 }
             }
@@ -677,7 +677,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (!error) {
         return;
     }
-    
+
     BOOL shouldChange = [self isTimeoutError:error isHTTPS:isHTTPS];
     if (shouldChange) {
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
@@ -770,7 +770,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 - (void)sdnsCacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL withExtra:(NSDictionary *)extra ipRegion:(NSString *)ipRegion ip6Region:(NSString *)ip6Region {
-    
+
     if (!_cachedIPEnabled) {
         return;
     }

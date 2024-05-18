@@ -24,14 +24,14 @@ static void *kExpectedStatus_Key = "kExpectedStatus_Key";
     self.notified = NO;
     self.expectedStatus = status;
     self.loopUntil = [NSDate dateWithTimeIntervalSinceNow:timeout];
-    
+
     NSDate *dt = [NSDate dateWithTimeIntervalSinceNow:0.1];
     while (!self.notified && [self.loopUntil timeIntervalSinceNow] > 0) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
                                  beforeDate:dt];
         dt = [NSDate dateWithTimeIntervalSinceNow:0.1];
     }
-    
+
     // Only assert when notified. Do not assert when timed out
     // Fail if not notified
     if (self.notified) {
@@ -46,7 +46,7 @@ static void *kExpectedStatus_Key = "kExpectedStatus_Key";
     self.notified = NO;
     self.expectedStatus = XCTAsyncTestCaseStatusUnknown;
     self.loopUntil = [NSDate dateWithTimeIntervalSinceNow:timeout];
-    
+
     NSDate *dt = [NSDate dateWithTimeIntervalSinceNow:0.1];
     while (!self.notified && [self.loopUntil timeIntervalSinceNow] > 0) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode

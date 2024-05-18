@@ -46,13 +46,13 @@ NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    
+
     CGFloat xStart = 50;
     CGFloat yStart = 100;
     CGFloat yInterval = 50;
     CGFloat width = 200;
     CGFloat height = 40;
-    
+
     _button1 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     _button1.frame = CGRectMake(xStart, yStart += yInterval, width, height);
     _button1.backgroundColor = [UIColor blackColor];
@@ -60,7 +60,7 @@ NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
     [_button1 setTitle:@"Show Memory Cache" forState:UIControlStateNormal];
     [_button1 addTarget:self action:@selector(showMemoryCache) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:_button1];
-    
+
     _button2 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     _button2.frame = CGRectMake(xStart, yStart += yInterval, width, height);
     _button2.backgroundColor = [UIColor blackColor];
@@ -68,7 +68,7 @@ NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
     [_button2 setTitle:@"Show DB Cache" forState:UIControlStateNormal];
     [_button2 addTarget:self action:@selector(showDBCache) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:_button2];
-    
+
     _button3 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     _button3.frame = CGRectMake(xStart, yStart += yInterval, width, height);
     _button3.backgroundColor = [UIColor blackColor];
@@ -76,7 +76,7 @@ NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
     [_button3 setTitle:@"IPv4 Resolve" forState:UIControlStateNormal];
     [_button3 addTarget:self action:@selector(resolveV4) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:_button3];
-    
+
     _button4 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     _button4.frame = CGRectMake(xStart, yStart += yInterval, width, height);
     _button4.backgroundColor = [UIColor blackColor];
@@ -84,7 +84,7 @@ NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
     [_button4 setTitle:@"IPv6 Resolve" forState:UIControlStateNormal];
     [_button4 addTarget:self action:@selector(resolveV6) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:_button4];
-    
+
     _button5 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     _button5.frame = CGRectMake(xStart, yStart += yInterval, width, height);
     _button5.backgroundColor = [UIColor blackColor];
@@ -92,7 +92,7 @@ NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
     [_button5 setTitle:@"加载持久化缓存到内存" forState:UIControlStateNormal];
     [_button5 addTarget:self action:@selector(loadDBCache) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:_button5];
-    
+
     _button6 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     _button6.frame = CGRectMake(xStart, yStart += yInterval, width, height);
     _button6.backgroundColor = [UIColor blackColor];
@@ -100,7 +100,7 @@ NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
     [_button6 setTitle:@"删除内存和持久化缓存" forState:UIControlStateNormal];
     [_button6 addTarget:self action:@selector(clearAllCache) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:_button6];
-    
+
     _button7 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     _button7.frame = CGRectMake(xStart, yStart += yInterval, width, height);
     _button7.backgroundColor = [UIColor blackColor];
@@ -108,7 +108,7 @@ NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
     [_button7 setTitle:@"插入有效v4缓存" forState:UIControlStateNormal];
     [_button7 addTarget:self action:@selector(addValidV4) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:_button7];
-    
+
     _button8 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     _button8.frame = CGRectMake(xStart, yStart += yInterval, width, height);
     _button8.backgroundColor = [UIColor blackColor];
@@ -116,7 +116,7 @@ NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
     [_button8 setTitle:@"插入有效v6缓存" forState:UIControlStateNormal];
     [_button8 addTarget:self action:@selector(addValidV6) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:_button8];
-    
+
     _button9 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     _button9.frame = CGRectMake(xStart, yStart += yInterval, width, height);
     _button9.backgroundColor = [UIColor blackColor];
@@ -124,7 +124,7 @@ NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
     [_button9 setTitle:@"插入有效v4+v6缓存" forState:UIControlStateNormal];
     [_button9 addTarget:self action:@selector(addValidV4AndV6) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:_button9];
-    
+
     _button10 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     _button10.frame = CGRectMake(xStart, yStart += yInterval, width, height);
     _button10.backgroundColor = [UIColor blackColor];
@@ -132,7 +132,7 @@ NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
     [_button10 setTitle:@"插入过期v4缓存" forState:UIControlStateNormal];
     [_button10 addTarget:self action:@selector(addExpiredV4) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:_button10];
-    
+
     _button11 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     _button11.frame = CGRectMake(xStart, yStart += yInterval, width, height);
     _button11.backgroundColor = [UIColor blackColor];
@@ -140,7 +140,7 @@ NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
     [_button11 setTitle:@"插入过期v6缓存" forState:UIControlStateNormal];
     [_button11 addTarget:self action:@selector(addExpiredV6) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:_button11];
-    
+
     _button12 = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     _button12.frame = CGRectMake(xStart, yStart += yInterval, width, height);
     _button12.backgroundColor = [UIColor blackColor];
@@ -148,9 +148,9 @@ NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
     [_button12 setTitle:@"插入过期v4+v6缓存" forState:UIControlStateNormal];
     [_button12 addTarget:self action:@selector(addExpiredV4AndV6) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:_button12];
-    
+
     [self.view setBackgroundColor:[UIColor whiteColor]];
-    
+
     _service = [[HttpDnsService sharedInstance] initWithAccountID:102933];
     _scheduler = _service.requestScheduler;
     [_service setLogEnabled:YES];
@@ -222,7 +222,7 @@ NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
     UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:content preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
     [alertController addAction:okAction];
-    
+
     if ([NSThread isMainThread]) {
         [self presentViewController:alertController animated:YES completion:nil];
     } else {

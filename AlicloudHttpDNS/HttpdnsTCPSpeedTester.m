@@ -54,7 +54,7 @@ static NSString *const ipKey = @"ip";
  假设：同一个域名，不同端口到达速度一致。
  让优选逻辑，尽量少de
  15s 100s
- 
+
  - IP池在2个到5个范围内，才进行测速逻辑。
  - 只在ttl未过期内测试。
  - ~~只取内存缓存，与持久化缓存逻辑不产生交集。持久化优先级更高。~~ 无法区分持久化，持久化缓存也可能参与排序。
@@ -82,8 +82,8 @@ static NSString *const ipKey = @"ip";
     if (![HttpdnsUtil isValidString:host]) {
         return nil;
     }
-    
-    
+
+
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
     NSDictionary<NSString *, NSString *> *dataSource = sharedService.IPRankingDataSource;
     NSArray *allHost = [dataSource allKeys];
@@ -93,13 +93,13 @@ static NSString *const ipKey = @"ip";
     if (![allHost containsObject:host]) {
         return nil;
     }
-    
+
     int16_t port = 80;//
     @try {
         id port_ = dataSource[host];
         port = [port_ integerValue];
     } @catch (NSException *exception) {}
-    
+
     NSMutableArray<NSDictionary *> *IPSpeeds = [NSMutableArray arrayWithCapacity:IPs.count];
     for (NSString *ip in IPs) {
         int testSpeed =  [self testSpeedOf:ip port:port];
@@ -111,13 +111,13 @@ static NSString *const ipKey = @"ip";
         [IPSpeed setObject:ip forKey:ipKey];
         [IPSpeeds addObject:IPSpeed];
     }
-    
+
     NSArray *sortedIPSpeedsArray = [IPSpeeds sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
         long data1 = [[obj1 valueForKey:testSpeedKey] integerValue];
         long data2 = [[obj2 valueForKey:testSpeedKey] integerValue];
         return (data1 > data2) ? NSOrderedDescending : NSOrderedAscending;
     }];
-    
+
     NSMutableArray<NSString *> *sortedArrayIPs = [NSMutableArray arrayWithCapacity:IPs.count];
     for (NSDictionary *dict in sortedIPSpeedsArray) {
        NSString *ip = [dict objectForKey:ipKey];
@@ -148,15 +148,15 @@ static NSString *const ipKey = @"ip";
         defaultIp = defaultIps[0];
         ipCount = [defaultIps count];
     } @catch (NSException *exception) {}
-    
+
     NSString *selectedIp;
-    
+
     @try {
         NSDictionary *sortedIPSpeed = sortedIPSpeedsArray[0];
         selectedIp = sortedIPSpeed[ipKey];
         selectedIpCost = sortedIPSpeed[testSpeedKey];
     } @catch (NSException *exception) {}
-    
+
    NSPredicate *defaultIpCostPredicate = [NSPredicate predicateWithFormat:@"%@ = '%@'", ipKey, defaultIp];
    NSArray *defaultIpCostArray = [sortedIPSpeedsArray filteredArrayUsingPredicate:defaultIpCostPredicate];
     if (defaultIpCostArray.count > 0) {
@@ -200,11 +200,11 @@ static NSString *const ipKey = @"ip";
     socklen_t lon;
     tv.tv_sec = HTTPDNS_SOCKET_CONNECT_TIMEOUT;
     tv.tv_usec = 0;
-    
+
     fd_set myset;
     FD_ZERO(&myset);
     FD_SET(s, &myset);
-    
+
     // MARK: - 使用select函数，等待socket建连成功，最多等待`HTTPDNS_SOCKET_CONNECT_TIMEOUT`秒
     /**
      select函数
@@ -220,14 +220,14 @@ static NSString *const ipKey = @"ip";
         close(s);
         return rtt;
     }
-    
+
     if (ret < 0) {
         NSLog(@"ERROR:%s:%d, select function error.",__FUNCTION__,__LINE__);
         rtt = 0;
         close(s);
         return rtt;
     }
-    
+
     /**
      对于select和非阻塞connect，注意两点：
      [1] 当连接成功建立时，描述符变成可写； [2] 当连接建立遇到错误时，描述符变为即可读，也可写，遇到这种情况，可调用getsockopt函数。

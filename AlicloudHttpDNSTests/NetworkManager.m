@@ -27,11 +27,11 @@ static dispatch_queue_t reachabilityQueue;
     if (self = [super init]) {
         _ref = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, [@"gw.alicdn.com" UTF8String]);
         _cttInfo = [[CTTelephonyNetworkInfo alloc] init];
-        
+
         [self update];
         [self startNotify];
     }
-    
+
     return self;
 }
 
@@ -67,34 +67,34 @@ static dispatch_queue_t reachabilityQueue;
         // The target host is not reachable.
         return NotReachable;
     }
-    
+
     _NetworkStatus returnValue = NotReachable;
     if ((flags & kSCNetworkReachabilityFlagsConnectionRequired) == 0) {
         returnValue = ReachableViaWiFi;
     }
-    
+
     if ((((flags & kSCNetworkReachabilityFlagsConnectionOnDemand ) != 0) || (flags & kSCNetworkReachabilityFlagsConnectionOnTraffic) != 0)) {
         if ((flags & kSCNetworkReachabilityFlagsInterventionRequired) == 0) {
             returnValue = ReachableViaWiFi;
         }
     }
-    
+
     if ((flags & kSCNetworkReachabilityFlagsIsWWAN) == kSCNetworkReachabilityFlagsIsWWAN) {
         returnValue = ReachableVia4G;
     }
-    
+
     if ((flags & kSCNetworkReachabilityFlagsIsWWAN) == kSCNetworkReachabilityFlagsIsWWAN) {
         if((flags & kSCNetworkReachabilityFlagsReachable) == kSCNetworkReachabilityFlagsReachable) {
             if ((flags & kSCNetworkReachabilityFlagsTransientConnection) == kSCNetworkReachabilityFlagsTransientConnection) {
                 returnValue = ReachableVia3G;
-                
+
                 if((flags & kSCNetworkReachabilityFlagsConnectionRequired) == kSCNetworkReachabilityFlagsConnectionRequired) {
                     returnValue = ReachableVia2G;
                 }
             }
         }
     }
-    
+
     double version = [[UIDevice currentDevice].systemVersion doubleValue];
     if (version >= 7.0f && returnValue != ReachableViaWiFi) {
         NSString *nettype = _cttInfo.currentRadioAccessTechnology;
@@ -106,7 +106,7 @@ static dispatch_queue_t reachabilityQueue;
             }
         }
     }
-    
+
     return returnValue;
 }
 
@@ -115,7 +115,7 @@ static dispatch_queue_t reachabilityQueue;
     if (SCNetworkReachabilityGetFlags(_ref, &flags)) {
         _last = _current;
         _current = [self reachabilityFlags:flags];
-        
+
         // change bssid
         if (_current == ReachableViaWiFi) {
             NSArray *ifs = (id)CFBridgingRelease(CNCopySupportedInterfaces());
@@ -141,7 +141,7 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 
 - (void)startNotify {
     SCNetworkReachabilityContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
-    
+
     if(SCNetworkReachabilitySetCallback(_ref, ReachabilityCallback, &context)) {
         reachabilityQueue = dispatch_queue_create(networkManagerQueue, DISPATCH_QUEUE_SERIAL);
         SCNetworkReachabilitySetDispatchQueue(_ref, reachabilityQueue);
@@ -151,25 +151,25 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 - (BOOL)internetConnection
 {
     struct sockaddr_in zeroAddress;
-    
+
     bzero(&zeroAddress, sizeof(zeroAddress));
     zeroAddress.sin_len = sizeof(zeroAddress);
     zeroAddress.sin_family = AF_INET;
-    
+
     SCNetworkReachabilityRef defaultRouteReachability = SCNetworkReachabilityCreateWithAddress(NULL, (struct sockaddr *)&zeroAddress);
     SCNetworkReachabilityFlags flags;
-    
+
     BOOL didRetrieveFlags = SCNetworkReachabilityGetFlags(defaultRouteReachability, &flags);
-    
+
     CFRelease(defaultRouteReachability);
-    
+
     if (!didRetrieveFlags) {
         return NO;
     }
-    
+
     BOOL isReachable = flags & kSCNetworkFlagsReachable;
     BOOL needsConnection = flags & kSCNetworkFlagsConnectionRequired;
-    
+
     return (isReachable && !needsConnection) ? YES : NO;
 }
 
@@ -177,13 +177,13 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 + (BOOL) configureProxies
 {
     NSDictionary *proxySettings = CFBridgingRelease(CFNetworkCopySystemProxySettings());
-    
+
     NSLog(@"proxy setting: %@", proxySettings);
-    
+
     NSArray *proxies = nil;
-    
+
     NSURL *url = [[NSURL alloc] initWithString:@"http://api.m.taobao.com"];
-    
+
     proxies = CFBridgingRelease(CFNetworkCopyProxiesForURL((__bridge CFURLRef)url,
                                                            (__bridge CFDictionaryRef)proxySettings));
     if (proxies > 0)
@@ -191,7 +191,7 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
         NSDictionary *settings = [proxies objectAtIndex:0];
         NSString* host = [settings objectForKey:(NSString *)kCFProxyHostNameKey];
         NSString* port = [settings objectForKey:(NSString *)kCFProxyPortNumberKey];
-        
+
         if (host || port)
         {
             return YES;

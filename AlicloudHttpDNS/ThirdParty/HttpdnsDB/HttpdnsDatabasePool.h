@@ -14,7 +14,7 @@
 /** Pool of `<FMDatabase>` objects.
 
  ### See also
- 
+
  - `<FMDatabaseQueue>`
  - `<FMDatabase>`
 
@@ -31,14 +31,14 @@
 
 @interface HttpdnsDatabasePool : NSObject {
     NSString            *_path;
-    
+
     dispatch_queue_t    _lockQueue;
-    
+
     NSMutableArray      *_databaseInPool;
     NSMutableArray      *_databaseOutPool;
-    
+
     __unsafe_unretained id _delegate;
-    
+
     NSUInteger          _maximumNumberOfDatabasesToCreate;
     int                 _openFlags;
 }
@@ -107,7 +107,7 @@
 ///------------------------------------------------
 
 /** Number of checked-in databases in pool
- 
+
  @returns Number of databases
  */
 
@@ -161,7 +161,7 @@
 /** Synchronously perform database operations in pool using save point.
 
  @param block The code to be run on the `FMDatabasePool` pool.
- 
+
  @return `NSError` object if error; `nil` if successful.
 
  @warning You can not nest these, since calling it will pull another database out of the pool and you'll get a deadlock. If you need to nest, use `<[FMDatabase startSavePointWithName:error:]>` instead.
@@ -174,25 +174,25 @@
 
 
 /** FMDatabasePool delegate category
- 
+
  This is a category that defines the protocol for the FMDatabasePool delegate
  */
 
 @interface NSObject (FMDatabasePoolDelegate)
 
 /** Asks the delegate whether database should be added to the pool. 
- 
+
  @param pool     The `FMDatabasePool` object.
  @param database The `FMDatabase` object.
- 
+
  @return `YES` if it should add database to pool; `NO` if not.
- 
+
  */
 
 - (BOOL)databasePool:(HttpdnsDatabasePool*)pool shouldAddDatabaseToPool:(HttpdnsDatabase*)database;
 
 /** Tells the delegate that database was added to the pool.
- 
+
  @param pool     The `FMDatabasePool` object.
  @param database The `FMDatabase` object.
 

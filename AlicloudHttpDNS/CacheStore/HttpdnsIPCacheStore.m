@@ -30,13 +30,13 @@
         [db executeUpdate:ALICLOUD_HTTPDNS_SQL_CREATE_IP_RECORD_TABLE];
         [db executeUpdate:ALICLOUD_HTTPDNS_SQL_CREATE_IP6_RECORD_TABLE];
     }));
-    
+
     [self migrateDatabaseIfNeeded:self.databaseQueue.path];
 }
 
 - (void)migrateDatabaseIfNeeded:(NSString *)databasePath {
     //后续数据库升级，兼容操作
-    
+
     //ip ip6两张表增加region列
     ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
         HttpdnsResultSet *result = [db executeQuery:ALICLOUD_HTTPDNS_SQL_FIND_REGION withArgumentsInArray:@[]];
@@ -44,7 +44,7 @@
             [db executeUpdate:ALICLOUD_HTTPDNS_SQL_ADD_IP_COLUMN_REGION];
         }
         [result close];
-        
+
         HttpdnsResultSet *result_ip6 = [db executeQuery:ALICLOUD_HTTPDNS_SQL_FIND_IP6_REGION withArgumentsInArray:@[]];
         if (!result_ip6.next) {
             [db executeUpdate:ALICLOUD_HTTPDNS_SQL_ADD_IP_COLUMN_IP6_REGION];
@@ -134,14 +134,14 @@
     NSString *sqlStr = (isIPv6) ? ALICLOUD_HTTPDNS_SQL_SELECT_IP6_RECORD : ALICLOUD_HTTPDNS_SQL_SELECT_IP_RECORD;
     NSArray *args = @[ @(hostID) ];
     HttpdnsResultSet *result = [db executeQuery:sqlStr withArgumentsInArray:args];
-    
+
     while ([result next]) {
         HttpdnsIPRecord *IPRecord = [self recoedWithResult:result];
         [IPRecords addObject:IPRecord];
     }
-    
+
     [result close];
-    
+
     return IPRecords;
 }
 

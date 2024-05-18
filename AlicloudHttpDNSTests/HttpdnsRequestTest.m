@@ -45,7 +45,7 @@
 //    HttpDnsService *httpdns = [HttpDnsService sharedInstance];
 //    [httpdns setLogEnabled:YES];
 //    [httpdns setAccountID:100000];
-    
+
 //    HttpDnsService *httpdns = [[HttpDnsService alloc] initWithAccountID:100000];
     HttpDnsService *httpdns = [[HttpDnsService alloc] initWithAccountID:191863];
     [httpdns setLogEnabled:YES];
@@ -72,7 +72,7 @@
     [HttpdnsRequestScheduler configureServerIPsAndResetActivatedIPTime];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
     sleep(customizedTimeoutInterval);
-    
+
     [super tearDown];
 }
 
@@ -149,7 +149,7 @@
  */
 - (void)testFailedHTTPRequestRunLoop {
     [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
-    
+
     NSArray *array = [NSArray arrayWithObjects:@"www.taobao.com", @"www.baidu.com", @"www.aliyun.com", nil];
     [[HttpDnsService sharedInstance] setPreResolveHosts:array];
     [NSThread sleepForTimeInterval:60];
@@ -200,13 +200,13 @@
     NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), error);
     //与帐号是否添加baidu.com有关
 //    XCTAssertNil(result);
-    
+
     // HTTPS
     startDate = [NSDate date];
     [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     result = [request lookupHostFromServer:hostName error:&error];
     interval = [startDate timeIntervalSinceNow];
-    
+
     XCTAssert(interval <= customizedTimeoutInterval);
     NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), error);
     //与帐号是否添加baidu.com有关
@@ -252,7 +252,7 @@
     XCTAssertNil(result);
     XCTAssertNotNil(error);
     XCTAssertEqual([[result getIps] count], 0);
-    
+
     startDate = [NSDate date];
     result = [request lookupHostFromServer:hostName error:&error];
     interval = [startDate timeIntervalSinceNow];
@@ -281,16 +281,16 @@
 
 - (void)testIPPoolLoopWithHTTPS:(BOOL)isHTTPS {
     [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:isHTTPS];
-    
+
     NSString *hostName = @"www.taobao.com";
     HttpdnsRequestScheduler *requestScheduler =  [[HttpDnsService sharedInstance] requestScheduler];
     [requestScheduler setServerDisable:NO host:hostName];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     scheduleCenter.activatedServerIPIndex = 0;
-    
+
     [ScheduleCenterTestHelper setTwoFirstIPWrongForTest];
     [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
-    
+
     XCTAssert(![requestScheduler isServerDisable]);
     [[HttpDnsService sharedInstance] getIpByHost:hostName];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
@@ -299,7 +299,7 @@
     sleep(customizedTimeoutInterval);
     //重试2次
     XCTAssert(![requestScheduler isServerDisable]);
-    
+
     [HttpdnsRequestScheduler configureServerIPsAndResetActivatedIPTime];
 }
 
@@ -310,34 +310,34 @@
     [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     [HttpDnsService sharedInstance].timeoutInterval = 5;
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
-    
+
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
     [requestScheduler setServerDisable:NO host:hostName];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     scheduleCenter.activatedServerIPIndex = 0;
-    
+
     [ScheduleCenterTestHelper setFourFirstIPWrongForTest];
     [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
     [service getIpByHost:hostName];
-    
+
     //重试2次+嗅探1次
     sleep(customizedTimeoutInterval + 1);
-    
+
     //第2次嗅探失败
     [service getIpByHost:hostName];
     sleep(customizedTimeoutInterval + 1);
-    
+
     //第3次嗅探成功
     [service getIpByHost:hostName];
     sleep(customizedTimeoutInterval + 1);
     sleep(1);//正在异步更新isServerDisable状态
-    
+
     //第3次嗅探成功
     [service getIpByHost:hostName];
     sleep(customizedTimeoutInterval + 1);
-    
+
     XCTAssert(![requestScheduler isServerDisable]);
     [HttpdnsRequestScheduler configureServerIPsAndResetActivatedIPTime];
 }
@@ -347,17 +347,17 @@
  */
 - (void)testComplicatedlyAccessSameWrongHostIP {
     [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
-    
+
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
     [requestScheduler setServerDisable:NO host:hostName];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     scheduleCenter.activatedServerIPIndex = 0;
-    
+
     [ScheduleCenterTestHelper setFirstIPWrongForTest];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
-    
+
     dispatch_queue_t concurrentQueue =
     dispatch_queue_create("com.ConcurrentQueue",
                           DISPATCH_QUEUE_CONCURRENT);
@@ -377,20 +377,20 @@
  */
 - (void)testComplicatedlyAccessSameTwoWrongHostIP {
     [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
-    
+
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
     [requestScheduler setServerDisable:NO host:hostName];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-    
+
     scheduleCenter.activatedServerIPIndex = 0;
-    
+
     [ScheduleCenterTestHelper setTwoFirstIPWrongForTest];
     [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
-    
+
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
-    
+
     dispatch_queue_t concurrentQueue =
     dispatch_queue_create("com.ConcurrentQueue",
                           DISPATCH_QUEUE_CONCURRENT);
@@ -406,7 +406,7 @@
 }
 /*!
  * 最初的IP index非0的情况下，并发访问
- 
+
  0 wrong
  1 wrong <--start IP
  2 wrong
@@ -415,7 +415,7 @@
  */
 - (void)testComplicatedlyAccessSameFourWrongHostIP {
     [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
-    
+
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
@@ -423,10 +423,10 @@
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     scheduleCenter.activatedServerIPIndex = 1;
     [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
-    
+
     [ScheduleCenterTestHelper setFourFirstIPWrongForTest];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
-    
+
     dispatch_queue_t concurrentQueue =
     dispatch_queue_create("com.ConcurrentQueue",
                           DISPATCH_QUEUE_CONCURRENT);
@@ -446,7 +446,7 @@
  *
  嗅探间隔是否生效
  最初的IP index非0的情况下，并发访问
- 
+
  0 wrong
  1 wrong <--start IP
  2 wrong
@@ -455,17 +455,17 @@
  */
 - (void)testComplicatedlyAccessSameFourWrongHostIPWithDisableStatus {
     [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
-    
+
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
     [requestScheduler setServerDisable:NO host:hostName];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     scheduleCenter.activatedServerIPIndex = 1;
-    
+
     [ScheduleCenterTestHelper setFourFirstIPWrongForTest];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
-    
+
     dispatch_queue_t concurrentQueue =
     dispatch_queue_create("com.ConcurrentQueue",
                           DISPATCH_QUEUE_CONCURRENT);
@@ -484,7 +484,7 @@
 
 /*!
  * 最初的IP index非0的情况下，并发访问
- 
+
  0 right
  1 wrong <--start IP
  2 wrong
@@ -493,7 +493,7 @@
  */
 - (void)testComplicatedlyAccessSameLastFourWrongHostIP {
     [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
-    
+
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
@@ -501,10 +501,10 @@
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     scheduleCenter.activatedServerIPIndex = 1;
     [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
-    
+
     [ScheduleCenterTestHelper setFourLastIPWrongForTest];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
-    
+
     dispatch_queue_t concurrentQueue =
     dispatch_queue_create("com.ConcurrentQueue",
                           DISPATCH_QUEUE_CONCURRENT);
@@ -513,15 +513,15 @@
             //三次 = 两次重试 + 一次嗅探
             [service getIpByHost:hostName];
             sleep(customizedTimeoutInterval);
-            
+
             //嗅探
             [service getIpByHost:hostName];
             sleep(customizedTimeoutInterval);
-            
+
         });
     }
     dispatch_barrier_sync(concurrentQueue, ^{
-        
+
         NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), @([requestScheduler isServerDisable]));
         //嗅探正确的IP，但先返回nil。
         NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), [service getIpByHost:hostName]);
@@ -544,19 +544,19 @@
 - (void)testScheduleCenterTrigger {
     [ScheduleCenterTestHelper cancelAutoConnectToScheduleCenter];
     [ScheduleCenterTestHelper setAllThreeWrongForTest];
-    
+
     HttpDnsService *service = [HttpDnsService sharedInstance];
     NSString *hostName = @"www.taobao.com";
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
     [requestScheduler setServerDisable:NO host:hostName];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     scheduleCenter.activatedServerIPIndex = 0;
-    
+
     [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
     [HttpdnsScheduleCenterTestHelper zeroMixConnectToScheduleCenterInterval];
     [HttpdnsScheduleCenterTestHelper zeroAutoConnectToScheduleCenterInterval];
     [service getIpByHost:hostName];
-    
+
 }
 
 /**
@@ -628,7 +628,7 @@
         XCTAssertNotNil(result);
         XCTAssertTrue(timeInterval1 > 0);
         XCTAssertTrue(timeInterval1 < sleepTime + 1);
-        
+
         //未超过最小间隔，不可以更新
         [scheduleCenter forceUpdateIpListAsyncWithCallback:^(NSDictionary *result) {
             if ([result.allKeys count] > 0) {
@@ -660,7 +660,7 @@
             }
         }];
     }];
-    
+
     WAIT
 }
 
@@ -701,7 +701,7 @@
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler =  [[HttpDnsService sharedInstance] requestScheduler];
-    
+
     NSInteger code = 403;
     NSDictionary *errorInfo = @{
                                 ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY : ALICLOUD_HTTPDNS_ERROR_SERVICE_LEVEL_DENY,
@@ -709,7 +709,7 @@
     NSError *error = [NSError errorWithDomain:NSStringFromClass([self class])
                                          code:code
                                      userInfo:errorInfo];
-    
+
     [requestScheduler canNotResolveHost:hostName error:error isRetry:NO activatedServerIPIndex:0];
     sleep(20);
     XCTAssertNotNil([service getIpByHost:hostName]);
@@ -724,14 +724,14 @@
  * 1.调用getIpByHostAsync
  * 2.等待片刻，再次调用getIpByHostAsync，预期返回ip不为空
  * 3.持久化缓存中load相应数据，预期为空
- 
+
  * 测试目的：getIpByHostAsync调用后是否缓存成功
  * 测试方法：
  * 1.setDBCacheEnable(true)
  * 2.调用getIpByHostAsync
  * 3.等待片刻，再次调用getIpByHostAsync，确保成功返回ip
  * 4.测试load是否正常
- 
+
  * 测试目的：持久化缓存在初始化阶段和网络切换后是否成功加载
  * 测试方法：
  * 1.mService.setDBCacheEnable(true)
@@ -758,19 +758,19 @@
     [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
     [service getIpByHostAsync:@"www.aliyun.com"];
     sleep(2);
-    
+
     int n = 10000;
     for (int i = 0; i < n; i++) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
-            
+
             [requestScheduler loadIPsFromCacheSyncIfNeeded];
             if (i == n -1) {
                 NOTIFY
             }
         });
-        
+
     }
-    
+
     WAIT
 }
 
@@ -785,17 +785,17 @@
  * 6.等待片刻，再次调用getIpByHostAsync，预期返回新的ip
  */
 - (void)testDBTTLExpire {
-    
+
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
-    
+
     //内部缓存开关，不触发加载DB到内存的操作
     [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
     [requestScheduler loadIPsFromCacheSyncIfNeeded];
     HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
     HttpdnsHostRecord *hostRecord = [hostCacheStore hostRecordsWithCurrentCarrierForHost:hostName];
-    
+
     HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore sharedInstance];
     NSArray<HttpdnsIPRecord *> *IPRecords = [IPCacheStore IPRecordsForHostID:hostRecord.hostRecordId];
     HttpdnsIPRecord *IPRecord = IPRecords[0];
@@ -831,7 +831,7 @@
     HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:hostName IPs:@[] IP6s:@[] TTL:0];
     HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
     [hostCacheStore insertHostRecords:@[hostRecord]];
-    
+
     [requestScheduler cleanAllHostMemoryCache];
     [requestScheduler loadIPsFromCacheSyncIfNeeded];
 }
@@ -847,7 +847,7 @@
  * 6.断言h2.id != h3.id
  */
 - (void)testDB5 {
-    
+
 }
 /**
  * 测试目的：本地轮询100次，确认sp信息读取是否都保持一致
@@ -860,7 +860,7 @@
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
-    
+
     //内部缓存开关，不触发加载DB到内存的操作
     [requestScheduler _setCachedIPEnabled:YES];//区别于外部开关[service setCachedIPEnabled:YES];
     //同步网络请求，保存数据的数据库
@@ -874,16 +874,16 @@
         XCTAssertNotNil(IP2);
         XCTAssertTrue([IP1 isEqualToString:IP2]);
     }
-    
+
     HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
     HttpdnsHostRecord *hostRecord = [hostCacheStore hostRecordsWithCurrentCarrierForHost:hostName];
-    
+
     HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore sharedInstance];
     NSArray<HttpdnsIPRecord *> *IPRecords = [IPCacheStore IPRecordsForHostID:hostRecord.hostRecordId];
     HttpdnsIPRecord *IPRecord = IPRecords[0];
     //    XCTAssertNotNil([service getIpByHost:hostName]);
     sleep((unsigned int)IPRecord.TTL);
-    
+
     for (int i = 0; i < 10; i++) {
         NSString *IP1 = [service getIpByHostAsync:hostName];
         NSString *IP2 = [service getIpByHostAsync:hostName];
@@ -904,11 +904,11 @@
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
     [requestScheduler setServerDisable:NO host:hostName];
-    
+
     //内部缓存开关，不触发加载DB到内存的操作
     [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
     [requestScheduler loadIPsFromCacheSyncIfNeeded];
-    
+
     for (int i = 0; i < 10; i++) {
         NSString *IP1 = [service getIpByHostAsync:hostName];
         NSString *IP2 = [service getIpByHostAsync:hostName];
@@ -916,9 +916,9 @@
         XCTAssertNotNil(IP2);
         XCTAssertTrue([IP1 isEqualToString:IP2]);
     }
-    
+
     [requestScheduler setServerDisable:YES host:hostName];
-    
+
     for (int i = 0; i < 10; i++) {
         NSString *IP1 = [service getIpByHostAsync:hostName];
         NSString *IP2 = [service getIpByHostAsync:hostName];
@@ -943,19 +943,19 @@
     //XCTAssertNotNil([service getIpByHost:hostName]);
     HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
     [requestScheduler setServerDisable:NO host:hostName];
-    
+
     //内部缓存开关，不触发加载DB到内存的操作
     [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
     HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
     //XCTAssertNotNil([service getIpByHostAsync:hostName]);
-    
+
     [HttpdnsHostCacheStoreTestHelper shortCacheExpireTime];
     NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), @(ALICLOUD_HTTPDNS_HOST_CACHE_MAX_CACHE_AGE));
-    
+
     //内部缓存开关，不触发加载DB到内存的操作
     [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
     //[requestScheduler loadIPsFromCacheSyncIfNeeded];
-    
+
     for (int i = 0; i < 10; i++) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
              [service getIpByHostAsync:hostName];
@@ -967,7 +967,7 @@
     }
     WAIT
     sleep(15);
-    
+
     NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), [service getIpByHostAsync:hostName]);
     [requestScheduler cleanAllHostMemoryCache];
     //内部缓存开关，不触发加载DB到内存的操作
