@@ -72,7 +72,7 @@
     _extra = nil;
     _ipRegion = @"";
     _ip6Region = @"";
-    
+
     return self;
 }
 
@@ -88,7 +88,7 @@
         _extra = [aDecoder decodeObjectForKey:@"extra"];
         _ipRegion = [aDecoder decodeObjectForKey:@"ipRegion"];
         _ip6Region = [aDecoder decodeObjectForKey:@"ip6Region"];
-        
+
     }
     return self;
 }
@@ -106,7 +106,7 @@
     [aCoder encodeObject:_hostName forKey:@"extra"];
     [aCoder encodeObject:_ipRegion forKey:@"ipRegion"];
     [aCoder encodeObject:_ip6Region forKey:@"ip6Region"];
-    
+
 }
 
 - (BOOL)isIpEmptyUnderQueryIpType:(HttpdnsQueryIPType)queryType {
@@ -170,19 +170,19 @@
     NSArray *ip6s = hostRecord.IP6s;
     if ([HttpdnsUtil isValidArray:ips]) {
         hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:ips];
-        
+
         //设置ipv4 的ttl lookuptimer
         [hostObject setV4TTL:hostRecord.TTL];
         [hostObject setLastIPv4LookupTime:hostObject.getLastLookupTime];
-        
+
     }
     if ([HttpdnsUtil isValidArray:ip6s]) {
         hostObject.ip6s = [HttpdnsIpObject IPObjectsFromIPs:ip6s];
-        
+
         //设置ipv6 的ttl lookuptimer
         [hostObject setV6TTL:hostRecord.TTL];
         [hostObject setLastIPv6LookupTime:hostObject.getLastLookupTime];
-        
+
     }
     [hostObject setIsLoadFromDB:YES];
     return hostObject;

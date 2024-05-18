@@ -100,12 +100,12 @@
 
     XCTAssertTrue([sessionId1 isEqualToString:sessionId2]);
     XCTAssertEqual(sessionId1.length, 12);
-    
+
     NSString *alphabet = @"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     NSString *A = [alphabet substringWithRange:NSMakeRange(0, 1)];
     NSString *B = [alphabet substringWithRange:NSMakeRange(1, 1)];
     NSString *end_9 = [alphabet substringWithRange:NSMakeRange(alphabet.length - 1, 1)];
-    
+
     XCTAssertTrue([A isEqualToString:@"A"]);
     XCTAssertTrue([B isEqualToString:@"B"]);
     XCTAssertTrue([end_9 isEqualToString:@"9"]);

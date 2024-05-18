@@ -26,12 +26,12 @@
 
 - (instancetype)init {
     self = [super init];
-    
+
     if (self) {
         HttpDnsService *sharedService = [HttpDnsService sharedInstance];
         _accountId = [NSString stringWithFormat:@"%@", @(sharedService.accountID)];
     }
-    
+
     return self;
 }
 
@@ -40,17 +40,17 @@
         if (_databaseQueue) {
             return _databaseQueue;
         }
-        
+
         if (self.accountId) {
             NSString *path = [[self class] databasePathWithName:self.accountId];
             _databaseQueue = [HttpdnsDatabaseQueue databaseQueueWithPath:path];
-            
+
             if (_databaseQueue) {
                 [self databaseQueueDidLoad];
             }
         }
     }
-    
+
     return _databaseQueue;
 }
 

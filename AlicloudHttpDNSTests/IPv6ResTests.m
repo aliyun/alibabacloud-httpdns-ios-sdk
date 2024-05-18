@@ -93,7 +93,7 @@ HttpdnsRequestScheduler *requestScheduler = nil;
 }
 
 - (void)testTemp {
-    
+
     NSString *testHost = @"ipv6.sjtu.edu.cn";
     NSString *testIPv4 = @"202.120.2.47";
     NSString *testIPv6 = @"2001:da8:8000:1:0:0:0:80";
@@ -101,7 +101,7 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     NSString *ip6Res = nil;
     NSString *memoryCache = nil;
     NSString *dbCache = nil;
-    
+
     [httpdns enableIPv6:YES];
     HttpdnsHostCacheStore *hostCacheStore = [[HttpdnsHostCacheStore alloc] init];
     HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[] IP6s:@[ testIPv6 ] TTL:3600];
@@ -125,7 +125,7 @@ HttpdnsRequestScheduler *requestScheduler = nil;
  测试目的：v4和v6解析结果组合，验证各场景解析结果获取
  本测试用例失效，新feature，解析结果如果是从DB加载，下次调用接口一定触发解析
  测试方法：
- 
+
  测试场景           获取v4解析结果                获取v6解析结果
  v4，有效          返回res，不解析               返回res（nil），不解析
  v6，有效          返回res（nil），不解析          返回res，不解析
@@ -142,9 +142,9 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     NSString *ip6Res = nil;
     NSString *memoryCache = nil;
     NSString *dbCache = nil;
-    
+
     [httpdns enableIPv6:YES];
-    
+
     // 有效v4
     HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
     HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[ testIPv4 ] IP6s: @[] TTL:3600];
@@ -157,7 +157,7 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     XCTAssertNil(ip6Res);
     // 清空内存和持久化缓存
     [self cleanMemoryAndCache:testHost];
-    
+
     // 有效v6
     hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[] IP6s:@[ testIPv6 ] TTL:3600];
     [hostCacheStore insertHostRecords:@[hostRecord]];
@@ -174,7 +174,7 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     // 清空内存和持久化缓存
     [self cleanMemoryAndCache:testHost];
     sleep(5);
-    
+
     // 有效v4+v6
     hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[ testIPv4 ] IP6s:@[ testIPv6 ] TTL:3600];
     [hostCacheStore insertHostRecords:@[hostRecord]];
@@ -188,7 +188,7 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     // 清空内存和持久化缓存
     [self cleanMemoryAndCache:testHost];
     sleep(5);
-    
+
     // 过期v4
     hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[ testIPv4 ] IP6s:@[] TTL:0];
     [hostCacheStore insertHostRecords:@[hostRecord]];
@@ -204,7 +204,7 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     // 清空内存和持久化缓存
     [self cleanMemoryAndCache:testHost];
     sleep(5);
-    
+
     // 过期v6
     hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[] IP6s:@[ testIPv6 ] TTL:0];
     [hostCacheStore insertHostRecords:@[hostRecord]];
@@ -220,7 +220,7 @@ HttpdnsRequestScheduler *requestScheduler = nil;
     // 清空内存和持久化缓存
     [self cleanMemoryAndCache:testHost];
     sleep(5);
-    
+
     // 过期v4+v6
     hostRecord = [HttpdnsHostRecord hostRecordWithHost:testHost IPs:@[ testIPv4 ] IP6s:@[ testIPv6 ] TTL:0];
     [hostCacheStore insertHostRecords:@[hostRecord]];

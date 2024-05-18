@@ -63,7 +63,7 @@ static NSString *const QueryCacheIPV6Key = @"QueryCacheIPV6Key";
     if (![EMASTools isValidString:originURL]) {
         return originURL;
     }
-    
+
     NSArray *cacheArr = [HttpdnsUtil safeObjectForKey:queryHost dict:self.ipQueryCache];
     if ([EMASTools isValidArray:cacheArr]) {
         if (cacheArr.count == 2) {
@@ -74,7 +74,7 @@ static NSString *const QueryCacheIPV6Key = @"QueryCacheIPV6Key";
             }
         }
     }
-    
+
     return originURL;
 }
 
@@ -85,41 +85,41 @@ static NSString *const QueryCacheIPV6Key = @"QueryCacheIPV6Key";
 
 - (void)setQueryHost:(NSString *)host ipQueryType:(HttpdnsQueryIPType)queryType{
     @synchronized (self) {
-        
+
         if ([EMASTools isValidString:host]) {
             NSArray *cacheArr = [HttpdnsUtil safeObjectForKey:host dict:self.ipQueryCache];
-            
+
             if (cacheArr.count == 2) {
                 return;
             }
-            
+
             if (![EMASTools isValidArray:cacheArr]) {  //当前缓存中无当前域名查询策略
                 NSMutableArray *cacheMArr = [NSMutableArray array];
                 if (queryType & HttpdnsQueryIPTypeIpv4) {  //ipv4 查询
                     [cacheMArr addObject:QueryCacheIPV4Key];
                 }
-                
+
                 if (queryType & HttpdnsQueryIPTypeIpv6) {  //ipv6 查询
                     [cacheMArr addObject:QueryCacheIPV6Key];
                 }
-                
+
                 //如果当前是auto类型，且缓存中无查询策略，则根据ipv6开关来判断
                 if (![EMASTools isValidArray:cacheMArr] && queryType == HttpdnsQueryIPTypeAuto) {
-                    
+
                     if ([self isAbleToResolveIPv6Result]) {
                         [cacheMArr addObject:QueryCacheIPV4Key];
                         [cacheMArr addObject:QueryCacheIPV6Key];
                     } else {
                         [cacheMArr addObject:QueryCacheIPV4Key];
                     }
-                    
+
                 }
-                
-                
+
+
                 [HttpdnsUtil safeAddValue:cacheMArr key:host toDict:self.ipQueryCache];
-                
+
             } else {  //当前缓存中存在该域名的查询策略
-                
+
                 NSMutableArray *cacheMArr = [NSMutableArray arrayWithArray:cacheArr];
                 if ([cacheArr containsObject:QueryCacheIPV4Key]) {
                     if (queryType & HttpdnsQueryIPTypeIpv6) {
@@ -131,42 +131,42 @@ static NSString *const QueryCacheIPV6Key = @"QueryCacheIPV6Key";
                     }
                 }
                 [HttpdnsUtil safeAddValue:cacheMArr key:host toDict:self.ipQueryCache];
-                
+
             }
         }
-        
+
     }
 }
 
 
 - (HttpdnsQueryIPType)getQueryHostIPType:(NSString *)host {
-    
+
     @synchronized (self) {
         NSArray *cacheArr = [HttpdnsUtil safeObjectForKey:host dict:self.ipQueryCache];
         if ([HttpdnsUtil isValidArray:cacheArr]) {
-            
+
             if (cacheArr.count == 2) {
                 return HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6;
             } else {
-                
+
                 if ([cacheArr containsObject:QueryCacheIPV4Key]) {
                     return HttpdnsQueryIPTypeIpv4;
                 } else {
                     return HttpdnsQueryIPTypeIpv6;
                 }
             }
-            
+
         } else {
-            
+
             if ([self isAbleToResolveIPv6Result]) {
                 return HttpdnsQueryIPTypeIpv4 | HttpdnsQueryIPTypeIpv6;
             } else {
                 return HttpdnsQueryIPTypeIpv4;
             }
-            
+
         }
     }
-    
+
 }
 
 - (void)removeQueryHost:(NSString *)host {

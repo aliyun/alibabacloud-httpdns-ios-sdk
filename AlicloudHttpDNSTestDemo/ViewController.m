@@ -31,7 +31,7 @@ NSArray *ipv6HostArray = nil;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     ipv4HostArray = @[
                       @"m.u17.com",
                       @"live-dev-cstest.fzzqxf.com",
@@ -128,7 +128,7 @@ NSArray *ipv6HostArray = nil;
             [_service getIpByHostAsync:ipv4Host];
         });
     }
-    
+
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
         sleep(60);
         for (NSString *ipv4Host in ipv4HostArray) {
@@ -156,7 +156,7 @@ NSArray *ipv6HostArray = nil;
     NSLog(@"resStr: %@", resStr);
     resStr = [NSString stringWithFormat:@"%@-%@", originStr, @"test"];
     NSLog(@"resStr: %@", resStr);
-    
+
     _logHandler = [[MyLoggerHandler alloc] init];
     printf("aaaa retain count = %ld\n", CFGetRetainCount((__bridge CFTypeRef)(_logHandler)));
     [_service setLogHandler:_logHandler];
@@ -206,10 +206,10 @@ NSArray *ipv6HostArray = nil;
 }
 
 - (IBAction)queryIpv4_Ipv6:(id)sender {
-    
+
     NSDictionary *ipvsDic = [_service getIPv4_v6ByHostAsync:@"www.taobao.com"];
     NSLog(@"ipv4:--------%@++++ipv4:--------%@",[ipvsDic objectForKey:ALICLOUDHDNS_IPV4], [ipvsDic objectForKey:ALICLOUDHDNS_IPV6]);
-    
+
 }
 
 

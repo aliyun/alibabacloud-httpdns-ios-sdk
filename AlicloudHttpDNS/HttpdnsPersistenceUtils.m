@@ -51,10 +51,10 @@ static dispatch_queue_t _fileCacheQueue = 0;
             dispatch_sync(_fileCacheQueue, ^{
                 saveSucceed = [NSKeyedArchiver archiveRootObject:JSON toFile:path];
             });
-            
+
         } @catch (NSException *exception) {}
-        
-        
+
+
         return saveSucceed;
     }
     return NO;
@@ -70,7 +70,7 @@ static dispatch_queue_t _fileCacheQueue = 0;
             JSON = [NSKeyedUnarchiver unarchiveObjectWithFile:path];
         });
         BOOL isValid = [HttpdnsUtil isValidJSON:JSON];
-        
+
         if (isValid) {
             return JSON;
         }
@@ -78,7 +78,7 @@ static dispatch_queue_t _fileCacheQueue = 0;
         //deal with the previous file version
         if ([[exception name] isEqualToString:NSInvalidArgumentException]) {
             JSON = [NSMutableDictionary dictionaryWithContentsOfFile:path];
-            
+
             if (!JSON) {
                 JSON = [NSMutableArray arrayWithContentsOfFile:path];
             }

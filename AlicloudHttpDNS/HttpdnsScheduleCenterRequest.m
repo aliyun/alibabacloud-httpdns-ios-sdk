@@ -70,21 +70,21 @@ static NSURLSession *_scheduleCenterSession = nil;
             }
         }
     }
-    
+
     return hostArray;
-    
+
 }
 
 - (NSDictionary *)queryScheduleCenterRecordFromServerSyncWithHostIndex:(NSInteger)hostIndex {
     NSDictionary *scheduleCenterRecord = nil;
     NSArray *hostArray = [self getCenterHostList];
-    
+
     NSInteger maxHostIndex = (hostArray.count - 1);
     if (hostIndex > maxHostIndex) {
         if (HTTPDNS_INTER) { //国际版不存在降级逻辑 直接return 
             return nil;
         }
-        
+
         //强降级策略 当服务IP轮询更新服务IP
         if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE) {
             //强降级到启动IP
@@ -93,29 +93,29 @@ static NSURLSession *_scheduleCenterSession = nil;
         }
         return nil;
     }
-    
+
     NSError *error = nil;
     NSDate *methodStart = [NSDate date];
-    
+
     // 这里发起请求 返回数据
     scheduleCenterRecord = [self queryScheduleCenterRecordFromServerWithHostIndex:hostIndex error:&error];
-    
+
     if (!scheduleCenterRecord && error) {
         return [self queryScheduleCenterRecordFromServerSyncWithHostIndex:(hostIndex + 1)];
     }
-    
+
     // scheduleCenterRecord && !error
     BOOL success = (scheduleCenterRecord && !error);
     NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
-    
+
     return scheduleCenterRecord;
 }
 
 - (NSString *)scheduleCenterHostFromIPIndex:(NSInteger)index {
-    
+
     NSString *serverHostOrIP = nil;
     NSArray *hostArray = [self getCenterHostList];
-    
+
     index = index % hostArray.count;
     serverHostOrIP = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:hostArray defaultValue:nil];
     serverHostOrIP = [HttpdnsUtil getRequestHostFromString:serverHostOrIP];
@@ -230,7 +230,7 @@ static NSURLSession *_scheduleCenterSession = nil;
     if (!errorStrong) {
         return result;
     }
-      
+
     if (pError != NULL) {
         *pError = errorStrong;
         NSURL *scAddrURL = [NSURL URLWithString:fullUrlStr];
@@ -239,8 +239,8 @@ static NSURLSession *_scheduleCenterSession = nil;
     }
     return nil;
 }
-    
-  
+
+
 #pragma mark - NSURLSessionTaskDelegate
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *_Nullable))completionHandler {
