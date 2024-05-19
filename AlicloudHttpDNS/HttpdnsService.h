@@ -18,7 +18,7 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "HttpDnsResult.h"
+#import "HttpdnsResult.h"
 #import "HttpdnsDegradationDelegate.h"
 #import "HttpdnsLoggerDelegate.h"
 
@@ -160,11 +160,11 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 /// 请参考: 解析异常排查之 “会话追踪方案” https://help.aliyun.com/document_detail/100530.html
 - (NSString *)getSessionId;
 
-- (HttpDnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType;
+- (HttpdnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType;
 
-- (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType completionHandler:(void (^)(HttpDnsResult *))handler;
+- (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType completionHandler:(void (^)(HttpdnsResult *))handler;
 
-- (HttpDnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType;
+- (HttpdnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType;
 
 /// 获取域名对应的IP，单IP
 /// @param host 域名

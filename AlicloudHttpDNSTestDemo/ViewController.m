@@ -82,7 +82,7 @@ NSArray *ipv6HostArray = nil;
 
 - (IBAction)onHost1:(id)sender {
     HttpDnsService *service = [HttpDnsService sharedInstance];
-    HttpDnsResult *result = [service resolveHostSync:@"empty.xuyecan1919.tech" byIpType:HttpdnsQueryIPTypeAuto];
+    HttpdnsResult *result = [service resolveHostSync:@"empty.xuyecan1919.tech" byIpType:HttpdnsQueryIPTypeAuto];
     NSLog(@"result: %@, firstIp: %@", result, [result firstIpv4Address]);
 }
 

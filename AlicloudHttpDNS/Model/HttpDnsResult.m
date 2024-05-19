@@ -1,14 +1,14 @@
 //
-//  HttpDnsResult.m
+//  HttpdnsResult.m
 //  AlicloudHttpDNS
 //
 //  Created by xuyecan on 2024/5/15.
 //  Copyright © 2024 alibaba-inc.com. All rights reserved.
 //
 
-#import "HttpDnsResult.h"
+#import "HttpdnsResult.h"
 
-@implementation HttpDnsResult
+@implementation HttpdnsResult
 
 - (BOOL)hasIpv4Address {
     return self.ips.count > 0;
