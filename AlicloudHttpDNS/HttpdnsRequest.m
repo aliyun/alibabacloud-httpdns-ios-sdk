@@ -18,7 +18,7 @@
  */
 
 #import "HttpdnsService.h"
-#import "HttpdnsModel.h"
+#import "HttpdnsHostObject.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"

@@ -16,7 +16,7 @@
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
-#import "HttpdnsModel.h"
+#import "HttpdnsHostObject.h"
 
 static NSURLSession *_scheduleCenterSession = nil;
 

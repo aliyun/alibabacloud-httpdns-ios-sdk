@@ -17,7 +17,7 @@
  * under the License.
  */
 
-#import "HttpdnsModel.h"
+#import "HttpdnsHostObject.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
