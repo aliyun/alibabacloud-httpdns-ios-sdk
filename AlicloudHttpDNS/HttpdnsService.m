@@ -19,7 +19,7 @@
 #import <AlicloudUtils/AlicloudUtils.h>
 #import <AlicloudUtils/AlicloudIPv6Adapter.h>
 #import "HttpdnsService_Internal.h"
-#import "HttpdnsRequest.h"
+#import "HttpdnsHostResolver.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsHostObject.h"
 #import "HttpdnsUtil.h"

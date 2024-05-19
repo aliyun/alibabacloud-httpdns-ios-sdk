@@ -19,7 +19,7 @@
 
 #import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsHostObject.h"
-#import "HttpdnsRequest.h"
+#import "HttpdnsHostResolver.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
@@ -479,7 +479,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     HttpdnsLogDebug("Internal request for %@ starts.", cacheKey);
 
     error = nil;
-    HttpdnsHostObject *result = [[HttpdnsRequest new] lookupHostFromServer:originalHost
+    HttpdnsHostObject *result = [[HttpdnsHostResolver new] lookupHostFromServer:originalHost
                                                                      error:&error
                                                     activatedServerIPIndex:activatedServerIPIndex queryIPType:queryIPType];
     if (error) {

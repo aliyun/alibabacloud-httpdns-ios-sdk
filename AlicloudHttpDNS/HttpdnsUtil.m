@@ -24,7 +24,7 @@
 #import "HttpdnsService_Internal.h"
 #import "UIApplication+ABSHTTPDNSSetting.h"
 #import "HttpdnsConstants.h"
-#import "HttpdnsRequest.h"
+#import "HttpdnsHostResolver.h"
 #import "HttpdnsIPv6Manager.h"
 
 
