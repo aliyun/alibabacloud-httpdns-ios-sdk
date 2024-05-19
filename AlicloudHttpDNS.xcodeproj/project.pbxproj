@@ -38,6 +38,8 @@
 		943FA4232BF9D4FA0006F169 /* HttpdnsHostObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 943FA4212BF9D4FA0006F169 /* HttpdnsHostObject.m */; };
 		943FA4262BFA44F30006F169 /* HttpdnsResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 943FA4242BFA44F30006F169 /* HttpdnsResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		943FA4272BFA44F30006F169 /* HttpdnsResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 943FA4252BFA44F30006F169 /* HttpdnsResult.m */; };
+		943FA42A2BFA4B410006F169 /* HttpdnsRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 943FA4282BFA4B410006F169 /* HttpdnsRequest.h */; };
+		943FA42B2BFA4B410006F169 /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 943FA4292BFA4B410006F169 /* HttpdnsRequest.m */; };
 		945914121CEB5D9C00D95CF7 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 945914111CEB5D9C00D95CF7 /* libresolv.tbd */; };
 		946E4BC22BF8B29600E1EF86 /* HTTPDNSCookieManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B0F2B8702803D334004ABD0F /* HTTPDNSCookieManager.m */; };
 		946E4BC32BF8B29800E1EF86 /* CFHTTPSURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */; };
@@ -184,6 +186,8 @@
 		943FA4212BF9D4FA0006F169 /* HttpdnsHostObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsHostObject.m; sourceTree = "<group>"; };
 		943FA4242BFA44F30006F169 /* HttpdnsResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsResult.h; sourceTree = "<group>"; };
 		943FA4252BFA44F30006F169 /* HttpdnsResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsResult.m; sourceTree = "<group>"; };
+		943FA4282BFA4B410006F169 /* HttpdnsRequest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsRequest.h; sourceTree = "<group>"; };
+		943FA4292BFA4B410006F169 /* HttpdnsRequest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsRequest.m; sourceTree = "<group>"; };
 		945914111CEB5D9C00D95CF7 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
 		94A0146D2BF38F410018B096 /* HttpdnsService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsService.m; sourceTree = "<group>"; };
 		94A0146E2BF38F410018B096 /* HttpdnsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsService.h; sourceTree = "<group>"; };
@@ -488,6 +492,8 @@
 				9AF9A6101EC4E9990018063B /* HttpdnsIPRecord.m */,
 				943FA4242BFA44F30006F169 /* HttpdnsResult.h */,
 				943FA4252BFA44F30006F169 /* HttpdnsResult.m */,
+				943FA4282BFA4B410006F169 /* HttpdnsRequest.h */,
+				943FA4292BFA4B410006F169 /* HttpdnsRequest.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -560,6 +566,7 @@
 				9AE639FB1ECDA74D00F9C723 /* HttpdnsDatabase.h in Headers */,
 				9AA0FC6B1EB987B800E242DD /* HttpdnsIPCacheStore.h in Headers */,
 				9AE639FD1ECDA74D00F9C723 /* HttpdnsDatabaseAdditions.h in Headers */,
+				943FA42A2BFA4B410006F169 /* HttpdnsRequest.h in Headers */,
 				9AA0FC781EB9B5FD00E242DD /* HttpdnsDatabaseCoordinator.h in Headers */,
 				94A014742BF38F410018B096 /* HttpdnsService_Internal.h in Headers */,
 				9A5914821EA0815D00A7ED28 /* HttpdnsPersistenceUtils.h in Headers */,
@@ -816,6 +823,7 @@
 				2197CAC71BC7B3D400BDB65B /* HttpdnsLog.m in Sources */,
 				9AC27F041FDFCB4800DF016A /* HttpdnsTCPSpeedTester.m in Sources */,
 				9AF9A6121EC4E9990018063B /* HttpdnsIPRecord.m in Sources */,
+				943FA42B2BFA4B410006F169 /* HttpdnsRequest.m in Sources */,
 				9AE63A001ECDA74D00F9C723 /* HttpdnsDatabasePool.m in Sources */,
 				94A014702BF38F410018B096 /* HttpdnsService.m in Sources */,
 				2197CAC51BC7B3D400BDB65B /* HttpdnsConfig.m in Sources */,

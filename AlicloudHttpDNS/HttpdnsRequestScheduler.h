@@ -18,6 +18,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "HttpdnsRequest.h"
 #import "HttpdnsIPv6Manager.h"
 
 //V6版本默认只保留一个IP
@@ -41,7 +42,7 @@ FOUNDATION_EXTERN NSString *ALICLOUD_HTTPDNS_SERVER_IP_REGION;
 
 - (void)addPreResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType;
 
-- (HttpdnsHostObject *)resolveHost:(NSString *)host synchronously:(BOOL)sync queryType:(HttpdnsQueryIPType)queryType;
+- (HttpdnsHostObject *)resolveHost:(HttpdnsRequest *)request;
 
 
 /// 获取当前域名的HostObject

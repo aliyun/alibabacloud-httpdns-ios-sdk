@@ -160,7 +160,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         return;
     }
     dispatch_async(_syncDispatchQueue, ^{
-        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
         for (NSString *hostName in hosts) {
             if ([self isHostsNumberLimitReached]) {
                 break;
@@ -170,7 +169,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 || [hostObject isExpiredUnderQueryIpType:queryType]
                 || [hostObject isRegionNotMatch:self.customRegion underQueryIpType:queryType]) {
 
-                [self resolveHost:hostName synchronously:NO queryType:queryType];
+                HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:hostName isBlockingRequest:NO queryIpType:queryType];
+                [self resolveHost:request];
                 HttpdnsLogDebug("Pre resolve host by async lookup, host: %@", hostName);
             }
         }
@@ -178,13 +178,14 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 #pragma mark - core method for all public query API
-- (HttpdnsHostObject *)resolveHost:(NSString *)host synchronously:(BOOL)sync queryType:(HttpdnsQueryIPType)queryType {
-    HttpdnsLogDebug("resolveHost, host: %@, queryType: %ld", host, queryType);
-    NSString *originalHost = host;
-    NSArray *hostArray= [host componentsSeparatedByString:@"]"];
-    NSString *cacheKey = [hostArray lastObject];
+- (HttpdnsHostObject *)resolveHost:(HttpdnsRequest *)request {
+    HttpdnsLogDebug("resolveHost, request: %@", request);
 
-    if (![HttpdnsUtil isNotEmptyString:cacheKey]) {
+    NSString *host = request.host;
+    NSString *cacheKey = request.cacheKey;
+    HttpdnsQueryIPType queryType = request.queryIpType;
+
+    if (![HttpdnsUtil isNotEmptyString:host]) {
         return nil;
     }
 
@@ -239,6 +240,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         } while (NO);
     }
 
+    // 处理域名没有配置v4ip或者v6ip的情况，做个打标，避免一直重复请求
     HttpdnsQueryIPType filterdQueryIpType = queryType;
     if (queryType & HttpdnsQueryIPTypeIpv4 && queryType & HttpdnsQueryIPTypeIpv6) {
         if ([result hasNoIpv4Record] && [result hasNoIpv6Record]) {
@@ -268,24 +270,21 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         return result;
     }
 
-    if (sync && needToWaitForResult) {
+    request.queryIpType = filterdQueryIpType;
+
+    if (request.isBlockingRequest && needToWaitForResult) {
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-        result = [self executeRequest:originalHost retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil queryIPType:filterdQueryIpType];
+        result = [self executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
         [lockerManager unlock:cacheKey queryType:queryType];
         return result;
     } else {
         dispatch_async(_asyncResolveHostQueue, ^{
             HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-            [self executeRequest:originalHost retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil queryIPType:filterdQueryIpType];
+            [self executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
             [lockerManager unlock:cacheKey queryType:queryType];
         });
         return result;
     }
-}
-
-/// 判断当前hostObject 是否需要开启查询
-- (BOOL)needToQueryWithCachedHostObject:(HttpdnsHostObject *)hostObject underQueryIpType:(HttpdnsQueryIPType)queryType {
-    return NO;
 }
 
 - (void)mergeLookupResultToManager:(HttpdnsHostObject *)result forHost:(NSString *)host underQueryIpType:(HttpdnsQueryIPType)queryIpType {
@@ -457,18 +456,16 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     }
 }
 
-- (HttpdnsHostObject *)executeRequest:(NSString *)host
+- (HttpdnsHostObject *)executeRequest:(HttpdnsRequest *)request
                            retryCount:(int)hasRetryedCount
                activatedServerIPIndex:(NSInteger)activatedServerIPIndex
-                                error:(NSError *)error
-                          queryIPType:(HttpdnsQueryIPType)queryIPType {
-    NSString * originalHost = host;
-    NSArray *hostArray= [host componentsSeparatedByString:@"]"];
-    NSString *cacheKey = [hostArray lastObject];
+                                error:(NSError *)error {
+    NSString *host = request.host;
+    HttpdnsQueryIPType queryIPType = request.queryIpType;
 
     if (hasRetryedCount > HTTPDNS_MAX_REQUEST_RETRY_TIME) {
         HttpdnsLogDebug("Internal request retry count exceed limit, host: %@", host);
-        [self canNotResolveHost:originalHost error:error isRetry:YES activatedServerIPIndex:activatedServerIPIndex];
+        [self canNotResolveHost:host error:error isRetry:YES activatedServerIPIndex:activatedServerIPIndex];
         return nil;
     }
 
@@ -476,28 +473,27 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         return nil;
     }
 
-    HttpdnsLogDebug("Internal request for %@ starts.", cacheKey);
+    HttpdnsLogDebug("Internal request for %@ starts.", host);
 
     error = nil;
-    HttpdnsHostObject *result = [[HttpdnsHostResolver new] lookupHostFromServer:originalHost
+    HttpdnsHostObject *result = [[HttpdnsHostResolver new] lookupHostFromServer:request
                                                                      error:&error
-                                                    activatedServerIPIndex:activatedServerIPIndex queryIPType:queryIPType];
+                                                    activatedServerIPIndex:activatedServerIPIndex];
     if (error) {
-        HttpdnsLogDebug("Internal request for %@ error: %@", cacheKey, error);
+        HttpdnsLogDebug("Internal request for %@ error: %@", host, error);
 
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
         NSInteger newActivatedServerIPIndex = [scheduleCenter nextServerIPIndexFromIPIndex:activatedServerIPIndex increase:hasRetryedCount];
 
-        return [self executeRequest:originalHost
+        return [self executeRequest:request
                          retryCount:(hasRetryedCount + 1)
              activatedServerIPIndex:newActivatedServerIPIndex
-                              error:error
-                        queryIPType:queryIPType];
+                              error:error];
     }
 
     dispatch_async(_syncDispatchQueue, ^{
-        HttpdnsLogDebug("Internal request for %@ finished, result: %@", cacheKey, result);
-        [self mergeLookupResultToManager:result forHost:cacheKey underQueryIpType:queryIPType];
+        HttpdnsLogDebug("Internal request for %@ finished, result: %@", host, result);
+        [self mergeLookupResultToManager:result forHost:host underQueryIpType:queryIPType];
     });
     return result;
 }
@@ -808,7 +804,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 @implementation HttpdnsRequestTestHelper
 
 + (void)zeroSnifferTimeForTest {
-    ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL = 0;  /**< 0秒 */
+    ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL = 0;
 }
 
 @end
