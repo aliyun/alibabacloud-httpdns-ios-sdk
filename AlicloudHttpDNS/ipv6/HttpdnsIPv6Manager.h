@@ -11,23 +11,6 @@
 
 @interface HttpdnsIPv6Manager : NSObject
 
-
-/// 设置host 对应查询策略
-/// @param host 域名
-/// @param queryType 查询策略 ipv4 ipv6
-- (void)setQueryHost:(NSString *)host ipQueryType:(HttpdnsQueryIPType)queryType;
-
-
-/// 获取当前域名的查询策略
-/// @param host 域名
-- (HttpdnsQueryIPType)getQueryHostIPType:(NSString *)host;
-
-/// 删除当前域名的查询策略
-/// @param host 域名
-- (void)removeQueryHost:(NSString *)host;
-
-
-
 + (instancetype)sharedInstance;
 
 /**
@@ -36,9 +19,9 @@
 - (void)setIPv6ResultEnable:(BOOL)enable;
 
 /**
- 返回支持IPv6解析结果的请求报文
+ 处理queryType参数
  */
-- (NSString *)assembleIPv6ResultURL:(NSString *)originURL queryHost:(NSString *)queryHost;
+- (NSString *)appendQueryTypeToURL:(NSString *)originURL queryType:(HttpdnsQueryIPType)queryType;
 
 /**
  判断是否支持返回IPv6解析结果

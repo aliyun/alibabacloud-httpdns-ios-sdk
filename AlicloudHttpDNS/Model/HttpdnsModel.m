@@ -48,13 +48,11 @@
     return [IPObjects copy];
 }
 
-- (NSString *)description {
-    return self.ip;
-}
-
 @end
 
+
 @implementation HttpdnsHostObject
+
 @synthesize ips = _ips;
 @synthesize ip6s = _ip6s;
 
@@ -72,7 +70,8 @@
     _extra = nil;
     _ipRegion = @"";
     _ip6Region = @"";
-
+    _hasNoIpv4Record = NO;
+    _hasNoIpv6Record = NO;
     return self;
 }
 
@@ -88,7 +87,6 @@
         _extra = [aDecoder decodeObjectForKey:@"extra"];
         _ipRegion = [aDecoder decodeObjectForKey:@"ipRegion"];
         _ip6Region = [aDecoder decodeObjectForKey:@"ip6Region"];
-
     }
     return self;
 }
@@ -106,7 +104,6 @@
     [aCoder encodeObject:_hostName forKey:@"extra"];
     [aCoder encodeObject:_ipRegion forKey:@"ipRegion"];
     [aCoder encodeObject:_ip6Region forKey:@"ip6Region"];
-
 }
 
 - (BOOL)isIpEmptyUnderQueryIpType:(HttpdnsQueryIPType)queryType {
@@ -197,64 +194,15 @@
     return [IPs copy];
 }
 
-- (NSArray *)getIps {
-    id object_ = nil;
-    @try {
-        @synchronized (self) {
-            object_ = _ips;
-        }
-    } @catch (NSException *exception) {
-        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), @"");
-    }
-    return object_;
-}
-
-- (void)setIps:(NSArray<HttpdnsIpObject *> *)ips {
-    @synchronized (self) {
-        _ips = ips;
-    }
-}
-
-
-- (NSArray<HttpdnsIpObject *> *)getIp6s {
-    id object_ = nil;
-    @try {
-        @synchronized (self) {
-            object_ = _ip6s;
-        }
-    } @catch (NSException *exception) {
-        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), @"");
-    }
-    return object_;
-}
-
-- (void)setIp6s:(NSArray<HttpdnsIpObject *> *)ip6s {
-    @synchronized (self) {
-        _ip6s = ip6s;
-    }
-}
-
-
-
 - (NSArray<NSString *> *)getIP6Strings {
-    NSArray *getIP6Strings = nil;
-    @try {
-        @try {
-            NSArray<HttpdnsIpObject *> *IP6Records = [self getIp6s];
-            NSMutableArray<NSString *> *IPs = [NSMutableArray arrayWithCapacity:IP6Records.count];
-            if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-                for (HttpdnsIpObject *IPObject in IP6Records) {
-                    [HttpdnsUtil safeAddObject:IPObject.ip toArray:IPs];
-                }
-            }
-            getIP6Strings = [IPs copy];
-        } @catch (NSException *exception) {
-            NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception.reason);
+    NSArray<HttpdnsIpObject *> *IP6Records = [self getIp6s];
+    NSMutableArray<NSString *> *IPs = [NSMutableArray arrayWithCapacity:IP6Records.count];
+    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+        for (HttpdnsIpObject *IPObject in IP6Records) {
+            [HttpdnsUtil safeAddObject:IPObject.ip toArray:IPs];
         }
-    } @catch (NSException *exception) {
-        NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception.reason);
     }
-    return getIP6Strings;
+    return [IPs copy];
 }
 
 - (NSString *)description {

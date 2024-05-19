@@ -37,9 +37,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 
 @interface HttpdnsRequestScheduler ()
 
-- (void)setServerDisable:(BOOL)serverDisable host:(NSString *)host;
-
-- (void)setServerDisable:(BOOL)serverDisable host:(NSString *)host activatedServerIPIndex:(NSInteger)activatedServerIPIndex;
+- (void)setServerDisable:(BOOL)serverDisable;
 
 - (BOOL)isServerDisable;
 

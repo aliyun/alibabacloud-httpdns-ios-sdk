@@ -181,7 +181,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
             // 从服务端获取到新的IP列表后，取消 disable状态，置为
             HttpDnsService *serviceProvider = [HttpDnsService sharedInstance];
             HttpdnsRequestScheduler *requestScheduler = serviceProvider.requestScheduler;
-            [requestScheduler setServerDisable:NO host:nil];
+            [requestScheduler setServerDisable:NO];
             [self setActivatedServerIPIndex:0];
             !callback ?: callback(result);
             return;
@@ -434,7 +434,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
 
 
 - (void)changeToNextServerIPIndexFromIPIndex:(NSInteger)IPIndex {
-    if ([HttpdnsUtil canUseIPv6_Syn]) {
+    if ([HttpdnsUtil useSynthesizedIPv6Address]) {
         NSInteger nextServerIPIndex = [self nextServerIPIndexFromIPIndex:IPIndex increase:1];
         self.activatedServerIPIndex = nextServerIPIndex;
         if (nextServerIPIndex == 0 && IPIndex != 0) {

@@ -79,6 +79,6 @@
  true: 采用ipv4 合成 ipv6
  false: 不采用ipv4合成ipv6， 直接采用ipv6地址
  */
-+ (BOOL)canUseIPv6_Syn;
++ (BOOL)useSynthesizedIPv6Address;
 
 @end
