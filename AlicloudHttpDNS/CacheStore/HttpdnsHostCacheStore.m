@@ -71,7 +71,7 @@
 
         HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore sharedInstance];
 
-        if (![EMASTools isValidArray:hostRecord.IPs] && ![EMASTools isValidArray:hostRecord.IP6s]) {
+        if (![HttpdnsUtil isNotEmptyArray:hostRecord.IPs] && ![HttpdnsUtil isNotEmptyArray:hostRecord.IP6s]) {
             //删除记录，此时hostRecord.hostRecordId为nil，不能依据Id删，要先从数据库里拿id，再依据id删。
             NSArray<NSNumber *> *ids = [self hostRecordIdsForHost:hostRecord.host];
             [self deleteHostRecordAndItsIPsWithHostRecordIDs:ids];
@@ -297,7 +297,7 @@
 
     [HttpdnsUtil warnMainThreadIfNecessary];
 
-    if (![HttpdnsUtil isValidArray:hostArray]) {  //全部清空
+    if (![HttpdnsUtil isNotEmptyArray:hostArray]) {  //全部清空
         [self cleanDatabaseCache];
     } else {
         for (NSString *host in hostArray) {
@@ -387,7 +387,7 @@
 - (NSString *)showDBCache {
     NSString *dbCache;
     NSArray *hostRecords = [self hostRecordsForCurrentCarrier];
-    if ([HttpdnsUtil isValidArray:hostRecords]) {
+    if ([HttpdnsUtil isNotEmptyArray:hostRecords]) {
         dbCache = [NSString stringWithFormat:@"%@", hostRecords];
     }
     return dbCache;

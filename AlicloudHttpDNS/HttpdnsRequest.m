@@ -165,7 +165,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     //处理ipv4
     NSMutableArray *ipArray = [NSMutableArray array];
     for (NSString *ip in ips) {
-        if (![HttpdnsUtil isValidString:ip]) {
+        if (![HttpdnsUtil isNotEmptyString:ip]) {
             continue;
         }
         HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
@@ -183,7 +183,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSMutableArray *ip6Array = [NSMutableArray array];
     if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
         for (NSString *ipv6 in ip6s) {
-            if (![EMASTools isValidString:ipv6]) {
+            if (![HttpdnsUtil isNotEmptyString:ipv6]) {
                 continue;
             }
             HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
@@ -216,19 +216,19 @@ static NSURLSession *_resolveHOSTSession = nil;
     [hostObject setTTL:TTL];
 
     //分别设置 v4ttl v6ttl
-    if ([HttpdnsUtil isValidArray:ipArray]) {
+    if ([HttpdnsUtil isNotEmptyArray:ipArray]) {
         [hostObject setV4TTL:TTL];
         hostObject.lastIPv4LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
         hostObject.ipRegion = self.serviceRegion;
     }
-    if ([HttpdnsUtil isValidArray:ip6Array]) {
+    if ([HttpdnsUtil isNotEmptyArray:ip6Array]) {
         [hostObject setV6TTL:TTL];
         hostObject.lastIPv6LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
         hostObject.ip6Region = self.serviceRegion;
     }
 
     [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
-    if (![EMASTools isValidArray:ip6Array]) {
+    if (![HttpdnsUtil isNotEmptyArray:ip6Array]) {
         HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@", [hostObject getHostName], [hostObject getTTL], ipArray);
     } else {
         HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@ ip6s: %@", [hostObject getHostName], [hostObject getTTL], ipArray, ip6Array);
@@ -266,7 +266,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 
     serverIp = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6;
     self.serviceRegion = [scheduleCenter getServiceIPRegion];
-    if ([EMASTools isValidString:self.serviceRegion] && [@[ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2] containsObject:serverIp]) { //如果当前设置region 并且 当次服务IP是国内兜底IP 则直接禁止解析行为
+    if ([HttpdnsUtil isNotEmptyString:self.serviceRegion] && [@[ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2] containsObject:serverIp]) { //如果当前设置region 并且 当次服务IP是国内兜底IP 则直接禁止解析行为
         return nil;
     }
 
@@ -279,7 +279,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSString *secretKey = sharedService.secretKey;
     NSUInteger localTimestampOffset = sharedService.authTimeOffset;
 
-    if ([HttpdnsUtil isValidString:secretKey ]) {
+    if ([HttpdnsUtil isNotEmptyString:secretKey ]) {
         requestType = @"sign_d";
         NSUInteger localTimestamp = (NSUInteger)[[NSDate date] timeIntervalSince1970] ;
         if (localTimestampOffset != 0) {
@@ -300,7 +300,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSString *url = [NSString stringWithFormat:@"%@:%@/%d/%@?host=%@",
                      serverIp, port, sharedService.accountID, requestType, hostsString];
 
-    if ([HttpdnsUtil isValidString:signatureRequestString]) {
+    if ([HttpdnsUtil isNotEmptyString:signatureRequestString]) {
         url = [NSString stringWithFormat:@"%@%@", url, signatureRequestString];
     }
     NSString *versionInfo = [NSString stringWithFormat:@"ios_%@", HTTPDNS_IOS_SDK_VERSION];
@@ -308,17 +308,17 @@ static NSURLSession *_resolveHOSTSession = nil;
 
     // sessionId
     NSString *sessionId = [HttpdnsUtil generateSessionID];
-    if ([HttpdnsUtil isValidString:sessionId]) {
+    if ([HttpdnsUtil isNotEmptyString:sessionId]) {
         url = [NSString stringWithFormat:@"%@&sid=%@", url, sessionId];
     }
 
     // 添加net和bssid(wifi)
     NSString *netType = [HttpdnsgetNetworkInfoHelper getNetworkType];
-    if ([HttpdnsUtil isValidString:netType]) {
+    if ([HttpdnsUtil isNotEmptyString:netType]) {
         url = [NSString stringWithFormat:@"%@&net=%@", url, netType];
         if ([HttpdnsgetNetworkInfoHelper isWifiNetwork]) {
             NSString *bssid = [HttpdnsgetNetworkInfoHelper getWifiBssid];
-            if ([HttpdnsUtil isValidString:bssid]) {
+            if ([HttpdnsUtil isNotEmptyString:bssid]) {
                 url = [NSString stringWithFormat:@"%@&bssid=%@", url, [EMASTools URLEncodedString:bssid]];
             }
         }
@@ -344,7 +344,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 
     self.serviceRegion = [scheduleCenter getServiceIPRegion]; //获取当前service IP 的region
 
-    if ([EMASTools isValidString:self.serviceRegion] && [@[ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2] containsObject:serverIp]) { //如果当前设置region 并且 当次服务IP是国内兜底IP 则直接禁止解析行为
+    if ([HttpdnsUtil isNotEmptyString:self.serviceRegion] && [@[ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2] containsObject:serverIp]) { //如果当前设置region 并且 当次服务IP是国内兜底IP 则直接禁止解析行为
         return nil;
     }
 
@@ -371,7 +371,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 
     NSString *secretKey = sharedService.secretKey;
     NSUInteger localTimestampOffset = sharedService.authTimeOffset;
-    if ([HttpdnsUtil isValidString:secretKey ]) {
+    if ([HttpdnsUtil isNotEmptyString:secretKey ]) {
         requestType = @"sign_d";
         NSUInteger localTimestamp = (NSUInteger)[[NSDate date] timeIntervalSince1970] ;
         if (localTimestampOffset != 0) {
@@ -392,7 +392,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSString *url = [NSString stringWithFormat:@"%@:%@/%d/%@?host=%@",
                      serverIp, port, sharedService.accountID, requestType, hostsString];
 
-    if ([HttpdnsUtil isValidString:signatureRequestString]) {
+    if ([HttpdnsUtil isNotEmptyString:signatureRequestString]) {
         url = [NSString stringWithFormat:@"%@%@", url, signatureRequestString];
     }
     NSString *versionInfo = [NSString stringWithFormat:@"ios_%@", HTTPDNS_IOS_SDK_VERSION];
@@ -400,17 +400,17 @@ static NSURLSession *_resolveHOSTSession = nil;
 
     // sessionId
     NSString *sessionId = [HttpdnsUtil generateSessionID];
-    if ([HttpdnsUtil isValidString:sessionId]) {
+    if ([HttpdnsUtil isNotEmptyString:sessionId]) {
         url = [NSString stringWithFormat:@"%@&sid=%@", url, sessionId];
     }
 
     // 添加net和bssid(wifi)
     NSString *netType = [HttpdnsgetNetworkInfoHelper getNetworkType];
-    if ([HttpdnsUtil isValidString:netType]) {
+    if ([HttpdnsUtil isNotEmptyString:netType]) {
         url = [NSString stringWithFormat:@"%@&net=%@", url, netType];
         if ([HttpdnsgetNetworkInfoHelper isWifiNetwork]) {
             NSString *bssid = [HttpdnsgetNetworkInfoHelper getWifiBssid];
-            if ([HttpdnsUtil isValidString:bssid]) {
+            if ([HttpdnsUtil isNotEmptyString:bssid]) {
                 url = [NSString stringWithFormat:@"%@&bssid=%@", url, [EMASTools URLEncodedString:bssid]];
             }
         }
@@ -446,7 +446,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     bool useV4ServerIp;
     NSString *url = [self constructRequestURLWith:hostsUrl activatedServerIPIndex:activatedServerIPIndex reallyHostKey:hostString queryIPType:queryIPType useV4Ip:&useV4ServerIp];
 
-    if (![EMASTools isValidString:url]) {
+    if (![HttpdnsUtil isNotEmptyString:url]) {
         return nil;
     }
 
@@ -472,7 +472,7 @@ static NSURLSession *_resolveHOSTSession = nil;
         if (stackType == kAlicloudIPdual && useV4ServerIp) {
             url = [self constructV6RequestURLWith:hostsUrl reallyHostKey:hostString queryIPType:queryIPType];
             HttpdnsLogDebug("lookupHostFromServer by ipv4 server failed, construct ipv6 backup url: %@", url);
-            if ([EMASTools isValidString:url]) {
+            if ([HttpdnsUtil isNotEmptyString:url]) {
                 NSError *backupError;
                 if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
                     hostObject = [self sendHTTPSRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex queryIpType:queryIPType];
@@ -515,7 +515,7 @@ static NSURLSession *_resolveHOSTSession = nil;
             errorStrong = error;
         } else {
             NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
-            HttpdnsLogDebug("Response code: %ld", statusCode);
+            HttpdnsLogDebug("Response code: %ld, body: %@", statusCode, [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             if (statusCode == 200) {
                 id jsonValue = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
                 if (!errorStrong) {
@@ -550,7 +550,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     if (!error) {
         return nil;
     }
-    if (![HttpdnsUtil isValidString:urlStr]) {
+    if (![HttpdnsUtil isNotEmptyString:urlStr]) {
         return nil;
     }
     NSString *fullUrlStr = [NSString stringWithFormat:@"http://%@", urlStr];
@@ -679,7 +679,7 @@ static NSURLSession *_resolveHOSTSession = nil;
                     json = [HttpdnsUtil getValidDictionaryFromJson:jsonValue];
                     _httpJSONDict = json;
                 }
-                HttpdnsLogDebug("Response code: %ld", statusCode);
+                HttpdnsLogDebug("Response code: %ld, body: %@", statusCode, [[NSString alloc] initWithData:_resultData encoding:NSUTF8StringEncoding]);
                 if (statusCode != 200) {
                     errorStrong = [HttpdnsUtil getErrorFromError:errorStrong statusCode:statusCode json:json isHTTPS:NO];
                     self.networkError = errorStrong;

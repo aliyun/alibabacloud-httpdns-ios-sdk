@@ -75,7 +75,7 @@ static BOOL networkInfoEnable = NO;
         for (NSString *ifnam in ifs) {
             NSDictionary *info = (__bridge_transfer id)CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifnam);
             NSString *ssidname = [HttpdnsUtil safeObjectForKey:@"SSID" dict:info];
-            if ([HttpdnsUtil isValidString:ssidname]) {
+            if ([HttpdnsUtil isNotEmptyString:ssidname]) {
                 wifiName = ssidname;
             }
         }
@@ -160,7 +160,7 @@ static BOOL networkInfoEnable = NO;
                 }
             }
         }
-        if ([HttpdnsUtil isValidString:wifiBssid]) {
+        if ([HttpdnsUtil isNotEmptyString:wifiBssid]) {
             sWifiBssid = wifiBssid;
         }
     });

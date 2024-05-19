@@ -40,7 +40,7 @@ static dispatch_queue_t _fileCacheQueue = 0;
 #pragma mark - File Utils
 
 + (BOOL)saveJSON:(id)JSON toPath:(NSString *)path {
-    if (![HttpdnsUtil isValidString:path]) {
+    if (![HttpdnsUtil isNotEmptyString:path]) {
         return NO;
     }
     BOOL isValid = [HttpdnsUtil isValidJSON:JSON];
@@ -61,7 +61,7 @@ static dispatch_queue_t _fileCacheQueue = 0;
 }
 
 + (id)getJSONFromPath:(NSString *)path {
-    if (![HttpdnsUtil isValidString:path]) {
+    if (![HttpdnsUtil isNotEmptyString:path]) {
         return nil;
     }
     __block id JSON = nil;
@@ -102,7 +102,7 @@ static dispatch_queue_t _fileCacheQueue = 0;
 }
 
 + (BOOL)removeFile:(NSString *)path {
-    if (![HttpdnsUtil isValidString:path]) {
+    if (![HttpdnsUtil isNotEmptyString:path]) {
         return NO;
     }
     __block NSError * error = nil;
@@ -114,14 +114,14 @@ static dispatch_queue_t _fileCacheQueue = 0;
 }
 
 + (BOOL)fileExist:(NSString *)path {
-    if (![HttpdnsUtil isValidString:path]) {
+    if (![HttpdnsUtil isNotEmptyString:path]) {
         return NO;
     }
     return [[NSFileManager defaultManager] fileExistsAtPath:path];
 }
 
 + (BOOL)createFile:(NSString *)path {
-    if (![HttpdnsUtil isValidString:path]) {
+    if (![HttpdnsUtil isNotEmptyString:path]) {
         return NO;
     }
     BOOL ret = [[NSFileManager defaultManager] createFileAtPath:path contents:[NSData data] attributes:nil];
@@ -129,7 +129,7 @@ static dispatch_queue_t _fileCacheQueue = 0;
 }
 
 + (void)createDirectoryIfNeeded:(NSString *)path {
-    if (![HttpdnsUtil isValidString:path]) {
+    if (![HttpdnsUtil isNotEmptyString:path]) {
         return;
     }
     dispatch_sync(_fileCacheQueue, ^{
@@ -268,7 +268,7 @@ static dispatch_queue_t _fileCacheQueue = 0;
 
 //Library/Private Documents/HTTPDNS/HostCache/databaseName
 + (NSString *)hostCacheDatabasePathWithName:(NSString *)name {
-    if ([HttpdnsUtil isValidString:name]) {
+    if ([HttpdnsUtil isNotEmptyString:name]) {
         return [[self hostCachePatch] stringByAppendingPathComponent:name];
     }
     return nil;

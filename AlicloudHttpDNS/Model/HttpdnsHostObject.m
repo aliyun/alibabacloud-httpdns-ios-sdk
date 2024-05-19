@@ -108,12 +108,12 @@
 
 - (BOOL)isIpEmptyUnderQueryIpType:(HttpdnsQueryIPType)queryType {
     if (queryType & HttpdnsQueryIPTypeIpv4) {
-        if (![HttpdnsUtil isValidArray:[self getIps]]) {
+        if (![HttpdnsUtil isNotEmptyArray:[self getIps]]) {
             return YES;
         }
 
     } else if (queryType & HttpdnsQueryIPTypeIpv6) {
-        if (![HttpdnsUtil isValidArray:[self getIp6s]]) {
+        if (![HttpdnsUtil isNotEmptyArray:[self getIp6s]]) {
             return YES;
         }
     }
@@ -165,7 +165,7 @@
     hostObject.ip6Region = hostRecord.ip6Region;
     NSArray *ips = hostRecord.IPs;
     NSArray *ip6s = hostRecord.IP6s;
-    if ([HttpdnsUtil isValidArray:ips]) {
+    if ([HttpdnsUtil isNotEmptyArray:ips]) {
         hostObject.ips = [HttpdnsIpObject IPObjectsFromIPs:ips];
 
         //设置ipv4 的ttl lookuptimer
@@ -173,7 +173,7 @@
         [hostObject setLastIPv4LookupTime:hostObject.getLastLookupTime];
 
     }
-    if ([HttpdnsUtil isValidArray:ip6s]) {
+    if ([HttpdnsUtil isNotEmptyArray:ip6s]) {
         hostObject.ip6s = [HttpdnsIpObject IPObjectsFromIPs:ip6s];
 
         //设置ipv6 的ttl lookuptimer
@@ -207,7 +207,7 @@
 
 - (NSString *)description {
     @try {
-        if (![EMASTools isValidArray:_ip6s]) {
+        if (![HttpdnsUtil isNotEmptyArray:_ip6s]) {
             return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld extra = %@ ipRegion = %@ ip6Region = %@",
                     _hostName, _ips, _lastLookupTime, _ttl, _extra, _ipRegion, _ip6Region];
         } else {
