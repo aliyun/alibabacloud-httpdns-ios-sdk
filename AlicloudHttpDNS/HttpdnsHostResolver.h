@@ -32,7 +32,7 @@ FOUNDATION_EXTERN NSInteger const ALICLOUD_HTTPDNS_HTTP_USER_LEVEL_CHANGED_ERROR
 FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_KEY;
 FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_CACHE_FILE_NAME;
 
-@interface HttpdnsRequest : NSObject
+@interface HttpdnsHostResolver : NSObject
 
 - (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error;
 

@@ -19,7 +19,7 @@
 
 #import "HttpdnsService.h"
 #import "HttpdnsHostObject.h"
-#import "HttpdnsRequest.h"
+#import "HttpdnsHostResolver.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsConfig.h"
@@ -51,7 +51,7 @@ static dispatch_queue_t _errorOperateQueue = 0;
 
 static NSURLSession *_resolveHOSTSession = nil;
 
-@interface HttpdnsRequest () <NSStreamDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
+@interface HttpdnsHostResolver () <NSStreamDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
 
 @property (nonatomic, strong) NSRunLoop *runloop;
 @property (nonatomic, strong) NSError *networkError;
@@ -62,7 +62,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 
 @end
 
-@implementation HttpdnsRequest
+@implementation HttpdnsHostResolver
 {
     NSMutableData *_resultData;
     dispatch_semaphore_t _sem;

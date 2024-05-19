@@ -19,7 +19,7 @@
 
 #import <XCTest/XCTest.h>
 #import "AlicloudHttpDNS.h"
-#import "HttpdnsRequest.h"
+#import "HttpdnsHostResolver.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsRequestScheduler_Internal.h"
@@ -83,9 +83,9 @@
 - (void)testHTTPRequestOneHost {
     [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     NSString *hostName = @"www.taobao.com";
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
+    HttpdnsHostResolver *resolver = [[HttpdnsHostResolver alloc] init];
     NSError *error;
-    HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
+    HttpdnsHostObject *result = [resolver lookupHostFromServer:hostName error:&error];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
     sleep(customizedTimeoutInterval);
     XCTAssertNil(error);
@@ -98,9 +98,9 @@
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
             [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
             NSString *hostName = @"www.taobao.com";
-            HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
+            HttpdnsHostResolver *resolver = [[HttpdnsHostResolver alloc] init];
             NSError *error;
-            HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
+            HttpdnsHostObject *result = [resolver lookupHostFromServer:hostName error:&error];
             XCTAssertNil(error);
             XCTAssertNotNil(result);
             XCTAssertNotEqual([[result getIps] count], 0);
@@ -172,9 +172,9 @@
 - (void)testHTTPSRequestOneHost {
 //    [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     NSString *hostName = @"www.taobao.com";
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
+    HttpdnsHostResolver *resolver = [[HttpdnsHostResolver alloc] init];
     NSError *error;
-    HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
+    HttpdnsHostObject *result = [resolver lookupHostFromServer:hostName error:&error];
     XCTAssertNil(error);
     XCTAssertNotNil(result);
     XCTAssertNotEqual([[result getIps] count], 0);
@@ -186,7 +186,7 @@
  */
 - (void)testRequestTimeout {
     NSString *hostName = @"www.baidu.com";
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
+    HttpdnsHostResolver *resolver = [[HttpdnsHostResolver alloc] init];
     NSError *error;
     NSDate *startDate = [NSDate date];
     // HTTP
@@ -194,7 +194,7 @@
     [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
     [HttpDnsService sharedInstance].timeoutInterval = 3;
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
-    HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
+    HttpdnsHostObject *result = [resolver lookupHostFromServer:hostName error:&error];
     NSTimeInterval interval = [startDate timeIntervalSinceNow];
     XCTAssert(interval <= customizedTimeoutInterval);
     NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), error);
@@ -204,7 +204,7 @@
     // HTTPS
     startDate = [NSDate date];
     [[HttpDnsService sharedInstance] setHTTPSRequestEnabled:NO];
-    result = [request lookupHostFromServer:hostName error:&error];
+    result = [resolver lookupHostFromServer:hostName error:&error];
     interval = [startDate timeIntervalSinceNow];
 
     XCTAssert(interval <= customizedTimeoutInterval);
@@ -239,7 +239,7 @@
 //FIXME:error
 - (void)testIPPool {
     NSString *hostName = @"www.taobao.com";
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] init];
+    HttpdnsHostResolver *resolver = [[HttpdnsHostResolver alloc] init];
     //    HttpdnsRequestScheduler *requestScheduler =  [[HttpDnsService sharedInstance] requestScheduler];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     scheduleCenter.activatedServerIPIndex = 0;
@@ -247,14 +247,14 @@
     NSError *error;
     NSDate *startDate = [NSDate date];
     NSTimeInterval customizedTimeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
-    HttpdnsHostObject *result = [request lookupHostFromServer:hostName error:&error];
+    HttpdnsHostObject *result = [resolver lookupHostFromServer:hostName error:&error];
     NSTimeInterval interval = [startDate timeIntervalSinceNow];
     XCTAssertNil(result);
     XCTAssertNotNil(error);
     XCTAssertEqual([[result getIps] count], 0);
 
     startDate = [NSDate date];
-    result = [request lookupHostFromServer:hostName error:&error];
+    result = [resolver lookupHostFromServer:hostName error:&error];
     interval = [startDate timeIntervalSinceNow];
     XCTAssert(-interval < customizedTimeoutInterval);
     XCTAssertNotNil(result);

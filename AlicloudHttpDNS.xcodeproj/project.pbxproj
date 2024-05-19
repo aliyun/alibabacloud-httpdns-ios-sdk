@@ -12,7 +12,7 @@
 		2197CAC31BC7B3D400BDB65B /* AlicloudHttpDNS.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB11BC7B3D400BDB65B /* AlicloudHttpDNS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2197CAC51BC7B3D400BDB65B /* HttpdnsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */; };
 		2197CAC71BC7B3D400BDB65B /* HttpdnsLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB51BC7B3D400BDB65B /* HttpdnsLog.m */; };
-		2197CACB1BC7B3D400BDB65B /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB91BC7B3D400BDB65B /* HttpdnsRequest.m */; };
+		2197CACB1BC7B3D400BDB65B /* HttpdnsHostResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB91BC7B3D400BDB65B /* HttpdnsHostResolver.m */; };
 		2197CACD1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABB1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m */; };
 		2197CAD11BC7B3D400BDB65B /* HttpdnsUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */; };
 		4A36B63821C9EE9C00B1D008 /* HttpdnsLoggerDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A36B63721C9EDA500B1D008 /* HttpdnsLoggerDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -27,7 +27,7 @@
 		4AF4AB9921143A3800D712DF /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AF4AB9821143A3800D712DF /* libz.tbd */; };
 		4AF5AB831DCB332800206DD8 /* HttpdnsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */; };
 		4AF5AB841DCB332800206DD8 /* HttpdnsLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB51BC7B3D400BDB65B /* HttpdnsLog.m */; };
-		4AF5AB861DCB332800206DD8 /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB91BC7B3D400BDB65B /* HttpdnsRequest.m */; };
+		4AF5AB861DCB332800206DD8 /* HttpdnsHostResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB91BC7B3D400BDB65B /* HttpdnsHostResolver.m */; };
 		4AF5AB871DCB332800206DD8 /* HttpdnsRequestScheduler.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABB1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m */; };
 		4AF5AB891DCB332800206DD8 /* HttpdnsUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */; };
 		51316FBED914130E3A7C3F64 /* Pods_AlicloudHttpDNS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4B3FB631C77ADFECC3DDFFD /* Pods_AlicloudHttpDNS.framework */; };
@@ -146,8 +146,8 @@
 		2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsConfig.m; sourceTree = "<group>"; };
 		2197CAB41BC7B3D400BDB65B /* HttpdnsLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsLog.h; sourceTree = "<group>"; };
 		2197CAB51BC7B3D400BDB65B /* HttpdnsLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsLog.m; sourceTree = "<group>"; };
-		2197CAB81BC7B3D400BDB65B /* HttpdnsRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsRequest.h; sourceTree = "<group>"; };
-		2197CAB91BC7B3D400BDB65B /* HttpdnsRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsRequest.m; sourceTree = "<group>"; };
+		2197CAB81BC7B3D400BDB65B /* HttpdnsHostResolver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsHostResolver.h; sourceTree = "<group>"; };
+		2197CAB91BC7B3D400BDB65B /* HttpdnsHostResolver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsHostResolver.m; sourceTree = "<group>"; };
 		2197CABA1BC7B3D400BDB65B /* HttpdnsRequestScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsRequestScheduler.h; sourceTree = "<group>"; };
 		2197CABB1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsRequestScheduler.m; sourceTree = "<group>"; };
 		2197CABE1BC7B3D400BDB65B /* HttpdnsUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsUtil.h; sourceTree = "<group>"; };
@@ -321,8 +321,8 @@
 				2197CAB11BC7B3D400BDB65B /* AlicloudHttpDNS.h */,
 				2197CAB21BC7B3D400BDB65B /* HttpdnsConfig.h */,
 				2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */,
-				2197CAB81BC7B3D400BDB65B /* HttpdnsRequest.h */,
-				2197CAB91BC7B3D400BDB65B /* HttpdnsRequest.m */,
+				2197CAB81BC7B3D400BDB65B /* HttpdnsHostResolver.h */,
+				2197CAB91BC7B3D400BDB65B /* HttpdnsHostResolver.m */,
 				2197CABA1BC7B3D400BDB65B /* HttpdnsRequestScheduler.h */,
 				2197CABB1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m */,
 				9AF899261E8B5CF600D9CA8E /* HttpdnsRequestScheduler_Internal.h */,
@@ -812,7 +812,7 @@
 				9AE639FC1ECDA74D00F9C723 /* HttpdnsDatabase.m in Sources */,
 				943FA4232BF9D4FA0006F169 /* HttpdnsHostObject.m in Sources */,
 				9AA0FC641EB9879B00E242DD /* HttpdnsCacheStore.m in Sources */,
-				2197CACB1BC7B3D400BDB65B /* HttpdnsRequest.m in Sources */,
+				2197CACB1BC7B3D400BDB65B /* HttpdnsHostResolver.m in Sources */,
 				2197CAC71BC7B3D400BDB65B /* HttpdnsLog.m in Sources */,
 				9AC27F041FDFCB4800DF016A /* HttpdnsTCPSpeedTester.m in Sources */,
 				9AF9A6121EC4E9990018063B /* HttpdnsIPRecord.m in Sources */,
@@ -846,7 +846,7 @@
 				9AE63A071ECDAB3A00F9C723 /* HttpdnsDatabaseAdditions.m in Sources */,
 				4AF5AB841DCB332800206DD8 /* HttpdnsLog.m in Sources */,
 				9A59147F1EA07EA700A7ED28 /* ScheduleCenterTestHelper.m in Sources */,
-				4AF5AB861DCB332800206DD8 /* HttpdnsRequest.m in Sources */,
+				4AF5AB861DCB332800206DD8 /* HttpdnsHostResolver.m in Sources */,
 				9AE63A081ECDAB3A00F9C723 /* HttpdnsDatabasePool.m in Sources */,
 				9AE63A061ECDAB3A00F9C723 /* HttpdnsDatabase.m in Sources */,
 				4AF5AB871DCB332800206DD8 /* HttpdnsRequestScheduler.m in Sources */,
