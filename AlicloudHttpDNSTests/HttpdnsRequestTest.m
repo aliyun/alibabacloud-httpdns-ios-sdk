@@ -284,7 +284,7 @@
 
     NSString *hostName = @"www.taobao.com";
     HttpdnsRequestScheduler *requestScheduler =  [[HttpDnsService sharedInstance] requestScheduler];
-    [requestScheduler setServerDisable:NO host:hostName];
+    [requestScheduler setServerDisable:NO];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     scheduleCenter.activatedServerIPIndex = 0;
 
@@ -314,7 +314,7 @@
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
-    [requestScheduler setServerDisable:NO host:hostName];
+    [requestScheduler setServerDisable:NO];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     scheduleCenter.activatedServerIPIndex = 0;
 
@@ -351,7 +351,7 @@
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
-    [requestScheduler setServerDisable:NO host:hostName];
+    [requestScheduler setServerDisable:NO];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     scheduleCenter.activatedServerIPIndex = 0;
 
@@ -381,7 +381,7 @@
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
-    [requestScheduler setServerDisable:NO host:hostName];
+    [requestScheduler setServerDisable:NO];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
 
     scheduleCenter.activatedServerIPIndex = 0;
@@ -419,7 +419,7 @@
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
-    [requestScheduler setServerDisable:NO host:hostName];
+    [requestScheduler setServerDisable:NO];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     scheduleCenter.activatedServerIPIndex = 1;
     [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
@@ -459,7 +459,7 @@
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
-    [requestScheduler setServerDisable:NO host:hostName];
+    [requestScheduler setServerDisable:NO];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     scheduleCenter.activatedServerIPIndex = 1;
 
@@ -497,7 +497,7 @@
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
-    [requestScheduler setServerDisable:NO host:hostName];
+    [requestScheduler setServerDisable:NO];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     scheduleCenter.activatedServerIPIndex = 1;
     [HttpdnsRequestTestHelper zeroSnifferTimeForTest];
@@ -548,7 +548,7 @@
     HttpDnsService *service = [HttpDnsService sharedInstance];
     NSString *hostName = @"www.taobao.com";
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
-    [requestScheduler setServerDisable:NO host:hostName];
+    [requestScheduler setServerDisable:NO];
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     scheduleCenter.activatedServerIPIndex = 0;
 
@@ -903,7 +903,7 @@
     NSString *hostName = @"www.taobao.com";
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = [service requestScheduler];
-    [requestScheduler setServerDisable:NO host:hostName];
+    [requestScheduler setServerDisable:NO];
 
     //内部缓存开关，不触发加载DB到内存的操作
     [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
@@ -917,7 +917,7 @@
         XCTAssertTrue([IP1 isEqualToString:IP2]);
     }
 
-    [requestScheduler setServerDisable:YES host:hostName];
+    [requestScheduler setServerDisable:YES];
 
     for (int i = 0; i < 10; i++) {
         NSString *IP1 = [service getIpByHostAsync:hostName];
@@ -942,7 +942,7 @@
     HttpDnsService *service = [HttpDnsService sharedInstance];
     //XCTAssertNotNil([service getIpByHost:hostName]);
     HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
-    [requestScheduler setServerDisable:NO host:hostName];
+    [requestScheduler setServerDisable:NO];
 
     //内部缓存开关，不触发加载DB到内存的操作
     [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];

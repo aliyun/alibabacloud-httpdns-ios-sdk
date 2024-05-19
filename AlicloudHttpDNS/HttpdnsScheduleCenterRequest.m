@@ -50,20 +50,20 @@ static NSURLSession *_scheduleCenterSession = nil;
 - (NSArray *)getCenterHostList {
     NSArray *hostArray;
     if (HTTPDNS_INTER) { //国际版
-        if (![HttpdnsUtil canUseIPv6_Syn] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
+        if (![HttpdnsUtil useSynthesizedIPv6Address] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
             hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
         } else {
             hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
         }
     } else { //国内版
         if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) { //服务IP缓存已读取
-            if (![HttpdnsUtil canUseIPv6_Syn] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
+            if (![HttpdnsUtil useSynthesizedIPv6Address] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
                 hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
             } else {
                 hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
             }
         } else { //服务IP缓存未读取
-            if (![HttpdnsUtil canUseIPv6_Syn] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SERVER_IPV6_LIST]) {
+            if (![HttpdnsUtil useSynthesizedIPv6Address] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SERVER_IPV6_LIST]) {
                 hostArray = ALICLOUD_HTTPDNS_SERVER_IPV6_LIST;
             } else {
                 hostArray = ALICLOUD_HTTPDNS_SERVER_IP_LIST;

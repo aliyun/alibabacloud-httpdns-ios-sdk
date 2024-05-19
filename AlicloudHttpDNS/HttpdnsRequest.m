@@ -136,7 +136,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 
 #pragma mark LookupIpAction
 
-- (HttpdnsHostObject *)parseHostInfoFromHttpResponse:(NSDictionary *)json withHostStr:(NSString *)hostStr {
+- (HttpdnsHostObject *)parseHostInfoFromHttpResponse:(NSDictionary *)json withHostStr:(NSString *)hostStr withQueryIpType:(HttpdnsQueryIPType)queryIpType {
     if (!json) {
         return nil;
     }
@@ -152,11 +152,14 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     hostName = hostStr;
     ips = [HttpdnsUtil safeObjectForKey:@"ips" dict:json];
-    ip6s = [HttpdnsUtil safeObjectForKey:@"ipsv6" dict:json];
-    if ((![HttpdnsUtil isValidArray:ips] && ![HttpdnsUtil isValidArray:ip6s]) || ![HttpdnsUtil isValidString:hostName]) {
-        HttpdnsLogDebug("IP list is empty for host %@", hostName);
-        return nil;
+    if (!ips) {
+        ips = @[];
     }
+    ip6s = [HttpdnsUtil safeObjectForKey:@"ipsv6" dict:json];
+    if (!ip6s) {
+        ip6s = @[];
+    }
+
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
 
     //处理ipv4
@@ -199,13 +202,13 @@ static NSURLSession *_resolveHOSTSession = nil;
     //ttl 设置
     int64_t TTL = [[json objectForKey:@"ttl"] longLongValue];
     HttpDnsService *dnsService = [HttpDnsService sharedInstance];
+
     //自定义ttl
     if (dnsService.ttlDelegate && [dnsService.ttlDelegate respondsToSelector:@selector(httpdnsHost:ipType:ttl:)]) {
-        HttpdnsQueryIPType queryIPType = [[HttpdnsIPv6Manager sharedInstance] getQueryHostIPType:hostName];
         AlicloudHttpDNS_IPType ipType = AlicloudHttpDNS_IPTypeV4;
-        if (queryIPType & HttpdnsQueryIPTypeIpv4 && queryIPType & HttpdnsQueryIPTypeIpv6) {
+        if (queryIpType & HttpdnsQueryIPTypeIpv4 && queryIpType & HttpdnsQueryIPTypeIpv6) {
             ipType = AlicloudHttpDNS_IPTypeV64;
-        } else if (queryIPType & HttpdnsQueryIPTypeIpv6) {
+        } else if (queryIpType & HttpdnsQueryIPTypeIpv6) {
             ipType = AlicloudHttpDNS_IPTypeV6;
         }
         TTL = [dnsService.ttlDelegate httpdnsHost:hostName ipType:ipType ttl:TTL];
@@ -251,7 +254,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSData *jsonData = [string dataUsingEncoding:NSUTF8StringEncoding];
     NSError *err;
     NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&err];
-    if(err) {
+    if (err) {
         return nil;
     }
     return dic;
@@ -323,10 +326,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 
     // 开启IPv6解析结果后，URL处理
     if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        //设置当前域名的查询策略
-        [[HttpdnsIPv6Manager sharedInstance] setQueryHost:reallyHostKey ipQueryType:queryIPType];
-
-        url = [[HttpdnsIPv6Manager sharedInstance] assembleIPv6ResultURL:url queryHost:reallyHostKey];
+        url = [[HttpdnsIPv6Manager sharedInstance] appendQueryTypeToURL:url queryType:queryIPType];
     }
 
     return url;
@@ -336,7 +336,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *serverIp = @"";
 
-    if ([HttpdnsUtil canUseIPv6_Syn]) {
+    if ([HttpdnsUtil useSynthesizedIPv6Address]) {
         serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
     } else {
         serverIp = [scheduleCenter getActivatedServerIPv6WithAuto];
@@ -418,10 +418,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 
     // 开启IPv6解析结果后，URL处理
     if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        //设置当前域名的查询策略
-        [[HttpdnsIPv6Manager sharedInstance] setQueryHost:reallyHostKey ipQueryType:queryIPType];
-
-        url = [[HttpdnsIPv6Manager sharedInstance] assembleIPv6ResultURL:url queryHost:reallyHostKey];
+        url = [[HttpdnsIPv6Manager sharedInstance] appendQueryTypeToURL:url queryType:queryIPType];
     }
 
     return url;
@@ -432,7 +429,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     return [self lookupHostFromServer:hostString error:error activatedServerIPIndex:scheduleCenter.activatedServerIPIndex queryIPType:HttpdnsQueryIPTypeIpv4];
 }
 
-- (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex queryIPType:(HttpdnsQueryIPType)queryIPType{
+- (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex queryIPType:(HttpdnsQueryIPType)queryIPType {
 
     [self resetRequestConfigure];
 
@@ -455,10 +452,10 @@ static NSURLSession *_resolveHOSTSession = nil;
 
     HttpdnsHostObject *hostObject = nil;
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
-        hostObject = [self sendHTTPSRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];
+        hostObject = [self sendHTTPSRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex queryIpType:queryIPType];
     } else {
         // 为了走HTTP时不强依赖用户的ATS配置，这里走使用CFHTTP实现的网络请求方式
-        hostObject = [self sendHTTPRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];
+        hostObject = [self sendHTTPRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex queryIpType:queryIPType];
     }
 
     if (!(*error)) {
@@ -478,9 +475,9 @@ static NSURLSession *_resolveHOSTSession = nil;
             if ([EMASTools isValidString:url]) {
                 NSError *backupError;
                 if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
-                    hostObject = [self sendHTTPSRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
+                    hostObject = [self sendHTTPSRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex queryIpType:queryIPType];
                 } else {
-                    hostObject = [self sendHTTPRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex];
+                    hostObject = [self sendHTTPRequest:url host:copyHostString error:&backupError activatedServerIPIndex:activatedServerIPIndex queryIpType:queryIPType];
                 }
                 if (backupError) {
                     outError = backupError;
@@ -501,7 +498,8 @@ static NSURLSession *_resolveHOSTSession = nil;
 - (HttpdnsHostObject *)sendHTTPSRequest:(NSString *)urlStr
                                    host:(NSString *)hostStr
                                   error:(NSError **)pError
-                 activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
+                 activatedServerIPIndex:(NSInteger)activatedServerIPIndex
+                            queryIpType:(HttpdnsQueryIPType)queryIpType {
     NSString *fullUrlStr = [NSString stringWithFormat:@"https://%@", urlStr];
     HttpdnsLogDebug("HTTPS request URL: %@", fullUrlStr);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
@@ -532,7 +530,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     [task resume];
     dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
     if (!errorStrong) {
-        return [self parseHostInfoFromHttpResponse:json withHostStr:hostStr];
+        return [self parseHostInfoFromHttpResponse:json withHostStr:hostStr withQueryIpType:queryIpType];
     }
 
     if (pError != NULL) {
@@ -547,7 +545,8 @@ static NSURLSession *_resolveHOSTSession = nil;
 - (HttpdnsHostObject *)sendHTTPRequest:(NSString *)urlStr
                                   host:(NSString *)hostStr
                                  error:(NSError **)error
-                activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
+                activatedServerIPIndex:(NSInteger)activatedServerIPIndex
+                           queryIpType:(HttpdnsQueryIPType)queryIpType {
     if (!error) {
         return nil;
     }
@@ -578,7 +577,7 @@ static NSURLSession *_resolveHOSTSession = nil;
                                                      fromIPIndex:activatedServerIPIndex
                                                          isHTTPS:NO];
     if (*error == nil && _httpJSONDict) {
-        return [self parseHostInfoFromHttpResponse:_httpJSONDict withHostStr:hostStr];
+        return [self parseHostInfoFromHttpResponse:_httpJSONDict withHostStr:hostStr withQueryIpType:queryIpType];
     }
     return nil;
 }

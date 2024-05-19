@@ -25,12 +25,12 @@
 @class HttpdnsServerIpObject;
 
 
-
 @interface HttpdnsIpObject: NSObject<NSCoding>
 
 @property (nonatomic, copy, getter=getIpString, setter=setIp:) NSString *ip;
 
 @end
+
 
 @interface HttpdnsHostObject : NSObject<NSCoding>
 
@@ -38,18 +38,22 @@
 @property (nonatomic, strong, setter=setIps:, getter=getIps) NSArray<HttpdnsIpObject *> *ips;
 @property (nonatomic, strong, setter=setIp6s:, getter=getIp6s) NSArray<HttpdnsIpObject *> *ip6s;
 @property (nonatomic, setter=setTTL:, getter=getTTL) int64_t ttl;
-//v4 ttl
+// v4 ttl
 @property (nonatomic, setter=setV4TTL:, getter=getV4TTL) int64_t v4ttl;
 @property (nonatomic, assign) int64_t lastIPv4LookupTime;
 
-//v6 ttl
+// v6 ttl
 @property (nonatomic, setter=setV6TTL:, getter=getV6TTL) int64_t v6ttl;
 @property (nonatomic, assign) int64_t lastIPv6LookupTime;
 
-//region 当次解析时，服务IP设置的region ,为空或者nil 默认是国内场景
+// region 当次解析时，服务IP设置的region ,为空或者nil 默认是国内场景
 @property (nonatomic, copy) NSString *ipRegion;
 @property (nonatomic, copy) NSString *ip6Region;
 
+// 用来标记该域名为配置v4记录或v6记录的情况，避免如双栈网络下因为某个协议查不到record需要重复请求
+// 这个信息不用持久化，一次APP启动周期内使用是合适的
+@property (nonatomic, assign) BOOL hasNoIpv4Record;
+@property (nonatomic, assign) BOOL hasNoIpv6Record;
 
 @property (nonatomic, strong, setter=setExtra:, getter=getExtra) NSDictionary *extra;
 
@@ -74,4 +78,3 @@
 - (NSArray<NSString *> *)getIP6Strings;
 
 @end
-

@@ -26,8 +26,8 @@ NSArray *ipv6HostArray = nil;
 
 @end
 
-@implementation ViewController
 
+@implementation ViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -75,14 +75,14 @@ NSArray *ipv6HostArray = nil;
     [_service setHTTPSRequestEnabled:YES];
     [_service enableIPv6:YES];
 
-    [_service setIPRankingDatasource:@{@"dns.xuyecan1919.tech": @443}];
-    [_service setPreResolveHosts:@[@"dns.xuyecan1919.tech"]];
+    // [_service setIPRankingDatasource:@{@"only-v4.xuyecan1919.tech": @443}];
+    // [_service setPreResolveHosts:@[@"only-v4.xuyecan1919.tech"]];
 }
 
 
 - (IBAction)onHost1:(id)sender {
     HttpDnsService *service = [HttpDnsService sharedInstance];
-    HttpDnsResult *result = [service resolveHostSync:@"dns.xuyecan1919.tech" byIpType:HttpdnsQueryIPTypeAuto];
+    HttpDnsResult *result = [service resolveHostSync:@"empty.xuyecan1919.tech" byIpType:HttpdnsQueryIPTypeAuto];
     NSLog(@"result: %@, firstIp: %@", result, [result firstIpv4Address]);
 }
 
