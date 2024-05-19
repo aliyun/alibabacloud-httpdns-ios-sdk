@@ -50,20 +50,20 @@ static NSURLSession *_scheduleCenterSession = nil;
 - (NSArray *)getCenterHostList {
     NSArray *hostArray;
     if (HTTPDNS_INTER) { //国际版
-        if (![HttpdnsUtil useSynthesizedIPv6Address] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
+        if (![HttpdnsUtil useSynthesizedIPv6Address] && [HttpdnsUtil isNotEmptyArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
             hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
         } else {
             hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
         }
     } else { //国内版
         if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) { //服务IP缓存已读取
-            if (![HttpdnsUtil useSynthesizedIPv6Address] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
+            if (![HttpdnsUtil useSynthesizedIPv6Address] && [HttpdnsUtil isNotEmptyArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
                 hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
             } else {
                 hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
             }
         } else { //服务IP缓存未读取
-            if (![HttpdnsUtil useSynthesizedIPv6Address] && [HttpdnsUtil isValidArray:ALICLOUD_HTTPDNS_SERVER_IPV6_LIST]) {
+            if (![HttpdnsUtil useSynthesizedIPv6Address] && [HttpdnsUtil isNotEmptyArray:ALICLOUD_HTTPDNS_SERVER_IPV6_LIST]) {
                 hostArray = ALICLOUD_HTTPDNS_SERVER_IPV6_LIST;
             } else {
                 hostArray = ALICLOUD_HTTPDNS_SERVER_IP_LIST;
@@ -139,7 +139,7 @@ static NSURLSession *_scheduleCenterSession = nil;
 
 // 添加 region
 - (NSString *)urlFormatRegion:(NSString *)region {
-    if ([HttpdnsUtil isValidString:region]) {
+    if ([HttpdnsUtil isNotEmptyString:region]) {
         return [NSString stringWithFormat:@"region=%@&",region];
     }
     return @"";
@@ -148,16 +148,16 @@ static NSURLSession *_scheduleCenterSession = nil;
 // url 添加 sid net 和 bssid
 - (NSString *)urlFormatSidNetBssid:(NSString *)url {
     NSString *sessionId = [HttpdnsUtil generateSessionID];
-    if ([HttpdnsUtil isValidString:sessionId]) {
+    if ([HttpdnsUtil isNotEmptyString:sessionId]) {
         url = [NSString stringWithFormat:@"%@&sid=%@", url, sessionId];
     }
 
     NSString *netType = [HttpdnsgetNetworkInfoHelper getNetworkType];
-    if ([HttpdnsUtil isValidString:netType]) {
+    if ([HttpdnsUtil isNotEmptyString:netType]) {
         url = [NSString stringWithFormat:@"%@&net=%@", url, netType];
         if ([HttpdnsgetNetworkInfoHelper isWifiNetwork]) {
             NSString *bssid = [HttpdnsgetNetworkInfoHelper getWifiBssid];
-            if ([HttpdnsUtil isValidString:bssid]) {
+            if ([HttpdnsUtil isNotEmptyString:bssid]) {
                 url = [NSString stringWithFormat:@"%@&bssid=%@", url, [EMASTools URLEncodedString:bssid]];
             }
         }
@@ -197,7 +197,7 @@ static NSURLSession *_scheduleCenterSession = nil;
                     NSString *errCode = @"";
                     errCode = [HttpdnsUtil safeObjectForKey:@"code" dict:result];
                     NSDictionary *dict = nil;
-                    if ([HttpdnsUtil isValidString:errCode]) {
+                    if ([HttpdnsUtil isNotEmptyString:errCode]) {
                         dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                         errCode, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
                     }
@@ -211,7 +211,7 @@ static NSURLSession *_scheduleCenterSession = nil;
                     HttpdnsLogDebug("has region serviceIP!");
                     NSArray *queryArr = [response.URL.query componentsSeparatedByString:@"&"];
                     for (NSString *queryStr in queryArr) {
-                        if ([queryStr hasPrefix:urlRegionKey] && [EMASTools isValidDictionary:result]) {
+                        if ([queryStr hasPrefix:urlRegionKey] && [HttpdnsUtil isNotEmptyDictionary:result]) {
                             NSString *regionValue = [queryStr substringFromIndex:urlRegionKey.length];
                             NSMutableDictionary *resultCopy = [NSMutableDictionary dictionaryWithDictionary:result];
                             [resultCopy setObject:regionValue forKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_REGION_KEY];

@@ -73,13 +73,13 @@ static NSString *const ipKey = @"ip";
 //        NSLog(@"###### ==> isAbleToResolveIPv6Result return");
 //        return nil;
 //    }
-    if (![HttpdnsUtil isValidArray:IPs]) {
+    if (![HttpdnsUtil isNotEmptyArray:IPs]) {
         return nil;
     }
     if (IPs.count < 2 || IPs.count > 9) {
         return nil;
     }
-    if (![HttpdnsUtil isValidString:host]) {
+    if (![HttpdnsUtil isNotEmptyString:host]) {
         return nil;
     }
 

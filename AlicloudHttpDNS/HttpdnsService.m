@@ -100,7 +100,7 @@ static HttpDnsService * _httpDnsClient = nil;
         sdkVersion = sdkItem.version;
         sdkStatus = sdkItem.status;
     }
-    if ([EMASTools isValidString:accountID]) {
+    if ([HttpdnsUtil isNotEmptyString:accountID]) {
         return [self initWithAccountID:[accountID intValue] secretKey:secretKey];
     }
     NSLog(@"Auto init fail, can not get accountId / secretKey, please check the file named: AliyunEmasServices-Info.plist.");
@@ -160,7 +160,7 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (void)setRegion:(NSString *)region {
-    region = [HttpdnsUtil isValidString:region] ? region : @"";
+    region = [HttpdnsUtil isNotEmptyString:region] ? region : @"";
     NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
     NSString *olgregion = [userDefault objectForKey:ALICLOUD_HTTPDNS_REGION_KEY];
     if (![region isEqualToString:olgregion]) {
@@ -444,7 +444,7 @@ static HttpDnsService * _httpDnsClient = nil;
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
-        if ([HttpdnsUtil isValidArray:ipsObject]) {
+        if ([HttpdnsUtil isNotEmptyArray:ipsObject]) {
             for (HttpdnsIpObject *ipObject in ipsObject) {
                 [ipsArray addObject:[ipObject getIpString]];
             }
@@ -477,7 +477,7 @@ static HttpDnsService * _httpDnsClient = nil;
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
-        if ([HttpdnsUtil isValidArray:ipsObject]) {
+        if ([HttpdnsUtil isNotEmptyArray:ipsObject]) {
             for (HttpdnsIpObject *ipObject in ipsObject) {
                 [ipsArray addObject:[ipObject getIpString]];
             }
@@ -512,7 +512,7 @@ static HttpDnsService * _httpDnsClient = nil;
         if (hostObject) {
             NSArray * ipsObject = [hostObject getIps];
             NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
-            if ([HttpdnsUtil isValidArray:ipsObject]) {
+            if ([HttpdnsUtil isNotEmptyArray:ipsObject]) {
                 for (HttpdnsIpObject *ipObject in ipsObject) {
                     [ipsArray addObject:[ipObject getIpString]];
                 }
@@ -531,7 +531,7 @@ static HttpDnsService * _httpDnsClient = nil;
         if (hostObject) {
             NSArray * ipsObject = [hostObject getIps];
             ipsArray = [[NSMutableArray alloc] init];
-            if ([HttpdnsUtil isValidArray:ipsObject]) {
+            if ([HttpdnsUtil isNotEmptyArray:ipsObject]) {
                 for (HttpdnsIpObject *ipObject in ipsObject) {
                     [ipsArray addObject:[ipObject getIpString]];
                 }
@@ -600,7 +600,7 @@ static HttpDnsService * _httpDnsClient = nil;
     if (hostObject) {
         NSArray *ip6sObject = [hostObject getIp6s];
         NSMutableArray *ip6sArray = [[NSMutableArray alloc] init];
-        if ([HttpdnsUtil isValidArray:ip6sObject]) {
+        if ([HttpdnsUtil isNotEmptyArray:ip6sObject]) {
             for (HttpdnsIpObject *ip6Object in ip6sObject) {
                 [ip6sArray addObject:[ip6Object getIpString]];
             }
@@ -637,7 +637,7 @@ static HttpDnsService * _httpDnsClient = nil;
     if (hostObject) {
         NSArray *ip6sObject = [hostObject getIp6s];
         NSMutableArray *ip6sArray = [[NSMutableArray alloc] init];
-        if ([HttpdnsUtil isValidArray:ip6sObject]) {
+        if ([HttpdnsUtil isNotEmptyArray:ip6sObject]) {
             for (HttpdnsIpObject *ip6Object in ip6sObject) {
                 [ip6sArray addObject:[ip6Object getIpString]];
             }
@@ -677,7 +677,7 @@ static HttpDnsService * _httpDnsClient = nil;
         if (hostObject) {
             NSArray *ipv6List = [hostObject getIp6s];
             NSMutableArray *ipv6Array = [[NSMutableArray alloc] init];
-            if ([HttpdnsUtil isValidArray:ipv6List]) {
+            if ([HttpdnsUtil isNotEmptyArray:ipv6List]) {
                 for (HttpdnsIpObject *ipv6Obj in ipv6List) {
                     [ipv6Array addObject:[ipv6Obj getIpString]];
                 }
@@ -693,7 +693,7 @@ static HttpDnsService * _httpDnsClient = nil;
         if (hostObject) {
             NSArray * ipv6List = [hostObject getIp6s];
             ipv6Array = [[NSMutableArray alloc] init];
-            if ([HttpdnsUtil isValidArray:ipv6List]) {
+            if ([HttpdnsUtil isNotEmptyArray:ipv6List]) {
                 for (HttpdnsIpObject *ipv6Obj in ipv6List) {
                     [ipv6Array addObject:[ipv6Obj getIpString]];
                 }
@@ -736,10 +736,10 @@ static HttpDnsService * _httpDnsClient = nil;
         NSArray *ip4s = [hostObject getIPStrings];
         NSArray *ip6s = [hostObject getIP6Strings];
         NSMutableDictionary *resultMDic = [NSMutableDictionary dictionary];
-        if ([HttpdnsUtil isValidArray:ip4s]) {
+        if ([HttpdnsUtil isNotEmptyArray:ip4s]) {
             [resultMDic setObject:ip4s forKey:ALICLOUDHDNS_IPV4];
         }
-        if ([HttpdnsUtil isValidArray:ip6s]) {
+        if ([HttpdnsUtil isNotEmptyArray:ip6s]) {
             [resultMDic setObject:ip6s forKey:ALICLOUDHDNS_IPV6];
         }
         NSLog(@"getIPv4_v6ByHostAsync result is %@", resultMDic);
@@ -784,10 +784,10 @@ static HttpDnsService * _httpDnsClient = nil;
         NSArray *ip6s = [hostObject getIP6Strings];
         NSMutableDictionary *httpdnsResult = [NSMutableDictionary dictionary];
         NSLog(@"getHttpDnsResultHostAsync result is %@", httpdnsResult);
-        if ([HttpdnsUtil isValidArray:ip4s]) {
+        if ([HttpdnsUtil isNotEmptyArray:ip4s]) {
             [httpdnsResult setObject:ip4s forKey:ALICLOUDHDNS_IPV4];
         }
-        if ([HttpdnsUtil isValidArray:ip6s]) {
+        if ([HttpdnsUtil isNotEmptyArray:ip6s]) {
             [httpdnsResult setObject:ip6s forKey:ALICLOUDHDNS_IPV6];
         }
         return httpdnsResult;
@@ -833,10 +833,10 @@ static HttpDnsService * _httpDnsClient = nil;
             NSArray *ip6s = [hostObject getIP6Strings];
             NSMutableDictionary *resultMDic = [NSMutableDictionary dictionary];
             NSLog(@"getIPv4_v6ByHostAsync result is %@", resultMDic);
-            if ([HttpdnsUtil isValidArray:ip4s]) {
+            if ([HttpdnsUtil isNotEmptyArray:ip4s]) {
                 [resultMDic setObject:ip4s forKey:ALICLOUDHDNS_IPV4];
             }
-            if ([HttpdnsUtil isValidArray:ip6s]) {
+            if ([HttpdnsUtil isNotEmptyArray:ip6s]) {
                 [resultMDic setObject:ip6s forKey:ALICLOUDHDNS_IPV6];
             }
             return resultMDic;
@@ -851,10 +851,10 @@ static HttpDnsService * _httpDnsClient = nil;
             NSArray *ip4s = [hostObject getIPStrings];
             NSArray *ip6s = [hostObject getIP6Strings];
             resultMDic = [NSMutableDictionary dictionary];
-            if ([HttpdnsUtil isValidArray:ip4s]) {
+            if ([HttpdnsUtil isNotEmptyArray:ip4s]) {
                 [resultMDic setObject:ip4s forKey:ALICLOUDHDNS_IPV4];
             }
-            if ([HttpdnsUtil isValidArray:ip6s]) {
+            if ([HttpdnsUtil isNotEmptyArray:ip6s]) {
                 [resultMDic setObject:ip6s forKey:ALICLOUDHDNS_IPV6];
             }
             NSLog(@"###### getHttpDnsResultHostSync result is %@", resultMDic);
@@ -948,7 +948,7 @@ static HttpDnsService * _httpDnsClient = nil;
 
 
 - (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params {
-    if ([HttpdnsUtil isValidDictionary:params]) {
+    if ([HttpdnsUtil isNotEmptyDictionary:params]) {
         _globalParams = [self limitPapams:params];
         self.globalParamsDic = params;
     } else {
@@ -977,26 +977,26 @@ static HttpDnsService * _httpDnsClient = nil;
     }
 
     NSString *partsParams;
-    if ([HttpdnsUtil isValidDictionary:params]) {
+    if ([HttpdnsUtil isNotEmptyDictionary:params]) {
         partsParams = [self limitPapams:params];
     } else {
         partsParams = @"";
     }
 
-    if (![HttpdnsUtil isValidString: cacheKey]) {
+    if (![HttpdnsUtil isNotEmptyString: cacheKey]) {
         cacheKey = @"";
     }
     HttpdnsHostObject *hostObject;
     NSString * allParams;
     NSString *hostkey = [NSString stringWithFormat:@"%@%@",host,cacheKey];
-    if (![HttpdnsUtil isValidString:_globalParams]) {
-        if (![HttpdnsUtil isValidString:partsParams]) {
+    if (![HttpdnsUtil isNotEmptyString:_globalParams]) {
+        if (![HttpdnsUtil isNotEmptyString:partsParams]) {
             allParams = host;
         } else {
             allParams = [NSString stringWithFormat:@"%@]%@]%@",host,partsParams,hostkey];
         }
     } else {
-        if ([HttpdnsUtil isValidString:partsParams]) {
+        if ([HttpdnsUtil isNotEmptyString:partsParams]) {
             NSMutableDictionary *allParamDic = [NSMutableDictionary dictionary];
             [self.globalParamsDic enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
                 [allParamDic setObject:obj forKey:key];
@@ -1016,10 +1016,10 @@ static HttpDnsService * _httpDnsClient = nil;
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
         NSMutableDictionary * ipsDictionary = [[NSMutableDictionary alloc] init];
         [ipsDictionary setObject:host forKey:@"host"];
-        if ([HttpdnsUtil isValidDictionary:hostObject.extra]) {
+        if ([HttpdnsUtil isNotEmptyDictionary:hostObject.extra]) {
             [ipsDictionary setObject:hostObject.extra forKey:@"extra"];
         }
-        if ([HttpdnsUtil isValidArray:ipsObject]) {
+        if ([HttpdnsUtil isNotEmptyArray:ipsObject]) {
             for (HttpdnsIpObject *ipObject in ipsObject) {
                 [ipsArray addObject:[ipObject getIpString]];
             }
@@ -1036,7 +1036,7 @@ static HttpDnsService * _httpDnsClient = nil;
 - (NSDictionary *)IPRankingDataSource {
     NSDictionary *IPRankingDataSource = nil;
     @synchronized(self) {
-        if ([HttpdnsUtil isValidDictionary:_IPRankingDataSource]) {
+        if ([HttpdnsUtil isNotEmptyDictionary:_IPRankingDataSource]) {
             IPRankingDataSource = _IPRankingDataSource;
         }
     }
@@ -1124,7 +1124,7 @@ static HttpDnsService * _httpDnsClient = nil;
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
-        if ([HttpdnsUtil isValidArray:ipsObject]) {
+        if ([HttpdnsUtil isNotEmptyArray:ipsObject]) {
             for (HttpdnsIpObject *ipObject in ipsObject) {
                 [HttpdnsUtil safeAddObject:[ipObject getIpString] toArray:ipsArray];
             }

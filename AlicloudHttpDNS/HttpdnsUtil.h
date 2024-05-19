@@ -47,13 +47,13 @@
 
 + (id)convertJsonStringToObject:(NSString *)jsonStr;
 
-+ (BOOL)isValidArray:(id)notValidArray;
++ (BOOL)isNotEmptyArray:(NSArray *)inputArr;
 
-+ (BOOL)isValidString:(id)notValidString;
++ (BOOL)isNotEmptyString:(NSString *)inputStr;
 
 + (BOOL)isValidJSON:(id)JSON;
 
-+ (BOOL)isValidDictionary:(id)obj;
++ (BOOL)isNotEmptyDictionary:(NSDictionary *)inputDict;
 
 + (NSString *)getMD5StringFrom:(NSString *)originString;
 

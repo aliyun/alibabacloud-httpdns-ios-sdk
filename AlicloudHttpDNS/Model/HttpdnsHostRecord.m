@@ -179,7 +179,7 @@
 
 - (NSString *)description {
     NSString *des;
-    if (![HttpdnsUtil isValidArray:_IP6s]) {
+    if (![HttpdnsUtil isNotEmptyArray:_IP6s]) {
         des = [NSString stringWithFormat:@"hostRecordId = %@, host = %@, carrier = %@, IPs = %@ , TTL = %@---",
                @(_hostRecordId), _host, _carrier, _IPs, @(_TTL)];
     } else {

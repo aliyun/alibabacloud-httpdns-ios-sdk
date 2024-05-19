@@ -156,7 +156,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 - (void)addPreResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType{
-    if (![HttpdnsUtil isValidArray:hosts]) {
+    if (![HttpdnsUtil isNotEmptyArray:hosts]) {
         return;
     }
     dispatch_async(_syncDispatchQueue, ^{
@@ -184,7 +184,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     NSArray *hostArray= [host componentsSeparatedByString:@"]"];
     NSString *cacheKey = [hostArray lastObject];
 
-    if (![HttpdnsUtil isValidString:cacheKey]) {
+    if (![HttpdnsUtil isNotEmptyString:cacheKey]) {
         return nil;
     }
 
@@ -340,7 +340,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             cachedHostObject.ip6Region = ip6Region;
         }
 
-        if ([HttpdnsUtil isValidDictionary:result.extra]) {
+        if ([HttpdnsUtil isNotEmptyDictionary:result.extra]) {
             [cachedHostObject setExtra:Extra];
         }
 
@@ -364,7 +364,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         hostObject.ip6Region = ip6Region;
 
 
-        if ([HttpdnsUtil isValidDictionary:result.extra]) {
+        if ([HttpdnsUtil isNotEmptyDictionary:result.extra]) {
             [hostObject setExtra:Extra];
         }
 
@@ -372,7 +372,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         [HttpdnsUtil safeAddValue:hostObject key:host toDict:_hostManagerDict];
     }
 
-    if([HttpdnsUtil isValidDictionary:result.extra]) {
+    if([HttpdnsUtil isNotEmptyDictionary:result.extra]) {
         [self sdnsCacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings IP6s:IP6Strings TTL:TTL withExtra:Extra ipRegion:ipRegion ip6Region:ip6Region];
     } else {
         [self cacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings IP6s:IP6Strings TTL:TTL ipRegion:ipRegion ip6Region:ip6Region];
@@ -406,14 +406,14 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (!hostObject) {
         return;
     }
-    if (![HttpdnsUtil isValidArray:IPs] || ![HttpdnsUtil isValidString:host]) {
+    if (![HttpdnsUtil isNotEmptyArray:IPs] || ![HttpdnsUtil isNotEmptyString:host]) {
         return;
     }
     @synchronized(self) {
         //FIXME:
         NSMutableArray *ipArray = [[NSMutableArray alloc] init];
         for (NSString *ip in IPs) {
-            if (![HttpdnsUtil isValidString:ip]) {
+            if (![HttpdnsUtil isNotEmptyString:ip]) {
                 continue;
             }
             HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
@@ -440,7 +440,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     //403 ServiceLevelDeny 错误强制更新，不触发disable机制。
     BOOL isServiceLevelDeny = false;
     NSString *errorMessage = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY dict:userInfo];
-    if ([HttpdnsUtil isValidString:errorMessage]) {
+    if ([HttpdnsUtil isNotEmptyString:errorMessage]) {
         isServiceLevelDeny = [errorMessage isEqualToString:ALICLOUD_HTTPDNS_ERROR_SERVICE_LEVEL_DENY];
     }
 
@@ -721,11 +721,11 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 - (void)cleanCacheWithHostArray:(NSArray<NSString *> *)hostArray {
-    if (![HttpdnsUtil isValidArray:hostArray]) {
+    if (![HttpdnsUtil isNotEmptyArray:hostArray]) {
         [self cleanAllHostMemoryCache];
     } else {
         for (NSString *host in hostArray) {
-            if ([HttpdnsUtil isValidString:host]) {
+            if ([HttpdnsUtil isNotEmptyString:host]) {
                 [HttpdnsUtil safeRemoveObjectForKey:host toDict:_hostManagerDict];
             }
         }
@@ -745,7 +745,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         }
         HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
         NSArray<HttpdnsHostRecord *> *hostRecords = [hostCacheStore hostRecordsForCurrentCarrier];
-        if (![HttpdnsUtil isValidArray:hostRecords]) {
+        if (![HttpdnsUtil isNotEmptyArray:hostRecords]) {
             return;
         }
         for (HttpdnsHostRecord *hostRecord in hostRecords) {
@@ -797,7 +797,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 // for test
 - (NSString *)showMemoryCache {
     NSString *cacheDes;
-    if ([HttpdnsUtil isValidDictionary:_hostManagerDict]) {
+    if ([HttpdnsUtil isNotEmptyDictionary:_hostManagerDict]) {
         cacheDes = [NSString stringWithFormat:@"%@", _hostManagerDict];
     }
     return cacheDes;

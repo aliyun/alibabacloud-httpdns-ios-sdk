@@ -139,7 +139,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
         //判断本地region 和 缓存的服务IP池的region是否匹配，如果不匹配则更新
         NSDictionary *scheduleCenterResult = [HttpdnsPersistenceUtils getJSONFromDirectory:[HttpdnsPersistenceUtils scheduleCenterResultPath]
                                                                             fileName:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_RESULT_CACHE_FILE_NAME];
-        if ([EMASTools isValidDictionary:scheduleCenterResult]) {
+        if ([HttpdnsUtil isNotEmptyDictionary:scheduleCenterResult]) {
             NSString *scheduleCenterRegion = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_REGION_KEY dict:scheduleCenterResult]?:@"";
             NSString *userDefaultRegion = [[NSUserDefaults standardUserDefaults] objectForKey:ALICLOUD_HTTPDNS_REGION_KEY]?:@"";
             if (![userDefaultRegion isEqualToString:scheduleCenterRegion]) {
@@ -372,7 +372,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
         NSArray *result = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IP_KEY dict:_scheduleCenterResult];
         NSArray *result_ipv6 = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IPV6_KEY dict:_scheduleCenterResult];
 
-        if ([HttpdnsUtil isValidArray:result]) {
+        if ([HttpdnsUtil isNotEmptyArray:result]) {
             ALICLOUD_HTTPDNS_SERVER_IP_LIST = [result copy];
             ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED = ALICLOUD_HTTPDNS_SERVER_IP_LIST[0];
             ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE = YES;
@@ -382,7 +382,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
         }
 
         //设置ipv6 服务ip
-        if ([HttpdnsUtil isValidArray:result_ipv6]) {
+        if ([HttpdnsUtil isNotEmptyArray:result_ipv6]) {
             ALICLOUD_HTTPDNS_SERVER_IPV6_LIST = [result_ipv6 copy];
             ALICLOUD_HTTPDNS_SERVER_IPV6_ACTIVATED = ALICLOUD_HTTPDNS_SERVER_IPV6_LIST[0];
         }
@@ -402,7 +402,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
     __block NSArray *IPList = nil;
     dispatch_sync(self.scheduleCenterResultQueue, ^{
         IPList = [_IPList copy];
-        if (![HttpdnsUtil isValidArray:IPList]) {
+        if (![HttpdnsUtil isNotEmptyArray:IPList]) {
             IPList = [NSArray arrayWithArray:ALICLOUD_HTTPDNS_SERVER_IP_LIST];
         }
     });
@@ -414,7 +414,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
     __block NSArray *IPv6List = nil;
     dispatch_sync(self.scheduleCenterResultQueue, ^{
         IPv6List = [_IPv6List copy];
-        if (![HttpdnsUtil isValidArray:IPv6List]) {
+        if (![HttpdnsUtil isNotEmptyArray:IPv6List]) {
             IPv6List = [NSArray arrayWithArray:ALICLOUD_HTTPDNS_SERVER_IPV6_LIST];
         }
     });

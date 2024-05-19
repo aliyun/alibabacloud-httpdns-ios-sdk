@@ -28,7 +28,6 @@
 #import "HttpdnsIPv6Manager.h"
 
 
-
 #define HTTPDNSUTIL_SuppressPerformSelectorLeakWarning(code) \
 do { \
 _Pragma("clang diagnostic push") \
@@ -173,74 +172,37 @@ _Pragma("clang diagnostic pop") \
     }
 }
 
-+ (BOOL)isValidArray:(id)notValidArray {
-    if (!notValidArray) {
++ (BOOL)isNotEmptyArray:(NSArray *)inputArr {
+    if (!inputArr) {
         return NO;
     }
-    BOOL isKindOf = NO;
-    @try {
-        isKindOf = [notValidArray isKindOfClass:[NSArray class]];
-    } @catch (NSException *exception) {
-        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
-    }
-    if (!isKindOf) {
-        return NO;
-    }
-    __block NSInteger arrayCount = 0;
-    @synchronized (self) {
-        @try {
-            arrayCount = [(NSArray *)notValidArray count];
-        } @catch (NSException *exception) {
-            NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
-        }
-    }
-    if (arrayCount == 0) {
-        return NO;
-    }
-    return YES;
+    return [inputArr count] > 0;
 }
 
-+ (BOOL)isValidString:(id)notValidString {
-    if (!notValidString) {
++ (BOOL)isNotEmptyString:(NSString *)inputStr {
+    if (!inputStr) {
         return NO;
     }
-    BOOL isKindOf = NO;
-    @try {
-        isKindOf = [notValidString isKindOfClass:[NSString class]];
-    } @catch (NSException *exception) {}
-    if (!isKindOf) {
-        return NO;
-    }
-
-    NSInteger stringLength = 0;
-    @try {
-        stringLength = [notValidString length];
-    } @catch (NSException *exception) {
-        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
-    }
-    if (stringLength == 0) {
-        return NO;
-    }
-    return YES;
+    return [inputStr length] > 0;
 }
 
 + (BOOL)isValidJSON:(id)JSON {
     BOOL isValid;
     @try {
         isValid = ([JSON isKindOfClass:[NSDictionary class]] || [JSON isKindOfClass:[NSArray class]]);
-    } @catch (NSException *exception) {}
+    } @catch (NSException *ignore) {
+    }
     return isValid;
 }
-+ (BOOL)isValidDictionary:(id)obj {
-    if ((obj != nil) && ([obj isKindOfClass:[NSDictionary class]])) {
-        NSDictionary *dic = obj;
-        return (dic.count > 0);
++ (BOOL)isNotEmptyDictionary:(NSDictionary *)inputDict {
+    if (!inputDict) {
+        return NO;
     }
-    return NO;
+    return [inputDict count] > 0;
 }
 
 + (id)convertJsonStringToObject:(NSString *)jsonStr {
-    if ([self isValidString:jsonStr]) {
+    if ([self isNotEmptyString:jsonStr]) {
         return [self convertJsonDataToObject:[jsonStr dataUsingEncoding:NSUTF8StringEncoding]];
     }
     return nil;
@@ -284,7 +246,7 @@ _Pragma("clang diagnostic pop") \
                 errCode = [json objectForKey:@"code"];
             } @catch (NSException *exception) {}
             NSDictionary *dict = nil;
-            if ([HttpdnsUtil isValidString:errCode]) {
+            if ([HttpdnsUtil isNotEmptyString:errCode]) {
                 dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                         errCode, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
             }
@@ -301,8 +263,6 @@ _Pragma("clang diagnostic pop") \
  生成sessionId
  App打开生命周期只生成一次，不做持久化
  sessionId为12位，采用base62编码
-
- @return 返回sessionId
  */
 + (NSString *)generateSessionID {
     static NSString *sessionId = nil;
@@ -310,7 +270,7 @@ _Pragma("clang diagnostic pop") \
     dispatch_once(&onceToken, ^{
         NSString *alphabet = @"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         NSUInteger length = alphabet.length;
-        if (![HttpdnsUtil isValidString:sessionId]) {
+        if (![HttpdnsUtil isNotEmptyString:sessionId]) {
             NSMutableString *mSessionId = [NSMutableString string];
             for (int i = 0; i < 12; i++) {
                 [mSessionId appendFormat:@"%@", [alphabet substringWithRange:NSMakeRange(arc4random() % length, 1)]];
