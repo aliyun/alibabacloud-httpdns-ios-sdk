@@ -18,7 +18,7 @@
  */
 
 #import "HttpdnsRequestScheduler_Internal.h"
-#import "HttpdnsModel.h"
+#import "HttpdnsHostObject.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsUtil.h"

@@ -18,7 +18,7 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "HttpdnsModel.h"
+#import "HttpdnsHostObject.h"
 #import "HttpdnsIPv6Manager.h"
 
 FOUNDATION_EXTERN NSInteger const ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE;
