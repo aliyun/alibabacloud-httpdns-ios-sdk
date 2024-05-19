@@ -1,5 +1,5 @@
 //
-//  HttpDnsResult.h
+//  HttpdnsResult.h
 //  AlicloudHttpDNS
 //
 //  Created by xuyecan on 2024/5/15.
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface HttpDnsResult : NSObject
+@interface HttpdnsResult : NSObject
 
 @property (nonatomic, copy) NSString *host;
 @property (nonatomic, strong) NSArray<NSString *> *ips;

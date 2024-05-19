@@ -241,7 +241,7 @@ static HttpDnsService * _httpDnsClient = nil;
     return [HttpdnsUtil generateSessionID];
 }
 
-- (HttpDnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType {
+- (HttpdnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType {
     if (!host || [self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -268,7 +268,7 @@ static HttpDnsService * _httpDnsClient = nil;
     }
 }
 
-- (HttpDnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType {
+- (HttpdnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType {
     if (!host || [self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -291,7 +291,7 @@ static HttpDnsService * _httpDnsClient = nil;
     return [self constructResultFromHostObject:hostObject underQueryType:queryIpType];
 }
 
-- (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType completionHandler:(void (^)(HttpDnsResult *))handler {
+- (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType completionHandler:(void (^)(HttpdnsResult *))handler {
     if (!host || [self _shouldDegradeHTTPDNS:host]) {
         return;
     }
@@ -348,8 +348,8 @@ static HttpDnsService * _httpDnsClient = nil;
     return specifiedQueryIpType;
 }
 
-- (HttpDnsResult *)constructResultFromHostObject:(HttpdnsHostObject *)hostObject underQueryType:(HttpdnsQueryIPType)queryType {
-    HttpDnsResult *result = [HttpDnsResult new];
+- (HttpdnsResult *)constructResultFromHostObject:(HttpdnsHostObject *)hostObject underQueryType:(HttpdnsQueryIPType)queryType {
+    HttpdnsResult *result = [HttpdnsResult new];
     if (!hostObject) {
         return result;
     }
@@ -382,8 +382,8 @@ static HttpDnsService * _httpDnsClient = nil;
     return result;
 }
 
-- (HttpDnsResult *)constructResultFromIp:(NSString *)ip underQueryType:(HttpdnsQueryIPType)queryType {
-    HttpDnsResult *result = [HttpDnsResult new];
+- (HttpdnsResult *)constructResultFromIp:(NSString *)ip underQueryType:(HttpdnsQueryIPType)queryType {
+    HttpdnsResult *result = [HttpdnsResult new];
     result.host = ip;
 
     if (queryType & HttpdnsQueryIPTypeIpv4) {
