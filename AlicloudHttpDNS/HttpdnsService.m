@@ -339,6 +339,11 @@ static HttpDnsService * _httpDnsClient = nil;
 - (HttpdnsQueryIPType)determineLegitQueryIpType:(HttpdnsQueryIPType)specifiedQueryIpType {
     // 自动选择，需要判断当前网络环境来决定
     if (specifiedQueryIpType == HttpdnsQueryIPTypeAuto) {
+        // 如果全局没打开ipv6，那auto的情况下只请求ipv4
+        if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
+            return HttpdnsQueryIPTypeIpv4;
+        }
+
         AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
         AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
         switch (stackType) {
@@ -351,6 +356,7 @@ static HttpDnsService * _httpDnsClient = nil;
                 return HttpdnsQueryIPTypeIpv4;
         }
     }
+
     // 否则就按指定类型来解析
     return specifiedQueryIpType;
 }
