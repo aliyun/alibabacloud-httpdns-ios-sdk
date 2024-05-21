@@ -82,14 +82,16 @@ NSArray *ipv6HostArray = nil;
 
 - (IBAction)onHost1:(id)sender {
     HttpDnsService *service = [HttpDnsService sharedInstance];
-    HttpdnsResult *result = [service resolveHostSync:@"empty.xuyecan1919.tech" byIpType:HttpdnsQueryIPTypeAuto];
+    NSDictionary<NSString *, NSString *> *params = @{@"key1": @"value1", @"key2": @"value2"};
+    HttpdnsResult *result = [service resolveHostSync:@"action.test.com" byIpType:HttpdnsQueryIPTypeAuto withSdnsParams:params sdnsCacheKey:nil];
     NSLog(@"result: %@, firstIp: %@", result, [result firstIpv4Address]);
 }
 
 - (IBAction)onHost2:(id)sender {
-    // [_service asyncGetHostByName:@"dns.xuyecan1919.tech" completionHandler:^(NSDictionary<NSString *,NSString *> *result) {
-    //     NSLog(@"host2: %@", result);
-    // }];
+    HttpDnsService *service = [HttpDnsService sharedInstance];
+    [service resolveHostAsync:@"dual-stack.xuyecan1919.tech" byIpType:HttpdnsQueryIPTypeAuto completionHandler:^(HttpdnsResult *result) {
+        NSLog(@"result: %@, firstIp: %@", result, [result firstIpv4Address]);
+    }];
 }
 
 // 开启IPv6解析结果
