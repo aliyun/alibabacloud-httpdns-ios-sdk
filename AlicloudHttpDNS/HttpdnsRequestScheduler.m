@@ -229,7 +229,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 if (_isExpiredIPEnabled || [result isLoadFromDB]) {
                     needToQuery = YES;
                     needToWaitForResult = NO;
-                    HttpdnsLogDebug("The ips is expired, but we accept it, host: %@', queryType: %ld", host, queryType);
+                    HttpdnsLogDebug("The ips is expired, but we accept it, host: %@, queryType: %ld", host, queryType);
                     break;
                 } else {
                     needToQuery = YES;
@@ -266,6 +266,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     }
 
     if (!needToQuery) {
+        // 注意放锁使用的queryType必须和最开始上锁的时候保持一致
+        // 经过处理的queryType需要用另一个变量往下传递
         [lockerManager unlock:cacheKey queryType:queryType];
         return result;
     }
@@ -283,6 +285,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [self executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
             [lockerManager unlock:cacheKey queryType:queryType];
         });
+
+        // TODO 由于这里是启动异步解析之后立即返回结果，后续异步解析完成之后的merge操作可能会影响这个result
+        // TODO 因此，这个result应当采用深拷贝的结果返回
         return result;
     }
 }
