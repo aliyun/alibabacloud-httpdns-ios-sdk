@@ -73,7 +73,7 @@ NSArray *ipv6HostArray = nil;
     [_service setCachedIPEnabled:YES];
     [_service setExpiredIPEnabled:NO];
     [_service setHTTPSRequestEnabled:YES];
-    [_service enableIPv6:YES];
+    [_service enableIPv6:NO];
 
     // [_service setIPRankingDatasource:@{@"only-v4.xuyecan1919.tech": @443}];
     // [_service setPreResolveHosts:@[@"only-v4.xuyecan1919.tech"]];
@@ -89,7 +89,7 @@ NSArray *ipv6HostArray = nil;
 
 - (IBAction)onHost2:(id)sender {
     HttpDnsService *service = [HttpDnsService sharedInstance];
-    [service resolveHostAsync:@"dual-stack.xuyecan1919.tech" byIpType:HttpdnsQueryIPTypeAuto completionHandler:^(HttpdnsResult *result) {
+    [service resolveHostAsync:@"dual-stack.xuyecan1919.tech" byIpType:HttpdnsQueryIPTypeBoth completionHandler:^(HttpdnsResult *result) {
         NSLog(@"result: %@, firstIp: %@", result, [result firstIpv4Address]);
     }];
 }
