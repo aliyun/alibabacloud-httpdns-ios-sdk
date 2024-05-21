@@ -954,13 +954,6 @@ static HttpDnsService * _httpDnsClient = nil;
     return httpdnsResult;
 }
 
-
-- (AlicloudIPStackType)currentIpStack {
-    AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
-    AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
-    return stackType;
-}
-
 - (void)setLogHandler:(id<HttpdnsLoggerProtocol>)logHandler {
     [HttpdnsLog setLogHandler:logHandler];
 }
@@ -972,7 +965,6 @@ static HttpDnsService * _httpDnsClient = nil;
 - (void)cleanHostCache:(NSArray<NSString *> *)hostArray {
     [_requestScheduler cleanCacheWithHostArray:hostArray];
 }
-
 
 - (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params {
     if ([HttpdnsUtil isNotEmptyDictionary:params]) {
