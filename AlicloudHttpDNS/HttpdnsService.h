@@ -168,7 +168,7 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 /// 同步解析域名，会阻塞当前线程，直到从缓存中获取到有效解析结果，或者从服务器拿到最新解析结果
 /// @param host 需要解析的域名
 /// @param queryIpType 可设置为自动选择，ipv4，ipv6. 设置为自动选择时，会自动根据当前所处网络环境选择解析ipv4或ipv6
-/// @param sdnsParam 如果域名配置了sdns自定义解析，通过此参数携带自定义参数
+/// @param sdnsParams 如果域名配置了sdns自定义解析，通过此参数携带自定义参数
 /// @param cacheKey sdns自定义解析缓存key
 /// @return 解析结果
 - (HttpdnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *, NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey;

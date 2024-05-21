@@ -22,6 +22,9 @@
 
 #import <Foundation/Foundation.h>
 
+static NSString *const HTTPDNS_IOS_SDK_VERSION = @"2.2.0";
+
+
 /*!
  * API 文档：http://gitlab.alibaba-inc.com/alicloud-ams/httpdns-doc/blob/master/v6/sc-proto.md
  */
@@ -30,7 +33,6 @@
 
 static NSString *const HTTPDNS_BEACON_APPKEY  = @"24657847";
 static NSString *const HTTPDNS_BEACON_APPSECRECT = @"f30fc0937f2b1e9e50a1b7134f1ddb10";
-
 
 /**
  HTTPDNS 国际版 标识
