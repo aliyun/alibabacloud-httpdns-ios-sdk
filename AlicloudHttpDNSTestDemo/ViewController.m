@@ -64,8 +64,6 @@ NSArray *ipv6HostArray = nil;
                       @"ipv6.sjtu.edu.cn"
                       ];
 
-    NSString *sessionId = [[HttpDnsService sharedInstance] getSessionId];
-    NSLog(@"Print sessionId: %@", sessionId);
 
     // ams_test账号139450
     _service = [[HttpDnsService alloc] initWithAccountID:139450];
@@ -74,6 +72,9 @@ NSArray *ipv6HostArray = nil;
     [_service setExpiredIPEnabled:NO];
     [_service setHTTPSRequestEnabled:YES];
     [_service enableIPv6:NO];
+
+    NSString *sessionId = [[HttpDnsService sharedInstance] getSessionId];
+    NSLog(@"Print sessionId: %@", sessionId);
 
     // [_service setIPRankingDatasource:@{@"only-v4.xuyecan1919.tech": @443}];
     // [_service setPreResolveHosts:@[@"only-v4.xuyecan1919.tech"]];

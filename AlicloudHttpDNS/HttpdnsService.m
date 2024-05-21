@@ -310,7 +310,7 @@ static HttpDnsService * _httpDnsClient = nil;
     if (!hostObject) {
         return nil;
     }
-    return [self constructResultFromHostObject:hostObject underQueryType:queryIpType];
+    return [self constructResultFromHostObject:hostObject underQueryType:clarifiedQueryIpType];
 }
 
 - (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType completionHandler:(void (^)(HttpdnsResult *))handler {
