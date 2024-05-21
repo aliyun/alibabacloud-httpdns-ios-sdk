@@ -22,8 +22,6 @@
 #import "HttpdnsDegradationDelegate.h"
 #import "HttpdnsLoggerDelegate.h"
 
-#import <AlicloudUtils/AlicloudIPv6Adapter.h>
-
 #define ALICLOUD_HTTPDNS_DEPRECATED(explain) __attribute__((deprecated(explain)))
 
 extern NSString *const ALICLOUDHDNS_IPV4;
@@ -315,11 +313,6 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 ///         ALICLOUDHDNS_IPV6: ['xx:xx:xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx:xx:xx']
 ///   }
 - (NSDictionary <NSString *, NSArray *>*)autoGetHttpDnsResultForHostSync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSync:byIpType:] instead.");;
-
-
-/// 获取当前网络栈
-/// @result 返回具体的网络栈
-- (AlicloudIPStackType)currentIpStack;
 
 
 /// 清除指定host缓存（内存+沙盒数据库）
