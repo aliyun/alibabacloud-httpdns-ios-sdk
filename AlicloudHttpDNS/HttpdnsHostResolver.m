@@ -327,8 +327,8 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
 
     // sdns extra
-    if ([HttpdnsUtil isNotEmptyDictionary:request.extra]) {
-        NSString *sdnsParamStr = [self constructParamStr:request.extra];
+    if ([HttpdnsUtil isNotEmptyDictionary:request.sdnsParams]) {
+        NSString *sdnsParamStr = [self constructParamStr:request.sdnsParams];
         url = [NSString stringWithFormat:@"%@&%@", url, sdnsParamStr];
     }
 
@@ -422,8 +422,8 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
 
     // sdns extra
-    if ([HttpdnsUtil isNotEmptyDictionary:request.extra]) {
-        NSString *sdnsParamStr = [self constructParamStr:request.extra];
+    if ([HttpdnsUtil isNotEmptyDictionary:request.sdnsParams]) {
+        NSString *sdnsParamStr = [self constructParamStr:request.sdnsParams];
         url = [NSString stringWithFormat:@"%@&%@", url, sdnsParamStr];
     }
 

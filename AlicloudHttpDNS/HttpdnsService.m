@@ -246,6 +246,10 @@ static HttpDnsService * _httpDnsClient = nil;
 #pragma mark -------------- resolving method start
 
 - (HttpdnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType {
+    return [self resolveHostSync:host byIpType:queryIpType withSdnsParams:nil sdnsCacheKey:nil];
+}
+
+- (HttpdnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *,NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey {
     if (!host || [self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -262,9 +266,13 @@ static HttpDnsService * _httpDnsClient = nil;
     }
 
     if ([NSThread isMainThread]) {
-        return [self resolveHostSyncNonBlocking:host byIpType:clarifiedQueryIpType];
+        return [self resolveHostSyncNonBlocking:host byIpType:clarifiedQueryIpType withSdnsParams:sdnsParams sdnsCacheKey:cacheKey];
     } else {
-        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:YES queryIpType:clarifiedQueryIpType];
+        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host
+                                                     isBlockingRequest:YES
+                                                           queryIpType:clarifiedQueryIpType
+                                                             sdnsParams:sdnsParams
+                                                              cacheKey:cacheKey];
         HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
         if (!hostObject) {
             return nil;
@@ -274,6 +282,10 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (HttpdnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType {
+    return [self resolveHostSyncNonBlocking:host byIpType:queryIpType withSdnsParams:nil sdnsCacheKey:nil];
+}
+
+- (HttpdnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *,NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey {
     if (!host || [self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -289,7 +301,11 @@ static HttpDnsService * _httpDnsClient = nil;
         return nil;
     }
 
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:NO queryIpType:clarifiedQueryIpType];
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host
+                                                 isBlockingRequest:NO
+                                                       queryIpType:clarifiedQueryIpType
+                                                        sdnsParams:sdnsParams
+                                                          cacheKey:cacheKey];
     HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
     if (!hostObject) {
         return nil;
@@ -298,6 +314,10 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType completionHandler:(void (^)(HttpdnsResult *))handler {
+    [self resolveHostAsync:host byIpType:queryIpType withSdnsParams:nil sdnsCacheKey:nil completionHandler:handler];
+}
+
+- (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *,NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey completionHandler:(void (^)(HttpdnsResult *))handler {
     if (!host || [self _shouldDegradeHTTPDNS:host]) {
         return;
     }
@@ -321,7 +341,11 @@ static HttpDnsService * _httpDnsClient = nil;
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:YES queryIpType:clarifiedQueryIpType];
+        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host
+                                                     isBlockingRequest:YES
+                                                           queryIpType:clarifiedQueryIpType
+                                                            sdnsParams:sdnsParams
+                                                              cacheKey:cacheKey];
         HttpdnsHostObject *hostObject = [strongSelf->_requestScheduler resolveHost:request];
         double innerEnd = [[NSDate date] timeIntervalSince1970] * 1000;
         HttpdnsLogDebug("resolveHostAsync inner cost time is: %f", (innerEnd - start));
@@ -999,7 +1023,7 @@ static HttpDnsService * _httpDnsClient = nil;
         cacheKey = @"";
     }
 
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeIpv4 extra:params cacheKey:cacheKey];
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeIpv4 sdnsParams:params cacheKey:cacheKey];
     HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];
