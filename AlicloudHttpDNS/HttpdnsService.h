@@ -149,11 +149,14 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 /// @{host: port}
 - (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource;
 
-/// 设置是否 开启 IPv6 结果解析
-/// 开启后调用 getIPv6ByHostAsync: 接口使用
-///【注意】开启 IPv6 结果解析后，SDK在 IPv6-Only 网络环境下，对 IPv4 解析结果不再自动转换为 IPv6 地址, getIpsByHostAsync:返回 IPv4 地址，getIPv6ByHostAsync:返回 IPv6 地址
+/// 设置是否 开启 IPv6 结果解析。只有开启状态下，对域名的解析才会尝试解析v6记录并返回v6的结果
 /// @param enable YES: 开启 NO: 关闭
-- (void)enableIPv6:(BOOL)enable;
+- (void)enableIPv6:(BOOL)enable ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService setIPv6Enabled:] instead.");
+
+
+/// 设置是否 开启 IPv6 结果解析。只有开启状态下，对域名的解析才会尝试解析v6记录并返回v6的结果
+/// @param enable YES: 开启 NO: 关闭
+- (void)setIPv6Enabled:(BOOL)enable;
 
 
 /// 是否允许通过 CNCopyCurrentNetworkInfo 获取wifi ssid bssid
