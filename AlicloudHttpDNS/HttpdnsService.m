@@ -233,6 +233,10 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (void)enableIPv6:(BOOL)enable {
+    [self setIPv6Enabled:enable];
+}
+
+- (void)setIPv6Enabled:(BOOL)enable {
     [[HttpdnsIPv6Manager sharedInstance] setIPv6ResultEnable:enable];
 }
 
