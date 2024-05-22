@@ -50,8 +50,7 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
  * 每次访问的签名有效期，SDK内部定死，当前不暴露设置接口，有效期定为10分钟。
  */
 @property (nonatomic, assign) NSUInteger authTimeoutInterval;
-@property (nonatomic, copy) NSString *globalParams;
-@property (nonatomic, copy) NSDictionary *globalParamsDic;
+@property (nonatomic, copy) NSDictionary<NSString *, NSString *> *presetSdnsParamsDict;
 @end
 
 @implementation HttpDnsService {
@@ -265,6 +264,7 @@ static HttpDnsService * _httpDnsClient = nil;
         return nil;
     }
 
+    sdnsParams = [self mergeWithPresetSdnsParams:sdnsParams];
     if ([NSThread isMainThread]) {
         return [self resolveHostSyncNonBlocking:host byIpType:clarifiedQueryIpType withSdnsParams:sdnsParams sdnsCacheKey:cacheKey];
     } else {
@@ -301,6 +301,7 @@ static HttpDnsService * _httpDnsClient = nil;
         return nil;
     }
 
+    sdnsParams = [self mergeWithPresetSdnsParams:sdnsParams];
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host
                                                  isBlockingRequest:NO
                                                        queryIpType:clarifiedQueryIpType
@@ -337,6 +338,7 @@ static HttpDnsService * _httpDnsClient = nil;
         });
     }
 
+    sdnsParams = [self mergeWithPresetSdnsParams:sdnsParams];
     double start = [[NSDate date] timeIntervalSince1970] * 1000;
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -992,15 +994,12 @@ static HttpDnsService * _httpDnsClient = nil;
 
 - (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params {
     if ([HttpdnsUtil isNotEmptyDictionary:params]) {
-        _globalParams = [self limitPapams:params];
-        self.globalParamsDic = params;
-    } else {
-        _globalParams = @"";
+        self.presetSdnsParamsDict = params;
     }
 }
 
 - (void)clearSdnsGlobalParams {
-    _globalParams = nil;
+    self.presetSdnsParamsDict = nil;
 }
 
 - (NSDictionary *)getIpsByHostAsync:(NSString *)host withParams:(NSDictionary<NSString *, NSString *> *)params withCacheKey:(NSString *)cacheKey {
@@ -1023,6 +1022,7 @@ static HttpDnsService * _httpDnsClient = nil;
         cacheKey = @"";
     }
 
+    params = [self mergeWithPresetSdnsParams:params];
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeIpv4 sdnsParams:params cacheKey:cacheKey];
     HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
     if (hostObject) {
@@ -1047,6 +1047,21 @@ static HttpDnsService * _httpDnsClient = nil;
 
 #pragma mark -
 #pragma mark -------------- private
+
+- (NSDictionary<NSString *, NSString *> *)mergeWithPresetSdnsParams:(NSDictionary<NSString *, NSString *> *)params {
+    if (!self.presetSdnsParamsDict) {
+        return params;
+    }
+
+
+    NSMutableDictionary *result = [NSMutableDictionary dictionaryWithDictionary:self.presetSdnsParamsDict];
+    if (params) {
+        // 明确传参的params优先级更高，可以覆盖预配置的参数
+        [result addEntriesFromDictionary:params];
+    }
+    return result;
+}
+
 - (NSDictionary *)IPRankingDataSource {
     NSDictionary *IPRankingDataSource = nil;
     @synchronized(self) {
@@ -1055,31 +1070,6 @@ static HttpDnsService * _httpDnsClient = nil;
         }
     }
     return IPRankingDataSource;
-}
-
-- (NSString *)limitPapams:(NSDictionary<NSString *, NSString *> *)params {
-    NSString *str = @"^[A-Za-z0-9-_]+";
-    NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", str];
-    NSMutableArray *arr = [[NSMutableArray alloc] initWithCapacity:0];
-
-    [params enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
-        if (![emailTest evaluateWithObject:key]) {
-            HttpdnsLogDebug("\n ====== 此参数 key: %@ 不符合要求 , 参数名 key 中不允许出现特殊字符", key);
-            return ;
-        } else {
-            NSString *str = [NSString stringWithFormat:@"%@%@",key, obj];
-            if ([str lengthOfBytesUsingEncoding:NSUnicodeStringEncoding] > 1000 ) {
-                HttpdnsLogDebug("\n ====== 参数名和参数值的整体大小不应超过 1000 字节");
-                return ;
-            } else {
-                NSString *str = [NSString stringWithFormat:@"&sdns-%@=%@", key,obj];
-                [arr addObject:str];
-            }
-        }
-    }];
-
-    HttpdnsLogDebug("\n ====== 入参: %@",[arr componentsJoinedByString:@""]);
-    return [arr componentsJoinedByString:@""];
 }
 
 - (BOOL)_shouldDegradeHTTPDNS:(NSString *)host {
