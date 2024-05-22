@@ -81,23 +81,36 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
  */
 - (instancetype)initWithAccountID:(int)accountID secretKey:(NSString *)secretKey;
 
-/*!
- * @brief 校正 App 签名时间
- * @param authCurrentTime 用于校正的时间戳，正整数。
- * @details 不进行该操作，将以设备时间为准，为`(NSUInteger)[[NSDate date] timeIntervalSince1970]`。进行该操作后，如果有偏差，每次网络请求都会对设备时间进行矫正。
- * @attention 校正操作在 APP 的一个生命周期内生效，APP 重启后需要重新设置才能重新生效。可以重复设置。
- */
-- (void)setAuthCurrentTime:(NSUInteger)authCurrentTime;
+/// 开启鉴权功能后，鉴权的签名计算默认读取设备当前时间。若担心设备时间不准确导致签名不准确，可以使用此接口校正 APP 内鉴权计算使用的时间值
+/// 注意，校正操作在 APP 的一个生命周期内生效，APP 重启后需要重新设置才能重新生效
+/// @param currentTime 用于校正的时间戳，单位为秒
+- (void)setAuthCurrentTime:(NSUInteger)authCurrentTime ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService setInternalAuthTimeBaseBySpecifyingCurrentTime:] instead.");
+
+
+/// 开启鉴权功能后，鉴权的签名计算默认读取设备当前时间。若担心设备时间不准确导致签名不准确，可以使用此接口校正 APP 内鉴权计算使用的时间值
+/// 注意，校正操作在 APP 的一个生命周期内生效，APP 重启后需要重新设置才能重新生效
+/// @param currentTime 用于校正的时间戳，单位为秒
+- (void)setInternalAuthTimeBaseBySpecifyingCurrentTime:(NSTimeInterval)currentTime;
 
 
 /// 设置持久化缓存功能
 /// @param enable YES: 开启 NO: 关闭
-- (void)setCachedIPEnabled:(BOOL)enable;
+- (void)setCachedIPEnabled:(BOOL)enable ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService setPersistentCacheIPEnabled:] instead.");
+
+/// 设置持久化缓存功能
+/// 开启后，每次解析会将结果持久化缓存到本地，当下次应用启动时，可以从本地加载缓存解析结果，提高应用启动时获取解析结果的速度
+/// @param enable YES: 开启 NO: 关闭
+- (void)setPersistentCacheIPEnabled:(BOOL)enable;
 
 
 /// 是否允许 HTTPDNS 返回 TTL 过期域名的 ip ，建议允许（默认不允许）
 /// @param enable YES: 开启 NO: 关闭
-- (void)setExpiredIPEnabled:(BOOL)enable;
+- (void)setExpiredIPEnabled:(BOOL)enable ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService setReuseExpiredIPEnabled:] instead.");
+
+
+/// 是否允许 HTTPDNS 返回 TTL 过期域名的 ip ，建议允许（默认不允许）
+/// @param enable YES: 开启 NO: 关闭
+- (void)setReuseExpiredIPEnabled:(BOOL)enable;
 
 
 /// * 设置 HTTPDNS 域名解析请求类型 ( HTTP / HTTPS )

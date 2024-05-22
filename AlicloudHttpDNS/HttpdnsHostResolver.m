@@ -301,12 +301,13 @@ static NSURLSession *_resolveHOSTSession = nil;
     // sign
     NSString *secretKey = sharedService.secretKey;
     if ([HttpdnsUtil isNotEmptyString:secretKey]) {
-        NSUInteger localTimestampOffset = sharedService.authTimeOffset;
-        NSUInteger localTimestamp = (NSUInteger)[[NSDate date] timeIntervalSince1970] ;
+        // 签名时间值需要使用10位整数秒值，因此这里需要转换
+        long localTimestampOffset = (long)sharedService.authTimeOffset;
+        long localTimestamp = (long)[[NSDate date] timeIntervalSince1970] ;
         if (localTimestampOffset != 0) {
             localTimestamp = localTimestamp + localTimestampOffset;
         }
-        NSUInteger expiredTimestamp = localTimestamp + HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
+        long expiredTimestamp = localTimestamp + HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
         NSString *expiredTimestampString = [NSString stringWithFormat:@"%@", @(expiredTimestamp)];
         NSString *signOriginString = [NSString stringWithFormat:@"%@-%@-%@", request.host, secretKey, expiredTimestampString];
 
@@ -396,12 +397,13 @@ static NSURLSession *_resolveHOSTSession = nil;
     // signature
     NSString *secretKey = sharedService.secretKey;
     if ([HttpdnsUtil isNotEmptyString:secretKey]) {
-        NSUInteger localTimestampOffset = sharedService.authTimeOffset;
-        NSUInteger localTimestamp = (NSUInteger)[[NSDate date] timeIntervalSince1970] ;
+        // 签名时间值需要使用10位整数秒值，因此这里需要转换
+        long localTimestampOffset = (long)sharedService.authTimeOffset;
+        long localTimestamp = (long)[[NSDate date] timeIntervalSince1970] ;
         if (localTimestampOffset != 0) {
             localTimestamp = localTimestamp + localTimestampOffset;
         }
-        NSUInteger expiredTimestamp = localTimestamp + HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
+        long expiredTimestamp = localTimestamp + HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
         NSString *expiredTimestampString = [NSString stringWithFormat:@"%@", @(expiredTimestamp)];
         NSString *signOriginString = [NSString stringWithFormat:@"%@-%@-%@", request.host, secretKey, expiredTimestampString];
 
