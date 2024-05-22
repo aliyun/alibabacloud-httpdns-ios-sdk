@@ -26,7 +26,7 @@
 
 @property (nonatomic, strong) HttpdnsRequestScheduler *requestScheduler;
 
-@property (nonatomic, assign) NSUInteger authTimeOffset;
+@property (nonatomic, assign) NSTimeInterval authTimeOffset;
 
 @property (nonatomic, copy) NSDictionary *IPRankingDataSource;
 

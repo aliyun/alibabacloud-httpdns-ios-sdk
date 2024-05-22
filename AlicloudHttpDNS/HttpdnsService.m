@@ -140,20 +140,27 @@ static HttpDnsService * _httpDnsClient = nil;
 #pragma mark -------------- public
 
 - (void)setAuthCurrentTime:(NSUInteger)authCurrentTime {
+    [self setInternalAuthTimeBaseBySpecifyingCurrentTime:authCurrentTime];
+}
+
+- (void)setInternalAuthTimeBaseBySpecifyingCurrentTime:(NSTimeInterval)currentTime {
     dispatch_sync(_authTimeOffsetSyncDispatchQueue, ^{
-        NSUInteger localTimeInterval = (NSUInteger)[[NSDate date] timeIntervalSince1970];
-        _authTimeOffset = authCurrentTime - localTimeInterval;
+        NSTimeInterval localTime = [[NSDate date] timeIntervalSince1970];
+        _authTimeOffset = currentTime - localTime;
     });
 }
 
 - (void)setCachedIPEnabled:(BOOL)enable {
+    [self setPersistentCacheIPEnabled:enable];
+}
+
+- (void)setPersistentCacheIPEnabled:(BOOL)enable {
     [_requestScheduler setCachedIPEnabled:enable];
 }
 
 - (void)setExpiredIPEnabled:(BOOL)enable {
     [_requestScheduler setExpiredIPEnabled:enable];
 }
-
 
 - (void)setHTTPSRequestEnabled:(BOOL)enable {
     HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED = enable;
@@ -1082,7 +1089,7 @@ static HttpDnsService * _httpDnsClient = nil;
 #pragma mark -
 #pragma mark -------------- HttpdnsRequestScheduler_Internal
 
-- (NSUInteger)authTimeOffset {
+- (NSTimeInterval)authTimeOffset {
     __block NSUInteger authTimeOffset = 0;
     dispatch_sync(_authTimeOffsetSyncDispatchQueue, ^{
         authTimeOffset = _authTimeOffset;
