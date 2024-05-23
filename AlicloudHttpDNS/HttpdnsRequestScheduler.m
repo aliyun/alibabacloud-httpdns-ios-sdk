@@ -182,7 +182,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
     NSString *host = request.host;
     NSString *cacheKey = request.cacheKey;
-    HttpdnsQueryIPType queryType = request.queryIpType;
+    HttpdnsQueryIPType originalQueryType = request.queryIpType;
 
     if (![HttpdnsUtil isNotEmptyString:host]) {
         return nil;
@@ -192,7 +192,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     BOOL needToWaitForResult = NO;
 
     HttpDnsLocker *lockerManager = [HttpDnsLocker sharedInstance];
-    [lockerManager lock:cacheKey queryType:queryType];
+    [lockerManager lock:cacheKey queryType:originalQueryType];
 
     HttpdnsHostObject *result = [self hostObjectFromCacheForHostName:cacheKey];
     HttpdnsLogDebug("try to load from cache, cacheKey: %@, result: %@", cacheKey, result);
@@ -213,22 +213,60 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         result.extra = @{};
         [HttpdnsUtil safeAddValue:result key:cacheKey toDict:_hostManagerDict];
     } else {
+        // 处理域名没有配置v4ip或者v6ip的情况，做个打标，避免一直重复请求
+        // 先假设需要请求
+        BOOL needToQueryBaseOnHavingRecord = YES;
+        HttpdnsQueryIPType filterdQueryIpType = originalQueryType;
+        if (originalQueryType & HttpdnsQueryIPTypeIpv4 && originalQueryType & HttpdnsQueryIPTypeIpv6) {
+            if ([result hasNoIpv4Record] && [result hasNoIpv6Record]) {
+                HttpdnsLogDebug("the host has neither ipv4 nor ipv6 record, abort resolving. host: %@", cacheKey);
+                needToQueryBaseOnHavingRecord = NO;
+            } else if ([result hasNoIpv4Record]) {
+                filterdQueryIpType = HttpdnsQueryIPTypeIpv6;
+            } else if ([result hasNoIpv6Record]) {
+                filterdQueryIpType = HttpdnsQueryIPTypeIpv4;
+            } else {
+                // 保持不变
+            }
+        } else if (originalQueryType & HttpdnsQueryIPTypeIpv4) {
+            if ([result hasNoIpv4Record]) {
+                HttpdnsLogDebug("the host has no ipv4 record, abort ipv4 resolving. host: %@", cacheKey);
+                needToQueryBaseOnHavingRecord = NO;
+            }
+        } else {
+            if ([result hasNoIpv6Record]) {
+                HttpdnsLogDebug("the host has no ipv6 record, abort ipv6 resolving. host: %@", cacheKey);
+                needToQueryBaseOnHavingRecord = NO;
+            }
+        }
+
+        // 根据ip的解析配置情况做了一轮判断后，如果认为不需要请求，就直接返回
+        if (!needToQueryBaseOnHavingRecord) {
+            // 注意放锁使用的queryType必须和最开始上锁的时候保持一致
+            // 经过处理的queryType需要用另一个变量往下传递
+            [lockerManager unlock:cacheKey queryType:originalQueryType];
+            return result;
+        }
+
+        // 将请求的queryType传递下去
+        request.queryIpType = filterdQueryIpType;
+
         do {
-            if ([result isIpEmptyUnderQueryIpType:queryType]) {
+            if ([result isIpEmptyUnderQueryIpType:filterdQueryIpType]) {
                 needToQuery = YES;
                 break;
             }
 
-            if ([result isRegionNotMatch:[self customRegion] underQueryIpType:queryType]) {
+            if ([result isRegionNotMatch:[self customRegion] underQueryIpType:filterdQueryIpType]) {
                 needToQuery = YES;
                 break;
             }
 
-            if ([result isExpiredUnderQueryIpType:queryType]) {
+            if ([result isExpiredUnderQueryIpType:filterdQueryIpType]) {
                 if (_isExpiredIPEnabled || [result isLoadFromDB]) {
                     needToQuery = YES;
                     needToWaitForResult = NO;
-                    HttpdnsLogDebug("The ips is expired, but we accept it, host: %@, queryType: %ld", host, queryType);
+                    HttpdnsLogDebug("The ips is expired, but we accept it, host: %@, queryType: %ld, filterdQueryType: %ld", host, originalQueryType, filterdQueryIpType);
                     break;
                 } else {
                     needToQuery = YES;
@@ -239,39 +277,12 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         } while (NO);
     }
 
-    // 处理域名没有配置v4ip或者v6ip的情况，做个打标，避免一直重复请求
-    HttpdnsQueryIPType filterdQueryIpType = queryType;
-    if (queryType & HttpdnsQueryIPTypeIpv4 && queryType & HttpdnsQueryIPTypeIpv6) {
-        if ([result hasNoIpv4Record] && [result hasNoIpv6Record]) {
-            HttpdnsLogDebug("the host has neither ipv4 nor ipv6 record, abort resolving. host: %@", cacheKey);
-            needToQuery = NO;
-        } else if ([result hasNoIpv4Record]) {
-            filterdQueryIpType = HttpdnsQueryIPTypeIpv6;
-        } else if ([result hasNoIpv6Record]) {
-            filterdQueryIpType = HttpdnsQueryIPTypeIpv4;
-        } else {
-            // 保持不变
-        }
-    } else if (queryType & HttpdnsQueryIPTypeIpv4) {
-        if ([result hasNoIpv4Record]) {
-            HttpdnsLogDebug("the host has no ipv4 record, abort ipv4 resolving. host: %@", cacheKey);
-            needToQuery = NO;
-        }
-    } else {
-        if ([result hasNoIpv6Record]) {
-            HttpdnsLogDebug("the host has no ipv6 record, abort ipv6 resolving. host: %@", cacheKey);
-            needToQuery = NO;
-        }
-    }
-
     if (!needToQuery) {
         // 注意放锁使用的queryType必须和最开始上锁的时候保持一致
         // 经过处理的queryType需要用另一个变量往下传递
-        [lockerManager unlock:cacheKey queryType:queryType];
+        [lockerManager unlock:cacheKey queryType:originalQueryType];
         return result;
     }
-
-    request.queryIpType = filterdQueryIpType;
 
     if (request.isBlockingRequest && needToWaitForResult) {
         @try {
@@ -280,7 +291,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         } @catch (NSException *exception) {
             HttpdnsLogDebug("resolveHost exception: %@", exception);
         } @finally {
-            [lockerManager unlock:cacheKey queryType:queryType];
+            [lockerManager unlock:cacheKey queryType:originalQueryType];
         }
         return result;
     } else {
@@ -291,7 +302,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             } @catch (NSException *exception) {
                 HttpdnsLogDebug("resolveHost exception: %@", exception);
             } @finally {
-                [lockerManager unlock:cacheKey queryType:queryType];
+                [lockerManager unlock:cacheKey queryType:originalQueryType];
             }
         });
 
@@ -382,9 +393,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     }
 
     if([HttpdnsUtil isNotEmptyDictionary:result.extra]) {
-        [self sdnsCacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings IP6s:IP6Strings TTL:TTL withExtra:Extra ipRegion:ipRegion ip6Region:ip6Region];
+        [self sdnsCacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:IPStrings IP6s:IP6Strings TTL:TTL withExtra:Extra ipRegion:ipRegion ip6Region:ip6Region];
     } else {
-        [self cacheHostRecordAsyncIfNeededWithHost:host IPs:IPStrings IP6s:IP6Strings TTL:TTL ipRegion:ipRegion ip6Region:ip6Region];
+        [self cacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:IPStrings IP6s:IP6Strings TTL:TTL ipRegion:ipRegion ip6Region:ip6Region];
     }
 
     [self aysncUpdateIPRankingWithResult:result forHost:host cacheKey:cacheKey];
@@ -486,14 +497,14 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         return nil;
     }
 
-    HttpdnsLogDebug("Internal request for %@ starts.", host);
+    HttpdnsLogDebug("Internal request starts, host: %@, request: %@", host, request);
 
     error = nil;
     HttpdnsHostObject *result = [[HttpdnsHostResolver new] lookupHostFromServer:request
                                                                      error:&error
                                                     activatedServerIPIndex:activatedServerIPIndex];
     if (error) {
-        HttpdnsLogDebug("Internal request for %@ error: %@", host, error);
+        HttpdnsLogDebug("Internal request error, host: %@, error: %@", host, error);
 
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
         NSInteger newActivatedServerIPIndex = [scheduleCenter nextServerIPIndexFromIPIndex:activatedServerIPIndex increase:hasRetryedCount];
@@ -505,7 +516,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     }
 
     dispatch_async(_syncDispatchQueue, ^{
-        HttpdnsLogDebug("Internal request for %@ finished, cacheKey: %@, result: %@", host, cacheKey, result);
+        HttpdnsLogDebug("Internal request finished, host: %@, cacheKey: %@, result: %@", host, cacheKey, result);
         [self mergeLookupResultToManager:result host:host cacheKey:cacheKey underQueryIpType:queryIPType];
     });
     return result;
