@@ -47,8 +47,6 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 //ip探测优选开关 两者需要同时满足
 //这个ip探测优选开关是走的beacon服务
 @property (nonatomic, assign) BOOL IPRankingEnabled;
-//这个ip探测优选开关走的是用户配置
-@property (nonatomic, assign) BOOL customIPRankingEnabled;
 
 
 
