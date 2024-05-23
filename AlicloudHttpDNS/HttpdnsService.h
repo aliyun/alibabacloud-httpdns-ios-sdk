@@ -113,15 +113,22 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 - (void)setReuseExpiredIPEnabled:(BOOL)enable;
 
 
-/// * 设置 HTTPDNS 域名解析请求类型 ( HTTP / HTTPS )
+/// 设置 HTTPDNS 域名解析请求类型 ( HTTP / HTTPS )
 /// 若不调用该接口，默认为 HTTP 请求。
 /// HTTP 请求基于底层 CFNetwork 实现，不受 ATS 限制；
 /// @param enable YES: HTTPS请求 NO: HTTP请求
 - (void)setHTTPSRequestEnabled:(BOOL)enable;
 
+
+/// 设置底层HTTPDNS网络请求超时时间，单位为秒
+/// @param timeoutInterval 超时时间，单位为秒
+- (void)setNetworkingTimeoutInterval:(NSTimeInterval)timeoutInterval;
+
+
 /// 设置 region 节点，调用后，会按照 region 更新服务IP
 /// @param region region为节点，可设置海外region
 - (void)setRegion:(NSString *)region;
+
 
 /// 域名预解析 (ipv4)
 /// 选择性的预先向 HTTPDNS SDK 中注册您后续可能会使用到的域名，以便 SDK 提前解析，减少后续解析域名时请求的时延
@@ -139,15 +146,18 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 /// @param enable YES: 打开 NO: 关闭
 - (void)setLogEnabled:(BOOL)enable;
 
+
 /// 设置网络切换时是否自动跟新所有域名解析结果
 /// 如果打开此开关，在网络切换时，会自动刷新所有域名的解析结果，但会产生一定流量消耗
 /// @param enable YES: 开启 NO: 关闭
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
 
+
 /// 设置IP俳优规则
 /// @param IPRankingDatasource 设置对应域名的端口号
 /// @{host: port}
 - (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource;
+
 
 /// 设置是否 开启 IPv6 结果解析。只有开启状态下，对域名的解析才会尝试解析v6记录并返回v6的结果
 /// @param enable YES: 开启 NO: 关闭
@@ -161,12 +171,17 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 
 /// 是否允许通过 CNCopyCurrentNetworkInfo 获取wifi ssid bssid
 /// @param enable YES: 开启 NO: 关闭 ，默认关闭
-- (void)enableNetworkInfo:(BOOL)enable;
+- (void)enableNetworkInfo:(BOOL)enable ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService setReadNetworkInfoEnabled:] instead.");
+
+
+/// 是否允许通过 CNCopyCurrentNetworkInfo 获取wifi ssid bssid
+/// @param enable YES: 开启 NO: 关闭 ，默认关闭
+- (void)setReadNetworkInfoEnabled:(BOOL)enable;
 
 
 /// 是否开启IP探测功能
 /// @param enable YES: 开启 NO: 关闭 默认打开
-- (void)enableCustomIPRank:(BOOL)enable;
+- (void)enableCustomIPRank:(BOOL)enable ALICLOUD_HTTPDNS_DEPRECATED("Deprecated, will be removed in the future.");
 
 
 /// 获取用于用户追踪的 sessionId

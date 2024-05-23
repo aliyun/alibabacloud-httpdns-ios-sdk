@@ -159,11 +159,19 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (void)setExpiredIPEnabled:(BOOL)enable {
+    [self setReuseExpiredIPEnabled:enable];
+}
+
+- (void)setReuseExpiredIPEnabled:(BOOL)enable {
     [_requestScheduler setExpiredIPEnabled:enable];
 }
 
 - (void)setHTTPSRequestEnabled:(BOOL)enable {
     HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED = enable;
+}
+
+- (void)setNetworkingTimeoutInterval:(NSTimeInterval)timeoutInterval {
+    self.timeoutInterval = timeoutInterval;
 }
 
 - (void)setRegion:(NSString *)region {
@@ -241,11 +249,16 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (void)enableNetworkInfo:(BOOL)enable {
+    [self setReadNetworkInfoEnabled:enable];
+}
+
+- (void)setReadNetworkInfoEnabled:(BOOL)enable {
     [HttpdnsgetNetworkInfoHelper setNetworkInfoEnable:enable];
 }
 
 - (void)enableCustomIPRank:(BOOL)enable {
-    _requestScheduler.customIPRankingEnabled = enable;
+    // 不再生效，保留接口
+    // 是否开启自定义IP排序，由是否设置IPRankingDatasource和IPRankingDatasource中是否能根据host找到对应的IP来决定
 }
 
 - (NSString *)getSessionId {

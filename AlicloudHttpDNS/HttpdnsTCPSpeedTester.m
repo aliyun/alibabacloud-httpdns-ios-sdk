@@ -69,10 +69,6 @@ static NSString *const ipKey = @"ip";
     if ([[self class] isIPv6OnlyNetwork]) {
         return nil;
     }
-//    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-//        NSLog(@"###### ==> isAbleToResolveIPv6Result return");
-//        return nil;
-//    }
     if (![HttpdnsUtil isNotEmptyArray:IPs]) {
         return nil;
     }
@@ -82,7 +78,6 @@ static NSString *const ipKey = @"ip";
     if (![HttpdnsUtil isNotEmptyString:host]) {
         return nil;
     }
-
 
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
     NSDictionary<NSString *, NSString *> *dataSource = sharedService.IPRankingDataSource;
