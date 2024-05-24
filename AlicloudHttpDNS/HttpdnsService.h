@@ -59,7 +59,7 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 
 @property (nonatomic, copy, readonly) NSString *secretKey;
 
-@property (nonatomic, weak, setter=setDelegateForDegradationFilter:) id<HttpDNSDegradationDelegate> delegate;
+@property (nonatomic, weak, setter=setDelegateForDegradationFilter:) id<HttpDNSDegradationDelegate> delegate ALICLOUD_HTTPDNS_DEPRECATED("不再建议通过设置此回调实现降级逻辑，而是自行在调用HTTPDNS解析域名前做判断");
 
 @property (nonatomic, weak) id<HttpdnsTTLDelegate> ttlDelegate;
 
@@ -81,6 +81,7 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
  */
 - (instancetype)initWithAccountID:(int)accountID secretKey:(NSString *)secretKey;
 
+
 /// 开启鉴权功能后，鉴权的签名计算默认读取设备当前时间。若担心设备时间不准确导致签名不准确，可以使用此接口校正 APP 内鉴权计算使用的时间值
 /// 注意，校正操作在 APP 的一个生命周期内生效，APP 重启后需要重新设置才能重新生效
 /// @param currentTime 用于校正的时间戳，单位为秒
@@ -96,6 +97,7 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 /// 设置持久化缓存功能
 /// @param enable YES: 开启 NO: 关闭
 - (void)setCachedIPEnabled:(BOOL)enable ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService setPersistentCacheIPEnabled:] instead.");
+
 
 /// 设置持久化缓存功能
 /// 开启后，每次解析会将结果持久化缓存到本地，当下次应用启动时，可以从本地加载缓存解析结果，提高应用启动时获取解析结果的速度
@@ -182,6 +184,16 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 /// 是否开启IP探测功能
 /// @param enable YES: 开启 NO: 关闭 默认打开
 - (void)enableCustomIPRank:(BOOL)enable ALICLOUD_HTTPDNS_DEPRECATED("Deprecated, will be removed in the future.");
+
+
+/// 设置软件自定义解析全局默认参数，设置后，调用软件自定义解析时，每个请求默认都会带上这里配置的参数
+/// @param params 全局默认参数
+- (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params;
+
+
+/// 设置日志输出回调，以实现自定义日志输出方式
+/// @param logHandler 日志输出回调实现实例
+- (void)setLogHandler:(id<HttpdnsLoggerProtocol>)logHandler;
 
 
 /// 获取用于用户追踪的 sessionId
@@ -280,43 +292,40 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 /// 异步接口，首次结果可能为空，获取域名对应的IPv4地址，单IPv4
 /// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
 /// @param host 域名
-- (NSString *)getIPv4ForHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSyncNonBlocking:byIpType:] instead.");;
+- (NSString *)getIPv4ForHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSyncNonBlocking:byIpType:] instead.");
 
 /// 异步接口，首次结果可能为空，获取域名对应的IP数组，多IP
 /// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
 /// @param host 域名
-- (NSArray *)getIPv4ListForHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSyncNonBlocking:byIpType:] instead.");;
+- (NSArray *)getIPv4ListForHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSyncNonBlocking:byIpType:] instead.");
 
 /// 获取IPv4地址列表，同步接口，必须在子线程中执行，否则会转变为异步接口
 /// 同步接口有超时机制，超时时间为[HttpDnsService sharedInstance].timeoutInterval, 但是超时上限为5s，
 /// 即使[HttpDnsService sharedInstance].timeoutInterval设置的时间大于5s，同步接口也最多阻塞当前线程5s
 /// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起同步解析请求
 /// @param host 域名
-- (NSArray *)getIPv4ListForHostSync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSync:byIpType:] instead.");;
-
-
+- (NSArray *)getIPv4ListForHostSync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSync:byIpType:] instead.");
 
 /// 异步接口，首次结果可能为空，获取域名对应的ipv6, 单IP （需要开启ipv6 开关 enableIPv6）
 /// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
 /// @param host 域名
-- (NSString *)getIPv6ForHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSyncNonBlocking:byIpType:] instead.");;
+- (NSString *)getIPv6ForHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSyncNonBlocking:byIpType:] instead.");
 
 /// 异步接口，首次结果可能为空，获取域名对应的ipv6数组, 多IP （需要开启ipv6 开关 enableIPv6）
 /// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
 /// @param host 域名
-- (NSArray *)getIPv6ListForHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSyncNonBlocking:byIpType:] instead.");;
+- (NSArray *)getIPv6ListForHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSyncNonBlocking:byIpType:] instead.");
 
 /// 获取IPv6地址列表，同步接口，必须在子线程中执行，否则会转变为异步接口
 /// 同步接口有超时机制，超时时间为[HttpDnsService sharedInstance].timeoutInterval, 但是超时上限为5s，
 /// 即使[HttpDnsService sharedInstance].timeoutInterval设置的时间大于5s，同步接口也最多阻塞当前线程5s
 /// @param host 域名
-- (NSArray *)getIPv6ListForHostSync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSync:byIpType:] instead.");;
+- (NSArray *)getIPv6ListForHostSync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSync:byIpType:] instead.");
 
 /// 异步接口，首次结果可能为空，获取域名对应格式化后的IP (针对ipv6)
 /// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
 /// @param host 域名
-- (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSyncNonBlocking:byIpType:] instead.");;
-
+- (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSyncNonBlocking:byIpType:] instead.");
 
 
 /// 异步接口，首次结果可能为空，同时获取ipv4 ipv6的IP （需要开启ipv6 开关 enableIPv6）
@@ -327,7 +336,7 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 ///         ALICLOUDHDNS_IPV4: ['xxx.xxx.xxx.xxx', 'xxx.xxx.xxx.xxx'],
 ///         ALICLOUDHDNS_IPV6: ['xx:xx:xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx:xx:xx']
 ///   }
-- (NSDictionary <NSString *, NSArray *>*)getHttpDnsResultHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSyncNonBlocking:byIpType:] instead.");;
+- (NSDictionary <NSString *, NSArray *>*)getHttpDnsResultHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSyncNonBlocking:byIpType:] instead.");
 
 /// NOTE: 同步接口，必须在子线程中执行，否则会转变为异步接口
 /// 同步接口有超时机制，超时时间为[HttpDnsService sharedInstance].timeoutInterval, 但是超时上限为5s，
@@ -340,9 +349,7 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 ///         ALICLOUDHDNS_IPV4: ['xxx.xxx.xxx.xxx', 'xxx.xxx.xxx.xxx'],
 ///         ALICLOUDHDNS_IPV6: ['xx:xx:xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx:xx:xx']
 ///   }
-- (NSDictionary <NSString *, NSArray *>*)getHttpDnsResultHostSync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSync:byIpType:] instead.");;
-
-
+- (NSDictionary <NSString *, NSArray *>*)getHttpDnsResultHostSync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSync:byIpType:] instead.");
 
 /// 异步接口，首次结果可能为空，根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址组
 /// 使用此API 需要确保 enableIPv6 开关已打开
@@ -356,7 +363,7 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 ///         ALICLOUDHDNS_IPV4: ['xxx.xxx.xxx.xxx', 'xxx.xxx.xxx.xxx'],
 ///         ALICLOUDHDNS_IPV6: ['xx:xx:xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx:xx:xx']
 ///   }
--(NSDictionary <NSString *, NSArray *>*)autoGetHttpDnsResultForHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSyncNonBlocking:byIpType:] instead.");;
+-(NSDictionary <NSString *, NSArray *>*)autoGetHttpDnsResultForHostAsync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSyncNonBlocking:byIpType:] instead.");
 
 /// 根据当前设备的网络状态自动返回域名对应的 IPv4/IPv6地址组，同步接口，必须在子线程中执行，否则会转变为异步接口
 /// 同步接口有超时机制，超时时间为[HttpDnsService sharedInstance].timeoutInterval, 但是超时上限为5s，
@@ -369,18 +376,17 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 ///         ALICLOUDHDNS_IPV4: ['xxx.xxx.xxx.xxx', 'xxx.xxx.xxx.xxx'],
 ///         ALICLOUDHDNS_IPV6: ['xx:xx:xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx:xx:xx']
 ///   }
-- (NSDictionary <NSString *, NSArray *>*)autoGetHttpDnsResultForHostSync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSync:byIpType:] instead.");;
+- (NSDictionary <NSString *, NSArray *>*)autoGetHttpDnsResultForHostSync:(NSString *)host ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSync:byIpType:] instead.");
+
+/// 软件自定义解析接口
+- (NSDictionary *)getIpsByHostAsync:(NSString *)host withParams:(NSDictionary<NSString *, NSString *> *)params withCacheKey:(NSString *)cacheKey ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService resolveHostSyncNonBlocking:byIpType:withSdnsParams:sdnsCacheKey:] instead.");
 
 
 /// 清除指定host缓存（内存+沙盒数据库）
 /// @param hostArray 需要清除的host域名数组。如果需要清空全部数据传nil或者空数组即可
 - (void)cleanHostCache:(NSArray <NSString *>*)hostArray;
 
-
-/// 设置日志输出回调
-- (void)setLogHandler:(id<HttpdnsLoggerProtocol>)logHandler;
-- (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params;
+/// 清理已经配置的软件自定义解析全局参数
 - (void)clearSdnsGlobalParams;
-- (NSDictionary *)getIpsByHostAsync:(NSString *)host withParams:(NSDictionary<NSString *, NSString *> *)params withCacheKey:(NSString *)cacheKey;
 
 @end
