@@ -20,6 +20,7 @@
 #ifndef HttpdnsDegradationDelegate_h
 #define HttpdnsDegradationDelegate_h
 
+__attribute__((deprecated("不再建议通过设置此回调实现降级逻辑，而是自行在调用HTTPDNS解析域名前做判断")))
 @protocol HttpDNSDegradationDelegate <NSObject>
 
 - (BOOL)shouldDegradeHTTPDNS:(NSString *)hostName;
