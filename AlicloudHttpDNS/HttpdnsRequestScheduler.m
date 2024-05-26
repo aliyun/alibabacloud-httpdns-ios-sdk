@@ -195,7 +195,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     }
 
     BOOL needToQuery = NO;
-    BOOL needToWaitForResult = NO;
+    BOOL needToWaitForResult = YES;
 
     HttpDnsLocker *lockerManager = [HttpDnsLocker sharedInstance];
     [lockerManager lock:cacheKey queryType:originalQueryType];
@@ -208,7 +208,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             return nil;
         }
         needToQuery = YES;
-        needToWaitForResult = YES;
 
         // 在这里构造新的HttpdnsHostObject并置入缓存比较安全，因为这里被锁保护着
         // 如果后面merge的时候再构造，得重新做同步控制
@@ -271,12 +270,12 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             if ([result isExpiredUnderQueryIpType:filterdQueryIpType]) {
                 if (_isExpiredIPEnabled || [result isLoadFromDB]) {
                     needToQuery = YES;
+                    // 只有允许过期缓存，和开启持久化缓存的第一次获取，才不需要等待结果
                     needToWaitForResult = NO;
                     HttpdnsLogDebug("The ips is expired, but we accept it, host: %@, queryType: %ld, filterdQueryType: %ld", host, originalQueryType, filterdQueryIpType);
                     break;
                 } else {
                     needToQuery = YES;
-                    needToWaitForResult = YES;
                     break;
                 }
             }
