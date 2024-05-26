@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <XCTest/XCTest.h>
 #import "XCTestCase+AsyncTesting.h"
 
 #define NOTIFY [self notify:XCTAsyncTestCaseStatusSucceeded];
@@ -16,6 +17,6 @@
 #define WAIT_10 [self waitForStatus:XCTAsyncTestCaseStatusSucceeded timeout:10.0];
 #define WAIT_FOREVER [self waitForStatus:XCTAsyncTestCaseStatusSucceeded timeout:DBL_MAX];
 
-@interface TestBase : NSObject
+@interface TestBase : XCTestCase
 
 @end

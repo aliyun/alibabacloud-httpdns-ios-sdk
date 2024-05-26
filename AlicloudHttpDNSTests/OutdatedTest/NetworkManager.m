@@ -47,8 +47,7 @@ static dispatch_queue_t reachabilityQueue;
 /*
  * 当前网络状态的String描述
  */
-- (NSString*)currentStatusString
-{
+- (NSString*)currentStatusString {
     return [NSString stringWithFormat:@"%u",_current];
 }
 
@@ -56,13 +55,11 @@ static dispatch_queue_t reachabilityQueue;
  * 如果当前网络是Wifi,
  * 获取到当前网络的ssid
  */
-- (NSString *)currentWifiSsid
-{
+- (NSString *)currentWifiSsid {
     return _ssid;
 }
 
-- (_NetworkStatus)reachabilityFlags:(SCNetworkReachabilityFlags)flags
-{
+- (_NetworkStatus)reachabilityFlags:(SCNetworkReachabilityFlags)flags {
     if ((flags & kSCNetworkReachabilityFlagsReachable) == 0 || ![self internetConnection]) {
         // The target host is not reachable.
         return NotReachable;
@@ -133,8 +130,7 @@ static dispatch_queue_t reachabilityQueue;
 }
 
 //网络变化回调函数
-static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info)
-{
+static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info) {
     NetworkManager* instance = [NetworkManager instance];
     [instance update];
 }
@@ -148,8 +144,7 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     }
 }
 
-- (BOOL)internetConnection
-{
+- (BOOL)internetConnection {
     struct sockaddr_in zeroAddress;
 
     bzero(&zeroAddress, sizeof(zeroAddress));
@@ -173,9 +168,7 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     return (isReachable && !needsConnection) ? YES : NO;
 }
 
-
-+ (BOOL) configureProxies
-{
++ (BOOL) configureProxies {
     NSDictionary *proxySettings = CFBridgingRelease(CFNetworkCopySystemProxySettings());
 
     NSLog(@"proxy setting: %@", proxySettings);
@@ -186,14 +179,12 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 
     proxies = CFBridgingRelease(CFNetworkCopyProxiesForURL((__bridge CFURLRef)url,
                                                            (__bridge CFDictionaryRef)proxySettings));
-    if (proxies > 0)
-    {
+    if (proxies > 0) {
         NSDictionary *settings = [proxies objectAtIndex:0];
         NSString* host = [settings objectForKey:(NSString *)kCFProxyHostNameKey];
         NSString* port = [settings objectForKey:(NSString *)kCFProxyPortNumberKey];
 
-        if (host || port)
-        {
+        if (host || port) {
             return YES;
         }
     }
