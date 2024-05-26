@@ -19,8 +19,7 @@ static void *kExpectedStatus_Key = "kExpectedStatus_Key";
 #pragma mark - Public
 
 
-- (void)waitForStatus:(XCTAsyncTestCaseStatus)status timeout:(NSTimeInterval)timeout
-{
+- (void)waitForStatus:(XCTAsyncTestCaseStatus)status timeout:(NSTimeInterval)timeout {
     self.notified = NO;
     self.expectedStatus = status;
     self.loopUntil = [NSDate dateWithTimeIntervalSinceNow:timeout];
@@ -41,8 +40,7 @@ static void *kExpectedStatus_Key = "kExpectedStatus_Key";
     }
 }
 
-- (void)waitForTimeout:(NSTimeInterval)timeout
-{
+- (void)waitForTimeout:(NSTimeInterval)timeout {
     self.notified = NO;
     self.expectedStatus = XCTAsyncTestCaseStatusUnknown;
     self.loopUntil = [NSDate dateWithTimeIntervalSinceNow:timeout];
@@ -55,8 +53,7 @@ static void *kExpectedStatus_Key = "kExpectedStatus_Key";
     }
 }
 
-- (void)notify:(XCTAsyncTestCaseStatus)status
-{
+- (void)notify:(XCTAsyncTestCaseStatus)status {
     self.notifiedStatus = status;
     // self.notified must be set at the last of this method
     self.notified = YES;
@@ -64,61 +61,51 @@ static void *kExpectedStatus_Key = "kExpectedStatus_Key";
 
 #pragma nark - Object Association Helpers -
 
-- (void) setAssociatedObject:(id)anObject key:(void*)key
-{
+- (void)setAssociatedObject:(id)anObject key:(void*)key {
     objc_setAssociatedObject(self, key, anObject, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (id) getAssociatedObject:(void*)key
-{
+- (id)getAssociatedObject:(void*)key {
     id anObject = objc_getAssociatedObject(self, key);
     return anObject;
 }
 
 #pragma mark - Property Implementations -
 
-- (NSDate*) loopUntil
-{
+- (NSDate*)loopUntil {
     return [self getAssociatedObject:kLoopUntil_Key];
 }
 
-- (void) setLoopUntil:(NSDate*)value
-{
+- (void)setLoopUntil:(NSDate*)value {
     [self setAssociatedObject:value key:kLoopUntil_Key];
 }
 
-- (BOOL) notified
-{
+- (BOOL)notified {
     NSNumber *valueNumber = [self getAssociatedObject:kNotified_Key];
     return [valueNumber boolValue];
 }
 
-- (void) setNotified:(BOOL)value
-{
+- (void)setNotified:(BOOL)value {
     NSNumber *valueNumber = [NSNumber numberWithBool:value];
     [self setAssociatedObject:valueNumber key:kNotified_Key];
 }
 
-- (XCTAsyncTestCaseStatus) notifiedStatus
-{
+- (XCTAsyncTestCaseStatus)notifiedStatus {
     NSNumber *valueNumber = [self getAssociatedObject:kNotifiedStatus_Key];
     return [valueNumber integerValue];
 }
 
-- (void) setNotifiedStatus:(XCTAsyncTestCaseStatus)value
-{
+- (void)setNotifiedStatus:(XCTAsyncTestCaseStatus)value {
     NSNumber *valueNumber = [NSNumber numberWithInt:(int)value];
     [self setAssociatedObject:valueNumber key:kNotifiedStatus_Key];
 }
 
-- (XCTAsyncTestCaseStatus) expectedStatus
-{
+- (XCTAsyncTestCaseStatus)expectedStatus {
     NSNumber *valueNumber = [self getAssociatedObject:kExpectedStatus_Key];
     return [valueNumber integerValue];
 }
 
-- (void) setExpectedStatus:(XCTAsyncTestCaseStatus)value
-{
+- (void)setExpectedStatus:(XCTAsyncTestCaseStatus)value {
     NSNumber *valueNumber = [NSNumber numberWithInt:(int)value];
     [self setAssociatedObject:valueNumber key:kExpectedStatus_Key];
 }
