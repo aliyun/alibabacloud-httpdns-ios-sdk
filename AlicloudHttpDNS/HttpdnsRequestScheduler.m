@@ -104,6 +104,20 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     [self configureServerIPsAndResetActivatedIPTime];
 }
 
++ (void)configureServerIPsAndResetActivatedIPTime {
+    // 默认的内置服务ipv4 地址 根据国际站来区分
+    ALICLOUD_HTTPDNS_SERVER_IP_LIST = @[ALICLOUD_HTTPDNS_SERVER_IP_DEFAULT];
+
+    // 默认的内置服务ipv6 地址 根据国际站来区分
+    ALICLOUD_HTTPDNS_SERVER_IPV6_LIST = @[ALICLOUD_HTTPDNS_SERVER_IPV6_DEFAULT];
+
+    // Disable状态开始30秒后可以进行“嗅探”行为
+    ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL = 30;
+
+    // sever disable状态缓存时间默认为1天
+    ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 1 * 24 * 60 * 60;
+}
+
 - (instancetype)init {
     if (self = [super init]) {
         _lastNetworkStatus = [AlicloudReachabilityManager shareInstance].currentNetworkStatus;
@@ -123,16 +137,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                                                      name:ALICLOUD_NETWOEK_STATUS_NOTIFY
                                                    object:nil];
         [self initServerDisableStatus];
-        _testHelper = [[HttpdnsRequestTestHelper alloc] init];
     }
     return self;
-}
-
-+ (void)configureServerIPsAndResetActivatedIPTime {
-    ALICLOUD_HTTPDNS_SERVER_IP_LIST = @[ALICLOUD_HTTPDNS_SERVER_IP_DEFAULT];  //默认的内置服务ipv4 地址 根据国际站来区分
-    ALICLOUD_HTTPDNS_SERVER_IPV6_LIST = @[ALICLOUD_HTTPDNS_SERVER_IPV6_DEFAULT];  //默认的内置服务ipv6 地址 根据国际站来区分
-    ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL = 30; // 30 second
-    ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 1 * 24 * 60 * 60; // one day
 }
 
 - (void)initServerDisableStatus {
@@ -817,7 +823,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     });
 }
 
-// for test
+#pragma mark -
+#pragma mark - 以下函数仅用于测试目的
+
 - (NSString *)showMemoryCache {
     NSString *cacheDes;
     if ([HttpdnsUtil isNotEmptyDictionary:_hostManagerDict]) {
@@ -826,11 +834,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     return cacheDes;
 }
 
-@end
-
-@implementation HttpdnsRequestTestHelper
-
-+ (void)zeroSnifferTimeForTest {
++ (void)setZeroSnifferTimeInterval {
     ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL = 0;
 }
 

@@ -24,37 +24,35 @@ FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_2;
 FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_3;
 FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_4;
 
-@interface HttpdnsRequestTestHelper : NSObject
-
-+ (void)zeroSnifferTimeForTest;
-
-@end
-
-/**
- * Disable状态开始30秒后可以进行“嗅探”行为
- */
-static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL = 0;
+static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL;
 
 @interface HttpdnsRequestScheduler ()
+
+// ip探测优选开关 两者需要同时满足
+// 这个ip探测优选开关是走的beacon服务
+@property (nonatomic, assign) BOOL IPRankingEnabled;
+
 
 - (void)setServerDisable:(BOOL)serverDisable;
 
 - (BOOL)isServerDisable;
 
-@property (nonatomic, strong) HttpdnsRequestTestHelper *testHelper;
++ (void)setZeroSnifferTimeInterval;
 
+- (NSString *)showMemoryCache;
 
-//ip探测优选开关 两者需要同时满足
-//这个ip探测优选开关是走的beacon服务
-@property (nonatomic, assign) BOOL IPRankingEnabled;
+- (void)mergeLookupResultToManager:(HttpdnsHostObject *)result host:host cacheKey:(NSString *)cacheKey underQueryIpType:(HttpdnsQueryIPType)queryIpType;
 
+- (HttpdnsHostObject *)executeRequest:(HttpdnsRequest *)request
+                           retryCount:(int)hasRetryedCount
+               activatedServerIPIndex:(NSInteger)activatedServerIPIndex
+                                error:(NSError *)error;
 
-
-//内部缓存开关，不触发加载DB到内存的操作
+// 内部缓存开关，不触发加载DB到内存的操作
 - (void)_setCachedIPEnabled:(BOOL)enable;
 - (BOOL)_getCachedIPEnabled;
 
-//设置开启region
+// 设置开启region
 - (void)_setRegin:(NSString *)region;
 
 + (void)configureServerIPsAndResetActivatedIPTime;

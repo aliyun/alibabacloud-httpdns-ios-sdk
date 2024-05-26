@@ -517,6 +517,12 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
     ALICLOUD_HTTPDNS_ABLE_TO_CONNECT_SCHEDULE_CENTER_INTERVAL = 0;/**< 由5MIN改为0S */
 }
 
++ (void)setFirstIPWrongForTest {
+    ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = @[
+                                                   @"100.100.100.100",
+                                                   ];
+}
+
 + (void)setFirstTwoWrongForScheduleCenterIPs {
     ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = @[
                                                    @"100.100.100.100",

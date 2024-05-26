@@ -73,14 +73,14 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 #pragma mark -
 #pragma mark ---------- singleton
 
-static HttpDnsService * _httpDnsClient = nil;
 
 + (instancetype)sharedInstance {
+    static HttpDnsService * _sharedInstance;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        _httpDnsClient = [[self alloc] init];
+        _sharedInstance = [[self alloc] init];
     });
-    return _httpDnsClient;
+    return _sharedInstance;
 }
 
 - (instancetype)autoInit {
@@ -112,28 +112,26 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (instancetype)initWithAccountID:(int)accountID secretKey:(NSString *)secretKey {
-    HttpDnsService *instance = [HttpDnsService sharedInstance];
-
-    instance.accountID = accountID;
-    instance.secretKey = secretKey;
-    NSString *accountIdString = [NSString stringWithFormat:@"%@", @(accountID)];
-    [instance configWithAccountId:accountIdString];
-
-    return instance;
-}
-
-- (void)configWithAccountId:(NSString *)accountId {
-    [_httpDnsClient requestScheduler];
-    _httpDnsClient.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
     HTTPDNS_EXT_INFO = @{
         EXT_INFO_KEY_VERSION : HTTPDNS_IOS_SDK_VERSION,
     };
-    _httpDnsClient.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
+
+    HttpDnsService *sharedInstance = [HttpDnsService sharedInstance];;
+
+    sharedInstance.accountID = accountID;
+    sharedInstance.secretKey = secretKey;
+
+    sharedInstance.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
+    sharedInstance.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
 
     if (HTTPDNS_INTER) {
         // 设置固定region 为sg
-        [self setRegion:@"sg"];
+        [sharedInstance setRegion:@"sg"];
     }
+
+    sharedInstance.requestScheduler = [[HttpdnsRequestScheduler alloc] init];
+
+    return sharedInstance;
 }
 
 #pragma mark -
@@ -1112,15 +1110,6 @@ static HttpDnsService * _httpDnsClient = nil;
         authTimeOffset = _authTimeOffset;
     });
     return authTimeOffset;
-}
-
-- (HttpdnsRequestScheduler *)requestScheduler {
-    if (_requestScheduler) {
-        return _requestScheduler;
-    }
-    HttpdnsRequestScheduler *requestScheduler = [[HttpdnsRequestScheduler alloc] init];
-    _requestScheduler = requestScheduler;
-    return _requestScheduler;
 }
 
 - (NSString *)getIpByHost:(NSString *)host {

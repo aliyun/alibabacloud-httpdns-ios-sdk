@@ -35,7 +35,11 @@ typedef void (^HttpDnsIdCallback)(NSDictionary *result);
 + (void)zeroAutoConnectToScheduleCenterInterval;
 
 + (void)zeroMixConnectToScheduleCenterInterval;
+
++ (void)setFirstIPWrongForTest;
+
 + (void)setFirstTwoWrongForScheduleCenterIPs;
+
 + (void)setAllWrongForScheduleCenterIPs;
 
 @end

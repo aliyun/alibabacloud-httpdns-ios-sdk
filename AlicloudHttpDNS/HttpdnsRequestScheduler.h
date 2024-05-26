@@ -58,7 +58,4 @@ FOUNDATION_EXTERN NSString *ALICLOUD_HTTPDNS_SERVER_IP_REGION;
                                   fromIPIndex:(NSInteger)IPIndex
                                       isHTTPS:(BOOL)isHTTPS;
 
-// for test
-- (NSString *)showMemoryCache;
-
 @end
