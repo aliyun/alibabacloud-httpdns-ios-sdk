@@ -66,9 +66,11 @@ static NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 - (void)testNoneBlockingMethodShouldNotBlock {
     HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
     HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
-    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0 activatedServerIPIndex:0 error:nil]).andDo(^(NSInvocation *invocation) {
-        sleep(3);
-    });
+    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0 activatedServerIPIndex:0 error:nil])
+        .ignoringNonObjectArgs()
+        .andDo(^(NSInvocation *invocation) {
+            [NSThread sleepForTimeInterval:3];
+        });
     [mockedObjects addObject:mockedScheduler];
 
     [mockedScheduler cleanAllHostMemoryCache];
@@ -83,9 +85,11 @@ static NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 - (void)testBlockingMethodShouldNotBlockIfInMainThread {
     HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
     HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
-    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0 activatedServerIPIndex:0 error:nil]).andDo(^(NSInvocation *invocation) {
-        sleep(3);
-    });
+    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0 activatedServerIPIndex:0 error:nil])
+        .ignoringNonObjectArgs()
+        .andDo(^(NSInvocation *invocation) {
+            [NSThread sleepForTimeInterval:3];
+        });
     [mockedObjects addObject:mockedScheduler];
     [mockedScheduler cleanAllHostMemoryCache];
     NSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];
@@ -98,9 +102,11 @@ static NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 - (void)testBlockingMethodShouldBlockIfInBackgroundThread {
     HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
     HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
-    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0 activatedServerIPIndex:0 error:nil]).andDo(^(NSInvocation *invocation) {
-        sleep(3);
-    });
+    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0 activatedServerIPIndex:0 error:nil])
+        .ignoringNonObjectArgs()
+        .andDo(^(NSInvocation *invocation) {
+            [NSThread sleepForTimeInterval:3];
+        });
     [mockedObjects addObject:mockedScheduler];
     [mockedScheduler cleanAllHostMemoryCache];
 
@@ -125,7 +131,7 @@ static NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
             // 第一次调用，阻塞5秒
-            sleep(5);
+            [NSThread sleepForTimeInterval:5];
             [invocation setReturnValue:&ipv4HostObject];
         });
 
@@ -142,7 +148,7 @@ static NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
     });
 
     // 确保第一个请求已经开始
-    sleep(1);
+    [NSThread sleepForTimeInterval:1];
 
     NSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];
 
@@ -178,12 +184,12 @@ static NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
             int localCount = atomic_fetch_add(&count, 1) + 1;
 
             if (localCount == 1) {
-                sleep(3);
+                [NSThread sleepForTimeInterval:3];
                 // 第一次调用，返回异常
                 @throw [NSException exceptionWithName:@"TestException" reason:@"TestException" userInfo:nil];
             } else {
                 // 第二次调用
-                sleep(3);
+                [NSThread sleepForTimeInterval:3];
                 [invocation setReturnValue:&ipv4HostObject];
             }
         });
@@ -201,7 +207,7 @@ static NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
     });
 
     // 确保第一个请求已经开始
-    sleep(1);
+    [NSThread sleepForTimeInterval:1];
 
     NSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];
 
