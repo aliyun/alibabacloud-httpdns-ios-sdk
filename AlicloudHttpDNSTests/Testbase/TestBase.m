@@ -29,7 +29,7 @@ static AlicloudIPv6Adapter *mockIpv6Adapter;
 - (HttpdnsHostObject *)constructSimpleIpv4HostObject {
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
     hostObject.hostName = ipv4OnlyHost;
-    hostObject.ttl = 60;
+    hostObject.v4ttl = 60;
     HttpdnsIpObject *ip1 = [[HttpdnsIpObject alloc] init];
     [ip1 setIp:ipv41];
     HttpdnsIpObject *ip2 = [[HttpdnsIpObject alloc] init];
@@ -42,7 +42,7 @@ static AlicloudIPv6Adapter *mockIpv6Adapter;
 - (HttpdnsHostObject *)constructSimpleIpv6HostObject {
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
     hostObject.hostName = ipv4OnlyHost;
-    hostObject.ttl = 60;
+    hostObject.v6ttl = 60;
     HttpdnsIpObject *ip1 = [[HttpdnsIpObject alloc] init];
     [ip1 setIp:@"2001:4860:4860::8888"];
     HttpdnsIpObject *ip2 = [[HttpdnsIpObject alloc] init];
@@ -55,7 +55,7 @@ static AlicloudIPv6Adapter *mockIpv6Adapter;
 - (HttpdnsHostObject *)constructSimpleIpv4AndIpv6HostObject {
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
     hostObject.hostName = ipv4AndIpv6Host;
-    hostObject.ttl = 60;
+    hostObject.v4ttl = 60;
     HttpdnsIpObject *ip1 = [[HttpdnsIpObject alloc] init];
     [ip1 setIp:ipv41];
     HttpdnsIpObject *ip2 = [[HttpdnsIpObject alloc] init];
@@ -63,6 +63,7 @@ static AlicloudIPv6Adapter *mockIpv6Adapter;
     hostObject.ips = @[ip1, ip2];
     hostObject.lastIPv4LookupTime = self.currentTimeStamp;
 
+    hostObject.v6ttl = 60;
     HttpdnsIpObject *ip3 = [[HttpdnsIpObject alloc] init];
     [ip3 setIp:ipv61];
     HttpdnsIpObject *ip4 = [[HttpdnsIpObject alloc] init];

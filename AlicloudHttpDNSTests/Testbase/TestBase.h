@@ -38,6 +38,8 @@ static NSMutableArray *mockedObjects;
 
 @interface TestBase : XCTestCase
 
+@property (nonatomic, strong) HttpDnsService *httpdns;
+
 @property (nonatomic, assign) NSTimeInterval currentTimeStamp;
 
 - (HttpdnsHostObject *)constructSimpleIpv4HostObject;

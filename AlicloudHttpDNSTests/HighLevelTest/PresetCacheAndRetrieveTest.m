@@ -22,8 +22,6 @@
  */
 @interface PresetCacheAndRetrieveTest : TestBase
 
-@property (nonatomic, strong) HttpDnsService *httpdns;
-
 @end
 
 
