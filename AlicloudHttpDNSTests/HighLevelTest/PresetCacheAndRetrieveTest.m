@@ -7,140 +7,51 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "TestBase.h"
-#import <AlicloudUtils/AlicloudUtils.h>
 #import <OCMock/OCMock.h>
+#import <AlicloudUtils/AlicloudUtils.h>
+#import "TestBase.h"
 #import "HttpdnsHostObject.h"
 #import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsService.h"
 #import "HttpdnsService_Internal.h"
 
 
+/**
+ * 由于使用OCMock在连续的测试用例中重复Mock对象(即使每次都已经stopMocking)会有内存错乱的问题，
+ * 目前还解决不了，所以这个类中的测试case，需要手动单独执行
+ */
 @interface PresetCacheAndRetrieveTest : TestBase
-
-@property (nonatomic, assign) NSTimeInterval currentTimeStamp;
 
 @property (nonatomic, strong) HttpDnsService *httpdns;
 
 @end
 
-static NSString *ipv4OnlyHost = @"ipv4.only.com";
-static NSString *ipv6OnlyHost = @"ipv6.only.com";
-static NSString *ipv4AndIpv6Host = @"ipv4.and.ipv6.com";
-
-static NSString *ipv41 = @"1.1.1.1";
-static NSString *ipv42 = @"2.2.2.2";
-static NSString *ipv61 = @"2001:4860:4860::8888";
-static NSString *ipv62 = @"2001:4860:4860::8844";
-
-static NSMutableArray *mockedObjects;
 
 @implementation PresetCacheAndRetrieveTest
+
++ (void)setUp {
+    [super setUp];
+
+    HttpDnsService *httpdns = [[HttpDnsService alloc] initWithAccountID:10000];
+    [httpdns setLogEnabled:YES];
+    [httpdns setIPv6Enabled:YES];
+}
+
++ (void)tearDown {
+    [super tearDown];
+}
 
 - (void)setUp {
     [super setUp];
 
-    mockedObjects = [NSMutableArray array];
-
-    self.httpdns = [[HttpDnsService alloc] initWithAccountID:10000];
-    [self.httpdns setLogEnabled:YES];
-    [self.httpdns setIPv6Enabled:YES];
-
+    self.httpdns = [HttpDnsService sharedInstance];
     self.currentTimeStamp = [[NSDate date] timeIntervalSince1970];
 }
 
 - (void)tearDown {
-    for (id object in mockedObjects) {
-        [object stopMocking];
-    }
-
     [super tearDown];
 }
 
-- (HttpdnsHostObject *)constructSimpleIpv4HostObject {
-    HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
-    hostObject.hostName = ipv4OnlyHost;
-    hostObject.ttl = 60;
-    HttpdnsIpObject *ip1 = [[HttpdnsIpObject alloc] init];
-    [ip1 setIp:ipv41];
-    HttpdnsIpObject *ip2 = [[HttpdnsIpObject alloc] init];
-    [ip2 setIp:ipv42];
-    hostObject.ips = @[ip1, ip2];
-    hostObject.lastIPv4LookupTime = self.currentTimeStamp;
-    return hostObject;
-}
-
-- (HttpdnsHostObject *)constructSimpleIpv6HostObject {
-    HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
-    hostObject.hostName = ipv4OnlyHost;
-    hostObject.ttl = 60;
-    HttpdnsIpObject *ip1 = [[HttpdnsIpObject alloc] init];
-    [ip1 setIp:@"2001:4860:4860::8888"];
-    HttpdnsIpObject *ip2 = [[HttpdnsIpObject alloc] init];
-    [ip2 setIp:@"2001:4860:4860::8844"];
-    hostObject.ip6s = @[ip1, ip2];
-    hostObject.lastIPv6LookupTime = self.currentTimeStamp;
-    return hostObject;
-}
-
-- (HttpdnsHostObject *)constructSimpleIpv4AndIpv6HostObject {
-    HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
-    hostObject.hostName = ipv4AndIpv6Host;
-    hostObject.ttl = 60;
-    HttpdnsIpObject *ip1 = [[HttpdnsIpObject alloc] init];
-    [ip1 setIp:ipv41];
-    HttpdnsIpObject *ip2 = [[HttpdnsIpObject alloc] init];
-    [ip2 setIp:ipv42];
-    hostObject.ips = @[ip1, ip2];
-    hostObject.lastIPv4LookupTime = self.currentTimeStamp;
-
-    HttpdnsIpObject *ip3 = [[HttpdnsIpObject alloc] init];
-    [ip3 setIp:ipv61];
-    HttpdnsIpObject *ip4 = [[HttpdnsIpObject alloc] init];
-    [ip4 setIp:ipv62];
-    hostObject.ip6s = @[ip3, ip4];
-    hostObject.lastIPv6LookupTime = self.currentTimeStamp;
-    return hostObject;
-}
-
-- (void)presetNetworkEnvAsIpv4 {
-    id mockAlicloudIPv6Adapter = OCMClassMock([AlicloudIPv6Adapter class]);
-    OCMStub([mockAlicloudIPv6Adapter getInstance]).andReturn(mockAlicloudIPv6Adapter);
-    OCMStub([mockAlicloudIPv6Adapter currentIpStackType]).andReturn(kAlicloudIPv4only);
-    [mockedObjects addObject:mockAlicloudIPv6Adapter];
-}
-
-- (void)presetNetworkEnvAsIpv6 {
-    id mockAlicloudIPv6Adapter = OCMClassMock([AlicloudIPv6Adapter class]);
-    OCMStub([mockAlicloudIPv6Adapter getInstance]).andReturn(mockAlicloudIPv6Adapter);
-    OCMStub([mockAlicloudIPv6Adapter currentIpStackType]).andReturn(kAlicloudIPv6only);
-    [mockedObjects addObject:mockAlicloudIPv6Adapter];
-}
-
-- (void)presetNetworkEnvAsIpv4AndIpv6 {
-    id mockAlicloudIPv6Adapter = OCMClassMock([AlicloudIPv6Adapter class]);
-    OCMStub([mockAlicloudIPv6Adapter getInstance]).andReturn(mockAlicloudIPv6Adapter);
-    OCMStub([mockAlicloudIPv6Adapter currentIpStackType]).andReturn(kAlicloudIPdual);
-    [mockedObjects addObject:mockAlicloudIPv6Adapter];
-}
-
-- (void)shouldNotHaveCalledRequestWhenResolving:(void (^)(void))resolvingBlock {
-    HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
-    HttpdnsRequestScheduler *mockScheduler = OCMPartialMock(scheduler);
-    OCMReject([mockScheduler executeRequest:[OCMArg any] retryCount:0 activatedServerIPIndex:0 error:[OCMArg any]]);
-    resolvingBlock();
-    OCMVerifyAll(mockScheduler);
-    [mockedObjects addObject:mockScheduler];
-}
-
-- (void)shouldHaveCalledRequestWhenResolving:(void (^)(void))resolvingBlock {
-    HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
-    HttpdnsRequestScheduler *mockScheduler = OCMPartialMock(scheduler);
-    OCMExpect([mockScheduler executeRequest:[OCMArg any] retryCount:0 activatedServerIPIndex:0 error:[OCMArg any]]).andReturn(nil);
-    resolvingBlock();
-    OCMVerifyAll(mockScheduler);
-    [mockedObjects addObject:mockScheduler];
-}
 
 // 缓存ipv4的地址，网络情况为ipv4，正常返回ipv4的地址
 - (void)testSimplyRetrieveIpv4CachedResult {
@@ -212,7 +123,6 @@ static NSMutableArray *mockedObjects;
     // 双栈下解析结果仅有ipv4，合并时会标记该host无ipv6
     [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject host:ipv4OnlyHost cacheKey:ipv4OnlyHost underQueryIpType:HttpdnsQueryIPTypeBoth];
 
-    // 使用同步接口，要切换到异步线程，否则内部会自己切
     [self shouldNotHaveCalledRequestWhenResolving:^{
         HttpdnsResult *result = [self.httpdns resolveHostSync:ipv4OnlyHost byIpType:HttpdnsQueryIPTypeBoth];
         XCTAssertNotNil(result);
