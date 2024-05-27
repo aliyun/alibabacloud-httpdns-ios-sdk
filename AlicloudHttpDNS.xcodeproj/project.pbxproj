@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		05924C12336426C1A7D80814 /* Pods_AlicloudHttpDNSTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8EEBAFF15245D1ACB55D78D1 /* Pods_AlicloudHttpDNSTests.framework */; };
-		2197CA9E1BC7AB9B00BDB65B /* HttpdnsUtilTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CA961BC7AB9B00BDB65B /* HttpdnsUtilTest.m */; };
 		2197CAC31BC7B3D400BDB65B /* AlicloudHttpDNS.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB11BC7B3D400BDB65B /* AlicloudHttpDNS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2197CAC51BC7B3D400BDB65B /* HttpdnsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */; };
 		2197CAC71BC7B3D400BDB65B /* HttpdnsLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 2197CAB51BC7B3D400BDB65B /* HttpdnsLog.m */; };
@@ -101,6 +100,7 @@
 		947E5C182C00762100123579 /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 943FA4292BFA4B410006F169 /* HttpdnsRequest.m */; };
 		947E5C192C00764C00123579 /* HttpDnsLocker.m in Sources */ = {isa = PBXBuildFile; fileRef = CB1E4EE72A8CBD1B00F01EAC /* HttpDnsLocker.m */; };
 		947E5C1D2C02DB9300123579 /* PresetCacheAndRetrieveTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 947E5C1C2C02DB9300123579 /* PresetCacheAndRetrieveTest.m */; };
+		948CD0092C031EB000F9F075 /* MultithreadCorrectnessTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 948CD0082C031EB000F9F075 /* MultithreadCorrectnessTest.m */; };
 		94A014702BF38F410018B096 /* HttpdnsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 94A0146D2BF38F410018B096 /* HttpdnsService.m */; };
 		94A014712BF38F410018B096 /* HttpdnsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 94A0146D2BF38F410018B096 /* HttpdnsService.m */; };
 		94A014732BF38F410018B096 /* HttpdnsService.h in Headers */ = {isa = PBXBuildFile; fileRef = 94A0146E2BF38F410018B096 /* HttpdnsService.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -193,7 +193,6 @@
 		083C3DAADE200F35A3B623C7 /* Pods-AlicloudHttpDNSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AlicloudHttpDNSTests.release.xcconfig"; path = "Target Support Files/Pods-AlicloudHttpDNSTests/Pods-AlicloudHttpDNSTests.release.xcconfig"; sourceTree = "<group>"; };
 		2197CA3C1BC79A4500BDB65B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2197CA481BC79A4500BDB65B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2197CA961BC7AB9B00BDB65B /* HttpdnsUtilTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsUtilTest.m; sourceTree = "<group>"; };
 		2197CAB11BC7B3D400BDB65B /* AlicloudHttpDNS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AlicloudHttpDNS.h; sourceTree = "<group>"; };
 		2197CAB21BC7B3D400BDB65B /* HttpdnsConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsConfig.h; sourceTree = "<group>"; };
 		2197CAB31BC7B3D400BDB65B /* HttpdnsConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsConfig.m; sourceTree = "<group>"; };
@@ -241,6 +240,7 @@
 		943FA4292BFA4B410006F169 /* HttpdnsRequest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsRequest.m; sourceTree = "<group>"; };
 		945914111CEB5D9C00D95CF7 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
 		947E5C1C2C02DB9300123579 /* PresetCacheAndRetrieveTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PresetCacheAndRetrieveTest.m; sourceTree = "<group>"; };
+		948CD0082C031EB000F9F075 /* MultithreadCorrectnessTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MultithreadCorrectnessTest.m; sourceTree = "<group>"; };
 		94A0146D2BF38F410018B096 /* HttpdnsService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsService.m; sourceTree = "<group>"; };
 		94A0146E2BF38F410018B096 /* HttpdnsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsService.h; sourceTree = "<group>"; };
 		94A0146F2BF38F410018B096 /* HttpdnsService_Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsService_Internal.h; sourceTree = "<group>"; };
@@ -496,6 +496,7 @@
 			isa = PBXGroup;
 			children = (
 				947E5C1C2C02DB9300123579 /* PresetCacheAndRetrieveTest.m */,
+				948CD0082C031EB000F9F075 /* MultithreadCorrectnessTest.m */,
 			);
 			path = HighLevelTest;
 			sourceTree = "<group>";
@@ -507,7 +508,6 @@
 				4A84996B219EA23500D82C95 /* IPv6ResTests.m */,
 				9A5914761EA07EA700A7ED28 /* NetworkManager.h */,
 				9A5914771EA07EA700A7ED28 /* NetworkManager.m */,
-				2197CA961BC7AB9B00BDB65B /* HttpdnsUtilTest.m */,
 			);
 			path = OutdatedTest;
 			sourceTree = "<group>";
@@ -1009,11 +1009,11 @@
 				9A5D5E2B1E9D027200CAC3A6 /* HttpdnsScheduleCenter.m in Sources */,
 				9A0903791EA07C0C007B6821 /* HttpdnsScheduleCenterRequest.m in Sources */,
 				9A24A85C1F179CEB00BDA719 /* UIApplication+ABSHTTPDNSSetting.m in Sources */,
+				948CD0092C031EB000F9F075 /* MultithreadCorrectnessTest.m in Sources */,
 				947E5C192C00764C00123579 /* HttpDnsLocker.m in Sources */,
 				9A59147C1EA07EA700A7ED28 /* HttpdnsRequestTest.m in Sources */,
 				4A84996C219EA23500D82C95 /* IPv6ResTests.m in Sources */,
 				9A59147D1EA07EA700A7ED28 /* NetworkManager.m in Sources */,
-				2197CA9E1BC7AB9B00BDB65B /* HttpdnsUtilTest.m in Sources */,
 				9AE63A081ECDAB3A00F9C723 /* HttpdnsDatabasePool.m in Sources */,
 				9AE63A061ECDAB3A00F9C723 /* HttpdnsDatabase.m in Sources */,
 				9A59148B1EA0C1B600A7ED28 /* TestBase.m in Sources */,
