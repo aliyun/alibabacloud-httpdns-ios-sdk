@@ -59,8 +59,6 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 
 - (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry activatedServerIPIndex:(NSInteger)activatedServerIPIndex;
 
-+ (dispatch_queue_t)hostCacheQueue;
-
 - (void)loadIPsFromCacheSyncIfNeeded;
 
 - (void)cleanAllHostMemoryCache;
