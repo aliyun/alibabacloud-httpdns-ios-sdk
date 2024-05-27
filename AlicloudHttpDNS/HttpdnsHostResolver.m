@@ -59,11 +59,10 @@ static NSURLSession *_resolveHOSTSession = nil;
 //记录域名解析发生时，当前service ip的region
 @property (nonatomic, copy) NSString *serviceRegion;
 
-
 @end
 
-@implementation HttpdnsHostResolver
-{
+
+@implementation HttpdnsHostResolver {
     NSMutableData *_resultData;
     dispatch_semaphore_t _sem;
     NSInputStream *_inputStream;

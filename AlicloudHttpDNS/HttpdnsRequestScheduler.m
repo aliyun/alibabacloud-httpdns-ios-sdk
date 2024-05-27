@@ -72,7 +72,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 @interface HttpdnsRequestScheduler()
 
 /**
- * disable 状态置位的逻辑会在 `-mergeLookupResultToManager:forHost:` 中执行。
+ * disable 状态置位的逻辑会在 `-mergeLookupResultToManager` 中执行。
  */
 @property (nonatomic, assign, getter=isServerDisable) BOOL serverDisable;
 @property (nonatomic, strong) NSDate *lastServerDisableDate;
@@ -88,7 +88,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     BOOL _isExpiredIPEnabled;
     BOOL _isPreResolveAfterNetworkChangedEnabled;
     NSMutableDictionary *_hostManagerDict;
-    dispatch_queue_t _syncDispatchQueue;
     NSLock *_lock;
 }
 
@@ -128,7 +127,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         if (!_customRegion) {
             _customRegion = ALICLOUD_DEFAULT_REGION;
         }
-        _syncDispatchQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.sync", DISPATCH_QUEUE_SERIAL);
         _hostManagerDict = [[NSMutableDictionary alloc] init];
         _lock = [[NSLock alloc] init];
         [AlicloudIPv6Adapter getInstance];
@@ -149,7 +147,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                                                                    timeout:ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL];
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!json) {
-            //本地无缓存，常见于第一次安装，或者未发生过 DNS 故障。
+            // 本地无缓存，常见于第一次安装，或者未发生过 DNS 故障。
             return;
         }
 
@@ -164,7 +162,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (![HttpdnsUtil isNotEmptyArray:hosts]) {
         return;
     }
-    dispatch_async(_syncDispatchQueue, ^{
+    dispatch_async(_asyncResolveHostQueue, ^{
         for (NSString *hostName in hosts) {
             if ([self isHostsNumberLimitReached]) {
                 break;
@@ -186,6 +184,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 - (HttpdnsHostObject *)resolveHost:(HttpdnsRequest *)request {
     HttpdnsLogDebug("resolveHost, request: %@", request);
 
+    __weak typeof(self) weakSelf = self;
+
     NSString *host = request.host;
     NSString *cacheKey = request.cacheKey;
     HttpdnsQueryIPType originalQueryType = request.queryIpType;
@@ -200,7 +200,12 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     HttpDnsLocker *lockerManager = [HttpDnsLocker sharedInstance];
     [lockerManager lock:cacheKey queryType:originalQueryType];
 
-    HttpdnsHostObject *result = [self hostObjectFromCacheForHostName:cacheKey];
+    __block HttpdnsHostObject *result = nil;
+    dispatch_sync(_hostCacheQueue, ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        result = [strongSelf hostObjectFromCacheForHostName:cacheKey];
+    });
+
     HttpdnsLogDebug("try to load from cache, cacheKey: %@, result: %@", cacheKey, result);
 
     if (!result) {
@@ -301,9 +306,10 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         return result;
     } else {
         dispatch_async(_asyncResolveHostQueue, ^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             @try {
                 HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-                [self executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
+                [strongSelf executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
             } @catch (NSException *exception) {
                 HttpdnsLogDebug("resolveHost exception: %@", exception);
             } @finally {
@@ -322,7 +328,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         return;
     }
 
-    [self setServerDisable:NO];
+    [self disableHttpDnsServer:NO];
 
     HttpdnsHostObject *cachedHostObject = [HttpdnsUtil safeObjectForKey:cacheKey dict:_hostManagerDict];
     int64_t TTL = [result getTTL];
@@ -417,7 +423,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         return;
     }
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+    dispatch_async(_asyncResolveHostQueue, ^(void) {
         [self syncUpdateIPRankingWithResult:result forHost:host cacheKey:cacheKey];
     });
 }
@@ -458,9 +464,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 /*!
- * 用户访问引发的嗅探超时的情况，和重试引起的主动嗅探都会访问该方法，但是主动嗅探场景会在 `-[setServerDisable:]` 里直接返回。
- *
- if (_serverDisable == serverDisable) { return; }
+ * 用户访问引发的嗅探超时的情况，和重试引起的主动嗅探都会访问该方法，但是主动嗅探场景会在 `-[disableHttpDnsServer:]` 里直接返回。
  */
 - (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     NSDictionary *userInfo = error.userInfo;
@@ -480,7 +484,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     BOOL isTimeoutError = [self isTimeoutError:error isHTTPS:HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED];
 
     if (isRetry && isTimeoutError) {
-        [self setServerDisable:YES];
+        [self disableHttpDnsServer:YES];
     }
 }
 
@@ -520,7 +524,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                               error:error];
     }
 
-    dispatch_async(_syncDispatchQueue, ^{
+    dispatch_async(_hostCacheQueue, ^{
         HttpdnsLogDebug("Internal request finished, host: %@, cacheKey: %@, result: %@", host, cacheKey, result);
         [self mergeLookupResultToManager:result host:host cacheKey:cacheKey underQueryIpType:queryIPType];
     });
@@ -592,7 +596,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         return;
     }
 
-    dispatch_async(_syncDispatchQueue, ^{
+    dispatch_async(_asyncResolveHostQueue, ^{
         if (![statusString isEqualToString:@"None"]) {
             NSArray *hostArray = [HttpdnsUtil safeAllKeysFromDict:self->_hostManagerDict];
             [self cleanAllHostMemoryCache];
@@ -615,18 +619,17 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 - (dispatch_queue_t)cacheQueue {
     if (!_cacheQueue) {
-        _cacheQueue =
-        dispatch_queue_create("com.alibaba.sdk.httpdns.cacheDisableStatusQueue", DISPATCH_QUEUE_SERIAL);
+        _cacheQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.cacheDisableStatusQueue", DISPATCH_QUEUE_SERIAL);
     }
     return _cacheQueue;
 }
 
-- (void)setServerDisable:(BOOL)serverDisable {
+- (void)disableHttpDnsServer:(BOOL)serverDisable {
     dispatch_async(self.cacheQueue, ^{
-        if (!serverDisable) {
-            self->_lastServerDisableDate = nil;
-        } else {
+        if (serverDisable) {
             self->_lastServerDisableDate = [NSDate date];
+        } else {
+            self->_lastServerDisableDate = nil;
         }
     });
     if (_serverDisable == serverDisable) {
@@ -721,10 +724,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     return isTimeout || canNotConnectServer;
 }
 
-+ (dispatch_queue_t)hostCacheQueue {
-    return _hostCacheQueue;
-}
-
 - (HttpdnsHostObject *)hostObjectFromCacheForHostName:(NSString *)hostName {
     //v1.6.1版本及以后，disable状态下了，不仅网络请求受限，缓存也同样受限。
     if (self.isServerDisable) {
@@ -736,7 +735,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 - (void)loadIPsFromCacheAsyncIfNeeded {
-    dispatch_async([[self class] hostCacheQueue], ^{
+    dispatch_async(_hostCacheQueue, ^{
         [self loadIPsFromCacheSyncIfNeeded];
     });
 }
@@ -757,7 +756,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     }
 
     //清空数据库数据
-    dispatch_async([[self class] hostCacheQueue], ^{
+    dispatch_async(_hostCacheQueue, ^{
         //清空数据库数据
         [[HttpdnsHostCacheStore sharedInstance] cleanWithHosts:hostArray];
     });
@@ -793,7 +792,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (!_cachedIPEnabled) {
         return;
     }
-    dispatch_async([HttpdnsRequestScheduler hostCacheQueue], ^{
+    dispatch_async(_hostCacheQueue, ^{
         HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL ipRegion:ipRegion ip6Region:ip6Region];
         HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
         [hostCacheStore insertHostRecords:@[hostRecord]];
@@ -805,7 +804,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (!_cachedIPEnabled) {
         return;
     }
-    dispatch_async([HttpdnsRequestScheduler hostCacheQueue], ^{
+    dispatch_async(_hostCacheQueue, ^{
         HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord sdnsHostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL Extra:extra ipRegion:ipRegion ip6Region:ip6Region];
         HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
         [hostCacheStore insertHostRecords:@[hostRecord]];
@@ -817,7 +816,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (!_cachedIPEnabled) {
         return;
     }
-    dispatch_async([HttpdnsRequestScheduler hostCacheQueue], ^{
+    dispatch_async(_hostCacheQueue, ^{
         [[HttpdnsHostCacheStore sharedInstance] cleanAllExpiredHostRecordsSync];
     });
 }
