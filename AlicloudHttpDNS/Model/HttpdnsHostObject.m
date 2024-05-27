@@ -48,13 +48,14 @@
     return [IPObjects copy];
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"ip: %@", self.ip];
+}
+
 @end
 
 
 @implementation HttpdnsHostObject
-
-@synthesize ips = _ips;
-@synthesize ip6s = _ip6s;
 
 - (instancetype)init {
     _hostName = nil;

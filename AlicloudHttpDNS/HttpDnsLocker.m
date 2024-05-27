@@ -50,26 +50,32 @@
 
 - (NSLock *)getLock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType {
     if (queryType == HttpdnsQueryIPTypeIpv4) {
-        NSLock *condition = [_v4LockMap objectForKey:host];
-        if (!condition) {
-            condition = [[NSLock alloc] init];
-            [_v4LockMap setObject:condition forKey:host];
+        @synchronized (_v4LockMap) {
+            NSLock *lock = [_v4LockMap objectForKey:host];
+            if (!lock) {
+                lock = [[NSLock alloc] init];
+                [_v4LockMap setObject:lock forKey:host];
+            }
+            return lock;
         }
-        return condition;
     } else if (queryType == HttpdnsQueryIPTypeIpv6) {
-        NSLock *condition = [_v6LockMap objectForKey:host];
-        if (!condition) {
-            condition = [[NSLock alloc] init];
-            [_v6LockMap setObject:condition forKey:host];
+        @synchronized (_v6LockMap) {
+            NSLock *condition = [_v6LockMap objectForKey:host];
+            if (!condition) {
+                condition = [[NSLock alloc] init];
+                [_v6LockMap setObject:condition forKey:host];
+            }
+            return condition;
         }
-        return condition;
     } else {
-        NSLock *condition = [_v4v6LockMap objectForKey:host];
-        if (!condition) {
-            condition = [[NSLock alloc] init];
-            [_v4v6LockMap setObject:condition forKey:host];
+        @synchronized (_v4v6LockMap) {
+            NSLock *condition = [_v4v6LockMap objectForKey:host];
+            if (!condition) {
+                condition = [[NSLock alloc] init];
+                [_v4v6LockMap setObject:condition forKey:host];
+            }
+            return condition;
         }
-        return condition;
     }
 }
 

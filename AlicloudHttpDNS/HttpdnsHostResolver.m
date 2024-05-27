@@ -195,10 +195,10 @@ static NSURLSession *_resolveHOSTSession = nil;
     [hostObject setIp6s:ip6Array];
 
     //ttl 设置
-    int64_t TTL = [[json objectForKey:@"ttl"] longLongValue];
-    HttpDnsService *dnsService = [HttpDnsService sharedInstance];
+    int64_t ttlInSecond = [[json objectForKey:@"ttl"] longLongValue];
 
     //自定义ttl
+    HttpDnsService *dnsService = [HttpDnsService sharedInstance];
     if (dnsService.ttlDelegate && [dnsService.ttlDelegate respondsToSelector:@selector(httpdnsHost:ipType:ttl:)]) {
         AlicloudHttpDNS_IPType ipType = AlicloudHttpDNS_IPTypeV4;
         if (queryIpType & HttpdnsQueryIPTypeIpv4 && queryIpType & HttpdnsQueryIPTypeIpv6) {
@@ -206,18 +206,18 @@ static NSURLSession *_resolveHOSTSession = nil;
         } else if (queryIpType & HttpdnsQueryIPTypeIpv6) {
             ipType = AlicloudHttpDNS_IPTypeV6;
         }
-        TTL = [dnsService.ttlDelegate httpdnsHost:host ipType:ipType ttl:TTL];
+        ttlInSecond = [dnsService.ttlDelegate httpdnsHost:host ipType:ipType ttl:ttlInSecond];
     }
-    [hostObject setTTL:TTL];
+    [hostObject setTTL:ttlInSecond];
 
     //分别设置 v4ttl v6ttl
     if ([HttpdnsUtil isNotEmptyArray:ipArray]) {
-        [hostObject setV4TTL:TTL];
+        [hostObject setV4TTL:ttlInSecond];
         hostObject.lastIPv4LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
         hostObject.ipRegion = self.serviceRegion;
     }
     if ([HttpdnsUtil isNotEmptyArray:ip6Array]) {
-        [hostObject setV6TTL:TTL];
+        [hostObject setV6TTL:ttlInSecond];
         hostObject.lastIPv6LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
         hostObject.ip6Region = self.serviceRegion;
     }

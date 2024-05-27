@@ -39,7 +39,7 @@ NSString *const ALICLOUDHDNS_IPV6 = @"ALICLOUDHDNS_IPV6";
 
 
 static NSDictionary *HTTPDNS_EXT_INFO = nil;
-static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
+static dispatch_queue_t asyncTaskConcurrentQueue;
 
 @interface HttpDnsService ()
 
@@ -61,7 +61,7 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 + (void)initialize {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        _authTimeOffsetSyncDispatchQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.authTimeOffsetSyncDispatchQueue", DISPATCH_QUEUE_SERIAL);
+        asyncTaskConcurrentQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.asyncTask", DISPATCH_QUEUE_CONCURRENT);
 
         // 注册 UIApplication+ABSHTTPDNSSetting 中的Swizzle
         if (!HTTPDNS_INTER) {
@@ -103,7 +103,7 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
     if ([HttpdnsUtil isNotEmptyString:accountID]) {
         return [self initWithAccountID:[accountID intValue] secretKey:secretKey];
     }
-    NSLog(@"Auto init fail, can not get accountId / secretKey, please check the file named: AliyunEmasServices-Info.plist.");
+    HttpdnsLogDebug("Auto init fail, can not get accountId / secretKey, please check the file named: AliyunEmasServices-Info.plist.");
     return nil;
 }
 
@@ -142,10 +142,8 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 }
 
 - (void)setInternalAuthTimeBaseBySpecifyingCurrentTime:(NSTimeInterval)currentTime {
-    dispatch_sync(_authTimeOffsetSyncDispatchQueue, ^{
-        NSTimeInterval localTime = [[NSDate date] timeIntervalSince1970];
-        _authTimeOffset = currentTime - localTime;
-    });
+    NSTimeInterval localTime = [[NSDate date] timeIntervalSince1970];
+    _authTimeOffset = currentTime - localTime;
 }
 
 - (void)setCachedIPEnabled:(BOOL)enable {
@@ -349,22 +347,23 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 
     if ([HttpdnsUtil isAnIP:host]) {
         HttpdnsLogDebug("The host is just an IP.");
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        dispatch_async(asyncTaskConcurrentQueue, ^{
             handler([self constructResultFromIp:host underQueryType:queryIpType]);
         });
     }
     if (![HttpdnsUtil isAHost:host]) {
         HttpdnsLogDebug("The host is illegal.");
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        dispatch_async(asyncTaskConcurrentQueue, ^{
             handler(nil);
         });
     }
 
     sdnsParams = [self mergeWithPresetSdnsParams:sdnsParams];
-    double start = [[NSDate date] timeIntervalSince1970] * 1000;
+    double enqueueStart = [[NSDate date] timeIntervalSince1970] * 1000;
     __weak typeof(self) weakSelf = self;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async(asyncTaskConcurrentQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
+        double executeStart = [[NSDate date] timeIntervalSince1970] * 1000;
         HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host
                                                      isBlockingRequest:YES
                                                            queryIpType:clarifiedQueryIpType
@@ -372,15 +371,13 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
                                                               cacheKey:cacheKey];
         HttpdnsHostObject *hostObject = [strongSelf->_requestScheduler resolveHost:request];
         double innerEnd = [[NSDate date] timeIntervalSince1970] * 1000;
-        HttpdnsLogDebug("resolveHostAsync inner cost time is: %f", (innerEnd - start));
+        HttpdnsLogDebug("resolveHostAsync done, inner cost time from enqueue: %fms, from execute: %fms", (innerEnd - enqueueStart), (innerEnd - executeStart));
 
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            if (!hostObject) {
-                handler(nil);
-            } else {
-                handler([self constructResultFromHostObject:hostObject underQueryType:clarifiedQueryIpType]);
-            }
-        });
+        if (!hostObject) {
+            handler(nil);
+        } else {
+            handler([self constructResultFromHostObject:hostObject underQueryType:clarifiedQueryIpType]);
+        }
     });
 }
 
@@ -410,11 +407,16 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 }
 
 - (HttpdnsResult *)constructResultFromHostObject:(HttpdnsHostObject *)hostObject underQueryType:(HttpdnsQueryIPType)queryType {
-    HttpdnsResult *result = [HttpdnsResult new];
     if (!hostObject) {
-        return result;
+        return nil;
     }
 
+    if (![HttpdnsUtil isNotEmptyArray:[hostObject getIps]] && ![HttpdnsUtil isNotEmptyArray:[hostObject getIp6s]]) {
+        // 这里是为了兼容过去用法的行为，如果完全没有ip信息，可以对齐到过去缓存没有ip或解析不到ip的情况，直接返回nil
+        return nil;
+    }
+
+    HttpdnsResult *result = [HttpdnsResult new];
     result.host = [hostObject getHostName];
 
     // 由于结果可能是从缓存中获得，所以还要根据实际协议栈情况再筛选下结果
@@ -1105,11 +1107,7 @@ static dispatch_queue_t _authTimeOffsetSyncDispatchQueue = 0;
 #pragma mark -------------- HttpdnsRequestScheduler_Internal
 
 - (NSTimeInterval)authTimeOffset {
-    __block NSUInteger authTimeOffset = 0;
-    dispatch_sync(_authTimeOffsetSyncDispatchQueue, ^{
-        authTimeOffset = _authTimeOffset;
-    });
-    return authTimeOffset;
+    return _authTimeOffset;
 }
 
 - (NSString *)getIpByHost:(NSString *)host {
