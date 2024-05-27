@@ -30,7 +30,7 @@
 + (void)setUp {
     [super setUp];
 
-    HttpDnsService *httpdns = [[HttpDnsService alloc] initWithAccountID:10000];
+    HttpDnsService *httpdns = [[HttpDnsService alloc] initWithAccountID:100000];
     [httpdns setLogEnabled:YES];
     [httpdns setIPv6Enabled:YES];
 }
