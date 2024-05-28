@@ -73,6 +73,7 @@
     _ip6Region = @"";
     _hasNoIpv4Record = NO;
     _hasNoIpv6Record = NO;
+    _isQuerying = NO;
     return self;
 }
 
