@@ -13,8 +13,15 @@ NS_ASSUME_NONNULL_BEGIN
 @interface HttpdnsResult : NSObject
 
 @property (nonatomic, copy) NSString *host;
+
 @property (nonatomic, strong) NSArray<NSString *> *ips;
 @property (nonatomic, strong) NSArray<NSString *> *ipv6s;
+
+// 最后一次更新时间戳，linux秒值
+@property (nonatomic, assign) NSTimeInterval lastUpdatedTimeInterval;
+
+// ttl，单位秒
+@property (nonatomic, assign) NSTimeInterval ttl;
 
 - (BOOL)hasIpv4Address;
 

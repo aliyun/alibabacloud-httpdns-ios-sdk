@@ -37,7 +37,11 @@
 @property (nonatomic, strong, setter=setHostName:, getter=getHostName) NSString *hostName;
 @property (nonatomic, strong, setter=setIps:, getter=getIps) NSArray<HttpdnsIpObject *> *ips;
 @property (nonatomic, strong, setter=setIp6s:, getter=getIp6s) NSArray<HttpdnsIpObject *> *ip6s;
+
+// ttl，httpdns最早的接口设计里，不区分v4、v6解析结果的ttl
 @property (nonatomic, setter=setTTL:, getter=getTTL) int64_t ttl;
+@property (nonatomic, getter=getLastLookupTime, setter=setLastLookupTime:) int64_t lastLookupTime;
+
 // v4 ttl
 @property (nonatomic, setter=setV4TTL:, getter=getV4TTL) int64_t v4ttl;
 @property (nonatomic, assign) int64_t lastIPv4LookupTime;
@@ -59,9 +63,6 @@
 
 // 标识是否从持久化缓存加载
 @property (nonatomic, assign, setter=setIsLoadFromDB:, getter=isLoadFromDB) BOOL isLoadFromDB;
-
-// 查询成功后的本地时间戳
-@property (nonatomic, getter=getLastLookupTime, setter=setLastLookupTime:) int64_t lastLookupTime;
 
 // 是否正在执行请求
 @property (atomic, assign) BOOL isQuerying;
