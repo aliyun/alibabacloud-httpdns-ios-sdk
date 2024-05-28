@@ -296,26 +296,33 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
     if (request.isBlockingRequest && needToWaitForResult) {
         @try {
+            result.isQuerying = YES;
             HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
             result = [self executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
         } @catch (NSException *exception) {
             HttpdnsLogDebug("resolveHost exception: %@", exception);
         } @finally {
+            result.isQuerying = NO;
             [lockerManager unlock:cacheKey queryType:originalQueryType];
         }
         return result;
     } else {
-        dispatch_async(_asyncResolveHostQueue, ^{
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            @try {
-                HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-                [strongSelf executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
-            } @catch (NSException *exception) {
-                HttpdnsLogDebug("resolveHost exception: %@", exception);
-            } @finally {
-                [lockerManager unlock:cacheKey queryType:originalQueryType];
-            }
-        });
+        if (!result.isQuerying) {
+            dispatch_async(_asyncResolveHostQueue, ^{
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                @try {
+                    result.isQuerying = YES;
+                    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+                    [strongSelf executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
+                } @catch (NSException *exception) {
+                    HttpdnsLogDebug("resolveHost exception: %@", exception);
+                } @finally {
+                    result.isQuerying = NO;
+                }
+            });
+        }
+
+        [lockerManager unlock:cacheKey queryType:originalQueryType];
 
         // TODO 由于这里是启动异步解析之后立即返回结果，后续异步解析完成之后的merge操作可能会影响这个result
         // TODO 因此，这个result应当采用深拷贝的结果返回

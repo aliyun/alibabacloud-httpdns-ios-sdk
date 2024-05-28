@@ -63,6 +63,9 @@
 // 查询成功后的本地时间戳
 @property (nonatomic, getter=getLastLookupTime, setter=setLastLookupTime:) int64_t lastLookupTime;
 
+// 是否正在执行请求
+@property (atomic, assign) BOOL isQuerying;
+
 - (instancetype)init;
 
 - (BOOL)isIpEmptyUnderQueryIpType:(HttpdnsQueryIPType)queryType;

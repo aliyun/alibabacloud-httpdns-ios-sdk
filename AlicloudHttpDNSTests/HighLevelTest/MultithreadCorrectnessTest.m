@@ -253,6 +253,39 @@ static NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
 }
 
+- (void)testNonblockingMethodShouldNotBlockDuringMultithreadLongRun {
+    NSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];
+    NSTimeInterval testDuration = 10;
+    int threadCountForEachType = 4;
+
+    for (int i = 0; i < threadCountForEachType; i++) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            while ([[NSDate date] timeIntervalSince1970] - startTime < testDuration) {
+                NSString *host = [hostNameIpPrefixMap allKeys][arc4random_uniform((uint32_t)[hostNameIpPrefixMap count])];
+                NSString *ipPrefix = hostNameIpPrefixMap[host];
+
+                long long executeStartTimeInMs = [[NSDate date] timeIntervalSince1970] * 1000;
+                HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:host byIpType:HttpdnsQueryIPTypeIpv4];
+                long long executeEndTimeInMs = [[NSDate date] timeIntervalSince1970] * 1000;
+                // 非阻塞接口任何情况下不应该阻塞超过10ms
+                XCTAssertLessThan(executeEndTimeInMs - executeStartTimeInMs, 10);
+                if (result) {
+                    XCTAssertNotNil(result);
+                    XCTAssertTrue([result.host isEqualToString:host]);
+                    NSString *firstIp = [result firstIpv4Address];
+                    if (![firstIp hasPrefix:ipPrefix]) {
+                        printf("XCTAssertWillFailed, host: %s, firstIp: %s, ipPrefix: %s\n", [host UTF8String], [firstIp UTF8String], [ipPrefix UTF8String]);
+                    }
+                    XCTAssertTrue([firstIp hasPrefix:ipPrefix]);
+                }
+                [NSThread sleepForTimeInterval:0.1];
+            }
+        });
+    }
+
+    [NSThread sleepForTimeInterval:testDuration + 1];
+}
+
 - (void)testMultithreadAndMultiHostResolvingForALongRun {
     NSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];
     NSTimeInterval testDuration = 10;
