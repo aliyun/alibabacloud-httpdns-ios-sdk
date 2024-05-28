@@ -41,7 +41,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 
 - (NSString *)showMemoryCache;
 
-- (void)mergeLookupResultToManager:(HttpdnsHostObject *)result host:host cacheKey:(NSString *)cacheKey underQueryIpType:(HttpdnsQueryIPType)queryIpType;
+- (HttpdnsHostObject *)mergeLookupResultToManager:(HttpdnsHostObject *)result host:host cacheKey:(NSString *)cacheKey underQueryIpType:(HttpdnsQueryIPType)queryIpType;
 
 - (HttpdnsHostObject *)executeRequest:(HttpdnsRequest *)request
                            retryCount:(int)hasRetryedCount
@@ -49,8 +49,8 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
                                 error:(NSError *)error;
 
 // 内部缓存开关，不触发加载DB到内存的操作
-- (void)_setCachedIPEnabled:(BOOL)enable;
-- (BOOL)_getCachedIPEnabled;
+- (void)setPersistentCacheIpEnabled:(BOOL)enable;
+- (BOOL)getPersistentCacheIpEnabled;
 
 // 设置开启region
 - (void)_setRegin:(NSString *)region;
@@ -59,7 +59,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTE
 
 - (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry activatedServerIPIndex:(NSInteger)activatedServerIPIndex;
 
-- (void)loadIPsFromCacheSyncIfNeeded;
+- (void)syncReloadCacheFromDbToMemoryByIspCarrier;
 
 - (void)cleanAllHostMemoryCache;
 

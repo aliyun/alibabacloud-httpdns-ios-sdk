@@ -294,7 +294,6 @@
 
 
 - (void)cleanWithHosts:(NSArray<NSString *> *)hostArray {
-
     [HttpdnsUtil warnMainThreadIfNecessary];
 
     if (![HttpdnsUtil isNotEmptyArray:hostArray]) {  //全部清空

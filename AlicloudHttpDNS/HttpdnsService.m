@@ -418,6 +418,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     HttpdnsResult *result = [HttpdnsResult new];
     result.host = [hostObject getHostName];
+    result.ttl = [hostObject getTTL];
+    result.lastUpdatedTimeInterval = [hostObject getLastLookupTime];
 
     // 由于结果可能是从缓存中获得，所以还要根据实际协议栈情况再筛选下结果
     if (queryType & HttpdnsQueryIPTypeIpv4) {

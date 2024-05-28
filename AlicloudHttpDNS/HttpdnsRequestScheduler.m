@@ -65,9 +65,9 @@ NSString *ALICLOUD_HTTPDNS_SERVER_IP_REGION = @""; //当前服务IP的region，�
 
 NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0;
 
-static dispatch_queue_t _hostCacheQueue = NULL;
+static dispatch_queue_t _memoryCacheSerialQueue = NULL;
+static dispatch_queue_t _persistentCacheConcurrentQueue = NULL;
 static dispatch_queue_t _asyncResolveHostQueue = NULL;
-static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
 @interface HttpdnsRequestScheduler()
 
@@ -78,7 +78,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 @property (nonatomic, strong) NSDate *lastServerDisableDate;
 @property (nonatomic, strong) dispatch_queue_t cacheQueue;
 @property (nonatomic, copy) NSString *disableStatusPath;
-@property (nonatomic, assign) BOOL cachedIPEnabled;
+@property (nonatomic, assign) BOOL persistentCacheIpEnabled;
 @property (nonatomic, copy) NSString *customRegion; //当前设置的region
 
 @end
@@ -95,8 +95,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     static dispatch_once_t onceToken;
 
     dispatch_once(&onceToken, ^{
-        _hostCacheQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.hostCacheQueue", DISPATCH_QUEUE_SERIAL);
-        _syncLoadCacheQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.syncLoadCacheQueue", DISPATCH_QUEUE_SERIAL);
+        _memoryCacheSerialQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.memoryCacheOperationQueue", DISPATCH_QUEUE_SERIAL);
+        _persistentCacheConcurrentQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.persistentCacheOperationQueue", DISPATCH_QUEUE_CONCURRENT);
         _asyncResolveHostQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.asyncResolveHostQueue", DISPATCH_QUEUE_CONCURRENT);
     });
 
@@ -201,7 +201,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     [lockerManager lock:cacheKey queryType:originalQueryType];
 
     __block HttpdnsHostObject *result = nil;
-    dispatch_sync(_hostCacheQueue, ^{
+    dispatch_sync(_memoryCacheSerialQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
         result = [strongSelf hostObjectFromCacheForHostName:cacheKey];
     });
@@ -298,6 +298,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         @try {
             result.isQuerying = YES;
             HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+            // 请求过程中，内存缓存可能会因某种原因被清空，因此result还是以请求merge过程中拿到的为准
+            // merge时，如果缓存中的已经被清了找不到，它会新构造一个hostObject
             result = [self executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
         } @catch (NSException *exception) {
             HttpdnsLogDebug("resolveHost exception: %@", exception);
@@ -313,7 +315,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 @try {
                     result.isQuerying = YES;
                     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-                    [strongSelf executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
+                    result = [strongSelf executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
                 } @catch (NSException *exception) {
                     HttpdnsLogDebug("resolveHost exception: %@", exception);
                 } @finally {
@@ -330,14 +332,57 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     }
 }
 
-- (void)mergeLookupResultToManager:(HttpdnsHostObject *)result host:host cacheKey:(NSString *)cacheKey underQueryIpType:(HttpdnsQueryIPType)queryIpType {
+- (HttpdnsHostObject *)executeRequest:(HttpdnsRequest *)request
+                           retryCount:(int)hasRetryedCount
+               activatedServerIPIndex:(NSInteger)activatedServerIPIndex
+                                error:(NSError *)error {
+    NSString *host = request.host;
+    NSString *cacheKey = request.cacheKey;
+    HttpdnsQueryIPType queryIPType = request.queryIpType;
+
+    if (hasRetryedCount > HTTPDNS_MAX_REQUEST_RETRY_TIME) {
+        HttpdnsLogDebug("Internal request retry count exceed limit, host: %@", host);
+        [self canNotResolveHost:host error:error isRetry:YES activatedServerIPIndex:activatedServerIPIndex];
+        return nil;
+    }
+
+    if ([self isDisableToServer]) {
+        return nil;
+    }
+
+    HttpdnsLogDebug("Internal request starts, host: %@, request: %@", host, request);
+
+    error = nil;
+    __block HttpdnsHostObject *result = [[HttpdnsHostResolver new] lookupHostFromServer:request
+                                                                     error:&error
+                                                    activatedServerIPIndex:activatedServerIPIndex];
+    if (error) {
+        HttpdnsLogDebug("Internal request error, host: %@, error: %@", host, error);
+
+        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+        NSInteger newActivatedServerIPIndex = [scheduleCenter nextServerIPIndexFromIPIndex:activatedServerIPIndex increase:hasRetryedCount];
+
+        return [self executeRequest:request
+                         retryCount:(hasRetryedCount + 1)
+             activatedServerIPIndex:newActivatedServerIPIndex
+                              error:error];
+    }
+
+    dispatch_sync(_memoryCacheSerialQueue, ^{
+        HttpdnsLogDebug("Internal request finished, host: %@, cacheKey: %@, result: %@", host, cacheKey, result);
+        // merge之后，返回的应当是存储在缓存中的实际对象，而非请求过程中构造出来的对象
+        result = [self mergeLookupResultToManager:result host:host cacheKey:cacheKey underQueryIpType:queryIPType];
+    });
+    return result;
+}
+
+- (HttpdnsHostObject *)mergeLookupResultToManager:(HttpdnsHostObject *)result host:host cacheKey:(NSString *)cacheKey underQueryIpType:(HttpdnsQueryIPType)queryIpType {
     if (!result) {
-        return;
+        return nil;
     }
 
     [self disableHttpDnsServer:NO];
 
-    HttpdnsHostObject *cachedHostObject = [HttpdnsUtil safeObjectForKey:cacheKey dict:_hostManagerDict];
     int64_t TTL = [result getTTL];
     int64_t lastLookupTime = [result getLastLookupTime];
     NSArray<NSString *> *IPStrings = [result getIPStrings];
@@ -357,6 +402,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         hasNoIpv6Record = YES;
     }
 
+    HttpdnsHostObject *cachedHostObject = [HttpdnsUtil safeObjectForKey:cacheKey dict:_hostManagerDict];
     if (cachedHostObject) {
         [cachedHostObject setTTL:TTL];
         [cachedHostObject setLastLookupTime:lastLookupTime];
@@ -384,30 +430,31 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 
         HttpdnsLogDebug("####### Update cached hostObject, cacheKey: %@, host: %@, result: %@", cacheKey, host, result);
     } else {
-        HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
-        [hostObject setHostName:host];
-        [hostObject setLastLookupTime:lastLookupTime];
-        [hostObject setTTL:TTL];
-        [hostObject setHasNoIpv4Record:hasNoIpv4Record];
-        [hostObject setHasNoIpv6Record:hasNoIpv6Record];
+        cachedHostObject = [[HttpdnsHostObject alloc] init];
 
-        [hostObject setIps:IPObjects];
-        [hostObject setV4TTL:result.getV4TTL];
-        [hostObject setLastIPv4LookupTime:result.lastIPv4LookupTime];
-        hostObject.ipRegion = ipRegion;
+        [cachedHostObject setHostName:host];
+        [cachedHostObject setLastLookupTime:lastLookupTime];
+        [cachedHostObject setTTL:TTL];
+        [cachedHostObject setHasNoIpv4Record:hasNoIpv4Record];
+        [cachedHostObject setHasNoIpv6Record:hasNoIpv6Record];
 
-        [hostObject setIp6s:IP6Objects];
-        [hostObject setV6TTL:result.getV6TTL];
-        [hostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
-        hostObject.ip6Region = ip6Region;
+        [cachedHostObject setIps:IPObjects];
+        [cachedHostObject setV4TTL:result.getV4TTL];
+        [cachedHostObject setLastIPv4LookupTime:result.lastIPv4LookupTime];
+        cachedHostObject.ipRegion = ipRegion;
+
+        [cachedHostObject setIp6s:IP6Objects];
+        [cachedHostObject setV6TTL:result.getV6TTL];
+        [cachedHostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
+        cachedHostObject.ip6Region = ip6Region;
 
 
         if ([HttpdnsUtil isNotEmptyDictionary:result.extra]) {
-            [hostObject setExtra:Extra];
+            [cachedHostObject setExtra:Extra];
         }
 
         HttpdnsLogDebug("###### New resolved hostObject, cacheKey: %@, host: %@, result: %@", cacheKey, host, result);
-        [HttpdnsUtil safeAddValue:hostObject key:cacheKey toDict:_hostManagerDict];
+        [HttpdnsUtil safeAddValue:cachedHostObject key:cacheKey toDict:_hostManagerDict];
     }
 
     if([HttpdnsUtil isNotEmptyDictionary:result.extra]) {
@@ -416,7 +463,8 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
         [self cacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:IPStrings IP6s:IP6Strings TTL:TTL ipRegion:ipRegion ip6Region:ip6Region];
     }
 
-    [self aysncUpdateIPRankingWithResult:result forHost:host cacheKey:cacheKey];
+    [self aysncUpdateIPRankingWithResult:cachedHostObject forHost:host cacheKey:cacheKey];
+    return cachedHostObject;
 }
 
 - (void)aysncUpdateIPRankingWithResult:(HttpdnsHostObject *)result forHost:(NSString *)host cacheKey:(NSString *)cacheKey {
@@ -495,49 +543,6 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     }
 }
 
-- (HttpdnsHostObject *)executeRequest:(HttpdnsRequest *)request
-                           retryCount:(int)hasRetryedCount
-               activatedServerIPIndex:(NSInteger)activatedServerIPIndex
-                                error:(NSError *)error {
-    NSString *host = request.host;
-    NSString *cacheKey = request.cacheKey;
-    HttpdnsQueryIPType queryIPType = request.queryIpType;
-
-    if (hasRetryedCount > HTTPDNS_MAX_REQUEST_RETRY_TIME) {
-        HttpdnsLogDebug("Internal request retry count exceed limit, host: %@", host);
-        [self canNotResolveHost:host error:error isRetry:YES activatedServerIPIndex:activatedServerIPIndex];
-        return nil;
-    }
-
-    if ([self isDisableToServer]) {
-        return nil;
-    }
-
-    HttpdnsLogDebug("Internal request starts, host: %@, request: %@", host, request);
-
-    error = nil;
-    HttpdnsHostObject *result = [[HttpdnsHostResolver new] lookupHostFromServer:request
-                                                                     error:&error
-                                                    activatedServerIPIndex:activatedServerIPIndex];
-    if (error) {
-        HttpdnsLogDebug("Internal request error, host: %@, error: %@", host, error);
-
-        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-        NSInteger newActivatedServerIPIndex = [scheduleCenter nextServerIPIndexFromIPIndex:activatedServerIPIndex increase:hasRetryedCount];
-
-        return [self executeRequest:request
-                         retryCount:(hasRetryedCount + 1)
-             activatedServerIPIndex:newActivatedServerIPIndex
-                              error:error];
-    }
-
-    dispatch_async(_hostCacheQueue, ^{
-        HttpdnsLogDebug("Internal request finished, host: %@, cacheKey: %@, result: %@", host, cacheKey, result);
-        [self mergeLookupResultToManager:result host:host cacheKey:cacheKey underQueryIpType:queryIPType];
-    });
-    return result;
-}
-
 - (BOOL)isHostsNumberLimitReached {
     if ([HttpdnsUtil safeCountFromDict:_hostManagerDict] >= HTTPDNS_MAX_MANAGE_HOST_NUM) {
         HttpdnsLogDebug("Can't handle more than %d hosts due to the software configuration.", HTTPDNS_MAX_MANAGE_HOST_NUM);
@@ -551,17 +556,20 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 - (void)setCachedIPEnabled:(BOOL)enable {
-    [self _setCachedIPEnabled:enable];
+    // 开启允许持久化缓存
+    [self setPersistentCacheIpEnabled:enable];
+    // 先把当前内存缓存清空
     [self cleanAllExpiredHostRecordsAsyncIfNeeded];
-    [self loadIPsFromCacheAsyncIfNeeded];
+    // 再根据当前网络运营商读取持久化缓存中的历史记录，加载到内存缓存里
+    [self asyncReloadCacheFromDbToMemoryByIspCarrier];
 }
 
-- (void)_setCachedIPEnabled:(BOOL)enable {
-    _cachedIPEnabled = enable;
+- (void)setPersistentCacheIpEnabled:(BOOL)enable {
+    _persistentCacheIpEnabled = enable;
 }
 
-- (BOOL)_getCachedIPEnabled {
-    return _cachedIPEnabled;
+- (BOOL)getPersistentCacheIpEnabled {
+    return _persistentCacheIpEnabled;
 }
 
 
@@ -609,8 +617,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
             [self cleanAllHostMemoryCache];
             [self resetServerDisableDate];
 
+            // 网络发生变化后，上面已经清理内存缓存，现在，要以当前网络运营商为条件去db里找之前是否有缓存，如果是，就复用这个缓存
             // 同步操作，防止网络请求成功，更新后，缓存数据又被重新覆盖
-            [self loadIPsFromCacheSyncIfNeeded];
+            [self syncReloadCacheFromDbToMemoryByIspCarrier];
 
             if (self->_isPreResolveAfterNetworkChangedEnabled) {
                 HttpdnsLogDebug("Network changed, pre resolve for hosts: %@", hostArray);
@@ -741,9 +750,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     return hostObject;
 }
 
-- (void)loadIPsFromCacheAsyncIfNeeded {
-    dispatch_async(_hostCacheQueue, ^{
-        [self loadIPsFromCacheSyncIfNeeded];
+- (void)asyncReloadCacheFromDbToMemoryByIspCarrier {
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [self syncReloadCacheFromDbToMemoryByIspCarrier];
     });
 }
 
@@ -763,32 +772,40 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     }
 
     //清空数据库数据
-    dispatch_async(_hostCacheQueue, ^{
+    dispatch_async(_persistentCacheConcurrentQueue, ^{
         //清空数据库数据
         [[HttpdnsHostCacheStore sharedInstance] cleanWithHosts:hostArray];
     });
 }
 
-- (void)loadIPsFromCacheSyncIfNeeded {
-    dispatch_sync(_syncLoadCacheQueue, ^{
-        if (!_cachedIPEnabled) {
+- (void)syncReloadCacheFromDbToMemoryByIspCarrier {
+    dispatch_sync(_persistentCacheConcurrentQueue, ^{
+        if (!_persistentCacheIpEnabled) {
             return;
         }
+
         HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
+
+        // 根据运营商名称在db中找一下历史记录
         NSArray<HttpdnsHostRecord *> *hostRecords = [hostCacheStore hostRecordsForCurrentCarrier];
+
         if (![HttpdnsUtil isNotEmptyArray:hostRecords]) {
             return;
         }
+
         for (HttpdnsHostRecord *hostRecord in hostRecords) {
             NSString *host = hostRecord.host;
+
             HttpdnsHostObject *hostObject = [HttpdnsHostObject hostObjectWithHostRecord:hostRecord];
             //从DB缓存中加载到内存里的数据，此时不会出现过期的情况，TTL时间后过期。
             [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
             [HttpdnsUtil safeAddValue:hostObject key:host toDict:_hostManagerDict];
+
             // 清除持久化缓存
             [hostCacheStore deleteHostRecordAndItsIPsWithHostRecordIDs:@[@(hostRecord.hostRecordId)]];
 
             // 因为当前持久化缓存为区分cachekey和host(实际是cachekey)
+            // 持久化缓存里的host实际上是cachekey
             // 因此这里取出来，如果cachekey和host不一致的情况，这个IP优选会因为查不到datasource而实际不生效
             [self aysncUpdateIPRankingWithResult:hostObject forHost:host cacheKey:host];
         }
@@ -796,10 +813,10 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 - (void)cacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL ipRegion:(NSString *)ipRegion ip6Region:(NSString *)ip6Region {
-    if (!_cachedIPEnabled) {
+    if (!_persistentCacheIpEnabled) {
         return;
     }
-    dispatch_async(_hostCacheQueue, ^{
+    dispatch_async(_persistentCacheConcurrentQueue, ^{
         HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL ipRegion:ipRegion ip6Region:ip6Region];
         HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
         [hostCacheStore insertHostRecords:@[hostRecord]];
@@ -807,23 +824,21 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
 }
 
 - (void)sdnsCacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL withExtra:(NSDictionary *)extra ipRegion:(NSString *)ipRegion ip6Region:(NSString *)ip6Region {
-
-    if (!_cachedIPEnabled) {
+    if (!_persistentCacheIpEnabled) {
         return;
     }
-    dispatch_async(_hostCacheQueue, ^{
+    dispatch_async(_persistentCacheConcurrentQueue, ^{
         HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord sdnsHostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL Extra:extra ipRegion:ipRegion ip6Region:ip6Region];
         HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
         [hostCacheStore insertHostRecords:@[hostRecord]];
     });
 }
 
-// 清理过期数据的时机放在 `-loadIPsFromCacheSyncIfNeeded` 之前，应用启动后就进行，
 - (void)cleanAllExpiredHostRecordsAsyncIfNeeded {
-    if (!_cachedIPEnabled) {
+    if (!_persistentCacheIpEnabled) {
         return;
     }
-    dispatch_async(_hostCacheQueue, ^{
+    dispatch_async(_persistentCacheConcurrentQueue, ^{
         [[HttpdnsHostCacheStore sharedInstance] cleanAllExpiredHostRecordsSync];
     });
 }
