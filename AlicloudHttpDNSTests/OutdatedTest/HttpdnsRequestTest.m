@@ -750,15 +750,15 @@
     HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
 
     //内部缓存开关，不触发加载DB到内存的操作
-    [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
-    [requestScheduler loadIPsFromCacheSyncIfNeeded];
+    [requestScheduler setPersistentCacheIpEnabled:YES];//    [service setCachedIPEnabled:YES];
+    [requestScheduler syncReloadCacheFromDbToMemoryByIspCarrier];
 }
 
 - (void)testLoadIPsFromCacheSyncIfNeeded {
     HttpDnsService *service = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
     //内部缓存开关，不触发加载DB到内存的操作
-    [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
+    [requestScheduler setPersistentCacheIpEnabled:YES];//    [service setCachedIPEnabled:YES];
     [service getIpByHostAsync:@"www.aliyun.com"];
     sleep(2);
 
@@ -766,7 +766,7 @@
     for (int i = 0; i < n; i++) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
 
-            [requestScheduler loadIPsFromCacheSyncIfNeeded];
+            [requestScheduler syncReloadCacheFromDbToMemoryByIspCarrier];
             if (i == n -1) {
                 NOTIFY
             }
@@ -794,8 +794,8 @@
     HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
 
     //内部缓存开关，不触发加载DB到内存的操作
-    [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
-    [requestScheduler loadIPsFromCacheSyncIfNeeded];
+    [requestScheduler setPersistentCacheIpEnabled:YES];//    [service setCachedIPEnabled:YES];
+    [requestScheduler syncReloadCacheFromDbToMemoryByIspCarrier];
     HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
     HttpdnsHostRecord *hostRecord = [hostCacheStore hostRecordsWithCurrentCarrierForHost:hostName];
 
@@ -805,7 +805,7 @@
     //    XCTAssertNotNil([service getIpByHost:hostName]);
     sleep((unsigned int)IPRecord.TTL);
     XCTAssertNil([service getIpByHostAsync:hostName]);
-    [requestScheduler loadIPsFromCacheSyncIfNeeded];
+    [requestScheduler syncReloadCacheFromDbToMemoryByIspCarrier];
     XCTAssertNotNil([service getIpByHostAsync:hostName]);
 }
 
@@ -865,11 +865,11 @@
     HttpdnsRequestScheduler *requestScheduler = service.requestScheduler;
 
     //内部缓存开关，不触发加载DB到内存的操作
-    [requestScheduler _setCachedIPEnabled:YES];//区别于外部开关[service setCachedIPEnabled:YES];
+    [requestScheduler setPersistentCacheIpEnabled:YES];//区别于外部开关[service setCachedIPEnabled:YES];
     //同步网络请求，保存数据的数据库
     [service getIpByHost:hostName];
     //DB加载到内存
-    [requestScheduler loadIPsFromCacheSyncIfNeeded];
+    [requestScheduler syncReloadCacheFromDbToMemoryByIspCarrier];
     for (int i = 0; i < 10; i++) {
         NSString *IP1 = [service getIpByHostAsync:hostName];
         NSString *IP2 = [service getIpByHostAsync:hostName];
@@ -909,8 +909,8 @@
     [requestScheduler setServerDisable:NO];
 
     //内部缓存开关，不触发加载DB到内存的操作
-    [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
-    [requestScheduler loadIPsFromCacheSyncIfNeeded];
+    [requestScheduler setPersistentCacheIpEnabled:YES];//    [service setCachedIPEnabled:YES];
+    [requestScheduler syncReloadCacheFromDbToMemoryByIspCarrier];
 
     for (int i = 0; i < 10; i++) {
         NSString *IP1 = [service getIpByHostAsync:hostName];
@@ -948,7 +948,7 @@
     [requestScheduler setServerDisable:NO];
 
     //内部缓存开关，不触发加载DB到内存的操作
-    [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
+    [requestScheduler setPersistentCacheIpEnabled:YES];//    [service setCachedIPEnabled:YES];
     HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
     //XCTAssertNotNil([service getIpByHostAsync:hostName]);
 
@@ -956,7 +956,7 @@
     NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), @(ALICLOUD_HTTPDNS_HOST_CACHE_MAX_CACHE_AGE));
 
     //内部缓存开关，不触发加载DB到内存的操作
-    [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
+    [requestScheduler setPersistentCacheIpEnabled:YES];//    [service setCachedIPEnabled:YES];
     //[requestScheduler loadIPsFromCacheSyncIfNeeded];
 
     for (int i = 0; i < 10; i++) {
@@ -974,12 +974,12 @@
     NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), [service getIpByHostAsync:hostName]);
     [requestScheduler cleanAllHostMemoryCache];
     //内部缓存开关，不触发加载DB到内存的操作
-    [requestScheduler _setCachedIPEnabled:YES];//    [service setCachedIPEnabled:YES];
+    [requestScheduler setPersistentCacheIpEnabled:YES];//    [service setCachedIPEnabled:YES];
     //XCTAssertNotNil([service getIpByHostAsync:hostName]);
     //缓存过期
     sleep(5);
     [hostCacheStore cleanAllExpiredHostRecordsSync];
-    [requestScheduler loadIPsFromCacheSyncIfNeeded];
+    [requestScheduler syncReloadCacheFromDbToMemoryByIspCarrier];
     //HttpdnsHostRecord *hostRecord = [hostCacheStore hostRecordsWithCurrentCarrierForHost:hostName];
 }
 
