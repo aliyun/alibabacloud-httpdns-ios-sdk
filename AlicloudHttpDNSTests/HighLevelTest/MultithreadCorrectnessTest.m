@@ -13,26 +13,12 @@
 #import "HttpdnsHostResolver.h"
 #import "TestBase.h"
 
-@interface MultithreadCorrectnessTest : TestBase <HttpdnsTTLDelegate, HttpdnsLoggerProtocol>
+@interface MultithreadCorrectnessTest : TestBase
 
 @end
 
 
-static NSMutableArray *mockedObjects;
-
 @implementation MultithreadCorrectnessTest
-
-static NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
-
-+ (void)setUp {
-    hostNameIpPrefixMap = @{
-        @"v4host1.onlyforhttpdnstest.run.place": @"0.0.1",
-        @"v4host2.onlyforhttpdnstest.run.place": @"0.0.2",
-        @"v4host3.onlyforhttpdnstest.run.place": @"0.0.3",
-        @"v4host4.onlyforhttpdnstest.run.place": @"0.0.4",
-        @"v4host5.onlyforhttpdnstest.run.place": @"0.0.5"
-    };
-}
 
 - (void)setUp {
     [super setUp];
@@ -42,7 +28,6 @@ static NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
     self.httpdns = [[HttpDnsService alloc] initWithAccountID:100000];
     [self.httpdns setLogEnabled:YES];
     [self.httpdns setIPv6Enabled:YES];
-    [self.httpdns setTtlDelegate:self];
     [self.httpdns setLogHandler:self];
 
     self.currentTimeStamp = [[NSDate date] timeIntervalSince1970];
@@ -50,17 +35,6 @@ static NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 - (void)tearDown {
     [super tearDown];
-}
-
-- (int64_t)httpdnsHost:(NSString *)host ipType:(AlicloudHttpDNS_IPType)ipType ttl:(int64_t)ttl {
-    // 为了在并发测试中域名快速过期，将ttl设置为随机1-4秒
-    return arc4random_uniform(4) + 1;
-}
-
-- (void)log:(NSString *)logStr {
-    mach_port_t threadID = mach_thread_self();
-    NSString *threadIDString = [NSString stringWithFormat:@"%x", threadID];
-    printf("%ld-%s %s\n", (long)[[NSDate date] timeIntervalSince1970], [threadIDString UTF8String], [logStr UTF8String]);
 }
 
 - (void)testNoneBlockingMethodShouldNotBlock {
@@ -230,213 +204,6 @@ static NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
     NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSince1970] - startTime;
     XCTAssert(elapsedTime >= 4.9, @"elapsedTime should be more than 3.9s, but is %f", elapsedTime);
     XCTAssert(elapsedTime < 5.1, @"elapsedTime should be less than 4.1s, but is %f", elapsedTime);
-}
-
-
-- (void)testNormalMultipleHostsResolve {
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [hostNameIpPrefixMap enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull host, NSString * _Nonnull ipPrefix, BOOL * _Nonnull stop) {
-            HttpdnsResult *result = [self.httpdns resolveHostSync:host byIpType:HttpdnsQueryIPTypeIpv4];
-            XCTAssertNotNil(result);
-            XCTAssertTrue([result.host isEqualToString:host]);
-            NSString *firstIp = [result firstIpv4Address];
-            if (![firstIp hasPrefix:ipPrefix]) {
-                printf("XCTAssertWillFailed, host: %s, firstIp: %s, ipPrefix: %s\n", [host UTF8String], [firstIp UTF8String], [ipPrefix UTF8String]);
-            }
-            XCTAssertTrue([firstIp hasPrefix:ipPrefix]);
-        }];
-        dispatch_semaphore_signal(semaphore);
-    });
-
-    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-}
-
-- (void)testNonblockingMethodShouldNotBlockDuringMultithreadLongRun {
-    NSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];
-    NSTimeInterval testDuration = 10;
-    int threadCountForEachType = 4;
-
-    for (int i = 0; i < threadCountForEachType; i++) {
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            while ([[NSDate date] timeIntervalSince1970] - startTime < testDuration) {
-                NSString *host = [hostNameIpPrefixMap allKeys][arc4random_uniform((uint32_t)[hostNameIpPrefixMap count])];
-                NSString *ipPrefix = hostNameIpPrefixMap[host];
-
-                long long executeStartTimeInMs = [[NSDate date] timeIntervalSince1970] * 1000;
-                HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:host byIpType:HttpdnsQueryIPTypeIpv4];
-                long long executeEndTimeInMs = [[NSDate date] timeIntervalSince1970] * 1000;
-                // 非阻塞接口任何情况下不应该阻塞超过10ms
-                XCTAssertLessThan(executeEndTimeInMs - executeStartTimeInMs, 10);
-                if (result) {
-                    XCTAssertNotNil(result);
-                    XCTAssertTrue([result.host isEqualToString:host]);
-                    NSString *firstIp = [result firstIpv4Address];
-                    if (![firstIp hasPrefix:ipPrefix]) {
-                        printf("XCTAssertWillFailed, host: %s, firstIp: %s, ipPrefix: %s\n", [host UTF8String], [firstIp UTF8String], [ipPrefix UTF8String]);
-                    }
-                    XCTAssertTrue([firstIp hasPrefix:ipPrefix]);
-                }
-                [NSThread sleepForTimeInterval:0.1];
-            }
-        });
-    }
-
-    [NSThread sleepForTimeInterval:testDuration + 1];
-}
-
-- (void)testMultithreadAndMultiHostResolvingForALongRun {
-    NSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];
-    NSTimeInterval testDuration = 10;
-    int threadCountForEachType = 4;
-
-    for (int i = 0; i < threadCountForEachType; i++) {
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            while ([[NSDate date] timeIntervalSince1970] - startTime < testDuration) {
-                NSString *host = [hostNameIpPrefixMap allKeys][arc4random_uniform((uint32_t)[hostNameIpPrefixMap count])];
-                NSString *ipPrefix = hostNameIpPrefixMap[host];
-
-                HttpdnsResult *result = [self.httpdns resolveHostSync:host byIpType:HttpdnsQueryIPTypeIpv4];
-                XCTAssertNotNil(result);
-                XCTAssertTrue([result.host isEqualToString:host]);
-                NSString *firstIp = [result firstIpv4Address];
-                if (![firstIp hasPrefix:ipPrefix]) {
-                    printf("XCTAssertWillFailed, host: %s, firstIp: %s, ipPrefix: %s\n", [host UTF8String], [firstIp UTF8String], [ipPrefix UTF8String]);
-                }
-                XCTAssertTrue([firstIp hasPrefix:ipPrefix]);
-
-                [NSThread sleepForTimeInterval:0.1];
-            }
-        });
-    }
-
-    for (int i = 0; i < threadCountForEachType; i++) {
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            while ([[NSDate date] timeIntervalSince1970] - startTime < testDuration) {
-                NSString *host = [hostNameIpPrefixMap allKeys][arc4random_uniform((uint32_t)[hostNameIpPrefixMap count])];
-                NSString *ipPrefix = hostNameIpPrefixMap[host];
-
-                [self.httpdns resolveHostAsync:host byIpType:HttpdnsQueryIPTypeIpv4 completionHandler:^(HttpdnsResult *result) {
-                    XCTAssertNotNil(result);
-                    XCTAssertTrue([result.host isEqualToString:host]);
-                    NSString *firstIp = [result firstIpv4Address];
-                    if (![firstIp hasPrefix:ipPrefix]) {
-                        printf("XCTAssertWillFailed, host: %s, firstIp: %s, ipPrefix: %s\n", [host UTF8String], [firstIp UTF8String], [ipPrefix UTF8String]);
-                    }
-                    XCTAssertTrue([firstIp hasPrefix:ipPrefix]);
-                }];
-                [NSThread sleepForTimeInterval:0.1];
-            }
-        });
-    }
-
-    for (int i = 0; i < threadCountForEachType; i++) {
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            while ([[NSDate date] timeIntervalSince1970] - startTime < testDuration) {
-                NSString *host = [hostNameIpPrefixMap allKeys][arc4random_uniform((uint32_t)[hostNameIpPrefixMap count])];
-                NSString *ipPrefix = hostNameIpPrefixMap[host];
-                HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:host byIpType:HttpdnsQueryIPTypeIpv4];
-                if (result) {
-                    XCTAssertTrue([result.host isEqualToString:host]);
-                    NSString *firstIp = [result firstIpv4Address];
-                    if (![firstIp hasPrefix:ipPrefix]) {
-                        printf("XCTAssertWillFailed, host: %s, firstIp: %s, ipPrefix: %s\n", [host UTF8String], [firstIp UTF8String], [ipPrefix UTF8String]);
-                    }
-                    XCTAssertTrue([firstIp hasPrefix:ipPrefix]);
-                }
-                [NSThread sleepForTimeInterval:0.1];
-            }
-        });
-    }
-
-    sleep(testDuration + 1);
-}
-
-// 指定查询both，但域名都只配置了ipv4
-// 这种情况下，会自动打标该域名无ipv6，后续的结果只会包含ipv4地址
-- (void)testMultithreadAndMultiHostResolvingForALongRunBySpecifyBothIpv4AndIpv6 {
-    NSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];
-    NSTimeInterval testDuration = 10;
-    int threadCountForEachType = 4;
-
-    // 计数时有并发冲突的可能，但只是测试，不用过于严谨
-    __block int syncCount = 0, asyncCount = 0, syncNonBlockingCount = 0;
-
-    for (int i = 0; i < threadCountForEachType; i++) {
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            while ([[NSDate date] timeIntervalSince1970] - startTime < testDuration) {
-                NSString *host = [hostNameIpPrefixMap allKeys][arc4random_uniform((uint32_t)[hostNameIpPrefixMap count])];
-                NSString *ipPrefix = hostNameIpPrefixMap[host];
-
-                HttpdnsResult *result = [self.httpdns resolveHostSync:host byIpType:HttpdnsQueryIPTypeBoth];
-                XCTAssertNotNil(result);
-                XCTAssertTrue(!result.hasIpv6Address);
-                XCTAssertTrue([result.host isEqualToString:host]);
-                NSString *firstIp = [result firstIpv4Address];
-                if (![firstIp hasPrefix:ipPrefix]) {
-                    printf("XCTAssertWillFailed, host: %s, firstIp: %s, ipPrefix: %s\n", [host UTF8String], [firstIp UTF8String], [ipPrefix UTF8String]);
-                }
-                XCTAssertTrue([firstIp hasPrefix:ipPrefix]);
-
-                syncCount++;
-                [NSThread sleepForTimeInterval:0.1];
-            }
-        });
-    }
-
-    for (int i = 0; i < threadCountForEachType; i++) {
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            while ([[NSDate date] timeIntervalSince1970] - startTime < testDuration) {
-                NSString *host = [hostNameIpPrefixMap allKeys][arc4random_uniform((uint32_t)[hostNameIpPrefixMap count])];
-                NSString *ipPrefix = hostNameIpPrefixMap[host];
-
-                [self.httpdns resolveHostAsync:host byIpType:HttpdnsQueryIPTypeBoth completionHandler:^(HttpdnsResult *result) {
-                    XCTAssertNotNil(result);
-                    XCTAssertTrue(!result.hasIpv6Address);
-                    XCTAssertTrue([result.host isEqualToString:host]);
-                    NSString *firstIp = [result firstIpv4Address];
-                    if (![firstIp hasPrefix:ipPrefix]) {
-                        printf("XCTAssertWillFailed, host: %s, firstIp: %s, ipPrefix: %s\n", [host UTF8String], [firstIp UTF8String], [ipPrefix UTF8String]);
-                    }
-                    XCTAssertTrue([firstIp hasPrefix:ipPrefix]);
-
-                    asyncCount++;
-                }];
-                [NSThread sleepForTimeInterval:0.1];
-            }
-        });
-    }
-
-    for (int i = 0; i < threadCountForEachType; i++) {
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            while ([[NSDate date] timeIntervalSince1970] - startTime < testDuration) {
-                NSString *host = [hostNameIpPrefixMap allKeys][arc4random_uniform((uint32_t)[hostNameIpPrefixMap count])];
-                NSString *ipPrefix = hostNameIpPrefixMap[host];
-
-                HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:host byIpType:HttpdnsQueryIPTypeBoth];
-                if (result) {
-                    XCTAssertTrue([result.host isEqualToString:host]);
-                    XCTAssertTrue(!result.hasIpv6Address);
-                    NSString *firstIp = [result firstIpv4Address];
-                    if (![firstIp hasPrefix:ipPrefix]) {
-                        printf("XCTAssertWillFailed, host: %s, firstIp: %s, ipPrefix: %s\n", [host UTF8String], [firstIp UTF8String], [ipPrefix UTF8String]);
-                    }
-                    XCTAssertTrue([firstIp hasPrefix:ipPrefix]);
-                }
-
-                syncNonBlockingCount++;
-                [NSThread sleepForTimeInterval:0.1];
-            }
-        });
-    }
-
-    sleep(testDuration + 1);
-
-    int theoreticalCount = threadCountForEachType * (testDuration / 0.1);
-
-    // printf all the counts
-    printf("syncCount: %d, asyncCount: %d, syncNonBlockingCount: %d, theoreticalCount: %d\n", syncCount, asyncCount, syncNonBlockingCount, theoreticalCount);
 }
 
 @end

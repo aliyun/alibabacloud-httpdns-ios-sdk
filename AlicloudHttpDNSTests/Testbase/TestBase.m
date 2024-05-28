@@ -7,10 +7,22 @@
 //
 
 #import "TestBase.h"
+#import <mach/mach.h>
+
+NSMutableArray *mockedObjects;
+NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 @implementation TestBase
 
-static AlicloudIPv6Adapter *mockIpv6Adapter;
++ (void)setUp {
+    hostNameIpPrefixMap = @{
+        @"v4host1.onlyforhttpdnstest.run.place": @"0.0.1",
+        @"v4host2.onlyforhttpdnstest.run.place": @"0.0.2",
+        @"v4host3.onlyforhttpdnstest.run.place": @"0.0.3",
+        @"v4host4.onlyforhttpdnstest.run.place": @"0.0.4",
+        @"v4host5.onlyforhttpdnstest.run.place": @"0.0.5"
+    };
+}
 
 - (void)setUp {
     [super setUp];
@@ -24,6 +36,12 @@ static AlicloudIPv6Adapter *mockIpv6Adapter;
     }
 
     [super tearDown];
+}
+
+- (void)log:(NSString *)logStr {
+    mach_port_t threadID = mach_thread_self();
+    NSString *threadIDString = [NSString stringWithFormat:@"%x", threadID];
+    printf("%ld-%s %s\n", (long)[[NSDate date] timeIntervalSince1970], [threadIDString UTF8String], [logStr UTF8String]);
 }
 
 - (HttpdnsHostObject *)constructSimpleIpv4HostObject {
