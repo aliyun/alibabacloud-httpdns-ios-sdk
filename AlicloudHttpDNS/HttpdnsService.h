@@ -203,12 +203,14 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 - (NSString *)getSessionId;
 
 /// 同步解析域名，会阻塞当前线程，直到从缓存中获取到有效解析结果，或者从服务器拿到最新解析结果
+/// 如果允许复用过期的解析结果且存在过期结果的情况下，会先返回这个结果，然后启动后台线程去更新解析结果
 /// @param host 需要解析的域名
 /// @param queryIpType 可设置为自动选择，ipv4，ipv6. 设置为自动选择时，会自动根据当前所处网络环境选择解析ipv4或ipv6
 /// @return 解析结果
 - (HttpdnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType;
 
 /// 同步解析域名，会阻塞当前线程，直到从缓存中获取到有效解析结果，或者从服务器拿到最新解析结果
+/// 如果允许复用过期的解析结果且存在过期结果的情况下，会先返回这个结果，然后启动后台线程去更新解析结果
 /// @param host 需要解析的域名
 /// @param queryIpType 可设置为自动选择，ipv4，ipv6. 设置为自动选择时，会自动根据当前所处网络环境选择解析ipv4或ipv6
 /// @param sdnsParams 如果域名配置了sdns自定义解析，通过此参数携带自定义参数
@@ -217,12 +219,14 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 - (HttpdnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *, NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey;
 
 /// 异步解析域名，不会阻塞当前线程，会在从缓存中获取到有效结果，或从服务器拿到最新解析结果后，通过回调返回结果
+/// 如果允许复用过期的解析结果且存在过期结果的情况下，会先在回调中返回这个结果，然后启动后台线程去更新解析结果
 /// @param host 需要解析的域名
 /// @param queryIpType 可设置为自动选择，ipv4，ipv6. 设置为自动选择时，会自动根据当前所处网络环境选择解析ipv4或ipv6
 /// @handler 解析结果回调
 - (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType completionHandler:(void (^)(HttpdnsResult *))handler;
 
 /// 异步解析域名，不会阻塞当前线程，会在从缓存中获取到有效结果，或从服务器拿到最新解析结果后，通过回调返回结果
+/// 如果允许复用过期的解析结果且存在过期结果的情况下，会先在回调中返回这个结果，然后启动后台线程去更新解析结果
 /// @param host 需要解析的域名
 /// @param queryIpType 可设置为自动选择，ipv4，ipv6. 设置为自动选择时，会自动根据当前所处网络环境选择解析ipv4或ipv6
 /// @param sdnsParams 如果域名配置了sdns自定义解析，通过此参数携带自定义参数
@@ -231,14 +235,14 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 - (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *, NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey completionHandler:(void (^)(HttpdnsResult *))handler;
 
 /// 伪异步解析域名，不会阻塞当前线程，首次解析结果可能为空
-/// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
+/// 先查询缓存，缓存中存在有效结果(未过期，或者过期但配置了可以复用过期解析结果)，则直接返回结果，如果缓存未命中，则发起异步解析请求
 /// @param host 需要解析的域名
 /// @param queryIpType 可设置为自动选择，ipv4，ipv6. 设置为自动选择时，会自动根据当前所处网络环境选择解析ipv4或ipv6
 /// @return 解析结果
 - (HttpdnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType;
 
 /// 伪异步解析域名，不会阻塞当前线程，首次解析结果可能为空
-/// 先查询缓存，缓存中存在未过期的结果，则直接返回结果，如果缓存未命中，则发起异步解析请求
+/// 先查询缓存，缓存中存在有效结果(未过期，或者过期但配置了可以复用过期解析结果)，则直接返回结果，如果缓存未命中，则发起异步解析请求
 /// @param host 需要解析的域名
 /// @param queryIpType 可设置为自动选择，ipv4，ipv6. 设置为自动选择时，会自动根据当前所处网络环境选择解析ipv4或ipv6
 /// @param sdnsParam 如果域名配置了sdns自定义解析，通过此参数携带自定义参数

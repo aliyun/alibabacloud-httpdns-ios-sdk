@@ -273,16 +273,16 @@ static dispatch_queue_t _asyncResolveHostQueue = NULL;
             }
 
             if ([result isExpiredUnderQueryIpType:filterdQueryIpType]) {
+                // 只要过期了就肯定需要请求
+                needToQuery = YES;
+
+                // 只有允许过期缓存，和开启持久化缓存的第一次获取，才不需要等待结果
                 if (_isExpiredIPEnabled || [result isLoadFromDB]) {
-                    needToQuery = YES;
-                    // 只有允许过期缓存，和开启持久化缓存的第一次获取，才不需要等待结果
                     needToWaitForResult = NO;
                     HttpdnsLogDebug("The ips is expired, but we accept it, host: %@, queryType: %ld, filterdQueryType: %ld", host, originalQueryType, filterdQueryIpType);
-                    break;
-                } else {
-                    needToQuery = YES;
-                    break;
                 }
+
+                break;
             }
         } while (NO);
     }
@@ -315,6 +315,8 @@ static dispatch_queue_t _asyncResolveHostQueue = NULL;
                 @try {
                     result.isQuerying = YES;
                     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+                    // 请求过程中，内存缓存可能会因某种原因被清空，因此result还是以请求merge过程中拿到的为准
+                    // merge时，如果缓存中的已经被清了找不到，它会新构造一个hostObject
                     result = [strongSelf executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
                 } @catch (NSException *exception) {
                     HttpdnsLogDebug("resolveHost exception: %@", exception);
