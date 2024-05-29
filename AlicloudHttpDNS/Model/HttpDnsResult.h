@@ -14,10 +14,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy) NSString *host;
 
-@property (nonatomic, strong) NSArray<NSString *> *ips;
-@property (nonatomic, strong) NSArray<NSString *> *ipv6s;
+@property (nonatomic, copy) NSArray<NSString *> *ips;
+@property (nonatomic, copy) NSArray<NSString *> *ipv6s;
 
-// 最后一次更新时间戳，linux秒值
+// 最后一次更新时间戳，Unix时间，单位秒
 @property (nonatomic, assign) NSTimeInterval lastUpdatedTimeInterval;
 
 // ttl，单位秒
