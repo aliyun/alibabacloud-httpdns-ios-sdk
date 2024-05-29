@@ -21,7 +21,7 @@
         _queryIpType = queryIpType;
         _sdnsParams = sdnsParams;
 
-        if (_cacheKey) {
+        if (cacheKey) {
             _cacheKey = cacheKey;
         } else {
             _cacheKey = host;
