@@ -68,10 +68,10 @@ NSArray *ipv6HostArray = nil;
     // ams_test账号139450
     _service = [[HttpDnsService alloc] initWithAccountID:139450];
     [_service setLogEnabled:YES];
-    [_service setCachedIPEnabled:YES];
-    [_service setExpiredIPEnabled:NO];
+    [_service setPersistentCacheIPEnabled:YES];
+    [_service setReuseExpiredIPEnabled:NO];
     [_service setHTTPSRequestEnabled:YES];
-    [_service enableIPv6:YES];
+    [_service setIPv6Enabled:YES];
 
     NSString *sessionId = [[HttpDnsService sharedInstance] getSessionId];
     NSLog(@"Print sessionId: %@", sessionId);
@@ -99,9 +99,9 @@ NSArray *ipv6HostArray = nil;
 
 // 开启IPv6解析结果
 - (IBAction)onIPv6Result:(id)sender {
-    [_service enableIPv6:YES];
+    [_service setIPv6Enabled:YES];
     // 开启持久化缓存
-    [_service setCachedIPEnabled:YES];
+    [_service setPersistentCacheIPEnabled:YES];
 }
 
 // 开启IPv6解析链路
@@ -124,8 +124,6 @@ NSArray *ipv6HostArray = nil;
 // IPv6 Stack检测
 - (IBAction)onCheckIPv6Stack:(id)sender {
 }
-
-
 
 - (void)testConcurrentResolveIPv4Hosts {
     for (NSString *ipv4Host in ipv4HostArray) {
@@ -203,8 +201,6 @@ NSArray *ipv6HostArray = nil;
     NSLog(@"ipv4:--------%@", ipv4);
 }
 
-
-
 - (IBAction)queryIpv6:(id)sender {
     NSString *ipv6 = [_service getIPv6ByHostAsync:@"www.taobao.com"];
     NSLog(@"ipv6:--------%@", ipv6);
@@ -216,6 +212,5 @@ NSArray *ipv6HostArray = nil;
     NSLog(@"ipv4:--------%@++++ipv4:--------%@",[ipvsDic objectForKey:ALICLOUDHDNS_IPV4], [ipvsDic objectForKey:ALICLOUDHDNS_IPV6]);
 
 }
-
 
 @end
