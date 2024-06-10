@@ -110,12 +110,14 @@
 
 - (BOOL)isIpEmptyUnderQueryIpType:(HttpdnsQueryIPType)queryType {
     if (queryType & HttpdnsQueryIPTypeIpv4) {
-        if (![HttpdnsUtil isNotEmptyArray:[self getIps]]) {
+        // 注意，_hasNoIpv4Record为true时，说明域名没有配置ipv4ip，不是需要去请求的情况
+        if ([HttpdnsUtil isEmptyArray:[self getIps]] && !_hasNoIpv4Record) {
             return YES;
         }
 
-    } else if (queryType & HttpdnsQueryIPTypeIpv6) {
-        if (![HttpdnsUtil isNotEmptyArray:[self getIp6s]]) {
+    } else if (queryType & HttpdnsQueryIPTypeIpv6 && !_hasNoIpv6Record) {
+        // 注意，_hasNoIpv6Record为true时，说明域名没有配置ipv6ip，不是需要去请求的情况
+        if ([HttpdnsUtil isEmptyArray:[self getIp6s]] && !_hasNoIpv6Record) {
             return YES;
         }
     }
@@ -129,10 +131,14 @@
     }
 
     int64_t currentEpoch = (int64_t)[[[NSDate alloc] init] timeIntervalSince1970];
-    if (queryIPType & HttpdnsQueryIPTypeIpv4 && _lastIPv4LookupTime + _v4ttl <= currentEpoch) {
+    if ((queryIPType & HttpdnsQueryIPTypeIpv4)
+        && !_hasNoIpv4Record
+        && _lastIPv4LookupTime + _v4ttl <= currentEpoch) {
         return YES;
     }
-    if (queryIPType & HttpdnsQueryIPTypeIpv6 && _lastIPv6LookupTime + _v6ttl <= currentEpoch) {
+    if ((queryIPType & HttpdnsQueryIPTypeIpv6)
+        && !_hasNoIpv6Record
+        && _lastIPv6LookupTime + _v6ttl <= currentEpoch) {
         return YES;
     }
     return NO;

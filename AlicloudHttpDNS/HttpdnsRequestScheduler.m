@@ -69,6 +69,11 @@ static dispatch_queue_t _memoryCacheSerialQueue = NULL;
 static dispatch_queue_t _persistentCacheConcurrentQueue = NULL;
 static dispatch_queue_t _asyncResolveHostQueue = NULL;
 
+typedef struct {
+    BOOL isResultUsable;
+    BOOL isResolvingRequired;
+} HostObjectExamingResult;
+
 @interface HttpdnsRequestScheduler()
 
 /**
@@ -162,13 +167,15 @@ static dispatch_queue_t _asyncResolveHostQueue = NULL;
     if (![HttpdnsUtil isNotEmptyArray:hosts]) {
         return;
     }
+    __weak typeof(self) weakSelf = self;
     dispatch_async(_asyncResolveHostQueue, ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
         for (NSString *hostName in hosts) {
             if ([self isHostsNumberLimitReached]) {
                 break;
             }
-            HttpdnsHostObject *hostObject = [self hostObjectFromCacheForHostName:hostName];
-            if (!hostObject 
+            HttpdnsHostObject *hostObject = [HttpdnsUtil safeObjectForKey:hostName dict:strongSelf->_hostManagerDict];
+            if (!hostObject
                 || [hostObject isExpiredUnderQueryIpType:queryType]
                 || [hostObject isRegionNotMatch:self.customRegion underQueryIpType:queryType]) {
 
@@ -184,154 +191,111 @@ static dispatch_queue_t _asyncResolveHostQueue = NULL;
 - (HttpdnsHostObject *)resolveHost:(HttpdnsRequest *)request {
     HttpdnsLogDebug("resolveHost, request: %@", request);
 
-    __weak typeof(self) weakSelf = self;
-
     NSString *host = request.host;
     NSString *cacheKey = request.cacheKey;
-    HttpdnsQueryIPType originalQueryType = request.queryIpType;
 
-    if (![HttpdnsUtil isNotEmptyString:host]) {
+    if ([HttpdnsUtil isEmptyString:host]) {
         return nil;
     }
 
-    BOOL needToQuery = NO;
-    BOOL needToWaitForResult = YES;
-
-    HttpDnsLocker *lockerManager = [HttpDnsLocker sharedInstance];
-    [lockerManager lock:cacheKey queryType:originalQueryType];
-
     __block HttpdnsHostObject *result = nil;
     dispatch_sync(_memoryCacheSerialQueue, ^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        result = [strongSelf hostObjectFromCacheForHostName:cacheKey];
+        result = [HttpdnsUtil safeObjectForKey:cacheKey dict:_hostManagerDict];
+        HttpdnsLogDebug("try to load from cache, cacheKey: %@, result: %@", cacheKey, result);
+
+        if (!result) {
+            // 在这里构造新的HttpdnsHostObject并置入缓存比较安全，因为这里被sync语义保护着
+            // 如果后面merge的时候再构造，得重新做同步控制
+            result = [HttpdnsHostObject new];
+            result.ips = @[];
+            result.ip6s = @[];
+            result.hostName = host;
+            result.extra = @{};
+            [HttpdnsUtil safeAddValue:result key:cacheKey toDict:_hostManagerDict];
+        }
     });
 
-    HttpdnsLogDebug("try to load from cache, cacheKey: %@, result: %@", cacheKey, result);
+    HostObjectExamingResult examingResult = [self examineHttpdnsHostObject:result underQueryType:request.queryIpType];
+    BOOL isResultUsable = examingResult.isResultUsable;
+    BOOL isResolvingRequired = examingResult.isResolvingRequired;
 
-    if (!result) {
-        if ([self isHostsNumberLimitReached]) {
-            return nil;
+    if (isResultUsable) {
+        if (isResolvingRequired) {
+            // 缓存结果可用，但是需要请求，因为缓存结果已经过期
+            // 这种情况异步去解析就可以了
+            [self determineResolvingHostNonBlocking:request];
         }
-        needToQuery = YES;
-
-        // 在这里构造新的HttpdnsHostObject并置入缓存比较安全，因为这里被锁保护着
-        // 如果后面merge的时候再构造，得重新做同步控制
-        result = [HttpdnsHostObject new];
-        result.ips = @[];
-        result.ip6s = @[];
-        result.hostName = host;
-        result.extra = @{};
-        [HttpdnsUtil safeAddValue:result key:cacheKey toDict:_hostManagerDict];
-    } else {
-        // 处理域名没有配置v4ip或者v6ip的情况，做个打标，避免一直重复请求
-        // 先假设需要请求
-        BOOL needToQueryBaseOnHavingRecord = YES;
-        HttpdnsQueryIPType filterdQueryIpType = originalQueryType;
-        if (originalQueryType & HttpdnsQueryIPTypeIpv4 && originalQueryType & HttpdnsQueryIPTypeIpv6) {
-            if ([result hasNoIpv4Record] && [result hasNoIpv6Record]) {
-                HttpdnsLogDebug("the host has neither ipv4 nor ipv6 record, abort resolving. host: %@", cacheKey);
-                needToQueryBaseOnHavingRecord = NO;
-            } else if ([result hasNoIpv4Record]) {
-                filterdQueryIpType = HttpdnsQueryIPTypeIpv6;
-            } else if ([result hasNoIpv6Record]) {
-                filterdQueryIpType = HttpdnsQueryIPTypeIpv4;
-            } else {
-                // 保持不变
-            }
-        } else if (originalQueryType & HttpdnsQueryIPTypeIpv4) {
-            if ([result hasNoIpv4Record]) {
-                HttpdnsLogDebug("the host has no ipv4 record, abort ipv4 resolving. host: %@", cacheKey);
-                needToQueryBaseOnHavingRecord = NO;
-            }
-        } else {
-            if ([result hasNoIpv6Record]) {
-                HttpdnsLogDebug("the host has no ipv6 record, abort ipv6 resolving. host: %@", cacheKey);
-                needToQueryBaseOnHavingRecord = NO;
-            }
-        }
-
-        // 根据ip的解析配置情况做了一轮判断后，如果认为不需要请求，就直接返回
-        if (!needToQueryBaseOnHavingRecord) {
-            // 注意放锁使用的queryType必须和最开始上锁的时候保持一致
-            // 经过处理的queryType需要用另一个变量往下传递
-            [lockerManager unlock:cacheKey queryType:originalQueryType];
-            return result;
-        }
-
-        // 将请求的queryType传递下去
-        request.queryIpType = filterdQueryIpType;
-
-        do {
-            if ([result isIpEmptyUnderQueryIpType:filterdQueryIpType]) {
-                needToQuery = YES;
-                break;
-            }
-
-            if ([result isRegionNotMatch:[self customRegion] underQueryIpType:filterdQueryIpType]) {
-                needToQuery = YES;
-                break;
-            }
-
-            if ([result isExpiredUnderQueryIpType:filterdQueryIpType]) {
-                // 只要过期了就肯定需要请求
-                needToQuery = YES;
-
-                // 只有允许过期缓存，和开启持久化缓存的第一次获取，才不需要等待结果
-                if (_isExpiredIPEnabled || [result isLoadFromDB]) {
-                    needToWaitForResult = NO;
-                    HttpdnsLogDebug("The ips is expired, but we accept it, host: %@, queryType: %ld, filterdQueryType: %ld", host, originalQueryType, filterdQueryIpType);
-                }
-
-                break;
-            }
-        } while (NO);
-    }
-
-    if (!needToQuery) {
-        // 注意放锁使用的queryType必须和最开始上锁的时候保持一致
-        // 经过处理的queryType需要用另一个变量往下传递
-        [lockerManager unlock:cacheKey queryType:originalQueryType];
+        // 因为缓存结果可用，可以立即返回
         return result;
     }
 
-    if (request.isBlockingRequest && needToWaitForResult) {
+    if (request.isBlockingRequest) {
+        // 缓存结果不可用，且是同步请求，需要等待结果
+        return [self determineResolveHostBlocking:request];
+    } else {
+        // 缓存结果不可用，且是异步请求，不需要等待结果
+        [self determineResolvingHostNonBlocking:request];
+        return nil;
+    }
+}
+
+- (void)determineResolvingHostNonBlocking:(HttpdnsRequest *)request {
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(_asyncResolveHostQueue, ^{
+        HttpDnsLocker *locker = [HttpDnsLocker sharedInstance];
+        __strong typeof(weakSelf) strongSelf = weakSelf;
         @try {
-            result.isQuerying = YES;
+            [locker lock:request.cacheKey queryType:request.queryIpType];
             HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-            // 请求过程中，内存缓存可能会因某种原因被清空，因此result还是以请求merge过程中拿到的为准
-            // merge时，如果缓存中的已经被清了找不到，它会新构造一个hostObject
-            result = [self executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
+            [strongSelf executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
         } @catch (NSException *exception) {
-            HttpdnsLogDebug("resolveHost exception: %@", exception);
+            HttpdnsLogDebug("determineResolvingHostNonBlocking exception: %@", exception);
         } @finally {
-            result.isQuerying = NO;
-            [lockerManager unlock:cacheKey queryType:originalQueryType];
+            [locker unlock:request.cacheKey queryType:request.queryIpType];
         }
-        return result;
-    } else {
-        if (!result.isQuerying) {
-            dispatch_async(_asyncResolveHostQueue, ^{
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                @try {
-                    result.isQuerying = YES;
-                    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-                    // 请求过程中，内存缓存可能会因某种原因被清空，因此result还是以请求merge过程中拿到的为准
-                    // merge时，如果缓存中的已经被清了找不到，它会新构造一个hostObject
-                    result = [strongSelf executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
-                } @catch (NSException *exception) {
-                    HttpdnsLogDebug("resolveHost exception: %@", exception);
-                } @finally {
-                    result.isQuerying = NO;
-                }
-            });
-        }
+    });
+}
 
-        [lockerManager unlock:cacheKey queryType:originalQueryType];
-
-        // TODO 由于这里是启动异步解析之后立即返回结果，后续异步解析完成之后的merge操作可能会影响这个result
-        // TODO 因此，这个result应当采用深拷贝的结果返回
-        return result;
+- (HttpdnsHostObject *)determineResolveHostBlocking:(HttpdnsRequest *)request {
+    HttpdnsHostObject *result = nil;
+    HttpDnsLocker *locker = [HttpDnsLocker sharedInstance];
+    @try {
+        [locker lock:request.cacheKey queryType:request.queryIpType];
+        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+        result = [self executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
+    } @catch (NSException *exception) {
+        HttpdnsLogDebug("determineResolveHostBlocking exception: %@", exception);
+    } @finally {
+        [locker unlock:request.cacheKey queryType:request.queryIpType];
     }
+    return result;
+}
+
+- (HostObjectExamingResult)examineHttpdnsHostObject:(HttpdnsHostObject *)hostObject underQueryType:(HttpdnsQueryIPType)queryType {
+    if (!hostObject) {
+        return (HostObjectExamingResult){NO, YES};
+    }
+
+    if ([hostObject isIpEmptyUnderQueryIpType:queryType]) {
+        return (HostObjectExamingResult){NO, YES};
+    }
+
+    if ([hostObject isRegionNotMatch:[self customRegion] underQueryIpType:queryType]) {
+        return (HostObjectExamingResult){NO, YES};
+    }
+
+    if ([hostObject isExpiredUnderQueryIpType:queryType]) {
+        if (_isExpiredIPEnabled || [hostObject isLoadFromDB]) {
+            // 只有允许过期缓存，和开启持久化缓存的第一次获取，才不需要等待结果
+            HttpdnsLogDebug("The ips is expired, but we accept it, host: %@, queryType: %ld", hostObject.hostName, queryType);
+            return (HostObjectExamingResult){YES, YES};
+        }
+
+        // 只要过期了就肯定需要请求
+        return (HostObjectExamingResult){NO, YES};
+    }
+
+    return (HostObjectExamingResult){YES, NO};
 }
 
 - (HttpdnsHostObject *)executeRequest:(HttpdnsRequest *)request
@@ -449,7 +413,6 @@ static dispatch_queue_t _asyncResolveHostQueue = NULL;
         [cachedHostObject setV6TTL:result.getV6TTL];
         [cachedHostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
         cachedHostObject.ip6Region = ip6Region;
-
 
         if ([HttpdnsUtil isNotEmptyDictionary:result.extra]) {
             [cachedHostObject setExtra:Extra];
@@ -740,16 +703,6 @@ static dispatch_queue_t _asyncResolveHostQueue = NULL;
     BOOL canNotConnectServer = ALICLOUD_HTTPDNS_HTTP_CANNOT_CONNECT_SERVER_ERROR_CODE;
     BOOL isTimeout = (isHTTPS && (error.code == ALICLOUD_HTTPDNS_HTTPS_TIMEOUT_ERROR_CODE)) || (!isHTTPS && ((error.code == ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE) || (error.code == ALICLOUD_HTTPDNS_HTTP_STREAM_READ_ERROR_CODE)));
     return isTimeout || canNotConnectServer;
-}
-
-- (HttpdnsHostObject *)hostObjectFromCacheForHostName:(NSString *)hostName {
-    //v1.6.1版本及以后，disable状态下了，不仅网络请求受限，缓存也同样受限。
-    if (self.isServerDisable) {
-        return nil;
-    }
-    HttpdnsHostObject *hostObject;
-    hostObject = [HttpdnsUtil safeObjectForKey:hostName dict:_hostManagerDict];
-    return hostObject;
 }
 
 - (void)asyncReloadCacheFromDbToMemoryByIspCarrier {

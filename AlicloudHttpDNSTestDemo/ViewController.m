@@ -71,7 +71,7 @@ NSArray *ipv6HostArray = nil;
     [_service setCachedIPEnabled:YES];
     [_service setExpiredIPEnabled:NO];
     [_service setHTTPSRequestEnabled:YES];
-    [_service enableIPv6:NO];
+    [_service enableIPv6:YES];
 
     NSString *sessionId = [[HttpDnsService sharedInstance] getSessionId];
     NSLog(@"Print sessionId: %@", sessionId);
@@ -84,8 +84,10 @@ NSArray *ipv6HostArray = nil;
 - (IBAction)onHost1:(id)sender {
     HttpDnsService *service = [HttpDnsService sharedInstance];
     NSDictionary<NSString *, NSString *> *params = @{@"key1": @"value1", @"key2": @"value2"};
-    HttpdnsResult *result = [service resolveHostSync:@"action.test.com" byIpType:HttpdnsQueryIPTypeAuto withSdnsParams:params sdnsCacheKey:nil];
-    NSLog(@"result: %@, firstIp: %@", result, [result firstIpv4Address]);
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        HttpdnsResult *result = [service resolveHostSync:@"action.test.com" byIpType:HttpdnsQueryIPTypeAuto withSdnsParams:params sdnsCacheKey:nil];
+        NSLog(@"result: %@, firstIp: %@", result, [result firstIpv4Address]);
+    });
 }
 
 - (IBAction)onHost2:(id)sender {

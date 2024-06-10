@@ -47,11 +47,17 @@
 
 + (id)convertJsonStringToObject:(NSString *)jsonStr;
 
++ (BOOL)isEmptyArray:(NSArray *)inputArr;
+
 + (BOOL)isNotEmptyArray:(NSArray *)inputArr;
+
++ (BOOL)isEmptyString:(NSString *)inputStr;
 
 + (BOOL)isNotEmptyString:(NSString *)inputStr;
 
 + (BOOL)isValidJSON:(id)JSON;
+
++ (BOOL)isEmptyDictionary:(NSDictionary *)inputDict;
 
 + (BOOL)isNotEmptyDictionary:(NSDictionary *)inputDict;
 
