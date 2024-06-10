@@ -172,18 +172,26 @@ _Pragma("clang diagnostic pop") \
     }
 }
 
-+ (BOOL)isNotEmptyArray:(NSArray *)inputArr {
++ (BOOL)isEmptyArray:(NSArray *)inputArr {
     if (!inputArr) {
-        return NO;
+        return YES;
     }
-    return [inputArr count] > 0;
+    return [inputArr count] == 0;
+}
+
++ (BOOL)isNotEmptyArray:(NSArray *)inputArr {
+    return ![self isEmptyArray:inputArr];
+}
+
++ (BOOL)isEmptyString:(NSString *)inputStr {
+    if (!inputStr) {
+        return YES;
+    }
+    return [inputStr length] == 0;
 }
 
 + (BOOL)isNotEmptyString:(NSString *)inputStr {
-    if (!inputStr) {
-        return NO;
-    }
-    return [inputStr length] > 0;
+    return ![self isEmptyString:inputStr];
 }
 
 + (BOOL)isValidJSON:(id)JSON {
@@ -194,11 +202,16 @@ _Pragma("clang diagnostic pop") \
     }
     return isValid;
 }
-+ (BOOL)isNotEmptyDictionary:(NSDictionary *)inputDict {
+
++ (BOOL)isEmptyDictionary:(NSDictionary *)inputDict {
     if (!inputDict) {
-        return NO;
+        return YES;
     }
-    return [inputDict count] > 0;
+    return [inputDict count] == 0;
+}
+
++ (BOOL)isNotEmptyDictionary:(NSDictionary *)inputDict {
+    return ![self isEmptyDictionary:inputDict];
 }
 
 + (id)convertJsonStringToObject:(NSString *)jsonStr {
