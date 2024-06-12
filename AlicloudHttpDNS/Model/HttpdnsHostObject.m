@@ -165,6 +165,7 @@
 
 + (instancetype)hostObjectWithHostRecord:(HttpdnsHostRecord *)hostRecord {
     HttpdnsHostObject *hostObject = [HttpdnsHostObject new];
+    // 这里从db取出的hostRecord的host字段实际上是cacheKey，因为历史问题，数据库未设计单独的cacheKey字段
     [hostObject setHostName:hostRecord.host];
     [hostObject setLastLookupTime:[hostRecord.createAt timeIntervalSince1970]];
     [hostObject setTTL:hostRecord.TTL];

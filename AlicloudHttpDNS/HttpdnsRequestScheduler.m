@@ -225,6 +225,8 @@ typedef struct {
             // 这种情况异步去解析就可以了
             [self determineResolvingHostNonBlocking:request];
         }
+        // 缓存是以cacheKey为准，这里返回前，要把host替换成用户请求的这个
+        result.hostName = host;
         // 因为缓存结果可用，可以立即返回
         return result;
     }
@@ -370,6 +372,7 @@ typedef struct {
 
     HttpdnsHostObject *cachedHostObject = [HttpdnsUtil safeObjectForKey:cacheKey dict:_hostManagerDict];
     if (cachedHostObject) {
+        [cachedHostObject setHostName:host];
         [cachedHostObject setTTL:TTL];
         [cachedHostObject setLastLookupTime:lastLookupTime];
         [cachedHostObject setIsLoadFromDB:NO];
@@ -726,9 +729,9 @@ typedef struct {
         }
     }
 
-    //清空数据库数据
+    // 清空数据库数据
     dispatch_async(_persistentCacheConcurrentQueue, ^{
-        //清空数据库数据
+        // 清空数据库数据
         [[HttpdnsHostCacheStore sharedInstance] cleanWithHosts:hostArray];
     });
 }
@@ -752,7 +755,7 @@ typedef struct {
             NSString *host = hostRecord.host;
 
             HttpdnsHostObject *hostObject = [HttpdnsHostObject hostObjectWithHostRecord:hostRecord];
-            //从DB缓存中加载到内存里的数据，此时不会出现过期的情况，TTL时间后过期。
+            // 从DB缓存中加载到内存里的数据，此时不会出现过期的情况，TTL时间后过期。
             [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
             [HttpdnsUtil safeAddValue:hostObject key:host toDict:_hostManagerDict];
 
