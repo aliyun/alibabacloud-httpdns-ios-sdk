@@ -127,8 +127,8 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 - (void)setNetworkingTimeoutInterval:(NSTimeInterval)timeoutInterval;
 
 
-/// 设置 region 节点，调用后，会按照 region 更新服务IP
-/// @param region region为节点，可设置海外region
+/// 指定region，指定后会读取该region对应配置作为初始化配置
+/// @param region 需要指定的region，缺省为中国大陆
 - (void)setRegion:(NSString *)region;
 
 

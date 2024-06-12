@@ -22,8 +22,6 @@ static NSURLSession *_scheduleCenterSession = nil;
 
 @interface HttpdnsScheduleCenterRequest()<NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
 
-@property (nonatomic, strong) dispatch_semaphore_t sem;
-
 @end
 
 @implementation HttpdnsScheduleCenterRequest
@@ -37,7 +35,6 @@ static NSURLSession *_scheduleCenterSession = nil;
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
         _scheduleCenterSession = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
     });
-    _sem = dispatch_semaphore_create(0);
 
     return self;
 }
@@ -49,43 +46,29 @@ static NSURLSession *_scheduleCenterSession = nil;
 /// 获取调度IP List
 - (NSArray *)getCenterHostList {
     NSArray *hostArray;
-    if (HTTPDNS_INTER) { //国际版
+    if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) { //服务IP缓存已读取
         if (![HttpdnsUtil useSynthesizedIPv6Address] && [HttpdnsUtil isNotEmptyArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
             hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
         } else {
             hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
         }
-    } else { //国内版
-        if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) { //服务IP缓存已读取
-            if (![HttpdnsUtil useSynthesizedIPv6Address] && [HttpdnsUtil isNotEmptyArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
-                hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
-            } else {
-                hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
-            }
-        } else { //服务IP缓存未读取
-            if (![HttpdnsUtil useSynthesizedIPv6Address] && [HttpdnsUtil isNotEmptyArray:ALICLOUD_HTTPDNS_SERVER_IPV6_LIST]) {
-                hostArray = ALICLOUD_HTTPDNS_SERVER_IPV6_LIST;
-            } else {
-                hostArray = ALICLOUD_HTTPDNS_SERVER_IP_LIST;
-            }
+    } else { //服务IP缓存未读取
+        if (![HttpdnsUtil useSynthesizedIPv6Address] && [HttpdnsUtil isNotEmptyArray:ALICLOUD_HTTPDNS_SERVER_IPV6_LIST]) {
+            hostArray = ALICLOUD_HTTPDNS_SERVER_IPV6_LIST;
+        } else {
+            hostArray = ALICLOUD_HTTPDNS_SERVER_IP_LIST;
         }
     }
-
     return hostArray;
 
 }
 
 - (NSDictionary *)queryScheduleCenterRecordFromServerSyncWithHostIndex:(NSInteger)hostIndex {
-    NSDictionary *scheduleCenterRecord = nil;
     NSArray *hostArray = [self getCenterHostList];
 
     NSInteger maxHostIndex = (hostArray.count - 1);
     if (hostIndex > maxHostIndex) {
-        if (HTTPDNS_INTER) { //国际版不存在降级逻辑 直接return 
-            return nil;
-        }
-
-        //强降级策略 当服务IP轮询更新服务IP
+        // 强降级策略 当服务IP轮询更新服务IP
         if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE) {
             //强降级到启动IP
             ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE = NO;
@@ -95,24 +78,18 @@ static NSURLSession *_scheduleCenterSession = nil;
     }
 
     NSError *error = nil;
-    NSDate *methodStart = [NSDate date];
 
     // 这里发起请求 返回数据
-    scheduleCenterRecord = [self queryScheduleCenterRecordFromServerWithHostIndex:hostIndex error:&error];
+    NSDictionary *scheduleCenterRecord = [self queryScheduleCenterRecordFromServerWithHostIndex:hostIndex error:&error];
 
-    if (!scheduleCenterRecord && error) {
+    if (error || !scheduleCenterRecord) {
         return [self queryScheduleCenterRecordFromServerSyncWithHostIndex:(hostIndex + 1)];
     }
-
-    // scheduleCenterRecord && !error
-    BOOL success = (scheduleCenterRecord && !error);
-    NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
 
     return scheduleCenterRecord;
 }
 
 - (NSString *)scheduleCenterHostFromIPIndex:(NSInteger)index {
-
     NSString *serverHostOrIP = nil;
     NSArray *hostArray = [self getCenterHostList];
 
@@ -124,25 +101,17 @@ static NSURLSession *_scheduleCenterSession = nil;
 
 /**
  * 拼接 URL
- * https://203.107.1.1/100000/ss?region=hk&platform=ios&sdk_version=1.6.1&sid=LpmJIA2CUoi4&net=unknown&bssid=
+ * 2024.6.12今天起，调度服务由后端就近调度，不再需要传入region参数，但为了兼容不传region默认就是国内region的逻辑，默认都传入region=global
+ * https://203.107.1.1/100000/ss?region=global&platform=ios&sdk_version=1.6.1&sid=LpmJIA2CUoi4&net=unknown&bssid=
  */
 - (NSString *)constructRequestURLWithHostIndex:(NSInteger)hostIndex {
     NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    NSString * region = [self urlFormatRegion:[[NSUserDefaults standardUserDefaults] objectForKey:ALICLOUD_HTTPDNS_REGION_KEY]];
-    NSString *urlPath = [NSString stringWithFormat:@"%d/ss?%@platform=ios&sdk_version=%@", sharedService.accountID, region, HTTPDNS_IOS_SDK_VERSION];
+    NSString *urlPath = [NSString stringWithFormat:@"%d/ss?region=global&platform=ios&sdk_version=%@", sharedService.accountID, HTTPDNS_IOS_SDK_VERSION];
     urlPath = [self urlFormatSidNetBssid:urlPath];
     urlPath = [urlPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet characterSetWithCharactersInString:@"`#%^{}\"[]|\\<> "].invertedSet];
     NSString *url = [NSString stringWithFormat:@"https://%@/%@", serverIpOrHost, urlPath];
     return url;
-}
-
-// 添加 region
-- (NSString *)urlFormatRegion:(NSString *)region {
-    if ([HttpdnsUtil isNotEmptyString:region]) {
-        return [NSString stringWithFormat:@"region=%@&",region];
-    }
-    return @"";
 }
 
 // url 添加 sid net 和 bssid
@@ -168,62 +137,52 @@ static NSURLSession *_scheduleCenterSession = nil;
 // 基于 URLSession 发送 HTTPS 请求
 - (NSDictionary *)queryScheduleCenterRecordFromServerWithHostIndex:(NSInteger)hostIndex error:(NSError **)pError {
     NSString *fullUrlStr = [self constructRequestURLWithHostIndex:hostIndex];
-    HttpdnsLogDebug("Request URL: %@", fullUrlStr);
-    HttpdnsLogDebug_TestOnly(@"更新服务IP请求 URL: %@", fullUrlStr);
+    HttpdnsLogDebug("ScRequest URL: %@", fullUrlStr);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                               cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                           timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
     __block NSDictionary * result = nil;
     __block NSError * errorStrong = nil;
+
+    dispatch_semaphore_t _sem = dispatch_semaphore_create(0);
+
     NSURLSessionTask *stTask = [_scheduleCenterSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if (error) {
-            HttpdnsLogDebug("Network error: %@", error);
-            HttpdnsLogDebug_TestOnly(@"更新服务IP请求网络失败 URL: %@, Error: %@" , response.URL.absoluteString, error);
+            HttpdnsLogDebug("ScRequest Network error: %@", error);
             errorStrong = error;
-        } else {
-            id jsonValue = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
-            result = [HttpdnsUtil getValidDictionaryFromJson:jsonValue];
-            NSInteger statusCode = [(NSHTTPURLResponse *) response statusCode];
-            HttpdnsLogDebug("Response code: %ld", statusCode);
-            if (statusCode != 200) {
-                HttpdnsLogDebug("ReponseCode %ld.", (long)statusCode);
-                HttpdnsLogDebug_TestOnly(@"更新服务IP请求失败 URL: %@, ReponseCode %ld." , response.URL.absoluteString, (long)statusCode);
-                if (errorStrong) {
-                    NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                                  @"Response code not 200, and parse response message error", @"ErrorMessage",
-                                                  [NSString stringWithFormat:@"%ld", (long)statusCode], @"ResponseCode", nil];
-                    errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10002 userInfo:dict];
-                } else {
-                    NSString *errCode = @"";
-                    errCode = [HttpdnsUtil safeObjectForKey:@"code" dict:result];
-                    NSDictionary *dict = nil;
-                    if ([HttpdnsUtil isNotEmptyString:errCode]) {
-                        dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                        errCode, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
-                    }
-                    errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10003 userInfo:dict];
-                }
-            } else {
-                HttpdnsLogDebug_TestOnly(@"更新服务IP请求成功！ URL: %@, result: %@", response.URL.absoluteString, result);
-                //判断当前服务IP是否是特定region下的服务IP
-                NSString *urlRegionKey = @"region=";
-                if ([response.URL.query rangeOfString:urlRegionKey].location != NSNotFound) {
-                    HttpdnsLogDebug("has region serviceIP!");
-                    NSArray *queryArr = [response.URL.query componentsSeparatedByString:@"&"];
-                    for (NSString *queryStr in queryArr) {
-                        if ([queryStr hasPrefix:urlRegionKey] && [HttpdnsUtil isNotEmptyDictionary:result]) {
-                            NSString *regionValue = [queryStr substringFromIndex:urlRegionKey.length];
-                            NSMutableDictionary *resultCopy = [NSMutableDictionary dictionaryWithDictionary:result];
-                            [resultCopy setObject:regionValue forKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_REGION_KEY];
-                            result = [NSDictionary dictionaryWithDictionary:resultCopy];
-                            break;;
-                        }
-                    }
-                }
-            }
+            dispatch_semaphore_signal(_sem);
+            return;
         }
+
+        NSInteger statusCode = [(NSHTTPURLResponse *) response statusCode];
+
+        id jsonValue = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&errorStrong];
+
+        if (statusCode != 200) {
+            if (errorStrong) {
+                NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                      @"Response code not 200, and parse response message error", @"ErrorMessage",
+                                      [NSString stringWithFormat:@"%ld", (long)statusCode], @"ResponseCode", nil];
+                errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10002 userInfo:dict];
+            } else {
+                NSString *errCode = @"";
+                errCode = [HttpdnsUtil safeObjectForKey:@"code" dict:result];
+                NSDictionary *dict = nil;
+                if ([HttpdnsUtil isNotEmptyString:errCode]) {
+                    dict = [[NSDictionary alloc] initWithObjectsAndKeys:
+                            errCode, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
+                }
+                errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10003 userInfo:dict];
+            }
+
+            dispatch_semaphore_signal(_sem);
+            return;
+        }
+
+        result = [HttpdnsUtil getValidDictionaryFromJson:jsonValue];
         dispatch_semaphore_signal(_sem);
     }];
+
     [stTask resume];
     dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
 
@@ -233,9 +192,7 @@ static NSURLSession *_scheduleCenterSession = nil;
 
     if (pError != NULL) {
         *pError = errorStrong;
-        NSURL *scAddrURL = [NSURL URLWithString:fullUrlStr];
-        NSString *scAddrURLString = scAddrURL.host;
-        HttpdnsLogDebug("request failed with scAddrURLString: %@, code: %ld, desc: %@", scAddrURLString, errorStrong.code, errorStrong.description);
+        HttpdnsLogDebug("ScRequest failed with scAddrURLString: %@, code: %ld, desc: %@", fullUrlStr, errorStrong.code, errorStrong.description);
     }
     return nil;
 }

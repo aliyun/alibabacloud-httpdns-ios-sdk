@@ -64,9 +64,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         asyncTaskConcurrentQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.asyncTask", DISPATCH_QUEUE_CONCURRENT);
 
         // 注册 UIApplication+ABSHTTPDNSSetting 中的Swizzle
-        if (!HTTPDNS_INTER) {
-            [[UIApplication sharedApplication] onBeforeBootingProtection];
-        }
+        [[UIApplication sharedApplication] onBeforeBootingProtection];
     });
 }
 
@@ -124,11 +122,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     sharedInstance.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
     sharedInstance.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
 
-    if (HTTPDNS_INTER) {
-        // 设置固定region 为sg
-        [sharedInstance setRegion:@"sg"];
-    }
-
     sharedInstance.requestScheduler = [[HttpdnsRequestScheduler alloc] init];
 
     return sharedInstance;
@@ -172,15 +165,19 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (void)setRegion:(NSString *)region {
     region = [HttpdnsUtil isNotEmptyString:region] ? region : @"";
+
     NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
-    NSString *olgregion = [userDefault objectForKey:ALICLOUD_HTTPDNS_REGION_KEY];
-    if (![region isEqualToString:olgregion]) {
+    NSString *oldRegion = [userDefault objectForKey:ALICLOUD_HTTPDNS_REGION_KEY];
+    if (![region isEqualToString:oldRegion]) {
         [userDefault setObject:region forKey:ALICLOUD_HTTPDNS_REGION_KEY];
+
+        //清空本地沙盒和内存的IP缓存
+        [self cleanHostCache:nil];
+
         HttpdnsScheduleCenter *scheduleCenter  = [HttpdnsScheduleCenter sharedInstance];
-        [scheduleCenter forceUpdateIpListAsyncImmediately]; //强制更新服务IP
-        [self cleanHostCache:nil]; //清空本地沙盒和内存的IP缓存
+        // region变化后发起服务IP更新
+        [scheduleCenter forceUpdateIpListAsyncImmediately];
     }
-    [_requestScheduler _setRegin:region];
 }
 
 - (void)setPreResolveHosts:(NSArray *)hosts {

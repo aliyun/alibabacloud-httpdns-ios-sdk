@@ -50,10 +50,6 @@
 @property (nonatomic, setter=setV6TTL:, getter=getV6TTL) int64_t v6ttl;
 @property (nonatomic, assign) int64_t lastIPv6LookupTime;
 
-// region 当次解析时，服务IP设置的region ,为空或者nil 默认是国内场景
-@property (nonatomic, copy) NSString *ipRegion;
-@property (nonatomic, copy) NSString *ip6Region;
-
 // 用来标记该域名为配置v4记录或v6记录的情况，避免如双栈网络下因为某个协议查不到record需要重复请求
 // 这个信息不用持久化，一次APP启动周期内使用是合适的
 @property (nonatomic, assign) BOOL hasNoIpv4Record;
@@ -72,8 +68,6 @@
 - (BOOL)isIpEmptyUnderQueryIpType:(HttpdnsQueryIPType)queryType;
 
 - (BOOL)isExpiredUnderQueryIpType:(HttpdnsQueryIPType)queryIPType;
-
-- (BOOL)isRegionNotMatch:(NSString *)region underQueryIpType:(HttpdnsQueryIPType)queryType;
 
 + (instancetype)hostObjectWithHostRecord:(HttpdnsHostRecord *)IPRecord;
 

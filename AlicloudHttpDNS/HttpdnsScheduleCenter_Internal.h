@@ -19,8 +19,9 @@
 
 #import "HttpdnsScheduleCenter.h"
 
-static NSTimeInterval ALICLOUD_HTTPDNS_NEED_FETCH_IP_LIST_STATUS_CACHE_TIMEOUT_INTERVAL = 0;
-static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_CONNECT_SCHEDULE_CENTER_INTERVAL = 0;
+static NSTimeInterval ALICLOUD_HTTPDNS_NEED_FETCH_IP_LIST_STATUS_CACHE_TIMEOUT_INTERVAL = 24 * 60 * 60;
+static NSTimeInterval ALICLOUD_HTTPDNS_ABLE_TO_CONNECT_SCHEDULE_CENTER_INTERVAL = 5 * 60;
+
 typedef void (^HttpDnsIdCallback)(NSDictionary *result);
 
 @interface HttpdnsScheduleCenterTestHelper : NSObject
@@ -51,8 +52,6 @@ typedef void (^HttpDnsIdCallback)(NSDictionary *result);
 @property (nonatomic, copy) NSArray *IPList;
 
 @property (nonatomic, copy) NSArray *IPv6List;
-
-- (void)setNeedToFetchFromScheduleCenter:(BOOL)needToFetchFromScheduleCenter;
 
 - (void)setScheduleCenterResult:(NSDictionary *)scheduleCenterResult;
 

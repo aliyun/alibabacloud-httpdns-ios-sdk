@@ -56,9 +56,6 @@ static NSURLSession *_resolveHOSTSession = nil;
 @property (nonatomic, strong) NSRunLoop *runloop;
 @property (nonatomic, strong) NSError *networkError;
 
-//记录域名解析发生时，当前service ip的region
-@property (nonatomic, copy) NSString *serviceRegion;
-
 @end
 
 
@@ -214,12 +211,10 @@ static NSURLSession *_resolveHOSTSession = nil;
     if ([HttpdnsUtil isNotEmptyArray:ipArray]) {
         [hostObject setV4TTL:ttlInSecond];
         hostObject.lastIPv4LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
-        hostObject.ipRegion = self.serviceRegion;
     }
     if ([HttpdnsUtil isNotEmptyArray:ip6Array]) {
         [hostObject setV6TTL:ttlInSecond];
         hostObject.lastIPv6LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
-        hostObject.ip6Region = self.serviceRegion;
     }
 
     [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
@@ -283,10 +278,6 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSString *serverIp = @"";
 
     serverIp = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6;
-    self.serviceRegion = [scheduleCenter getServiceIPRegion];
-    if ([HttpdnsUtil isNotEmptyString:self.serviceRegion] && [@[ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2] containsObject:serverIp]) { //如果当前设置region 并且 当次服务IP是国内兜底IP 则直接禁止解析行为
-        return nil;
-    }
 
     serverIp = [NSString stringWithFormat:@"[%@]", serverIp];
 
@@ -360,13 +351,6 @@ static NSURLSession *_resolveHOSTSession = nil;
         serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
     } else {
         serverIp = [scheduleCenter getActivatedServerIPv6WithAuto];
-    }
-
-    // 获取当前service IP 的region
-    self.serviceRegion = [scheduleCenter getServiceIPRegion];
-
-    if ([HttpdnsUtil isNotEmptyString:self.serviceRegion] && [@[ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2] containsObject:serverIp]) { //如果当前设置region 并且 当次服务IP是国内兜底IP 则直接禁止解析行为
-        return nil;
     }
 
     // Adapt to IPv6-only network.
