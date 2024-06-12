@@ -32,6 +32,7 @@
 		51316FBED914130E3A7C3F64 /* Pods_AlicloudHttpDNS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4B3FB631C77ADFECC3DDFFD /* Pods_AlicloudHttpDNS.framework */; };
 		74EE374FF5155CA604D7CACE /* Pods_AlicloudHttpDNSTestDemo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 59D7A169D57B42E1B9D1657D /* Pods_AlicloudHttpDNSTestDemo.framework */; };
 		7EB5412D2BD5FBFB001DFF47 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 7EB5412B2BD5FBFB001DFF47 /* PrivacyInfo.xcprivacy */; };
+		9406FDA32C198E310003CB6A /* CacheKeyFunctionTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 9406FDA22C198E310003CB6A /* CacheKeyFunctionTest.m */; };
 		942376DE1C5764CF00736E50 /* HttpdnsDegradationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		943FA4222BF9D4FA0006F169 /* HttpdnsHostObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 943FA4202BF9D4FA0006F169 /* HttpdnsHostObject.h */; };
 		943FA4232BF9D4FA0006F169 /* HttpdnsHostObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 943FA4212BF9D4FA0006F169 /* HttpdnsHostObject.m */; };
@@ -234,6 +235,7 @@
 		7906909A2F5D81220562F688 /* Pods-AlicloudHttpDNS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AlicloudHttpDNS.release.xcconfig"; path = "Target Support Files/Pods-AlicloudHttpDNS/Pods-AlicloudHttpDNS.release.xcconfig"; sourceTree = "<group>"; };
 		7EB5412B2BD5FBFB001DFF47 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		8EEBAFF15245D1ACB55D78D1 /* Pods_AlicloudHttpDNSTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AlicloudHttpDNSTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9406FDA22C198E310003CB6A /* CacheKeyFunctionTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CacheKeyFunctionTest.m; sourceTree = "<group>"; };
 		942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsDegradationDelegate.h; sourceTree = "<group>"; };
 		943FA4202BF9D4FA0006F169 /* HttpdnsHostObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsHostObject.h; sourceTree = "<group>"; };
 		943FA4212BF9D4FA0006F169 /* HttpdnsHostObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsHostObject.m; sourceTree = "<group>"; };
@@ -504,6 +506,7 @@
 				947E5C1C2C02DB9300123579 /* PresetCacheAndRetrieveTest.m */,
 				948CD0082C031EB000F9F075 /* MultithreadCorrectnessTest.m */,
 				94C3F8AD2C05D23F00A4A9B8 /* ResolvingEffectiveHostTest.m */,
+				9406FDA22C198E310003CB6A /* CacheKeyFunctionTest.m */,
 				94C3F8AF2C05D4FD00A4A9B8 /* EnableReuseExpiredIpTest.m */,
 				94C3F8B12C06FFA800A4A9B8 /* SdnsScenarioTest.m */,
 			);
@@ -1024,6 +1027,7 @@
 				947E5C192C00764C00123579 /* HttpDnsLocker.m in Sources */,
 				9A59147C1EA07EA700A7ED28 /* HttpdnsRequestTest.m in Sources */,
 				4A84996C219EA23500D82C95 /* IPv6ResTests.m in Sources */,
+				9406FDA32C198E310003CB6A /* CacheKeyFunctionTest.m in Sources */,
 				94C3F8AE2C05D23F00A4A9B8 /* ResolvingEffectiveHostTest.m in Sources */,
 				9A59147D1EA07EA700A7ED28 /* NetworkManager.m in Sources */,
 				9AE63A081ECDAB3A00F9C723 /* HttpdnsDatabasePool.m in Sources */,
