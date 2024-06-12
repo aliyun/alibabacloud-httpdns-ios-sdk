@@ -42,26 +42,16 @@ static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME = @"disab
 
 bool ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE = NO;
 
-
-NSString * ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED = ALICLOUD_HTTPDNS_SERVER_IP_DEFAULT;
-NSString * ALICLOUD_HTTPDNS_SERVER_IPV6_ACTIVATED = ALICLOUD_HTTPDNS_SERVER_IPV6_DEFAULT;
-
-
 NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP = @"203.107.1.1";
 
 NSString *const ALICLOUD_HTTPDNS_HTTP_SERVER_PORT = @"80";
 NSString *const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
-
-// 历史原因，如果region没设置，默认为空字符串
-NSString *const ALICLOUD_DEFAULT_REGION = @"";
 
 //服务ip list
 NSArray *ALICLOUD_HTTPDNS_SERVER_IP_LIST = nil;
 
 //服务ipv6 list
 NSArray *ALICLOUD_HTTPDNS_SERVER_IPV6_LIST = nil;
-
-NSString *ALICLOUD_HTTPDNS_SERVER_IP_REGION = @""; //当前服务IP的region，默认为空为国内场景
 
 NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0;
 
@@ -84,7 +74,6 @@ typedef struct {
 @property (nonatomic, strong) dispatch_queue_t cacheQueue;
 @property (nonatomic, copy) NSString *disableStatusPath;
 @property (nonatomic, assign) BOOL persistentCacheIpEnabled;
-@property (nonatomic, copy) NSString *customRegion; //当前设置的region
 
 @end
 
@@ -128,10 +117,6 @@ typedef struct {
         _isExpiredIPEnabled = NO;
         _IPRankingEnabled = NO;
         _isPreResolveAfterNetworkChangedEnabled = NO;
-        _customRegion = [[NSUserDefaults standardUserDefaults] objectForKey:ALICLOUD_HTTPDNS_REGION_KEY];
-        if (!_customRegion) {
-            _customRegion = ALICLOUD_DEFAULT_REGION;
-        }
         _hostManagerDict = [[NSMutableDictionary alloc] init];
         _lock = [[NSLock alloc] init];
         [AlicloudIPv6Adapter getInstance];
@@ -176,8 +161,7 @@ typedef struct {
             }
             HttpdnsHostObject *hostObject = [HttpdnsUtil safeObjectForKey:hostName dict:strongSelf->_hostManagerDict];
             if (!hostObject
-                || [hostObject isExpiredUnderQueryIpType:queryType]
-                || [hostObject isRegionNotMatch:self.customRegion underQueryIpType:queryType]) {
+                || [hostObject isExpiredUnderQueryIpType:queryType]) {
 
                 HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:hostName isBlockingRequest:NO queryIpType:queryType];
                 [self resolveHost:request];
@@ -282,10 +266,6 @@ typedef struct {
         return (HostObjectExamingResult){NO, YES};
     }
 
-    if ([hostObject isRegionNotMatch:[self customRegion] underQueryIpType:queryType]) {
-        return (HostObjectExamingResult){NO, YES};
-    }
-
     if ([hostObject isExpiredUnderQueryIpType:queryType]) {
         if (_isExpiredIPEnabled || [hostObject isLoadFromDB]) {
             // 只有允许过期缓存，和开启持久化缓存的第一次获取，才不需要等待结果
@@ -358,8 +338,6 @@ typedef struct {
     NSArray<HttpdnsIpObject *> *IPObjects = [result getIps];
     NSArray<HttpdnsIpObject *> *IP6Objects = [result getIp6s];
     NSDictionary* Extra  = [result getExtra];
-    NSString *ipRegion = result.ipRegion;
-    NSString *ip6Region = result.ip6Region;
 
     BOOL hasNoIpv4Record = NO;
     BOOL hasNoIpv6Record = NO;
@@ -383,14 +361,12 @@ typedef struct {
             [cachedHostObject setIps:IPObjects];
             [cachedHostObject setV4TTL:result.getV4TTL];
             [cachedHostObject setLastIPv4LookupTime:result.lastIPv4LookupTime];
-            cachedHostObject.ipRegion = ipRegion;
         }
 
         if (queryIpType & HttpdnsQueryIPTypeIpv6) {
             [cachedHostObject setIp6s:IP6Objects];
             [cachedHostObject setV6TTL:result.getV6TTL];
             [cachedHostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
-            cachedHostObject.ip6Region = ip6Region;
         }
 
         if ([HttpdnsUtil isNotEmptyDictionary:result.extra]) {
@@ -410,12 +386,10 @@ typedef struct {
         [cachedHostObject setIps:IPObjects];
         [cachedHostObject setV4TTL:result.getV4TTL];
         [cachedHostObject setLastIPv4LookupTime:result.lastIPv4LookupTime];
-        cachedHostObject.ipRegion = ipRegion;
 
         [cachedHostObject setIp6s:IP6Objects];
         [cachedHostObject setV6TTL:result.getV6TTL];
         [cachedHostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
-        cachedHostObject.ip6Region = ip6Region;
 
         if ([HttpdnsUtil isNotEmptyDictionary:result.extra]) {
             [cachedHostObject setExtra:Extra];
@@ -426,9 +400,9 @@ typedef struct {
     }
 
     if([HttpdnsUtil isNotEmptyDictionary:result.extra]) {
-        [self sdnsCacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:IPStrings IP6s:IP6Strings TTL:TTL withExtra:Extra ipRegion:ipRegion ip6Region:ip6Region];
+        [self sdnsCacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:IPStrings IP6s:IP6Strings TTL:TTL withExtra:Extra];
     } else {
-        [self cacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:IPStrings IP6s:IP6Strings TTL:TTL ipRegion:ipRegion ip6Region:ip6Region];
+        [self cacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:IPStrings IP6s:IP6Strings TTL:TTL];
     }
 
     [self aysncUpdateIPRankingWithResult:cachedHostObject forHost:host cacheKey:cacheKey];
@@ -538,14 +512,6 @@ typedef struct {
 
 - (BOOL)getPersistentCacheIpEnabled {
     return _persistentCacheIpEnabled;
-}
-
-
-- (void)_setRegin:(NSString *)region {
-    if (!region) {
-        region = ALICLOUD_DEFAULT_REGION;
-    }
-    _customRegion = region;
 }
 
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable {
@@ -770,23 +736,23 @@ typedef struct {
     });
 }
 
-- (void)cacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL ipRegion:(NSString *)ipRegion ip6Region:(NSString *)ip6Region {
+- (void)cacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL {
     if (!_persistentCacheIpEnabled) {
         return;
     }
     dispatch_async(_persistentCacheConcurrentQueue, ^{
-        HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL ipRegion:ipRegion ip6Region:ip6Region];
+        HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL ipRegion:@"" ip6Region:@""];
         HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
         [hostCacheStore insertHostRecords:@[hostRecord]];
     });
 }
 
-- (void)sdnsCacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL withExtra:(NSDictionary *)extra ipRegion:(NSString *)ipRegion ip6Region:(NSString *)ip6Region {
+- (void)sdnsCacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL withExtra:(NSDictionary *)extra {
     if (!_persistentCacheIpEnabled) {
         return;
     }
     dispatch_async(_persistentCacheConcurrentQueue, ^{
-        HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord sdnsHostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL Extra:extra ipRegion:ipRegion ip6Region:ip6Region];
+        HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord sdnsHostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL Extra:extra ipRegion:@"" ip6Region:@""];
         HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
         [hostCacheStore insertHostRecords:@[hostRecord]];
     });

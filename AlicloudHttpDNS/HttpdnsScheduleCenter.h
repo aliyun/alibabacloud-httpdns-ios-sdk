@@ -75,7 +75,4 @@ FOUNDATION_EXTERN NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
 
 - (void)changeToNextServerIPIndexFromIPIndex:(NSInteger)IPIndex;
 
-/// 返回当前服务IP region
-- (NSString *)getServiceIPRegion;
-
 @end

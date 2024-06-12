@@ -69,8 +69,6 @@
     _ips = nil;
     _ip6s = nil;
     _extra = nil;
-    _ipRegion = @"";
-    _ip6Region = @"";
     _hasNoIpv4Record = NO;
     _hasNoIpv6Record = NO;
     _isQuerying = NO;
@@ -87,8 +85,6 @@
         _ips = [aDecoder decodeObjectForKey:@"ips"];
         _ip6s = [aDecoder decodeObjectForKey:@"ip6s"];
         _extra = [aDecoder decodeObjectForKey:@"extra"];
-        _ipRegion = [aDecoder decodeObjectForKey:@"ipRegion"];
-        _ip6Region = [aDecoder decodeObjectForKey:@"ip6Region"];
     }
     return self;
 }
@@ -104,8 +100,6 @@
     [aCoder encodeObject:_ips forKey:@"ips"];
     [aCoder encodeObject:_ip6s forKey:@"ip6s"];
     [aCoder encodeObject:_hostName forKey:@"extra"];
-    [aCoder encodeObject:_ipRegion forKey:@"ipRegion"];
-    [aCoder encodeObject:_ip6Region forKey:@"ip6Region"];
 }
 
 - (BOOL)isIpEmptyUnderQueryIpType:(HttpdnsQueryIPType)queryType {
@@ -144,25 +138,6 @@
     return NO;
 }
 
-- (BOOL)isRegionNotMatch:(NSString *)region underQueryIpType:(HttpdnsQueryIPType)queryType {
-    if (queryType & HttpdnsQueryIPTypeIpv4) {
-        if (![self ipRegion]) {
-            self.ipRegion = @"";
-        }
-        if (![region isEqualToString:[self ipRegion]]) {
-            return YES;
-        }
-    } else if (queryType & HttpdnsQueryIPTypeIpv6) {
-        if (![self ip6Region]) {
-            self.ip6Region = @"";
-        }
-        if (![region isEqualToString:[self ip6Region]]) {
-            return YES;
-        }
-    }
-    return NO;
-}
-
 + (instancetype)hostObjectWithHostRecord:(HttpdnsHostRecord *)hostRecord {
     HttpdnsHostObject *hostObject = [HttpdnsHostObject new];
     // 这里从db取出的hostRecord的host字段实际上是cacheKey，因为历史问题，数据库未设计单独的cacheKey字段
@@ -170,8 +145,6 @@
     [hostObject setLastLookupTime:[hostRecord.createAt timeIntervalSince1970]];
     [hostObject setTTL:hostRecord.TTL];
     [hostObject setExtra:hostRecord.extra];
-    hostObject.ipRegion = hostRecord.ipRegion;
-    hostObject.ip6Region = hostRecord.ip6Region;
     NSArray *ips = hostRecord.IPs;
     NSArray *ip6s = hostRecord.IP6s;
     if ([HttpdnsUtil isNotEmptyArray:ips]) {
@@ -217,11 +190,11 @@
 - (NSString *)description {
     @try {
         if (![HttpdnsUtil isNotEmptyArray:_ip6s]) {
-            return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld extra = %@ ipRegion = %@ ip6Region = %@",
-                    _hostName, _ips, _lastLookupTime, _ttl, _extra, _ipRegion, _ip6Region];
+            return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld extra = %@",
+                    _hostName, _ips, _lastLookupTime, _ttl, _extra];
         } else {
-            return [NSString stringWithFormat:@"Host = %@ ips = %@ ip6s = %@ lastLookup = %lld ttl = %lld extra = %@ ipRegion = %@ ip6Region = %@",
-                    _hostName, _ips, _ip6s, _lastLookupTime, _ttl, _extra, _ipRegion, _ip6Region];
+            return [NSString stringWithFormat:@"Host = %@ ips = %@ ip6s = %@ lastLookup = %lld ttl = %lld extra = %@",
+                    _hostName, _ips, _ip6s, _lastLookupTime, _ttl, _extra];
         }
     } @catch (NSException *exception) {
         NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception.reason);

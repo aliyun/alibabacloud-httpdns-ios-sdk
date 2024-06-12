@@ -32,9 +32,6 @@ NSInteger ALICLOUD_HTTPDNS_RESET_IP_LIST_TIME_DAY = 1;
 
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_RESULT_CACHE_FILE_NAME = @"schedule_center_result";
 
-static NSString *const ALICLOUD_HTTPDNS_NEED_FETCH_FROM_SCHEDULE_CENTER_STATUS_CACHE_FILE_NAME = @"need_fetch_from_schedule_center_status";
-static NSString *const ALICLOUD_HTTPDNS_NEED_FETCH_FROM_SCHEDULE_CENTER_STATUS_CACHE_KEY = @"need_fetch_from_schedule_center_status_key";
-
 //默认ipv4启动IP（调度IP）
 NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = nil;
 
@@ -136,21 +133,12 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
 
 - (void)upateIPListIfNeededAsync {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
-        //判断本地region 和 缓存的服务IP池的region是否匹配，如果不匹配则更新
         NSDictionary *scheduleCenterResult = [HttpdnsPersistenceUtils getJSONFromDirectory:[HttpdnsPersistenceUtils scheduleCenterResultPath]
-                                                                            fileName:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_RESULT_CACHE_FILE_NAME];
+                                                                                  fileName:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_RESULT_CACHE_FILE_NAME];
         if ([HttpdnsUtil isNotEmptyDictionary:scheduleCenterResult]) {
-            NSString *scheduleCenterRegion = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_REGION_KEY dict:scheduleCenterResult]?:@"";
-            NSString *userDefaultRegion = [[NSUserDefaults standardUserDefaults] objectForKey:ALICLOUD_HTTPDNS_REGION_KEY]?:@"";
-            if (![userDefaultRegion isEqualToString:scheduleCenterRegion]) {
-                [self forceUpdateIpListAsync];
-                return;
-            }
-        }
-
-        if (![self needToFetchFromScheduleCenter]) {
             return;
         }
+
         [self forceUpdateIpListAsync];
     });
 }
@@ -174,19 +162,21 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
     [self updateIpListAsyncWithCallback:^(NSDictionary *result) {
         if (result) {
             // 隔一段时间请求一次，仅仅从请求成功后开始计时，防止弱网情况下，频频超时但无法访问SC。
-            [self setNeedToFetchFromScheduleCenter:NO];
             [self setScheduleCenterResult:result];
-            HttpdnsLogDebug("fetch ip list status succeed");
-            HttpdnsLogDebug_TestOnly(@"服务IP更新成功 result: %@", result);
+            HttpdnsLogDebug("fetch ip list status succeed, result: %@", result);
             // 从服务端获取到新的IP列表后，取消 disable状态，置为
             HttpDnsService *serviceProvider = [HttpDnsService sharedInstance];
             HttpdnsRequestScheduler *requestScheduler = serviceProvider.requestScheduler;
             [requestScheduler setServerDisable:NO];
             [self setActivatedServerIPIndex:0];
-            !callback ?: callback(result);
+            if (callback) {
+                callback(result);
+            }
             return;
         }
-        !callback ?: callback(nil);
+        if (callback) {
+            callback(nil);
+        }
     }];
 }
 
@@ -194,48 +184,14 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
         self.connectingWithScheduleCenter = YES;
         dispatch_async(self.connectToScheduleCenterQueue, ^(void) {
-            _lastScheduleCenterConnectDate = [NSDate date];
+            self->_lastScheduleCenterConnectDate = [NSDate date];
         });
         HttpdnsScheduleCenterRequest *scheduleCenterRequest = [HttpdnsScheduleCenterRequest new];
         NSDictionary *queryScheduleCenterRecord = [scheduleCenterRequest queryScheduleCenterRecordFromServerSync];
-        !callback ?: callback(queryScheduleCenterRecord);
+        if (callback) {
+            callback(queryScheduleCenterRecord);
+        }
         self.connectingWithScheduleCenter = NO;
-    });
-}
-
-- (BOOL)needToFetchFromScheduleCenter {
-    __block BOOL needToFetchFromScheduleCenter = YES;
-    dispatch_sync(self.needToFetchFromScheduleCenterQueue,^{
-        BOOL value;
-        id json = [HttpdnsPersistenceUtils getJSONFromDirectory:[HttpdnsPersistenceUtils needFetchFromScheduleCenterStatusPatch]
-                                                       fileName:ALICLOUD_HTTPDNS_NEED_FETCH_FROM_SCHEDULE_CENTER_STATUS_CACHE_FILE_NAME
-                                                        timeout:ALICLOUD_HTTPDNS_NEED_FETCH_IP_LIST_STATUS_CACHE_TIMEOUT_INTERVAL];
-        if (!json) {
-            HttpdnsLogDebug("need fetch ip list status");
-            return;
-        }
-        value = [[HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_NEED_FETCH_FROM_SCHEDULE_CENTER_STATUS_CACHE_KEY dict:json] boolValue];
-        if (value) {
-            HttpdnsLogDebug("need fetch ip list status");
-        }
-        needToFetchFromScheduleCenter = value;
-    });
-    return needToFetchFromScheduleCenter;
-}
-
-- (void)setNeedToFetchFromScheduleCenter:(BOOL)needToFetchFromScheduleCenter {
-    dispatch_async(self.needToFetchFromScheduleCenterQueue, ^{
-        NSString *fileName = [self needFetchFromScheduleCenterStatusPath];
-        if (needToFetchFromScheduleCenter) {
-            HttpdnsLogDebug("Must fetch ip list status next time");
-            [HttpdnsPersistenceUtils removeFile:fileName];
-            return;
-        }
-        NSDictionary *dictionary = @{
-                                     ALICLOUD_HTTPDNS_NEED_FETCH_FROM_SCHEDULE_CENTER_STATUS_CACHE_KEY : @(needToFetchFromScheduleCenter)
-                                     };
-        [HttpdnsPersistenceUtils saveJSON:dictionary toPath:fileName];
-        HttpdnsLogDebug("There is no need to fetch ip list status next time");
     });
 }
 
@@ -254,21 +210,6 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
     return fullPath;
 }
 
-- (NSString *)needFetchFromScheduleCenterStatusPath {
-    if (_needFetchFromScheduleCenterStatusPath) {
-        return _needFetchFromScheduleCenterStatusPath;
-    }
-
-    @try {
-        NSString *fileName = ALICLOUD_HTTPDNS_NEED_FETCH_FROM_SCHEDULE_CENTER_STATUS_CACHE_FILE_NAME;
-        NSString *fullPath = [[HttpdnsPersistenceUtils needFetchFromScheduleCenterStatusPatch] stringByAppendingPathComponent:fileName];
-        _needFetchFromScheduleCenterStatusPath = fullPath;
-    } @catch (NSException *exception) {
-        HttpdnsLogDebug("needFetchFromScheduleCenterStatusPatch error: %@", exception.reason);
-    }
-    return _needFetchFromScheduleCenterStatusPath;
-}
-
 #pragma mark -
 #pragma mark - Activated IP Index Method
 
@@ -283,51 +224,32 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
 }
 
 + (void)configurescheduleCenterResultCacheTimeoutInterval {
-    ALICLOUD_HTTPDNS_NEED_FETCH_IP_LIST_STATUS_CACHE_TIMEOUT_INTERVAL = 24 * 60 * 60; /**< 一天 */
-    ALICLOUD_HTTPDNS_ABLE_TO_CONNECT_SCHEDULE_CENTER_INTERVAL = 5 * 60; /**< 五分钟 */
+    //内置ipv4 调度ip(启动ip)
+    ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = @[
+        ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IP,
+        ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IP_2,
+        ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IP_3,
+        ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
+    ];
 
-    if (HTTPDNS_INTER) { //国际版
-        //内置ipv4 调度ip(启动ip)
-        ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = @[
-            ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IP,
-            ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IP_2,
-            ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IP_3,
-            ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
-        ];
-
-        //内置ipv6 调度ip(启动ip)
-        ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = @[
-            ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IPV6,
-            ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2,
-            ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST,
-        ];
-    } else { //国内版
-        //内置ipv4 调度ip(启动ip)
-        ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST = @[
-            ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP,
-            ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2,
-            ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST
-        ];
-
-        //内置ipv6 调度ip(启动ip)
-        ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = @[
-            ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6,
-            ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2,
-            ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST,
-        ];
-    }
+    //内置ipv6 调度ip(启动ip)
+    ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = @[
+        ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IPV6,
+        ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2,
+        ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST,
+    ];
 }
 
 - (void)initActivatedServerIPIndex {
     dispatch_async(self.cacheActivatedServerIPStatusQueue, ^{
-        NSInteger oldServerIPIndex = _activatedServerIPIndex;
+        NSInteger oldServerIPIndex = self->_activatedServerIPIndex;
         NSDictionary *json = [HttpdnsPersistenceUtils getJSONFromDirectory:[HttpdnsPersistenceUtils activatedIPIndexPath]
                                                                   fileName:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_CACHE_FILE_NAME];
         if (!json) {
             return;
         }
-        _activatedServerIPIndex = [[HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_KEY dict:json] integerValue];
-        if (_activatedServerIPIndex != oldServerIPIndex) {
+        self->_activatedServerIPIndex = [[HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_KEY dict:json] integerValue];
+        if (self->_activatedServerIPIndex != oldServerIPIndex) {
             HttpdnsLogDebug("HTTPDNS activated IP changed");
         }
     });
@@ -350,8 +272,7 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
 
 - (void)setScheduleCenterResult:(NSDictionary *)scheduleCenterResult {
     dispatch_async(self.scheduleCenterResultQueue, ^{
-
-        if (_scheduleCenterResult == scheduleCenterResult) {
+        if (self->_scheduleCenterResult == scheduleCenterResult) {
             return;
         }
         [self setScheduleCenterResultAndOtherStatus:scheduleCenterResult];
@@ -367,18 +288,16 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
 
 - (void)setScheduleCenterResultAndOtherStatus:(NSDictionary *)scheduleCenterResult {
     dispatch_async(self.scheduleCenterResultQueue, ^{
-        _scheduleCenterResult = scheduleCenterResult;
+        self->_scheduleCenterResult = scheduleCenterResult;
 
-        NSArray *result = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IP_KEY dict:_scheduleCenterResult];
-        NSArray *result_ipv6 = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IPV6_KEY dict:_scheduleCenterResult];
+        NSArray *result = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IP_KEY dict:self->_scheduleCenterResult];
+        NSArray *result_ipv6 = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IPV6_KEY dict:self->_scheduleCenterResult];
 
         if ([HttpdnsUtil isNotEmptyArray:result]) {
             ALICLOUD_HTTPDNS_SERVER_IP_LIST = [result copy];
             ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED = ALICLOUD_HTTPDNS_SERVER_IP_LIST[0];
             ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE = YES;
-            _IPList = [result copy];
-            //设置当前服务IP对应的region
-            ALICLOUD_HTTPDNS_SERVER_IP_REGION = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_REGION_KEY dict:_scheduleCenterResult] ?: @"";
+            self->_IPList = [result copy];
         }
 
         //设置ipv6 服务ip
@@ -386,7 +305,6 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
             ALICLOUD_HTTPDNS_SERVER_IPV6_LIST = [result_ipv6 copy];
             ALICLOUD_HTTPDNS_SERVER_IPV6_ACTIVATED = ALICLOUD_HTTPDNS_SERVER_IPV6_LIST[0];
         }
-
     });
 }
 
@@ -455,10 +373,6 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
     });
 
     return nextServerIPIndex;
-}
-
-- (NSString *)getServiceIPRegion {
-    return ALICLOUD_HTTPDNS_SERVER_IP_REGION;
 }
 
 - (void)setActivatedServerIPIndex:(NSInteger)activatedServerIPIndex {

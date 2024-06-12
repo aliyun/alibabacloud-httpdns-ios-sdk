@@ -245,13 +245,6 @@ static dispatch_queue_t _fileCacheQueue = 0;
     return ret;
 }
 
-//Library/Private Documents/HTTPDNS/needFetchFromScheduleCenterStatus
-+ (NSString *)needFetchFromScheduleCenterStatusPatch {
-    NSString *ret = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:@"needFetchFromScheduleCenterStatus"];
-    [self createDirectoryIfNeeded:ret];
-    return ret;
-}
-
 //Library/Private Documents/keyvalue
 + (NSString *)keyValueDatabasePath {
     NSString *ret = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:@"keyvalue"];

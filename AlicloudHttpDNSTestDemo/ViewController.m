@@ -71,6 +71,7 @@ NSArray *ipv6HostArray = nil;
     [_service setPersistentCacheIPEnabled:YES];
     [_service setReuseExpiredIPEnabled:NO];
     [_service setHTTPSRequestEnabled:YES];
+    [_service setRegion:@"hk"];
     [_service setIPv6Enabled:YES];
 
     NSString *sessionId = [[HttpDnsService sharedInstance] getSessionId];

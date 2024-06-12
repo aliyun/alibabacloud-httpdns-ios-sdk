@@ -30,15 +30,6 @@ static NSString *const HTTPDNS_IOS_SDK_VERSION = @"3.0.2";
 static NSString *const HTTPDNS_BEACON_APPKEY  = @"24657847";
 static NSString *const HTTPDNS_BEACON_APPSECRECT = @"f30fc0937f2b1e9e50a1b7134f1ddb10";
 
-/**
- HTTPDNS 国际版 标识
- 1: 默认设置region 为sg
- 2: 调度IP 只用于调度 ，服务IP 只用于解析
- 3: 内置 调度IP 和 服务IP 和通用版不同
- 4: 其他策略基本保持一致
- */
-static BOOL const HTTPDNS_INTER = false;
-
 // ipv6 only 场景下 调度 服务ip 的策略
 // true: ipv6 only 场景下 调度、服务ip 走ipv4 合成ipv6 方式;
 // false: ipv6 only 场景下 调度、服务ip 采用对应的调度、服务的ipv6地址;
@@ -85,11 +76,6 @@ static NSString *const ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_SERVER_HOST_IPV6 =
 ///===================================国际版本版本==========================================
 
 
-//初次安装启动 默认的内置服务ipv4 地址
-static NSString *const ALICLOUD_HTTPDNS_SERVER_IP_DEFAULT = HTTPDNS_INTER ? ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_SERVER_HOST_IP : ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IP;
-//初次安装启动 默认的内置服务ipv6 地址
-static NSString *const ALICLOUD_HTTPDNS_SERVER_IPV6_DEFAULT = HTTPDNS_INTER ? ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_SERVER_HOST_IPV6 : ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6;
-
 //static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_PATH = @"sc/httpdns_config";
 static NSString *const ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY = @"ErrorMessage";
 static NSString *const ALICLOUD_HTTPDNS_ERROR_SERVICE_LEVEL_DENY = @"ServiceLevelDeny";
@@ -112,8 +98,6 @@ static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_PARAMER_APP_KEY 
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IP_KEY = @"service_ip";
 //ipv6 key
 static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IPV6_KEY = @"service_ipv6";
-
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_REGION_KEY = @"service_region";  //服务IP对应的region
 
 static NSString *const ALICLOUD_HTTPDNS_REGION_KEY = @"HttpdnsRegion";
 
