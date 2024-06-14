@@ -157,13 +157,12 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
         !callback ?: callback(nil);
         return;
     }
-    HttpdnsLogDebug("begin fetch ip list status");
-    HttpdnsLogDebug_TestOnly(@"开始更新服务IP");
+    HttpdnsLogDebug("Start fetch service ip list from schedule center.");
     [self updateIpListAsyncWithCallback:^(NSDictionary *result) {
         if (result) {
             // 隔一段时间请求一次，仅仅从请求成功后开始计时，防止弱网情况下，频频超时但无法访问SC。
             [self setScheduleCenterResult:result];
-            HttpdnsLogDebug("fetch ip list status succeed, result: %@", result);
+            HttpdnsLogDebug("Fetch service ip list from schedule center succeed, result is %@", result);
             // 从服务端获取到新的IP列表后，取消 disable状态，置为
             HttpDnsService *serviceProvider = [HttpDnsService sharedInstance];
             HttpdnsRequestScheduler *requestScheduler = serviceProvider.requestScheduler;
@@ -341,28 +340,17 @@ NSArray *ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6 = nil;
 
 
 - (NSString *)getActivatedServerIPWithIndex:(NSInteger)index {
-    NSString *serverIp = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:self.IPList defaultValue:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED];
-    return serverIp;
+    return [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:self.IPList defaultValue:ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED];
 }
 
 - (NSString *)getActivatedServerIPv6WithAuto {
-    NSString *serverIp = [HttpdnsUtil safeObjectAtIndexOrTheFirst:self.activatedServerIPv6Index array:self.IPv6List defaultValue:ALICLOUD_HTTPDNS_SERVER_IPV6_ACTIVATED];
-    return serverIp;
+    return [HttpdnsUtil safeObjectAtIndexOrTheFirst:self.activatedServerIPv6Index array:self.IPv6List defaultValue:ALICLOUD_HTTPDNS_SERVER_IPV6_ACTIVATED];
 }
 
-
 - (void)changeToNextServerIPIndexFromIPIndex:(NSInteger)IPIndex {
-    if ([HttpdnsUtil useSynthesizedIPv6Address]) {
-        NSInteger nextServerIPIndex = [self nextServerIPIndexFromIPIndex:IPIndex increase:1];
-        self.activatedServerIPIndex = nextServerIPIndex;
-        if (nextServerIPIndex == 0 && IPIndex != 0) {
-            [self forceUpdateIpListAsync];
-        }
-    } else {
-        self.activatedServerIPv6Index = (self.activatedServerIPv6Index + 1) % ALICLOUD_HTTPDNS_SERVER_IPV6_LIST.count;
-        if (self.activatedServerIPv6Index == 0) {
-            [self forceUpdateIpListAsync];
-        }
+    self.activatedServerIPv6Index = (self.activatedServerIPv6Index + 1) % ALICLOUD_HTTPDNS_SERVER_IPV6_LIST.count;
+    if (self.activatedServerIPv6Index == 0) {
+        [self forceUpdateIpListAsync];
     }
 }
 

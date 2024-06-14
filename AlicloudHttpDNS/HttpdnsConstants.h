@@ -30,12 +30,6 @@ static NSString *const HTTPDNS_IOS_SDK_VERSION = @"3.0.2";
 static NSString *const HTTPDNS_BEACON_APPKEY  = @"24657847";
 static NSString *const HTTPDNS_BEACON_APPSECRECT = @"f30fc0937f2b1e9e50a1b7134f1ddb10";
 
-// ipv6 only 场景下 调度 服务ip 的策略
-// true: ipv6 only 场景下 调度、服务ip 走ipv4 合成ipv6 方式;
-// false: ipv6 only 场景下 调度、服务ip 采用对应的调度、服务的ipv6地址;
-static BOOL const HTTPDNS_IPV6_SYNTHESIZED_FROM_IPV4 = false;
-
-
 #pragma mark - Schedule Center
 ///=============================================================================
 /// @name Schedule Center

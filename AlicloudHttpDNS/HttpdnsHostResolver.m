@@ -343,15 +343,10 @@ static NSURLSession *_resolveHOSTSession = nil;
     return url;
 }
 
-- (NSString *)constructV4RequestURLWith:(HttpdnsRequest *)request activatedServerIPIndex:(NSInteger)activatedServerIPIndex useV4Ip:(bool *) useV4Ip {
+- (NSString *)constructV4RequestURLWith:(HttpdnsRequest *)request activatedServerIPIndex:(NSInteger)activatedServerIPIndex useV4Ip:(bool *)useV4Ip {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
 
-    NSString *serverIp = @"";
-    if ([HttpdnsUtil useSynthesizedIPv6Address]) {
-        serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
-    } else {
-        serverIp = [scheduleCenter getActivatedServerIPv6WithAuto];
-    }
+    NSString *serverIp = [scheduleCenter getActivatedServerIPv6WithAuto];
 
     // Adapt to IPv6-only network.
     if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
@@ -375,7 +370,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     int accountId = sharedService.accountID;
     NSString *port = HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED ? ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT : ALICLOUD_HTTPDNS_HTTP_SERVER_PORT;
 
-    NSString *url = [NSString stringWithFormat:@"%@:%@/%d/d?host=%@",serverIp, port, accountId, request.host];
+    NSString *url = [NSString stringWithFormat:@"%@:%@/%d/d?host=%@", serverIp, port, accountId, request.host];
 
     // signature
     NSString *secretKey = sharedService.secretKey;

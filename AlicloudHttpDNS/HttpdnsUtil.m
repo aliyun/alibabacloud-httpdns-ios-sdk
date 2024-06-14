@@ -393,12 +393,4 @@ _Pragma("clang diagnostic pop") \
     return object;
 }
 
-+ (BOOL)useSynthesizedIPv6Address {
-    AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
-    if ([ipv6Adapter isIPv6OnlyNetwork]) {
-        return HTTPDNS_IPV6_SYNTHESIZED_FROM_IPV4;
-    }
-    return true;
-}
-
 @end
