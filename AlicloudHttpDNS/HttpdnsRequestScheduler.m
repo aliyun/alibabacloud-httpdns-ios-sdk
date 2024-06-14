@@ -47,13 +47,7 @@ NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP = @"203.107.1.1";
 NSString *const ALICLOUD_HTTPDNS_HTTP_SERVER_PORT = @"80";
 NSString *const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
 
-//服务ip list
-NSArray *ALICLOUD_HTTPDNS_SERVER_IP_LIST = nil;
-
-//服务ipv6 list
-NSArray *ALICLOUD_HTTPDNS_SERVER_IPV6_LIST = nil;
-
-NSTimeInterval ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 0;
+NSTimeInterval serverDisableStateLocalCacheTimeInterval = 0;
 
 static dispatch_queue_t _memoryCacheSerialQueue = NULL;
 static dispatch_queue_t _persistentCacheConcurrentQueue = NULL;
@@ -98,17 +92,11 @@ typedef struct {
 }
 
 + (void)configureServerIPsAndResetActivatedIPTime {
-    // 默认的内置服务ipv4 地址 根据国际站来区分
-    ALICLOUD_HTTPDNS_SERVER_IP_LIST = @[ALICLOUD_HTTPDNS_SERVER_IP_DEFAULT];
-
-    // 默认的内置服务ipv6 地址 根据国际站来区分
-    ALICLOUD_HTTPDNS_SERVER_IPV6_LIST = @[ALICLOUD_HTTPDNS_SERVER_IPV6_DEFAULT];
-
     // Disable状态开始30秒后可以进行“嗅探”行为
-    ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL = 30;
+    intervalBeforeAllowToSniffAfterLastServerDisable = 30;
 
     // sever disable状态缓存时间默认为1天
-    ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL = 1 * 24 * 60 * 60;
+    serverDisableStateLocalCacheTimeInterval = 1 * 24 * 60 * 60;
 }
 
 - (instancetype)init {
@@ -134,7 +122,7 @@ typedef struct {
     dispatch_async(self.cacheQueue, ^{
         NSDictionary *json = [HttpdnsPersistenceUtils getJSONFromDirectory:[HttpdnsPersistenceUtils disableStatusPath]
                                                                   fileName:ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME
-                                                                   timeout:ALICLOUD_HTTPDNS_SERVER_DISABLE_STATUS_CACHE_TIMEOUT_INTERVAL];
+                                                                   timeout:serverDisableStateLocalCacheTimeInterval];
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!json) {
             // 本地无缓存，常见于第一次安装，或者未发生过 DNS 故障。
@@ -641,7 +629,7 @@ typedef struct {
         return YES;
     }
     NSTimeInterval timeInterval = [[NSDate date] timeIntervalSinceDate:self.lastServerDisableDate];
-    BOOL isAbleToSniffer = (timeInterval > ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL);    
+    BOOL isAbleToSniffer = (timeInterval > intervalBeforeAllowToSniffAfterLastServerDisable);    
     return isAbleToSniffer;
 }
 
@@ -779,7 +767,7 @@ typedef struct {
 }
 
 + (void)setZeroSnifferTimeInterval {
-    ALICLOUD_HTTPDNS_ABLE_TO_SNIFFER_AFTER_SERVER_DISABLE_INTERVAL = 0;
+    intervalBeforeAllowToSniffAfterLastServerDisable = 0;
 }
 
 @end
