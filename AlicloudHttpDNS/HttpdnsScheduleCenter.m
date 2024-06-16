@@ -137,13 +137,13 @@ static NSString *const kScheduleRegionConfigLocalCacheFileName = @"schedule_cent
         HttpdnsScheduleCenterRequest *scheduleCenterRequest = [HttpdnsScheduleCenterRequest new];
 
         NSError *error = nil;
-        NSString *updateHost = [self getActivatedUpdateHost];
+        NSString *updateHost = [self getActiveUpdateServerHost];
         NSDictionary *scheduleCenterResult = [scheduleCenterRequest fetchRegionConfigFromServer:updateHost error:&error];
         if (error || !scheduleCenterResult) {
             HttpdnsLogDebug("Update region config failed, error: %@", error);
 
             // 3秒之后重试
-            [self moveToNextUpdateHost];
+            [self moveToNextUpdateServerHost];
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), self->_scheduleFetchConfigAsyncQueue, ^{
                 [self asyncUpdateRegionConfig];
             });
@@ -178,19 +178,19 @@ static NSString *const kScheduleRegionConfigLocalCacheFileName = @"schedule_cent
     });
 }
 
-- (NSString *)getActivatedUpdateHost {
+- (NSString *)getActiveUpdateServerHost {
     AlicloudIPv6Adapter *adapter = [AlicloudIPv6Adapter getInstance];
     AlicloudIPStackType currentStack = [adapter currentIpStackType];
 
     if (currentStack == kAlicloudIPv6only) {
-        NSString *v6Host = [self currentActiveUpdateV6Host];
+        NSString *v6Host = [self currentActiveUpdateServerV6Host];
         if ([HttpdnsUtil isAnIP:v6Host]) {
             return [NSString stringWithFormat:@"[%@]", v6Host];
         }
         return v6Host;
     }
 
-    return [self currentActiveUpdateV4Host];
+    return [self currentActiveUpdateServerV4Host];
 }
 
 - (void)initServerListByRegion:(NSString *)region {
@@ -205,19 +205,19 @@ static NSString *const kScheduleRegionConfigLocalCacheFileName = @"schedule_cent
                                                 withArray:[regionConfigLoader getSeriveV6HostList:region]];
 }
 
-- (void)moveToNextServiceHost {
+- (void)moveToNextServiceServerHost {
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
         self.currentActiveServiceHostIndex++;
     });
 }
 
-- (void)moveToNextUpdateHost {
+- (void)moveToNextUpdateServerHost {
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
         self.currentActiveUpdateHostIndex++;
     });
 }
 
-- (NSString *)currentActiveUpdateV4Host {
+- (NSString *)currentActiveUpdateServerV4Host {
     __block NSString *host = nil;
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
         int count = (int)self.ipv4UpdateUpdateHostList.count;
@@ -231,7 +231,7 @@ static NSString *const kScheduleRegionConfigLocalCacheFileName = @"schedule_cent
     return host;
 }
 
-- (NSString *)currentActiveServiceV4Host {
+- (NSString *)currentActiveServiceServerV4Host {
     __block NSString *host = nil;
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
         int count = (int)self.ipv4ServiceServerHostList.count;
@@ -245,7 +245,7 @@ static NSString *const kScheduleRegionConfigLocalCacheFileName = @"schedule_cent
     return host;
 }
 
-- (NSString *)currentActiveUpdateV6Host {
+- (NSString *)currentActiveUpdateServerV6Host {
     __block NSString *host = nil;
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
         int count = (int)self.ipv6UpdateUpdateHostList.count;
@@ -259,7 +259,7 @@ static NSString *const kScheduleRegionConfigLocalCacheFileName = @"schedule_cent
     return host;
 }
 
-- (NSString *)currentActiveServiceV6Host {
+- (NSString *)currentActiveServiceServerV6Host {
     __block NSString *host = nil;
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
         int count = (int)self.ipv6ServiceServerHostList.count;
