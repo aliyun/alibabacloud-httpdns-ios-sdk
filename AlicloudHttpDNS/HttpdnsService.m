@@ -32,6 +32,8 @@
 #import "HttpdnsScheduleCenter.h"
 #import "UIApplication+ABSHTTPDNSSetting.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
+#import "HttpdnsPublicConstant.h"
+#import "HttpdnsRegionConfigLoader.h"
 
 
 NSString *const ALICLOUDHDNS_IPV4 = @"ALICLOUDHDNS_IPV4";
@@ -51,6 +53,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
  */
 @property (nonatomic, assign) NSUInteger authTimeoutInterval;
 @property (nonatomic, copy) NSDictionary<NSString *, NSString *> *presetSdnsParamsDict;
+
+@property (nonatomic, strong) HttpdnsScheduleCenter *scheduleCenter;
 @end
 
 @implementation HttpDnsService {
@@ -124,6 +128,12 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     sharedInstance.requestScheduler = [[HttpdnsRequestScheduler alloc] init];
 
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
+    NSString *cachedRegion = [userDefault objectForKey:kAlicloudHttpdnsRegionKey];
+    [scheduleCenter initRegion:cachedRegion];
+    sharedInstance.scheduleCenter = scheduleCenter;
+
     return sharedInstance;
 }
 
@@ -164,30 +174,30 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)setRegion:(NSString *)region {
-    region = [HttpdnsUtil isNotEmptyString:region] ? region : @"";
+    if ([HttpdnsUtil isEmptyString:region]) {
+        region = ALICLOUD_HTTPDNS_DEFAULT_REGION_KEY;
+    }
+
+    if (![[HttpdnsRegionConfigLoader getAvailableRegionList] containsObject:region]) {
+        HttpdnsLogDebug("Invalid region: %@, we currently only support these regions: %@", region, [HttpdnsRegionConfigLoader getAvailableRegionList]);
+        return;
+    }
 
     NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
-    NSString *oldRegion = [userDefault objectForKey:ALICLOUD_HTTPDNS_REGION_KEY];
+    NSString *oldRegion = [userDefault objectForKey:kAlicloudHttpdnsRegionKey];
     if (![region isEqualToString:oldRegion]) {
-        [userDefault setObject:region forKey:ALICLOUD_HTTPDNS_REGION_KEY];
+        [userDefault setObject:region forKey:kAlicloudHttpdnsRegionKey];
 
-        //清空本地沙盒和内存的IP缓存
+        // 清空本地沙盒和内存的IP缓存
         [self cleanHostCache:nil];
 
-        HttpdnsScheduleCenter *scheduleCenter  = [HttpdnsScheduleCenter sharedInstance];
         // region变化后发起服务IP更新
-        [scheduleCenter forceUpdateIpListAsyncImmediately];
+        [self.scheduleCenter resetRegion:region];
     }
 }
 
 - (void)setPreResolveHosts:(NSArray *)hosts {
-    if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) {
-        HttpdnsScheduleCenter *scheduleCenter  = [HttpdnsScheduleCenter sharedInstance];
-        [scheduleCenter forceUpdateIpListAsync];
-        [_requestScheduler addPreResolveHosts:hosts queryType:HttpdnsQueryIPTypeIpv4];
-    } else {
-        [_requestScheduler addPreResolveHosts:hosts queryType:HttpdnsQueryIPTypeIpv4];
-    }
+    [self setPreResolveHosts:hosts queryIPType:AlicloudHttpDNS_IPTypeV4];
 }
 
 
@@ -208,13 +218,11 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
             break;
     }
 
-    if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) {
-        HttpdnsScheduleCenter *scheduleCenter  = [HttpdnsScheduleCenter sharedInstance];
-        [scheduleCenter forceUpdateIpListAsync];
-        [_requestScheduler addPreResolveHosts:hosts queryType:ipQueryType];
-    } else {
-        [_requestScheduler addPreResolveHosts:hosts queryType:ipQueryType];
-    }
+    // 初始化过程包含了region配置更新流程，立即做预解析可能是没有意义的
+    // 这是sdk接口设计的历史问题，目前没有太好办法，这里3秒之后再发预解析请求
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self->_requestScheduler addPreResolveHosts:hosts queryType:ipQueryType];
+    });
 }
 
 - (void)setLogEnabled:(BOOL)enable {

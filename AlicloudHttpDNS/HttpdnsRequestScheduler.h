@@ -48,8 +48,6 @@ FOUNDATION_EXTERN NSString *ALICLOUD_HTTPDNS_SERVER_IP_REGION;
 - (void)setCachedIPEnabled:(BOOL)enable;
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
 
-- (void)changeToNextServerIPIfNeededWithError:(NSError *)error
-                                  fromIPIndex:(NSInteger)IPIndex
-                                      isHTTPS:(BOOL)isHTTPS;
+- (void)changeToNextServerIPIfNeededWithError:(NSError *)error isHTTPS:(BOOL)isHTTPS;
 
 @end

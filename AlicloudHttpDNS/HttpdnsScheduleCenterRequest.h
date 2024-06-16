@@ -10,6 +10,6 @@
 
 @interface HttpdnsScheduleCenterRequest : NSObject
 
-- (NSDictionary *)queryScheduleCenterRecordFromServerSync;
+- (NSDictionary *)fetchRegionConfigFromServer:(NSString *)updateHost error:(NSError **)pError;
 
 @end

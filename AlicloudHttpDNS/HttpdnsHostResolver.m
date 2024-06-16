@@ -343,26 +343,16 @@ static NSURLSession *_resolveHOSTSession = nil;
     return url;
 }
 
-- (NSString *)constructV4RequestURLWith:(HttpdnsRequest *)request activatedServerIPIndex:(NSInteger)activatedServerIPIndex useV4Ip:(bool *)useV4Ip {
+- (NSString *)constructV4RequestURLWith:(HttpdnsRequest *)request useV4Ip:(bool *)useV4Ip {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
 
-    NSString *serverIp = [scheduleCenter getActivatedServerIPv6WithAuto];
-
-    // Adapt to IPv6-only network.
+    NSString *serverIp = nil;
     if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
-        if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:serverIp]) {
-            serverIp = [NSString stringWithFormat:@"[%@]", serverIp];
-        } else {
-            serverIp = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:serverIp]];
-        }
-    } else if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:serverIp]) {
-        serverIp = [NSString stringWithFormat:@"[%@]", serverIp];
-    }
-
-    if ([[AlicloudIPv6Adapter getInstance] isIPv4Address:serverIp]) {
-        *useV4Ip = YES;
-    } else {
+        serverIp = [scheduleCenter currentActiveServiceV6Host];
         *useV4Ip = NO;
+    } else {
+        serverIp = [scheduleCenter currentActiveServiceV4Host];
+        *useV4Ip = YES;
     }
 
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
@@ -427,13 +417,13 @@ static NSURLSession *_resolveHOSTSession = nil;
     return url;
 }
 
-- (HttpdnsHostObject *)lookupHostFromServer:(HttpdnsRequest *)request error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
+- (HttpdnsHostObject *)lookupHostFromServer:(HttpdnsRequest *)request error:(NSError **)error {
     [self resetRequestConfigure];
 
     HttpdnsLogDebug("lookupHostFromServer, request: %@", request);
 
     bool useV4ServerIp;
-    NSString *url = [self constructV4RequestURLWith:request activatedServerIPIndex:activatedServerIPIndex useV4Ip:&useV4ServerIp];
+    NSString *url = [self constructV4RequestURLWith:request useV4Ip:&useV4ServerIp];
 
     if (![HttpdnsUtil isNotEmptyString:url]) {
         return nil;
@@ -444,10 +434,10 @@ static NSURLSession *_resolveHOSTSession = nil;
 
     HttpdnsHostObject *hostObject = nil;
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
-        hostObject = [self sendHTTPSRequest:url host:host error:error activatedServerIPIndex:activatedServerIPIndex queryIpType:queryIPType];
+        hostObject = [self sendHTTPSRequest:url host:host error:error queryIpType:queryIPType];
     } else {
         // 为了走HTTP时不强依赖用户的ATS配置，这里走使用CFHTTP实现的网络请求方式
-        hostObject = [self sendHTTPRequest:url host:host error:error activatedServerIPIndex:activatedServerIPIndex queryIpType:queryIPType];
+        hostObject = [self sendHTTPRequest:url host:host error:error queryIpType:queryIPType];
     }
 
     if (!(*error)) {
@@ -467,9 +457,9 @@ static NSURLSession *_resolveHOSTSession = nil;
             if ([HttpdnsUtil isNotEmptyString:url]) {
                 NSError *backupError;
                 if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
-                    hostObject = [self sendHTTPSRequest:url host:host error:&backupError activatedServerIPIndex:activatedServerIPIndex queryIpType:queryIPType];
+                    hostObject = [self sendHTTPSRequest:url host:host error:&backupError queryIpType:queryIPType];
                 } else {
-                    hostObject = [self sendHTTPRequest:url host:host error:&backupError activatedServerIPIndex:activatedServerIPIndex queryIpType:queryIPType];
+                    hostObject = [self sendHTTPRequest:url host:host error:&backupError queryIpType:queryIPType];
                 }
                 if (backupError) {
                     outError = backupError;
@@ -490,7 +480,6 @@ static NSURLSession *_resolveHOSTSession = nil;
 - (HttpdnsHostObject *)sendHTTPSRequest:(NSString *)urlStr
                                    host:(NSString *)hostStr
                                   error:(NSError **)pError
-                 activatedServerIPIndex:(NSInteger)activatedServerIPIndex
                             queryIpType:(HttpdnsQueryIPType)queryIpType {
     NSString *fullUrlStr = [NSString stringWithFormat:@"https://%@", urlStr];
     HttpdnsLogDebug("HTTPS request URL: %@", fullUrlStr);
@@ -528,7 +517,6 @@ static NSURLSession *_resolveHOSTSession = nil;
     if (pError != NULL) {
         *pError = errorStrong;
         [self.requestScheduler changeToNextServerIPIfNeededWithError:errorStrong
-                                                         fromIPIndex:activatedServerIPIndex
                                                              isHTTPS:YES];
     }
     return nil;
@@ -537,7 +525,6 @@ static NSURLSession *_resolveHOSTSession = nil;
 - (HttpdnsHostObject *)sendHTTPRequest:(NSString *)urlStr
                                   host:(NSString *)host
                                  error:(NSError **)error
-                activatedServerIPIndex:(NSInteger)activatedServerIPIndex
                            queryIpType:(HttpdnsQueryIPType)queryIpType {
     if (!error) {
         return nil;
@@ -566,7 +553,6 @@ static NSURLSession *_resolveHOSTSession = nil;
 
     *error = self.networkError;
     [self.requestScheduler changeToNextServerIPIfNeededWithError:self.networkError
-                                                     fromIPIndex:activatedServerIPIndex
                                                          isHTTPS:NO];
     if (*error == nil && _httpJSONDict) {
         return [self parseHostInfoFromHttpResponse:_httpJSONDict withHostStr:host withQueryIpType:queryIpType];
