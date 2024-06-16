@@ -119,11 +119,6 @@
 }
 
 - (BOOL)isExpiredUnderQueryIpType:(HttpdnsQueryIPType)queryIPType {
-    if (_isLoadFromDB) {
-        // TODO 要考虑下，从DB查出来是不是可能还没过期
-        return YES;
-    }
-
     int64_t currentEpoch = (int64_t)[[[NSDate alloc] init] timeIntervalSince1970];
     if ((queryIPType & HttpdnsQueryIPTypeIpv4)
         && !_hasNoIpv4Record
