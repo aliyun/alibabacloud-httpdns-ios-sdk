@@ -27,7 +27,7 @@ static NSString *const QueryCacheIPV6Key = @"QueryCacheIPV6Key";
 
 - (instancetype)init {
     if (self = [super init]) {
-        _usersetIPv6ResultEnable = NO;
+        _usersetIPv6ResultEnable = YES;
     }
     return self;
 }
