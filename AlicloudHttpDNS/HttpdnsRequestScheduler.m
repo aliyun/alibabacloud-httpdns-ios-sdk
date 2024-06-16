@@ -288,8 +288,12 @@ typedef struct {
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
         [scheduleCenter moveToNextServiceServerHost];
 
+        // 确保一定的重试间隔
+        hasRetryedCount++;
+        [NSThread sleepForTimeInterval:hasRetryedCount * 0.25];
+
         return [self executeRequest:request
-                         retryCount:(hasRetryedCount + 1)
+                         retryCount:hasRetryedCount
                               error:error];
     }
 
