@@ -40,8 +40,6 @@
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS = @"disable_status_key";
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME = @"disable_status";
 
-bool ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE = NO;
-
 NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP = @"203.107.1.1";
 
 NSString *const ALICLOUD_HTTPDNS_HTTP_SERVER_PORT = @"80";
@@ -140,14 +138,12 @@ typedef struct {
     if (![HttpdnsUtil isNotEmptyArray:hosts]) {
         return;
     }
-    __weak typeof(self) weakSelf = self;
     dispatch_async(_asyncResolveHostQueue, ^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
         for (NSString *hostName in hosts) {
             if ([self isHostsNumberLimitReached]) {
                 break;
             }
-            HttpdnsHostObject *hostObject = [HttpdnsUtil safeObjectForKey:hostName dict:strongSelf->_hostManagerDict];
+            HttpdnsHostObject *hostObject = [HttpdnsUtil safeObjectForKey:hostName dict:self->_hostManagerDict];
             if (!hostObject
                 || [hostObject isExpiredUnderQueryIpType:queryType]) {
 
@@ -214,14 +210,11 @@ typedef struct {
 }
 
 - (void)determineResolvingHostNonBlocking:(HttpdnsRequest *)request {
-    __weak typeof(self) weakSelf = self;
     dispatch_async(_asyncResolveHostQueue, ^{
         HttpDnsLocker *locker = [HttpDnsLocker sharedInstance];
-        __strong typeof(weakSelf) strongSelf = weakSelf;
         @try {
             [locker lock:request.cacheKey queryType:request.queryIpType];
-            HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-            [strongSelf executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
+            [self executeRequest:request retryCount:0 error:nil];
         } @catch (NSException *exception) {
             HttpdnsLogDebug("determineResolvingHostNonBlocking exception: %@", exception);
         } @finally {
@@ -235,8 +228,7 @@ typedef struct {
     HttpDnsLocker *locker = [HttpDnsLocker sharedInstance];
     @try {
         [locker lock:request.cacheKey queryType:request.queryIpType];
-        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-        result = [self executeRequest:request retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex error:nil];
+        result = [self executeRequest:request retryCount:0 error:nil];
     } @catch (NSException *exception) {
         HttpdnsLogDebug("determineResolveHostBlocking exception: %@", exception);
     } @finally {
@@ -270,7 +262,6 @@ typedef struct {
 
 - (HttpdnsHostObject *)executeRequest:(HttpdnsRequest *)request
                            retryCount:(int)hasRetryedCount
-               activatedServerIPIndex:(NSInteger)activatedServerIPIndex
                                 error:(NSError *)error {
     NSString *host = request.host;
     NSString *cacheKey = request.cacheKey;
@@ -278,7 +269,7 @@ typedef struct {
 
     if (hasRetryedCount > HTTPDNS_MAX_REQUEST_RETRY_TIME) {
         HttpdnsLogDebug("Internal request retry count exceed limit, host: %@", host);
-        [self canNotResolveHost:host error:error isRetry:YES activatedServerIPIndex:activatedServerIPIndex];
+        [self canNotResolveHost:host error:error isRetry:YES];
         return nil;
     }
 
@@ -290,17 +281,15 @@ typedef struct {
 
     error = nil;
     __block HttpdnsHostObject *result = [[HttpdnsHostResolver new] lookupHostFromServer:request
-                                                                     error:&error
-                                                    activatedServerIPIndex:activatedServerIPIndex];
+                                                                     error:&error];
     if (error) {
         HttpdnsLogDebug("Internal request error, host: %@, error: %@", host, error);
 
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-        NSInteger newActivatedServerIPIndex = [scheduleCenter nextServerIPIndexFromIPIndex:activatedServerIPIndex increase:hasRetryedCount];
+        [scheduleCenter moveToNextServiceHost];
 
         return [self executeRequest:request
                          retryCount:(hasRetryedCount + 1)
-             activatedServerIPIndex:newActivatedServerIPIndex
                               error:error];
     }
 
@@ -451,7 +440,7 @@ typedef struct {
 /*!
  * 用户访问引发的嗅探超时的情况，和重试引起的主动嗅探都会访问该方法，但是主动嗅探场景会在 `-[disableHttpDnsServer:]` 里直接返回。
  */
-- (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
+- (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry {
     NSDictionary *userInfo = error.userInfo;
     //403 ServiceLevelDeny 错误强制更新，不触发disable机制。
     BOOL isServiceLevelDeny = false;
@@ -462,7 +451,7 @@ typedef struct {
 
     if (isServiceLevelDeny) {
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-        [scheduleCenter forceUpdateIpListAsync];
+        [scheduleCenter asyncUpdateRegionConfig];
         return;
     }
 
@@ -619,11 +608,6 @@ typedef struct {
  * 可以进行嗅探行为，也即：异步请求服务端解析 DNS，且不执行重试逻辑。
  */
 - (BOOL)isAbleToSniffer {
-    //如果正在与SC进行同步，停止更新。
-    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-    if (scheduleCenter.isConnectingWithScheduleCenter) {
-        return NO;
-    }
     // 需要考虑首次启动，值恒为nil，或者网络变化后，都可以允许网络探测
     if (!self.lastServerDisableDate) {
         return YES;
@@ -640,9 +624,7 @@ typedef struct {
     return NO;
 }
 
-- (void)changeToNextServerIPIfNeededWithError:(NSError *)error
-                                  fromIPIndex:(NSInteger)IPIndex
-                                      isHTTPS:(BOOL)isHTTPS {
+- (void)changeToNextServerIPIfNeededWithError:(NSError *)error isHTTPS:(BOOL)isHTTPS {
     if (!error) {
         return;
     }
@@ -650,7 +632,7 @@ typedef struct {
     BOOL shouldChange = [self isTimeoutError:error isHTTPS:isHTTPS];
     if (shouldChange) {
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-        [scheduleCenter changeToNextServerIPIndexFromIPIndex:IPIndex];
+        [scheduleCenter moveToNextServiceHost];
     }
 }
 
@@ -673,7 +655,7 @@ typedef struct {
 }
 
 - (void)cleanCacheWithHostArray:(NSArray<NSString *> *)hostArray {
-    if (![HttpdnsUtil isNotEmptyArray:hostArray]) {
+    if ([HttpdnsUtil isEmptyArray:hostArray]) {
         [self cleanAllHostMemoryCache];
     } else {
         for (NSString *host in hostArray) {
@@ -685,7 +667,6 @@ typedef struct {
 
     // 清空数据库数据
     dispatch_async(_persistentCacheConcurrentQueue, ^{
-        // 清空数据库数据
         [[HttpdnsHostCacheStore sharedInstance] cleanWithHosts:hostArray];
     });
 }

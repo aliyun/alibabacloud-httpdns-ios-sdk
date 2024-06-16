@@ -26,74 +26,18 @@ static NSString *const HTTPDNS_IOS_SDK_VERSION = @"3.0.2";
 
 
 // 调度地址示例：http://106.11.90.200/sc/httpdns_config?account_id=153519&platform=ios&sdk_version=1.6.1
-
 static NSString *const HTTPDNS_BEACON_APPKEY  = @"24657847";
 static NSString *const HTTPDNS_BEACON_APPSECRECT = @"f30fc0937f2b1e9e50a1b7134f1ddb10";
 
-#pragma mark - Schedule Center
-///=============================================================================
-/// @name Schedule Center
-///=============================================================================
-
  static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST = @"httpdns-sc.aliyuncs.com";
 
-///===================================国内版本==========================================
-//国内版内置调度IPv4地址
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP = @"203.107.1.97";
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2 = @"203.107.1.100";
-//国内版内置调度IPv6地址
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6 = @"2401:b180:2000:20::10";
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2 = @"2401:b180:2000:30::1c";
-
-
-//国内内置服务IPv4地址
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IP = @"203.107.1.1";
-//国内内置服务IPv6地址
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6 = @"2401:b180:2000:30::1c";
-///===================================国内版本==========================================
-
-
-///===================================国际版本版本==========================================
-//国际版内置调度IPv4地址
-static NSString *const ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IP = @"8.219.58.10";
-static NSString *const ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IP_2 = @"8.219.89.41";
-static NSString *const ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IP_3 = @"203.107.1.97"; //用于兜底
-//国际版内置调度IPv6地址
-static NSString *const ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IPV6 = @"240b:4000:f10::92";
-static NSString *const ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2 = @"240b:4000:f10::208";
-
-
-//国际内置服务IPv4地址
-static NSString *const ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_SERVER_HOST_IP = @"161.117.200.122";
-//国际内置服务IPv6地址
-static NSString *const ALICLOUD_HTTPDNS_INTER_SCHEDULE_CENTER_SERVER_HOST_IPV6 = @"240b:4000:f10::178";
-///===================================国际版本版本==========================================
-
-
-//static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_PATH = @"sc/httpdns_config";
 static NSString *const ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY = @"ErrorMessage";
 static NSString *const ALICLOUD_HTTPDNS_ERROR_SERVICE_LEVEL_DENY = @"ServiceLevelDeny";
 
-//requst paramer
+static NSString *const kAlicloudHttpdnsRegionConfigV4HostKey = @"service_ip";
+static NSString *const kAlicloudHttpdnsRegionConfigV6HostKey = @"service_ipv6";
 
-//account_id	必须	HTTPDNS的Account ID
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_PARAMER_ACCOUNT_ID_KEY = @"account_id";
-
-//platform	必须	平台信息：android或ios，字母小写
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_PARAMER_PLATFORM_KEY = @"platform";
-
-//sdk_version	必须	SDK本身的版本号
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_PARAMER_VERSION_KEY = @"sdk_version";
-
-//app_name
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_PARAMER_APP_KEY = @"app_name";  /**< bundle id */
-
-//ipv4 key
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IP_KEY = @"service_ip";
-//ipv6 key
-static NSString *const ALICLOUD_HTTPDNS_SCHEDULE_CENTER_CONFIGURE_SERVICE_IPV6_KEY = @"service_ipv6";
-
-static NSString *const ALICLOUD_HTTPDNS_REGION_KEY = @"HttpdnsRegion";
+static NSString *const kAlicloudHttpdnsRegionKey = @"HttpdnsRegion";
 
 
 //当前时间戳，单位秒

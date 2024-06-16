@@ -214,11 +214,10 @@ _Pragma("clang diagnostic pop") \
     return ![self isEmptyDictionary:inputDict];
 }
 
-+ (id)convertJsonStringToObject:(NSString *)jsonStr {
-    if ([self isNotEmptyString:jsonStr]) {
-        return [self convertJsonDataToObject:[jsonStr dataUsingEncoding:NSUTF8StringEncoding]];
-    }
-    return nil;
++ (NSArray *)joinArrays:(NSArray *)array1 withArray:(NSArray *)array2 {
+    NSMutableArray *resultArray = [array1 mutableCopy];
+    [resultArray addObjectsFromArray:array2];
+    return [resultArray copy];
 }
 
 + (id)convertJsonDataToObject:(NSData *)jsonData {

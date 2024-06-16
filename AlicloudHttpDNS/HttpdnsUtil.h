@@ -61,6 +61,8 @@
 
 + (BOOL)isNotEmptyDictionary:(NSDictionary *)inputDict;
 
++ (NSArray *)joinArrays:(NSArray *)array1 withArray:(NSArray *)array2;
+
 + (NSString *)getMD5StringFrom:(NSString *)originString;
 
 + (NSError *)getErrorFromError:(NSError *)error statusCode:(NSInteger)statusCode json:(NSDictionary *)json isHTTPS:(BOOL)isHTTPS;

@@ -39,79 +39,17 @@ static NSURLSession *_scheduleCenterSession = nil;
     return self;
 }
 
-- (NSDictionary *)queryScheduleCenterRecordFromServerSync {
-    return [self queryScheduleCenterRecordFromServerSyncWithHostIndex:0];
-}
-
-/// 获取调度IP List
-- (NSArray *)getCenterHostList {
-    NSArray *hostArray;
-    if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) { //服务IP缓存已读取
-        if ([HttpdnsUtil isNotEmptyArray:ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6]) {
-            hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST_IPV6;
-        } else {
-            hostArray = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_HOST_LIST;
-        }
-    } else { //服务IP缓存未读取
-        if ([HttpdnsUtil isNotEmptyArray:ALICLOUD_HTTPDNS_SERVER_IPV6_LIST]) {
-            hostArray = ALICLOUD_HTTPDNS_SERVER_IPV6_LIST;
-        } else {
-            hostArray = ALICLOUD_HTTPDNS_SERVER_IP_LIST;
-        }
-    }
-    return hostArray;
-
-}
-
-- (NSDictionary *)queryScheduleCenterRecordFromServerSyncWithHostIndex:(NSInteger)hostIndex {
-    NSArray *hostArray = [self getCenterHostList];
-
-    NSInteger maxHostIndex = (hostArray.count - 1);
-    if (hostIndex > maxHostIndex) {
-        // 强降级策略 当服务IP轮询更新服务IP
-        if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE) {
-            //强降级到启动IP
-            ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE = NO;
-            return [self queryScheduleCenterRecordFromServerSyncWithHostIndex:0];
-        }
-        return nil;
-    }
-
-    NSError *error = nil;
-
-    // 这里发起请求 返回数据
-    NSDictionary *scheduleCenterRecord = [self queryScheduleCenterRecordFromServerWithHostIndex:hostIndex error:&error];
-
-    if (error || !scheduleCenterRecord) {
-        return [self queryScheduleCenterRecordFromServerSyncWithHostIndex:(hostIndex + 1)];
-    }
-
-    return scheduleCenterRecord;
-}
-
-- (NSString *)scheduleCenterHostFromIPIndex:(NSInteger)index {
-    NSString *serverHostOrIP = nil;
-    NSArray *hostArray = [self getCenterHostList];
-
-    index = index % hostArray.count;
-    serverHostOrIP = [HttpdnsUtil safeObjectAtIndexOrTheFirst:index array:hostArray defaultValue:nil];
-    serverHostOrIP = [HttpdnsUtil getRequestHostFromString:serverHostOrIP];
-    return serverHostOrIP;
-}
-
 /**
  * 拼接 URL
  * 2024.6.12今天起，调度服务由后端就近调度，不再需要传入region参数，但为了兼容不传region默认就是国内region的逻辑，默认都传入region=global
  * https://203.107.1.1/100000/ss?region=global&platform=ios&sdk_version=1.6.1&sid=LpmJIA2CUoi4&net=unknown&bssid=
  */
-- (NSString *)constructRequestURLWithHostIndex:(NSInteger)hostIndex {
-    NSString *serverIpOrHost = [self scheduleCenterHostFromIPIndex:hostIndex];
+- (NSString *)constructRequestURLWithUpdateHost:(NSString *)updateHost {
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
     NSString *urlPath = [NSString stringWithFormat:@"%d/ss?region=global&platform=ios&sdk_version=%@", sharedService.accountID, HTTPDNS_IOS_SDK_VERSION];
     urlPath = [self urlFormatSidNetBssid:urlPath];
     urlPath = [urlPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet characterSetWithCharactersInString:@"`#%^{}\"[]|\\<> "].invertedSet];
-    NSString *url = [NSString stringWithFormat:@"https://%@/%@", serverIpOrHost, urlPath];
-    return url;
+    return [NSString stringWithFormat:@"https://%@/%@", updateHost, urlPath];
 }
 
 // url 添加 sid net 和 bssid
@@ -134,9 +72,8 @@ static NSURLSession *_scheduleCenterSession = nil;
     return url;
 }
 
-// 基于 URLSession 发送 HTTPS 请求
-- (NSDictionary *)queryScheduleCenterRecordFromServerWithHostIndex:(NSInteger)hostIndex error:(NSError **)pError {
-    NSString *fullUrlStr = [self constructRequestURLWithHostIndex:hostIndex];
+- (NSDictionary *)fetchRegionConfigFromServer:(NSString *)updateHost error:(NSError **)pError {
+    NSString *fullUrlStr = [self constructRequestURLWithUpdateHost:updateHost];
     HttpdnsLogDebug("ScRequest URL: %@", fullUrlStr);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                               cachePolicy:NSURLRequestReloadIgnoringLocalCacheData

@@ -28,6 +28,7 @@
 
 + (NSTimeInterval)timeSinceCreateForPath:(NSString *)patch;
 + (BOOL)saveJSON:(id)JSON toPath:(NSString *)path;
++ (id)getJSONFromPath:(NSString *)path;
 + (id)getJSONFromDirectory:(NSString *)directory fileName:(NSString *)fileName;
 + (id)getJSONFromDirectory:(NSString *)directory fileName:(NSString *)fileName timeout:(NSTimeInterval)timeoutInterval;
 

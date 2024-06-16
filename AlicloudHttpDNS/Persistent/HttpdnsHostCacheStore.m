@@ -296,7 +296,7 @@
 - (void)cleanWithHosts:(NSArray<NSString *> *)hostArray {
     [HttpdnsUtil warnMainThreadIfNecessary];
 
-    if (![HttpdnsUtil isNotEmptyArray:hostArray]) {  //全部清空
+    if ([HttpdnsUtil isEmptyArray:hostArray]) {  //全部清空
         [self cleanDatabaseCache];
     } else {
         for (NSString *host in hostArray) {
@@ -305,15 +305,12 @@
             [self deleteHostRecordAndItsIPsWithHostRecordIDs:ids];
         }
     }
-
 }
 
 #pragma mark -
 #pragma mark - Private Methods
 
-
 - (void)cleanDatabaseCache {
-
     //删除host表
     ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
         [db executeUpdate:ALICLOUD_HTTPDNS_SQL_CLEAN_HOST_RECORD_TABLE];;

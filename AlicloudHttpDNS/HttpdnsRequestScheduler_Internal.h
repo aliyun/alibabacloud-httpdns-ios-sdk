@@ -45,7 +45,6 @@ static NSTimeInterval intervalBeforeAllowToSniffAfterLastServerDisable;
 
 - (HttpdnsHostObject *)executeRequest:(HttpdnsRequest *)request
                            retryCount:(int)hasRetryedCount
-               activatedServerIPIndex:(NSInteger)activatedServerIPIndex
                                 error:(NSError *)error;
 
 // 内部缓存开关，不触发加载DB到内存的操作
@@ -54,7 +53,7 @@ static NSTimeInterval intervalBeforeAllowToSniffAfterLastServerDisable;
 
 + (void)configureServerIPsAndResetActivatedIPTime;
 
-- (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry activatedServerIPIndex:(NSInteger)activatedServerIPIndex;
+- (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry;
 
 - (void)syncReloadCacheFromDbToMemoryByIspCarrier;
 

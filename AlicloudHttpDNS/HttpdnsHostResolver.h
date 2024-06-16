@@ -35,6 +35,6 @@ FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_CAC
 
 @interface HttpdnsHostResolver : NSObject
 
-- (HttpdnsHostObject *)lookupHostFromServer:(HttpdnsRequest *)request error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex;
+- (HttpdnsHostObject *)lookupHostFromServer:(HttpdnsRequest *)request error:(NSError **)error;
 
 @end
