@@ -275,11 +275,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 
 - (NSString *)constructV6RequestURLWith:(HttpdnsRequest *)request {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-    NSString *serverIp = @"";
-
-    serverIp = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6;
-
-    serverIp = [NSString stringWithFormat:@"[%@]", serverIp];
+    NSString *serverIp = [scheduleCenter currentActiveServiceServerV6Host];
 
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
 
@@ -348,10 +344,10 @@ static NSURLSession *_resolveHOSTSession = nil;
 
     NSString *serverIp = nil;
     if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
-        serverIp = [scheduleCenter currentActiveServiceV6Host];
+        serverIp = [scheduleCenter currentActiveServiceServerV6Host];
         *useV4Ip = NO;
     } else {
-        serverIp = [scheduleCenter currentActiveServiceV4Host];
+        serverIp = [scheduleCenter currentActiveServiceServerV4Host];
         *useV4Ip = YES;
     }
 

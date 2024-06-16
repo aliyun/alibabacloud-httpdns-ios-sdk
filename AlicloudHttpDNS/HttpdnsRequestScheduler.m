@@ -286,7 +286,7 @@ typedef struct {
         HttpdnsLogDebug("Internal request error, host: %@, error: %@", host, error);
 
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-        [scheduleCenter moveToNextServiceHost];
+        [scheduleCenter moveToNextServiceServerHost];
 
         return [self executeRequest:request
                          retryCount:(hasRetryedCount + 1)
@@ -632,7 +632,7 @@ typedef struct {
     BOOL shouldChange = [self isTimeoutError:error isHTTPS:isHTTPS];
     if (shouldChange) {
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-        [scheduleCenter moveToNextServiceHost];
+        [scheduleCenter moveToNextServiceServerHost];
     }
 }
 

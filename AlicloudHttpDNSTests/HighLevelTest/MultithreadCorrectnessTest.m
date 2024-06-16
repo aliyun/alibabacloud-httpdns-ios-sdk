@@ -40,7 +40,7 @@
 - (void)testNoneBlockingMethodShouldNotBlock {
     HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
     HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
-    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0 activatedServerIPIndex:0 error:nil])
+    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0 error:nil])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
             [NSThread sleepForTimeInterval:3];
@@ -59,7 +59,7 @@
 - (void)testBlockingMethodShouldNotBlockIfInMainThread {
     HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
     HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
-    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0 activatedServerIPIndex:0 error:nil])
+    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0 error:nil])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
             [NSThread sleepForTimeInterval:3];
@@ -76,7 +76,7 @@
 - (void)testBlockingMethodShouldBlockIfInBackgroundThread {
     HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
     HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
-    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0 activatedServerIPIndex:0 error:nil])
+    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0 error:nil])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
             [NSThread sleepForTimeInterval:3];
@@ -101,7 +101,7 @@
     __block HttpdnsHostObject *ipv4HostObject = [self constructSimpleIpv4HostObject];
     HttpdnsHostResolver *realResolver = [HttpdnsHostResolver new];
     id mockResolver = OCMPartialMock(realResolver);
-    OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer] activatedServerIPIndex:0])
+    OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
             // 第一次调用，阻塞5秒
@@ -152,7 +152,7 @@
     HttpdnsHostResolver *realResolver = [HttpdnsHostResolver new];
     id mockResolver = OCMPartialMock(realResolver);
     __block atomic_int count = 0;
-    OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer] activatedServerIPIndex:0])
+    OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
             int localCount = atomic_fetch_add(&count, 1) + 1;

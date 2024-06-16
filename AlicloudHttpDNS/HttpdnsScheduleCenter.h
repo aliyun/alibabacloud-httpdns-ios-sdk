@@ -29,10 +29,10 @@
 
 - (void)asyncUpdateRegionConfig;
 
-- (void)moveToNextServiceHost;
+- (void)moveToNextServiceServerHost;
 
-- (NSString *)currentActiveServiceV4Host;
+- (NSString *)currentActiveServiceServerV4Host;
 
-- (NSString *)currentActiveServiceV6Host;
+- (NSString *)currentActiveServiceServerV6Host;
 
 @end
