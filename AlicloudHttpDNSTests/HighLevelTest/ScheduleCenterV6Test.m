@@ -90,16 +90,4 @@
     [NSThread sleepForTimeInterval:3];
 }
 
-- (void)testResolveFailureWillMoveToNextServiceServer {
-
-}
-
-- (void)testConsecutiveResolveFailureWillDisableHttpdns {
-
-}
-
-- (void)testAutoRecoverFromDisabled {
-
-}
-
 @end

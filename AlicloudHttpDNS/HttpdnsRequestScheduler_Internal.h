@@ -32,6 +32,7 @@ static NSTimeInterval intervalBeforeAllowToSniffAfterLastServerDisable;
 // 这个ip探测优选开关是走的beacon服务
 @property (nonatomic, assign) BOOL IPRankingEnabled;
 
+- (void)disableHttpDnsServer:(BOOL)serverDisable;
 
 - (void)setServerDisable:(BOOL)serverDisable;
 

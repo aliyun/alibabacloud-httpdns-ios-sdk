@@ -128,11 +128,11 @@
 		948DA4E62C1EAA8200D81682 /* HttpdnsRegionConfigLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = 948DA4E32C1EAA8200D81682 /* HttpdnsRegionConfigLoader.m */; };
 		948DA4E72C1EAA8200D81682 /* HttpdnsRegionConfigLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = 948DA4E32C1EAA8200D81682 /* HttpdnsRegionConfigLoader.m */; };
 		948DA4E92C1EAB3800D81682 /* region_config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 948DA4E82C1EAB3800D81682 /* region_config.plist */; };
-		948DA4EA2C1EAB3800D81682 /* region_config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 948DA4E82C1EAB3800D81682 /* region_config.plist */; };
 		94A014702BF38F410018B096 /* HttpdnsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 94A0146D2BF38F410018B096 /* HttpdnsService.m */; };
 		94A014712BF38F410018B096 /* HttpdnsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 94A0146D2BF38F410018B096 /* HttpdnsService.m */; };
 		94A014732BF38F410018B096 /* HttpdnsService.h in Headers */ = {isa = PBXBuildFile; fileRef = 94A0146E2BF38F410018B096 /* HttpdnsService.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		94A014742BF38F410018B096 /* HttpdnsService_Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 94A0146F2BF38F410018B096 /* HttpdnsService_Internal.h */; };
+		94B60FEB2C20A10700DCA078 /* region_config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 948DA4E82C1EAB3800D81682 /* region_config.plist */; };
 		94C3F8AE2C05D23F00A4A9B8 /* ResolvingEffectiveHostTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 94C3F8AD2C05D23F00A4A9B8 /* ResolvingEffectiveHostTest.m */; };
 		94C3F8B02C05D4FD00A4A9B8 /* EnableReuseExpiredIpTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 94C3F8AF2C05D4FD00A4A9B8 /* EnableReuseExpiredIpTest.m */; };
 		94C3F8B22C06FFA800A4A9B8 /* SdnsScenarioTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 94C3F8B12C06FFA800A4A9B8 /* SdnsScenarioTest.m */; };
@@ -886,7 +886,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				948DA4EA2C1EAB3800D81682 /* region_config.plist in Resources */,
+				94B60FEB2C20A10700DCA078 /* region_config.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

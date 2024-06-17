@@ -125,17 +125,15 @@
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:@"mock" isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeAuto];
 
     HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
+    id mockScheduler = OCMPartialMock(scheduler);
+
     [scheduler executeRequest:request retryCount:1];
+
+    OCMStub([mockScheduler disableHttpDnsServer:[OCMArg any]]);
 
     int secondIndex = [scheduleCenter currentActiveServiceServerHostIndex];
 
     XCTAssertEqual((startIndex + 1) % serviceServerCount, secondIndex);
-}
-
-- (void)testConsecutiveResolveFailureWillDisableHttpdns {
-}
-
-- (void)testAutoRecoverFromDisabled {
 }
 
 @end
