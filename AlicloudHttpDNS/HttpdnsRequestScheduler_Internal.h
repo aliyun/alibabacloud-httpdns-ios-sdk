@@ -53,8 +53,6 @@ static NSTimeInterval intervalBeforeAllowToSniffAfterLastServerDisable;
 
 + (void)configureServerIPsAndResetActivatedIPTime;
 
-- (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry;
-
 - (void)syncReloadCacheFromDbToMemoryByIspCarrier;
 
 - (void)cleanAllHostMemoryCache;
