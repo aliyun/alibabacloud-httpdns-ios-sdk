@@ -118,7 +118,7 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
     HttpDnsService *httpdns = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *scheduler = httpdns.requestScheduler;
     HttpdnsRequestScheduler *mockScheduler = OCMPartialMock(scheduler);
-    OCMReject([mockScheduler executeRequest:[OCMArg any] retryCount:0 error:[OCMArg any]]);
+    OCMReject([mockScheduler executeRequest:[OCMArg any] retryCount:0]);
     resolvingBlock();
     OCMVerifyAll(mockScheduler);
 }
@@ -127,7 +127,7 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
     HttpDnsService *httpdns = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *scheduler = httpdns.requestScheduler;
     HttpdnsRequestScheduler *mockScheduler = OCMPartialMock(scheduler);
-    OCMExpect([mockScheduler executeRequest:[OCMArg any] retryCount:0 error:[OCMArg any]]).andReturn(nil);
+    OCMExpect([mockScheduler executeRequest:[OCMArg any] retryCount:0]).andReturn(nil);
     resolvingBlock();
     OCMVerifyAll(mockScheduler);
 }

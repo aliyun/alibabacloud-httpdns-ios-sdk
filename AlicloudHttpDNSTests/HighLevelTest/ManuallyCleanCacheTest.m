@@ -96,7 +96,7 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
 }
 
-- (void) testCleanAllHost {
+- (void)testCleanAllHost {
     [self presetNetworkEnvAsIpv4AndIpv6];
     [self.httpdns cleanAllHostCache];
 
