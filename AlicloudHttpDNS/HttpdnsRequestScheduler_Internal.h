@@ -43,9 +43,7 @@ static NSTimeInterval intervalBeforeAllowToSniffAfterLastServerDisable;
 
 - (HttpdnsHostObject *)mergeLookupResultToManager:(HttpdnsHostObject *)result host:host cacheKey:(NSString *)cacheKey underQueryIpType:(HttpdnsQueryIPType)queryIpType;
 
-- (HttpdnsHostObject *)executeRequest:(HttpdnsRequest *)request
-                           retryCount:(int)hasRetryedCount
-                                error:(NSError *)error;
+- (HttpdnsHostObject *)executeRequest:(HttpdnsRequest *)request retryCount:(int)hasRetryedCount;
 
 // 内部缓存开关，不触发加载DB到内存的操作
 - (void)setPersistentCacheIpEnabled:(BOOL)enable;

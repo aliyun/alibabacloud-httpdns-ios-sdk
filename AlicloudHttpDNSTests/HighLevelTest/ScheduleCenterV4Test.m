@@ -11,11 +11,13 @@
 #import <AlicloudUtils/AlicloudUtils.h>
 #import "TestBase.h"
 #import "HttpdnsHostObject.h"
+#import "HttpdnsHostResolver.h"
 #import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsScheduleCenterRequest.h"
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsScheduleCenter_Internal.h"
 #import "HttpdnsService.h"
+#import "HttpdnsRequestScheduler.h"
 #import "HttpdnsService_Internal.h"
 
 
@@ -100,6 +102,34 @@
 }
 
 - (void)testResolveFailureWillMoveToNextServiceServer {
+    [self presetNetworkEnvAsIpv4];
+
+    id mockResolver = OCMPartialMock([HttpdnsHostResolver new]);
+    OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
+    .andDo(^(NSInvocation *invocation) {
+        NSError *mockError = [NSError errorWithDomain:@"com.example.error" code:123 userInfo:@{NSLocalizedDescriptionKey: @"Mock error"}];
+        NSError *__autoreleasing *errorPtr = nil;
+        [invocation getArgument:&errorPtr atIndex:3];
+        if (errorPtr) {
+            *errorPtr = mockError;
+        }
+    });
+
+    id mockResolverClass = OCMClassMock([HttpdnsHostResolver class]);
+    OCMStub([mockResolverClass new]).andReturn(mockResolver);
+
+    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+    int startIndex = [scheduleCenter currentActiveServiceServerHostIndex];
+    int serviceServerCount = (int)[scheduleCenter currentServiceServerV4HostList].count;
+
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:@"mock" isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeAuto];
+
+    HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
+    [scheduler executeRequest:request retryCount:1];
+
+    int secondIndex = [scheduleCenter currentActiveServiceServerHostIndex];
+
+    XCTAssertEqual((startIndex + 1) % serviceServerCount, secondIndex);
 }
 
 - (void)testConsecutiveResolveFailureWillDisableHttpdns {

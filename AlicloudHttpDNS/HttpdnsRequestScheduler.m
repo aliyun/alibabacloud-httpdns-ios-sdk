@@ -214,7 +214,7 @@ typedef struct {
         HttpDnsLocker *locker = [HttpDnsLocker sharedInstance];
         @try {
             [locker lock:request.cacheKey queryType:request.queryIpType];
-            [self executeRequest:request retryCount:0 error:nil];
+            [self executeRequest:request retryCount:0];
         } @catch (NSException *exception) {
             HttpdnsLogDebug("determineResolvingHostNonBlocking exception: %@", exception);
         } @finally {
@@ -228,7 +228,7 @@ typedef struct {
     HttpDnsLocker *locker = [HttpDnsLocker sharedInstance];
     @try {
         [locker lock:request.cacheKey queryType:request.queryIpType];
-        result = [self executeRequest:request retryCount:0 error:nil];
+        result = [self executeRequest:request retryCount:0];
     } @catch (NSException *exception) {
         HttpdnsLogDebug("determineResolveHostBlocking exception: %@", exception);
     } @finally {
@@ -260,9 +260,7 @@ typedef struct {
     return (HostObjectExamingResult){YES, NO};
 }
 
-- (HttpdnsHostObject *)executeRequest:(HttpdnsRequest *)request
-                           retryCount:(int)hasRetryedCount
-                                error:(NSError *)error {
+- (HttpdnsHostObject *)executeRequest:(HttpdnsRequest *)request retryCount:(int)hasRetryedCount {
     NSString *host = request.host;
     NSString *cacheKey = request.cacheKey;
     HttpdnsQueryIPType queryIPType = request.queryIpType;
@@ -279,7 +277,7 @@ typedef struct {
 
     HttpdnsLogDebug("Internal request starts, host: %@, request: %@", host, request);
 
-    error = nil;
+    NSError *error = nil;
     __block HttpdnsHostObject *result = [[HttpdnsHostResolver new] lookupHostFromServer:request
                                                                                   error:&error];
     if (error) {
@@ -292,9 +290,7 @@ typedef struct {
         hasRetryedCount++;
         [NSThread sleepForTimeInterval:hasRetryedCount * 0.25];
 
-        return [self executeRequest:request
-                         retryCount:hasRetryedCount
-                              error:error];
+        return [self executeRequest:request retryCount:hasRetryedCount];
     }
 
     dispatch_sync(_memoryCacheSerialQueue, ^{

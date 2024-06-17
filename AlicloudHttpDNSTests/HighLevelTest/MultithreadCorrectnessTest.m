@@ -39,7 +39,7 @@
 - (void)testNoneBlockingMethodShouldNotBlock {
     HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
     HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
-    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0 error:nil])
+    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
             [NSThread sleepForTimeInterval:3];
@@ -58,7 +58,7 @@
 - (void)testBlockingMethodShouldNotBlockIfInMainThread {
     HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
     HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
-    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0 error:nil])
+    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
             [NSThread sleepForTimeInterval:3];
@@ -75,7 +75,7 @@
 - (void)testBlockingMethodShouldBlockIfInBackgroundThread {
     HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
     HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
-    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0 error:nil])
+    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
             [NSThread sleepForTimeInterval:3];
