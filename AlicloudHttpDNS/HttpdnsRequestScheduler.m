@@ -455,7 +455,7 @@ typedef struct {
 
     if (isServiceLevelDeny) {
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-        [scheduleCenter asyncUpdateRegionConfig];
+        [scheduleCenter asyncUpdateRegionScheduleConfig];
         return;
     }
 

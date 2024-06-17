@@ -61,6 +61,7 @@
 		943FA42A2BFA4B410006F169 /* HttpdnsRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 943FA4282BFA4B410006F169 /* HttpdnsRequest.h */; };
 		943FA42B2BFA4B410006F169 /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 943FA4292BFA4B410006F169 /* HttpdnsRequest.m */; };
 		945914121CEB5D9C00D95CF7 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 945914111CEB5D9C00D95CF7 /* libresolv.tbd */; };
+		945BA3ED2C1F47110098FC52 /* ScheduleCenterV4Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 945BA3EC2C1F47110098FC52 /* ScheduleCenterV4Test.m */; };
 		946E4BC22BF8B29600E1EF86 /* HTTPDNSCookieManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B0F2B8702803D334004ABD0F /* HTTPDNSCookieManager.m */; };
 		946E4BC32BF8B29800E1EF86 /* CFHTTPSURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */; };
 		946E4BC42BF8B29A00E1EF86 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AF4AB63211439A600D712DF /* AppDelegate.m */; };
@@ -70,6 +71,8 @@
 		946E4BC82BF8B44800E1EF86 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AF4AB71211439A800D712DF /* main.m */; };
 		946E4BCA2BF8B70C00E1EF86 /* UIApplication+ABSHTTPDNSSetting.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC200361F0E169400754CC2 /* UIApplication+ABSHTTPDNSSetting.m */; };
 		947C4BEE2C1ED4DB0095A302 /* region_config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 948DA4E82C1EAB3800D81682 /* region_config.plist */; };
+		947C4BF22C1F45330095A302 /* HttpdnsScheduleCenter_Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 947C4BF12C1F45330095A302 /* HttpdnsScheduleCenter_Internal.h */; };
+		947C4BF32C1F45330095A302 /* HttpdnsScheduleCenter_Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 947C4BF12C1F45330095A302 /* HttpdnsScheduleCenter_Internal.h */; };
 		947E5BE72C0075AA00123579 /* HttpdnsHostObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 943FA4202BF9D4FA0006F169 /* HttpdnsHostObject.h */; };
 		947E5BE82C0075B100123579 /* HttpdnsHostRecord.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AA0FC6E1EB9AFB700E242DD /* HttpdnsHostRecord.h */; };
 		947E5BE92C0075B100123579 /* HttpdnsIPRecord.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AF9A60F1EC4E9990018063B /* HttpdnsIPRecord.h */; };
@@ -262,6 +265,8 @@
 		943FA4282BFA4B410006F169 /* HttpdnsRequest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsRequest.h; sourceTree = "<group>"; };
 		943FA4292BFA4B410006F169 /* HttpdnsRequest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsRequest.m; sourceTree = "<group>"; };
 		945914111CEB5D9C00D95CF7 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
+		945BA3EC2C1F47110098FC52 /* ScheduleCenterV4Test.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ScheduleCenterV4Test.m; sourceTree = "<group>"; };
+		947C4BF12C1F45330095A302 /* HttpdnsScheduleCenter_Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsScheduleCenter_Internal.h; sourceTree = "<group>"; };
 		947E5C1C2C02DB9300123579 /* PresetCacheAndRetrieveTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PresetCacheAndRetrieveTest.m; sourceTree = "<group>"; };
 		948CD0082C031EB000F9F075 /* MultithreadCorrectnessTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MultithreadCorrectnessTest.m; sourceTree = "<group>"; };
 		948DA4DA2C1E7E5F00D81682 /* HttpdnsPublicConstant.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsPublicConstant.h; sourceTree = "<group>"; };
@@ -412,6 +417,7 @@
 				9A5914811EA0815D00A7ED28 /* HttpdnsPersistenceUtils.m */,
 				9A4D18191E8F8FE1001E45B4 /* HttpdnsConstants.h */,
 				9A4D181B1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.h */,
+				947C4BF12C1F45330095A302 /* HttpdnsScheduleCenter_Internal.h */,
 				9A4D181C1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.m */,
 				9A5D5E271E9CB4D400CAC3A6 /* HttpdnsScheduleCenterRequest.h */,
 				9A5D5E281E9CB4D400CAC3A6 /* HttpdnsScheduleCenterRequest.m */,
@@ -545,6 +551,7 @@
 			children = (
 				947E5C1C2C02DB9300123579 /* PresetCacheAndRetrieveTest.m */,
 				948CD0082C031EB000F9F075 /* MultithreadCorrectnessTest.m */,
+				945BA3EC2C1F47110098FC52 /* ScheduleCenterV4Test.m */,
 				94C3F8AD2C05D23F00A4A9B8 /* ResolvingEffectiveHostTest.m */,
 				9406FDA22C198E310003CB6A /* CacheKeyFunctionTest.m */,
 				94C3F8AF2C05D4FD00A4A9B8 /* EnableReuseExpiredIpTest.m */,
@@ -685,6 +692,7 @@
 				9A5BF7D31EC06B81001588B2 /* HttpdnsKeyValueSQL.h in Headers */,
 				942376DE1C5764CF00736E50 /* HttpdnsDegradationDelegate.h in Headers */,
 				9406FDC22C19AA8F0003CB6A /* HttpdnsHostCacheStore_Internal.h in Headers */,
+				947C4BF22C1F45330095A302 /* HttpdnsScheduleCenter_Internal.h in Headers */,
 				9AA0FC5F1EB9846E00E242DD /* HttpdnsDatabaseCommon.h in Headers */,
 				9A5BF7D41EC06B81001588B2 /* HttpdnsKeyValueStore.h in Headers */,
 				9406FDC42C19AA8F0003CB6A /* HttpdnsIPCacheStore.h in Headers */,
@@ -742,6 +750,7 @@
 				947E5BE92C0075B100123579 /* HttpdnsIPRecord.h in Headers */,
 				947E5BEA2C0075B100123579 /* HttpdnsResult.h in Headers */,
 				9406FDB52C19AA8F0003CB6A /* HttpdnsHostCacheStore.h in Headers */,
+				947C4BF32C1F45330095A302 /* HttpdnsScheduleCenter_Internal.h in Headers */,
 				947E5BEF2C0075BE00123579 /* HttpdnsIPv6Manager.h in Headers */,
 				947E5BF72C0075E100123579 /* HttpdnsDatabaseCommon.h in Headers */,
 				947E5BF82C0075E100123579 /* HttpdnsDatabaseCoordinator.h in Headers */,
@@ -1039,6 +1048,7 @@
 				9AE63A0D1ECDAB4400F9C723 /* HttpdnsKeyValueStore.m in Sources */,
 				9AE63A0E1ECDAB4400F9C723 /* HttpdnsgetNetworkInfoHelper.m in Sources */,
 				9AE63A0A1ECDAB3A00F9C723 /* HttpdnsResultSet.m in Sources */,
+				945BA3ED2C1F47110098FC52 /* ScheduleCenterV4Test.m in Sources */,
 				9AE63A071ECDAB3A00F9C723 /* HttpdnsDatabaseAdditions.m in Sources */,
 				4AF5AB831DCB332800206DD8 /* HttpdnsConfig.m in Sources */,
 				94C3F8B02C05D4FD00A4A9B8 /* EnableReuseExpiredIpTest.m in Sources */,
