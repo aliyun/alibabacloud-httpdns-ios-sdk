@@ -33,6 +33,8 @@
 static NSString *const kLastUpdateUnixTimestampKey = @"last_update_unix_timestamp";
 static NSString *const kScheduleRegionConfigLocalCacheFileName = @"schedule_center_result";
 
+static int const MAX_UPDATE_RETRY_COUNT = 2;
+
 @interface HttpdnsScheduleCenter ()
 
 // 为了简单，无论v4还是v6，都只共同维护1个下标
@@ -127,11 +129,19 @@ static NSString *const kScheduleRegionConfigLocalCacheFileName = @"schedule_cent
 - (void)updateRegionConfigAfterAtLeastOneDay {
     NSDate *now = [NSDate date];
     if ([now timeIntervalSinceDate:self.lastScheduleCenterConnectDate] > 24 * 60 * 60) {
-        [self asyncUpdateRegionConfig];
+        [self asyncUpdateRegionScheduleConfig];
     }
 }
 
-- (void)asyncUpdateRegionConfig {
+- (void)asyncUpdateRegionScheduleConfig {
+    [self asyncUpdateRegionScheduleConfigAtRetry:0];
+}
+
+- (void)asyncUpdateRegionScheduleConfigAtRetry:(int)retryCount {
+    if (retryCount > MAX_UPDATE_RETRY_COUNT) {
+        return;
+    }
+
     dispatch_async(_scheduleFetchConfigAsyncQueue, ^(void) {
         self->_lastScheduleCenterConnectDate = [NSDate date];
         HttpdnsScheduleCenterRequest *scheduleCenterRequest = [HttpdnsScheduleCenterRequest new];
@@ -142,10 +152,12 @@ static NSString *const kScheduleRegionConfigLocalCacheFileName = @"schedule_cent
         if (error || !scheduleCenterResult) {
             HttpdnsLogDebug("Update region config failed, error: %@", error);
 
-            // 3秒之后重试
+            // 只有报错了就尝试选择新的调度服务器
             [self moveToNextUpdateServerHost];
+
+            // 3秒之后重试
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), self->_scheduleFetchConfigAsyncQueue, ^{
-                [self asyncUpdateRegionConfig];
+                [self asyncUpdateRegionScheduleConfigAtRetry:retryCount + 1];
             });
 
             return;
@@ -271,6 +283,32 @@ static NSString *const kScheduleRegionConfigLocalCacheFileName = @"schedule_cent
         host = self.ipv6ServiceServerHostList[index];
     });
     return host;
+}
+
+#pragma mark - For Test Only
+
+- (NSArray<NSString *> *)currentUpdateServerV4HostList {
+    return self.ipv4UpdateUpdateHostList;
+}
+
+- (NSArray<NSString *> *)currentServiceServerV4HostList {
+    return self.ipv4ServiceServerHostList;
+}
+
+- (NSArray<NSString *> *)currentUpdateServerV6HostList {
+    return self.ipv6UpdateUpdateHostList;
+}
+
+- (NSArray<NSString *> *)currentServiceServerV6HostList {
+    return self.ipv6ServiceServerHostList;
+}
+
+- (int)currentActiveUpdateServerHostIndex {
+    return self.currentActiveUpdateHostIndex;
+}
+
+- (int)currentActiveServiceServerHostIndex {
+    return self.currentActiveServiceHostIndex;
 }
 
 @end

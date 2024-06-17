@@ -19,7 +19,22 @@
 
 #import "HttpdnsScheduleCenter.h"
 
-@interface HttpdnsScheduleCenter ()
+@interface HttpdnsScheduleCenter (ForTestOnly)
+
+- (void)asyncUpdateRegionScheduleConfigAtRetry:(int)retryCount;
+
+- (NSArray<NSString *> *)currentUpdateServerV4HostList;
+
+- (NSArray<NSString *> *)currentServiceServerV4HostList;
+
+- (NSArray<NSString *> *)currentUpdateServerV6HostList;
+
+- (NSArray<NSString *> *)currentServiceServerV6HostList;
+
+- (int)currentActiveUpdateServerHostIndex;
+
+- (int)currentActiveServiceServerHostIndex;
+
 
 @end
 

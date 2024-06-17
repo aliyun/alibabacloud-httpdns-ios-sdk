@@ -27,7 +27,7 @@
 
 - (void)resetRegion:(NSString *)region;
 
-- (void)asyncUpdateRegionConfig;
+- (void)asyncUpdateRegionScheduleConfig;
 
 - (void)moveToNextServiceServerHost;
 
