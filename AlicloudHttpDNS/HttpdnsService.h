@@ -388,7 +388,10 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 
 /// 清除指定host缓存（内存+沙盒数据库）
 /// @param hostArray 需要清除的host域名数组。如果需要清空全部数据传nil或者空数组即可
-- (void)cleanHostCache:(NSArray <NSString *>*)hostArray;
+- (void)cleanHostCache:(NSArray<NSString *> *)hostArray;
+
+/// 清除当前所有host缓存 (内存+沙盒数据库)
+- (void)cleanAllHostCache;
 
 /// 清理已经配置的软件自定义解析全局参数
 - (void)clearSdnsGlobalParams;

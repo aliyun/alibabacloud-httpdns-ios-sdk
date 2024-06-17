@@ -23,6 +23,8 @@
 
 - (void)asyncUpdateRegionScheduleConfigAtRetry:(int)retryCount;
 
+- (NSString *)getActiveUpdateServerHost;
+
 - (NSArray<NSString *> *)currentUpdateServerV4HostList;
 
 - (NSArray<NSString *> *)currentServiceServerV4HostList;

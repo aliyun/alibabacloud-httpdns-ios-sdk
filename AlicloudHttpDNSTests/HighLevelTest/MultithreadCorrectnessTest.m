@@ -23,8 +23,6 @@
 - (void)setUp {
     [super setUp];
 
-    mockedObjects = [NSMutableArray array];
-
     self.httpdns = [[HttpDnsService alloc] initWithAccountID:100000];
     [self.httpdns setLogEnabled:YES];
     [self.httpdns setIPv6Enabled:YES];
@@ -37,6 +35,7 @@
     [super tearDown];
 }
 
+// 非阻塞接口不能阻塞调用线程
 - (void)testNoneBlockingMethodShouldNotBlock {
     HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
     HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
@@ -45,7 +44,6 @@
         .andDo(^(NSInvocation *invocation) {
             [NSThread sleepForTimeInterval:3];
         });
-    [mockedObjects addObject:mockedScheduler];
 
     [mockedScheduler cleanAllHostMemoryCache];
 
@@ -56,6 +54,7 @@
     XCTAssert(elapsedTime < 1, @"elapsedTime should be less than 1s, but is %f", elapsedTime);
 }
 
+// 阻塞接口在主线程调用时也不会阻塞，内部做了机制自动切换到异步线程
 - (void)testBlockingMethodShouldNotBlockIfInMainThread {
     HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
     HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
@@ -64,7 +63,6 @@
         .andDo(^(NSInvocation *invocation) {
             [NSThread sleepForTimeInterval:3];
         });
-    [mockedObjects addObject:mockedScheduler];
     [mockedScheduler cleanAllHostMemoryCache];
     NSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];
     [self.httpdns resolveHostSync:ipv4OnlyHost byIpType:HttpdnsQueryIPTypeIpv4];
@@ -73,6 +71,7 @@
     XCTAssert(elapsedTime < 1, @"elapsedTime should be less than 1s, but is %f", elapsedTime);
 }
 
+// 非主线程中调用阻塞接口，应当阻塞
 - (void)testBlockingMethodShouldBlockIfInBackgroundThread {
     HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
     HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
@@ -81,7 +80,6 @@
         .andDo(^(NSInvocation *invocation) {
             [NSThread sleepForTimeInterval:3];
         });
-    [mockedObjects addObject:mockedScheduler];
     [mockedScheduler cleanAllHostMemoryCache];
 
     NSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];
@@ -111,9 +109,6 @@
 
     id mockResolverClass = OCMClassMock([HttpdnsHostResolver class]);
     OCMStub([mockResolverClass new]).andReturn(mockResolver);
-
-    [mockedObjects addObject:mockResolver];
-    [mockedObjects addObject:mockResolverClass];
 
     [self.httpdns.requestScheduler cleanAllHostMemoryCache];
 
@@ -172,9 +167,6 @@
 
     id mockResolverClass = OCMClassMock([HttpdnsHostResolver class]);
     OCMStub([mockResolverClass new]).andReturn(mockResolver);
-
-    [mockedObjects addObject:mockResolver];
-    [mockedObjects addObject:mockResolverClass];
 
     [self.httpdns.requestScheduler cleanAllHostMemoryCache];
 

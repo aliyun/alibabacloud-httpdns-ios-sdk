@@ -281,7 +281,7 @@ typedef struct {
 
     error = nil;
     __block HttpdnsHostObject *result = [[HttpdnsHostResolver new] lookupHostFromServer:request
-                                                                     error:&error];
+                                                                                  error:&error];
     if (error) {
         HttpdnsLogDebug("Internal request error, host: %@, error: %@", host, error);
 
@@ -617,7 +617,7 @@ typedef struct {
         return YES;
     }
     NSTimeInterval timeInterval = [[NSDate date] timeIntervalSinceDate:self.lastServerDisableDate];
-    BOOL isAbleToSniffer = (timeInterval > intervalBeforeAllowToSniffAfterLastServerDisable);    
+    BOOL isAbleToSniffer = (timeInterval > intervalBeforeAllowToSniffAfterLastServerDisable);
     return isAbleToSniffer;
 }
 
@@ -658,20 +658,25 @@ typedef struct {
     [HttpdnsUtil safeRemoveAllObjectsFromDict:_hostManagerDict];
 }
 
-- (void)cleanCacheWithHostArray:(NSArray<NSString *> *)hostArray {
-    if ([HttpdnsUtil isEmptyArray:hostArray]) {
-        [self cleanAllHostMemoryCache];
-    } else {
-        for (NSString *host in hostArray) {
-            if ([HttpdnsUtil isNotEmptyString:host]) {
-                [HttpdnsUtil safeRemoveObjectForKey:host toDict:_hostManagerDict];
-            }
+- (void)cleanMemoryAndPersistentCacheOfHostArray:(NSArray<NSString *> *)hostArray {
+    for (NSString *host in hostArray) {
+        if ([HttpdnsUtil isNotEmptyString:host]) {
+            [HttpdnsUtil safeRemoveObjectForKey:host toDict:_hostManagerDict];
         }
     }
 
     // 清空数据库数据
     dispatch_async(_persistentCacheConcurrentQueue, ^{
-        [[HttpdnsHostCacheStore sharedInstance] cleanWithHosts:hostArray];
+        [[HttpdnsHostCacheStore sharedInstance] cleanDbOfHosts:hostArray];
+    });
+}
+
+- (void)cleanMemoryAndPersistentCacheOfAllHosts {
+    [self cleanAllHostMemoryCache];
+
+    // 清空数据库数据
+    dispatch_async(_persistentCacheConcurrentQueue, ^{
+        [[HttpdnsHostCacheStore sharedInstance] cleanDbOfAllHosts];
     });
 }
 

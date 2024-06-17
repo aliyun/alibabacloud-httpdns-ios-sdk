@@ -34,8 +34,6 @@ static NSString *ipv42 = @"2.2.2.2";
 static NSString *ipv61 = @"2001:4860:4860::8888";
 static NSString *ipv62 = @"2001:4860:4860::8844";
 
-extern NSMutableArray *mockedObjects;
-
 extern NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 @interface TestBase : XCTestCase <HttpdnsLoggerProtocol>

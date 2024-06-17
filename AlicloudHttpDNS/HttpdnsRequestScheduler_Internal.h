@@ -59,7 +59,9 @@ static NSTimeInterval intervalBeforeAllowToSniffAfterLastServerDisable;
 
 - (void)cleanAllHostMemoryCache;
 
-- (void)cleanCacheWithHostArray:(NSArray <NSString *>*)hostArray;
+- (void)cleanMemoryAndPersistentCacheOfHostArray:(NSArray <NSString *>*)hostArray;
+
+- (void)cleanMemoryAndPersistentCacheOfAllHosts;
 
 @end
 

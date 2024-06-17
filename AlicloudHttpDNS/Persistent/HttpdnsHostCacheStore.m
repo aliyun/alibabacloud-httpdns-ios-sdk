@@ -293,18 +293,20 @@
 }
 
 
-- (void)cleanWithHosts:(NSArray<NSString *> *)hostArray {
+- (void)cleanDbOfHosts:(NSArray<NSString *> *)hostArray {
     [HttpdnsUtil warnMainThreadIfNecessary];
 
-    if ([HttpdnsUtil isEmptyArray:hostArray]) {  //全部清空
-        [self cleanDatabaseCache];
-    } else {
-        for (NSString *host in hostArray) {
-            //删除域名对应的数据库数据
-            NSArray<NSNumber *> *ids = [self hostRecordIdsForHost:host];
-            [self deleteHostRecordAndItsIPsWithHostRecordIDs:ids];
-        }
+    for (NSString *host in hostArray) {
+        //删除域名对应的数据库数据
+        NSArray<NSNumber *> *ids = [self hostRecordIdsForHost:host];
+        [self deleteHostRecordAndItsIPsWithHostRecordIDs:ids];
     }
+}
+
+- (void)cleanDbOfAllHosts {
+    [HttpdnsUtil warnMainThreadIfNecessary];
+
+    [self cleanDatabaseCache];
 }
 
 #pragma mark -
