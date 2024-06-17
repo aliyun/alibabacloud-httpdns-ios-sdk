@@ -269,7 +269,7 @@ typedef struct {
 
     if (hasRetryedCount > HTTPDNS_MAX_REQUEST_RETRY_TIME) {
         HttpdnsLogDebug("Internal request retry count exceed limit, host: %@", host);
-        [self canNotResolveHost:host error:error isRetry:YES];
+        [self disableHttpDnsServer:YES];
         return nil;
     }
 
@@ -441,31 +441,6 @@ typedef struct {
     }
 }
 
-/*!
- * 用户访问引发的嗅探超时的情况，和重试引起的主动嗅探都会访问该方法，但是主动嗅探场景会在 `-[disableHttpDnsServer:]` 里直接返回。
- */
-- (void)canNotResolveHost:(NSString *)host error:(NSError *)error isRetry:(BOOL)isRetry {
-    NSDictionary *userInfo = error.userInfo;
-    //403 ServiceLevelDeny 错误强制更新，不触发disable机制。
-    BOOL isServiceLevelDeny = false;
-    NSString *errorMessage = [HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY dict:userInfo];
-    if ([HttpdnsUtil isNotEmptyString:errorMessage]) {
-        isServiceLevelDeny = [errorMessage isEqualToString:ALICLOUD_HTTPDNS_ERROR_SERVICE_LEVEL_DENY];
-    }
-
-    if (isServiceLevelDeny) {
-        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-        [scheduleCenter asyncUpdateRegionScheduleConfig];
-        return;
-    }
-
-    BOOL isTimeoutError = [self isTimeoutError:error isHTTPS:HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED];
-
-    if (isRetry && isTimeoutError) {
-        [self disableHttpDnsServer:YES];
-    }
-}
-
 - (BOOL)isHostsNumberLimitReached {
     if ([HttpdnsUtil safeCountFromDict:_hostManagerDict] >= HTTPDNS_MAX_MANAGE_HOST_NUM) {
         HttpdnsLogDebug("Can't handle more than %d hosts due to the software configuration.", HTTPDNS_MAX_MANAGE_HOST_NUM);
@@ -626,26 +601,6 @@ typedef struct {
         return YES;
     }
     return NO;
-}
-
-- (void)changeToNextServerIPIfNeededWithError:(NSError *)error isHTTPS:(BOOL)isHTTPS {
-    if (!error) {
-        return;
-    }
-
-    BOOL shouldChange = [self isTimeoutError:error isHTTPS:isHTTPS];
-    if (shouldChange) {
-        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-        [scheduleCenter moveToNextServiceServerHost];
-    }
-}
-
-- (BOOL)isTimeoutError:(NSError *)error isHTTPS:(BOOL)isHTTPS {
-    //异步嗅探时是10006错误，重试时是10005错误
-    //IPv6环境下，如果连接错误的域名，可能会有-1004错误
-    BOOL canNotConnectServer = ALICLOUD_HTTPDNS_HTTP_CANNOT_CONNECT_SERVER_ERROR_CODE;
-    BOOL isTimeout = (isHTTPS && (error.code == ALICLOUD_HTTPDNS_HTTPS_TIMEOUT_ERROR_CODE)) || (!isHTTPS && ((error.code == ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE) || (error.code == ALICLOUD_HTTPDNS_HTTP_STREAM_READ_ERROR_CODE)));
-    return isTimeout || canNotConnectServer;
 }
 
 - (void)asyncReloadCacheFromDbToMemoryByIspCarrier {

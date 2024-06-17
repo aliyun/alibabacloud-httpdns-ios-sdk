@@ -510,11 +510,6 @@ static NSURLSession *_resolveHOSTSession = nil;
         return [self parseHostInfoFromHttpResponse:json withHostStr:hostStr withQueryIpType:queryIpType];
     }
 
-    if (pError != NULL) {
-        *pError = errorStrong;
-        [self.requestScheduler changeToNextServerIPIfNeededWithError:errorStrong
-                                                             isHTTPS:YES];
-    }
     return nil;
 }
 
@@ -548,8 +543,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
 
     *error = self.networkError;
-    [self.requestScheduler changeToNextServerIPIfNeededWithError:self.networkError
-                                                         isHTTPS:NO];
+
     if (*error == nil && _httpJSONDict) {
         return [self parseHostInfoFromHttpResponse:_httpJSONDict withHostStr:host withQueryIpType:queryIpType];
     }
