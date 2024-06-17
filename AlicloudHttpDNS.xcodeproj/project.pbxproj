@@ -62,6 +62,9 @@
 		943FA42B2BFA4B410006F169 /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 943FA4292BFA4B410006F169 /* HttpdnsRequest.m */; };
 		945914121CEB5D9C00D95CF7 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 945914111CEB5D9C00D95CF7 /* libresolv.tbd */; };
 		945BA3ED2C1F47110098FC52 /* ScheduleCenterV4Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 945BA3EC2C1F47110098FC52 /* ScheduleCenterV4Test.m */; };
+		945BA3F12C20091D0098FC52 /* ScheduleCenterV6Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 945BA3F02C20091D0098FC52 /* ScheduleCenterV6Test.m */; };
+		945BA3F62C2039D70098FC52 /* CustomTTLTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 945BA3F52C2039D70098FC52 /* CustomTTLTest.m */; };
+		945BA3F82C203F7F0098FC52 /* ManuallyCleanCacheTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 945BA3F72C203F7F0098FC52 /* ManuallyCleanCacheTest.m */; };
 		946E4BC22BF8B29600E1EF86 /* HTTPDNSCookieManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B0F2B8702803D334004ABD0F /* HTTPDNSCookieManager.m */; };
 		946E4BC32BF8B29800E1EF86 /* CFHTTPSURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = B0E74131257F7E05002018B8 /* CFHTTPSURLProtocol.m */; };
 		946E4BC42BF8B29A00E1EF86 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AF4AB63211439A600D712DF /* AppDelegate.m */; };
@@ -266,6 +269,9 @@
 		943FA4292BFA4B410006F169 /* HttpdnsRequest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsRequest.m; sourceTree = "<group>"; };
 		945914111CEB5D9C00D95CF7 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
 		945BA3EC2C1F47110098FC52 /* ScheduleCenterV4Test.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ScheduleCenterV4Test.m; sourceTree = "<group>"; };
+		945BA3F02C20091D0098FC52 /* ScheduleCenterV6Test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ScheduleCenterV6Test.m; sourceTree = "<group>"; };
+		945BA3F52C2039D70098FC52 /* CustomTTLTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomTTLTest.m; sourceTree = "<group>"; };
+		945BA3F72C203F7F0098FC52 /* ManuallyCleanCacheTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ManuallyCleanCacheTest.m; sourceTree = "<group>"; };
 		947C4BF12C1F45330095A302 /* HttpdnsScheduleCenter_Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsScheduleCenter_Internal.h; sourceTree = "<group>"; };
 		947E5C1C2C02DB9300123579 /* PresetCacheAndRetrieveTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PresetCacheAndRetrieveTest.m; sourceTree = "<group>"; };
 		948CD0082C031EB000F9F075 /* MultithreadCorrectnessTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MultithreadCorrectnessTest.m; sourceTree = "<group>"; };
@@ -551,8 +557,11 @@
 			children = (
 				947E5C1C2C02DB9300123579 /* PresetCacheAndRetrieveTest.m */,
 				948CD0082C031EB000F9F075 /* MultithreadCorrectnessTest.m */,
+				945BA3F72C203F7F0098FC52 /* ManuallyCleanCacheTest.m */,
 				945BA3EC2C1F47110098FC52 /* ScheduleCenterV4Test.m */,
+				945BA3F02C20091D0098FC52 /* ScheduleCenterV6Test.m */,
 				94C3F8AD2C05D23F00A4A9B8 /* ResolvingEffectiveHostTest.m */,
+				945BA3F52C2039D70098FC52 /* CustomTTLTest.m */,
 				9406FDA22C198E310003CB6A /* CacheKeyFunctionTest.m */,
 				94C3F8AF2C05D4FD00A4A9B8 /* EnableReuseExpiredIpTest.m */,
 				94C3F8B12C06FFA800A4A9B8 /* SdnsScenarioTest.m */,
@@ -1039,6 +1048,7 @@
 				4AF5AB841DCB332800206DD8 /* HttpdnsLog.m in Sources */,
 				9AF9A5FE1EC4CFCF0018063B /* HttpdnsHostRecord.m in Sources */,
 				9AF9A6131EC4F5500018063B /* HttpdnsIPRecord.m in Sources */,
+				945BA3F12C20091D0098FC52 /* ScheduleCenterV6Test.m in Sources */,
 				947E5C172C00762100123579 /* HttpdnsResult.m in Sources */,
 				947E5C182C00762100123579 /* HttpdnsRequest.m in Sources */,
 				94C3F8B22C06FFA800A4A9B8 /* SdnsScenarioTest.m in Sources */,
@@ -1065,11 +1075,13 @@
 				9A24A85C1F179CEB00BDA719 /* UIApplication+ABSHTTPDNSSetting.m in Sources */,
 				948CD0092C031EB000F9F075 /* MultithreadCorrectnessTest.m in Sources */,
 				947E5C192C00764C00123579 /* HttpDnsLocker.m in Sources */,
+				945BA3F82C203F7F0098FC52 /* ManuallyCleanCacheTest.m in Sources */,
 				4A84996C219EA23500D82C95 /* IPv6ResTests.m in Sources */,
 				9406FDA32C198E310003CB6A /* CacheKeyFunctionTest.m in Sources */,
 				94C3F8AE2C05D23F00A4A9B8 /* ResolvingEffectiveHostTest.m in Sources */,
 				9A59147D1EA07EA700A7ED28 /* NetworkManager.m in Sources */,
 				948DA4E72C1EAA8200D81682 /* HttpdnsRegionConfigLoader.m in Sources */,
+				945BA3F62C2039D70098FC52 /* CustomTTLTest.m in Sources */,
 				9AE63A081ECDAB3A00F9C723 /* HttpdnsDatabasePool.m in Sources */,
 				9AE63A061ECDAB3A00F9C723 /* HttpdnsDatabase.m in Sources */,
 				9A59148B1EA0C1B600A7ED28 /* TestBase.m in Sources */,

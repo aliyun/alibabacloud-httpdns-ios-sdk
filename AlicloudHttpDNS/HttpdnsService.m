@@ -1020,7 +1020,16 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)cleanHostCache:(NSArray<NSString *> *)hostArray {
-    [_requestScheduler cleanCacheWithHostArray:hostArray];
+    if (!hostArray) {
+        [self cleanAllHostCache];
+        return;
+    }
+
+    [_requestScheduler cleanMemoryAndPersistentCacheOfHostArray:hostArray];
+}
+
+- (void)cleanAllHostCache {
+    [_requestScheduler cleanMemoryAndPersistentCacheOfAllHosts];
 }
 
 - (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params {

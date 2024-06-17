@@ -9,7 +9,6 @@
 #import "TestBase.h"
 #import <mach/mach.h>
 
-NSMutableArray *mockedObjects;
 NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 @implementation TestBase
@@ -26,15 +25,9 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 - (void)setUp {
     [super setUp];
-
-    mockedObjects = [NSMutableArray array];
 }
 
 - (void)tearDown {
-    for (id object in mockedObjects) {
-        [object stopMocking];
-    }
-
     [super tearDown];
 }
 
@@ -46,6 +39,7 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 - (HttpdnsHostObject *)constructSimpleIpv4HostObject {
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
+    hostObject.ttl = 60;
     hostObject.hostName = ipv4OnlyHost;
     hostObject.v4ttl = 60;
     HttpdnsIpObject *ip1 = [[HttpdnsIpObject alloc] init];
@@ -59,6 +53,7 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 - (HttpdnsHostObject *)constructSimpleIpv6HostObject {
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
+    hostObject.ttl = 60;
     hostObject.hostName = ipv4OnlyHost;
     hostObject.v6ttl = 60;
     HttpdnsIpObject *ip1 = [[HttpdnsIpObject alloc] init];
@@ -72,6 +67,7 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 - (HttpdnsHostObject *)constructSimpleIpv4AndIpv6HostObject {
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
+    hostObject.ttl = 60;
     hostObject.hostName = ipv4AndIpv6Host;
     hostObject.v4ttl = 60;
     HttpdnsIpObject *ip1 = [[HttpdnsIpObject alloc] init];
@@ -92,24 +88,30 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 }
 
 - (void)presetNetworkEnvAsIpv4 {
-    AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
-    AlicloudIPv6Adapter *mockIpv6Adapter = OCMPartialMock(ipv6Adapter);
+    AlicloudIPv6Adapter *mockIpv6Adapter = OCMPartialMock([AlicloudIPv6Adapter getInstance]);
     OCMStub([mockIpv6Adapter currentIpStackType]).andReturn(kAlicloudIPv4only);
-    [mockedObjects addObject:mockIpv6Adapter];
+    OCMStub([mockIpv6Adapter isIPv6OnlyNetwork]).andReturn(NO);
+
+    id mockAdapterClass = OCMClassMock([AlicloudIPv6Adapter class]);
+    OCMStub([mockAdapterClass getInstance]).andReturn(mockIpv6Adapter);
 }
 
 - (void)presetNetworkEnvAsIpv6 {
-    AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
-    AlicloudIPv6Adapter *mockIpv6Adapter = OCMPartialMock(ipv6Adapter);
+    AlicloudIPv6Adapter *mockIpv6Adapter = OCMPartialMock([AlicloudIPv6Adapter getInstance]);
     OCMStub([mockIpv6Adapter currentIpStackType]).andReturn(kAlicloudIPv6only);
-    [mockedObjects addObject:mockIpv6Adapter];
+    OCMStub([mockIpv6Adapter isIPv6OnlyNetwork]).andReturn(YES);
+
+    id mockAdapterClass = OCMClassMock([AlicloudIPv6Adapter class]);
+    OCMStub([mockAdapterClass getInstance]).andReturn(mockIpv6Adapter);
 }
 
 - (void)presetNetworkEnvAsIpv4AndIpv6 {
-    AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
-    AlicloudIPv6Adapter *mockIpv6Adapter = OCMPartialMock(ipv6Adapter);
+    AlicloudIPv6Adapter *mockIpv6Adapter = OCMPartialMock([AlicloudIPv6Adapter getInstance]);
     OCMStub([mockIpv6Adapter currentIpStackType]).andReturn(kAlicloudIPdual);
-    [mockedObjects addObject:mockIpv6Adapter];
+    OCMStub([mockIpv6Adapter isIPv6OnlyNetwork]).andReturn(NO);
+
+    id mockAdapterClass = OCMClassMock([AlicloudIPv6Adapter class]);
+    OCMStub([mockAdapterClass getInstance]).andReturn(mockIpv6Adapter);
 }
 
 - (void)shouldNotHaveCalledRequestWhenResolving:(void (^)(void))resolvingBlock {
@@ -119,7 +121,6 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
     OCMReject([mockScheduler executeRequest:[OCMArg any] retryCount:0 error:[OCMArg any]]);
     resolvingBlock();
     OCMVerifyAll(mockScheduler);
-    [mockedObjects addObject:mockScheduler];
 }
 
 - (void)shouldHaveCalledRequestWhenResolving:(void (^)(void))resolvingBlock {
@@ -129,7 +130,6 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
     OCMExpect([mockScheduler executeRequest:[OCMArg any] retryCount:0 error:[OCMArg any]]).andReturn(nil);
     resolvingBlock();
     OCMVerifyAll(mockScheduler);
-    [mockedObjects addObject:mockScheduler];
 }
 
 @end

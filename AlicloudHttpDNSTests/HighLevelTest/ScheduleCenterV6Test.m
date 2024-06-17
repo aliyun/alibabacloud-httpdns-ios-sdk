@@ -1,11 +1,10 @@
 //
-//  ScheduleCenterV4Test.m
+//  ScheduleCenterV6Test.m
 //  AlicloudHttpDNSTests
 //
-//  Created by xuyecan on 2024/6/16.
+//  Created by xuyecan on 2024/6/17.
 //  Copyright © 2024 alibaba-inc.com. All rights reserved.
 //
-
 #import <Foundation/Foundation.h>
 #import <OCMock/OCMock.h>
 #import <AlicloudUtils/AlicloudUtils.h>
@@ -23,12 +22,12 @@
  * 由于使用OCMock在连续的测试用例中重复Mock对象(即使每次都已经stopMocking)会有内存错乱的问题，
  * 目前还解决不了，所以这个类中的测试case，需要手动单独执行
  */
-@interface ScheduleCenterV4Test : TestBase
+@interface ScheduleCenterV6Test : TestBase
 
 @end
 
 
-@implementation ScheduleCenterV4Test
+@implementation ScheduleCenterV6Test
 
 + (void)setUp {
     [super setUp];
@@ -60,7 +59,7 @@
 }
 
 - (void)testUpdateFailureWillMoveToNextUpdateServer {
-    [self presetNetworkEnvAsIpv4];
+    [self presetNetworkEnvAsIpv6];
 
     HttpdnsScheduleCenterRequest *realRequest = [HttpdnsScheduleCenterRequest new];
     id mockRequest = OCMPartialMock(realRequest);
@@ -77,35 +76,30 @@
     int updateServerCount = (int)[updateServerHostList count];
     XCTAssertGreaterThan(updateServerCount, 0);
 
-    int startIndex = [scheduleCenter currentActiveUpdateServerHostIndex];
-
     // 指定已经重试2次，避免重试影响计算
     [scheduleCenter asyncUpdateRegionScheduleConfigAtRetry:2];
     [NSThread sleepForTimeInterval:0.1];
 
+    NSString *activeUpdateHost = [scheduleCenter getActiveUpdateServerHost];
+
+    // 因为可能是域名，所以只判断一定不是ipv4
+    XCTAssertFalse([[AlicloudIPv6Adapter getInstance] isIPv4Address:activeUpdateHost]);
+
     OCMVerify([mockRequest fetchRegionConfigFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]]);
-
-    int currentIndex = [scheduleCenter currentActiveUpdateServerHostIndex];
-    XCTAssertEqual((startIndex + 1) % updateServerCount, currentIndex);
-
-    for (int i = 0; i < updateServerCount; i++) {
-        [scheduleCenter asyncUpdateRegionScheduleConfigAtRetry:2];
-        [NSThread sleepForTimeInterval:0.1];
-    }
-
-    int finalIndex = [scheduleCenter currentActiveUpdateServerHostIndex];
-    XCTAssertEqual(currentIndex, finalIndex % updateServerCount);
 
     [NSThread sleepForTimeInterval:3];
 }
 
 - (void)testResolveFailureWillMoveToNextServiceServer {
+
 }
 
 - (void)testConsecutiveResolveFailureWillDisableHttpdns {
+
 }
 
 - (void)testAutoRecoverFromDisabled {
+
 }
 
 @end
