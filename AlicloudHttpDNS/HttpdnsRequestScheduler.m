@@ -588,12 +588,14 @@ typedef struct {
         return YES;
     }
     NSTimeInterval timeInterval = [[NSDate date] timeIntervalSinceDate:self.lastServerDisableDate];
-    BOOL isAbleToSniffer = (timeInterval > intervalBeforeAllowToSniffAfterLastServerDisable);
-    return isAbleToSniffer;
+    return timeInterval > intervalBeforeAllowToSniffAfterLastServerDisable;
 }
 
 - (BOOL)isDisableToServer {
-    if (_serverDisable && !self.isAbleToSniffer) {
+    if (_serverDisable) {
+        if (self.isAbleToSniffer) {
+            return NO;
+        }
         return YES;
     }
     return NO;

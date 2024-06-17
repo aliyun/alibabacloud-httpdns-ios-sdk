@@ -53,7 +53,7 @@ static NSArray<NSString *> *ALICLOUD_HTTPDNS_AVAILABLE_REGION_LIST = nil;
 }
 
 - (void)loadRegionConfig {
-    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"region_config" ofType:@"plist"];
+    NSString *filePath = [[NSBundle bundleForClass:[self class]] pathForResource:@"region_config" ofType:@"plist"];
     self.regionConfig = [NSDictionary dictionaryWithContentsOfFile:filePath];
 }
 
