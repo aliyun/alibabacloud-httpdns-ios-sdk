@@ -308,10 +308,10 @@ typedef struct {
 
     [self disableHttpDnsServer:NO];
 
-    int64_t TTL = [result getTTL];
+    int64_t ttl = [result getTTL];
     int64_t lastLookupTime = [result getLastLookupTime];
-    NSArray<NSString *> *IPStrings = [result getIPStrings];
-    NSArray<NSString *> *IP6Strings = [result getIP6Strings];
+    NSArray<NSString *> *ip4Strings = [result getIPStrings];
+    NSArray<NSString *> *ip6Strings = [result getIP6Strings];
     NSArray<HttpdnsIpObject *> *IPObjects = [result getIps];
     NSArray<HttpdnsIpObject *> *IP6Objects = [result getIp6s];
     NSDictionary* Extra  = [result getExtra];
@@ -328,7 +328,7 @@ typedef struct {
     HttpdnsHostObject *cachedHostObject = [HttpdnsUtil safeObjectForKey:cacheKey dict:_hostManagerDict];
     if (cachedHostObject) {
         [cachedHostObject setHostName:host];
-        [cachedHostObject setTTL:TTL];
+        [cachedHostObject setTTL:ttl];
         [cachedHostObject setLastLookupTime:lastLookupTime];
         [cachedHostObject setIsLoadFromDB:NO];
         [cachedHostObject setHasNoIpv4Record:hasNoIpv4Record];
@@ -356,7 +356,7 @@ typedef struct {
 
         [cachedHostObject setHostName:host];
         [cachedHostObject setLastLookupTime:lastLookupTime];
-        [cachedHostObject setTTL:TTL];
+        [cachedHostObject setTTL:ttl];
         [cachedHostObject setHasNoIpv4Record:hasNoIpv4Record];
         [cachedHostObject setHasNoIpv6Record:hasNoIpv6Record];
 
@@ -377,9 +377,9 @@ typedef struct {
     }
 
     if([HttpdnsUtil isNotEmptyDictionary:result.extra]) {
-        [self sdnsCacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:IPStrings IP6s:IP6Strings TTL:TTL withExtra:Extra];
+        [self sdnsCacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:ip4Strings IP6s:ip6Strings TTL:ttl withExtra:Extra];
     } else {
-        [self cacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:IPStrings IP6s:IP6Strings TTL:TTL];
+        [self cacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:ip4Strings IP6s:ip6Strings TTL:ttl];
     }
 
     [self aysncUpdateIPRankingWithResult:cachedHostObject forHost:host cacheKey:cacheKey];
@@ -403,37 +403,42 @@ typedef struct {
 }
 
 - (void)syncUpdateIPRankingWithResult:(HttpdnsHostObject *)result forHost:(NSString *)host cacheKey:cacheKey {
-    NSArray<NSString *> *IPStrings = [result getIPStrings];
-    NSArray *sortedIps = [[HttpdnsTCPSpeedTester new] ipRankingWithIPs:IPStrings host:host];
+    // 目前只处理ipv4地址
+    NSArray<NSString *> *ipStrings = [result getIPStrings];
+
+    NSArray *sortedIps = [[HttpdnsTCPSpeedTester new] ipRankingWithIPs:ipStrings host:host];
+
     [self updateHostManagerDictWithIPs:sortedIps host:host cacheKey:cacheKey];
 }
 
-- (void)updateHostManagerDictWithIPs:(NSArray *)IPs host:(NSString *)host cacheKey:cacheKey {
+- (void)updateHostManagerDictWithIPs:(NSArray *)ips host:(NSString *)host cacheKey:cacheKey {
     HttpdnsHostObject *hostObject = [HttpdnsUtil safeObjectForKey:cacheKey dict:_hostManagerDict];
+
     if (!hostObject) {
         return;
     }
-    if (![HttpdnsUtil isNotEmptyArray:IPs] || ![HttpdnsUtil isNotEmptyString:host]) {
+
+    if ([HttpdnsUtil isEmptyArray:ips] || [HttpdnsUtil isEmptyString:host]) {
         return;
     }
+
     @synchronized(self) {
         //FIXME:
         NSMutableArray *ipArray = [[NSMutableArray alloc] init];
-        for (NSString *ip in IPs) {
-            if (![HttpdnsUtil isNotEmptyString:ip]) {
+        for (NSString *ip in ips) {
+            if ([HttpdnsUtil isEmptyString:ip]) {
                 continue;
             }
+
             HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
-            // Adapt to IPv6-only network.
-            if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-                [ipObject setIp:[[AlicloudIPv6Adapter getInstance] handleIpv4Address:ip]];
-            } else {
-                [ipObject setIp:ip];
-            }
+            [ipObject setIp:ip];
             [ipArray addObject:ipObject];
         }
         [hostObject setIps:ipArray];
-        [HttpdnsUtil safeAddValue:hostObject key:cacheKey toDict:_hostManagerDict];
+
+        dispatch_sync(_memoryCacheSerialQueue, ^{
+            [HttpdnsUtil safeAddValue:hostObject key:cacheKey toDict:_hostManagerDict];
+        });
     }
 }
 

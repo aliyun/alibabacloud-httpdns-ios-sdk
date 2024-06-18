@@ -163,23 +163,23 @@
 }
 
 - (NSArray<NSString *> *)getIPStrings {
-    NSArray<HttpdnsIpObject *> *IPRecords = [self getIps];
-    NSMutableArray<NSString *> *IPs = [NSMutableArray arrayWithCapacity:IPRecords.count];
-    for (HttpdnsIpObject *IPObject in IPRecords) {
-        [HttpdnsUtil safeAddObject:IPObject.ip toArray:IPs];
+    NSArray<HttpdnsIpObject *> *ipRecords = [self getIps];
+    NSMutableArray<NSString *> *ips = [NSMutableArray arrayWithCapacity:ipRecords.count];
+    for (HttpdnsIpObject *IPObject in ipRecords) {
+        [HttpdnsUtil safeAddObject:IPObject.ip toArray:ips];
     }
-    return [IPs copy];
+    return [ips copy];
 }
 
 - (NSArray<NSString *> *)getIP6Strings {
-    NSArray<HttpdnsIpObject *> *IP6Records = [self getIp6s];
-    NSMutableArray<NSString *> *IPs = [NSMutableArray arrayWithCapacity:IP6Records.count];
+    NSArray<HttpdnsIpObject *> *ip6Records = [self getIp6s];
+    NSMutableArray<NSString *> *ips = [NSMutableArray arrayWithCapacity:ip6Records.count];
     if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        for (HttpdnsIpObject *IPObject in IP6Records) {
-            [HttpdnsUtil safeAddObject:IPObject.ip toArray:IPs];
+        for (HttpdnsIpObject *ipObject in ip6Records) {
+            [HttpdnsUtil safeAddObject:ipObject.ip toArray:ips];
         }
     }
-    return [IPs copy];
+    return [ips copy];
 }
 
 - (NSString *)description {
