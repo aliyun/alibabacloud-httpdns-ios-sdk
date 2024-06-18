@@ -30,11 +30,6 @@
 
 + (BOOL)isAHost:(NSString *)host;
 
-/*!
- * host 或者 IPv4环境下直接返回，IPv6环境下做兼容处理。
- */
-+ (NSString *)getRequestHostFromString:(NSString *)string;
-
 + (void)warnMainThreadIfNecessary;
 
 //wifi是否可用

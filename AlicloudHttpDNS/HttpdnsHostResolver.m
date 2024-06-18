@@ -154,20 +154,14 @@ static NSURLSession *_resolveHOSTSession = nil;
 
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
 
-    //处理ipv4
+    // 处理ipv4
     NSMutableArray *ipArray = [NSMutableArray array];
     for (NSString *ip in ips) {
-        if (![HttpdnsUtil isNotEmptyString:ip]) {
+        if ([HttpdnsUtil isEmptyString:ip]) {
             continue;
         }
         HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
-        // 用户主动开启v6解析后，IPv6-Only场景解析结果不再自动适配
-        // 确保getIpByHostAsync()返回v4地址，getIp6ByHostAsync()返回v6地址
-        if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-            [ipObject setIp:[[AlicloudIPv6Adapter getInstance] handleIpv4Address:ip]];
-        } else {
-            [ipObject setIp:ip];
-        }
+        [ipObject setIp:ip];
         [ipArray addObject:ipObject];
     }
 
@@ -175,7 +169,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSMutableArray *ip6Array = [NSMutableArray array];
     if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
         for (NSString *ipv6 in ip6s) {
-            if (![HttpdnsUtil isNotEmptyString:ipv6]) {
+            if ([HttpdnsUtil isEmptyString:ipv6]) {
                 continue;
             }
             HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
@@ -183,6 +177,7 @@ static NSURLSession *_resolveHOSTSession = nil;
             [ip6Array addObject:ipObject];
         }
     }
+
     // 返回 额外返回一个extra字段
     if ([[json allKeys] containsObject:@"extra"]) {
         [hostObject setExtra:extra];

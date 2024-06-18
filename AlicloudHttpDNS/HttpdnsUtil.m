@@ -79,21 +79,6 @@ _Pragma("clang diagnostic pop") \
     }
 }
 
-+ (NSString *)getRequestHostFromString:(NSString *)string {
-    NSString *requestHost = string;
-    // Adapt to IPv6-only network.
-    if (([self isAnIP:string]) && ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork])) {
-        if ([[AlicloudIPv6Adapter getInstance] isIPv4Address:string]) {
-            requestHost = [NSString stringWithFormat:@"[%@]", [[AlicloudIPv6Adapter getInstance] handleIpv4Address:string]];
-        } else {
-            requestHost = [NSString stringWithFormat:@"[%@]", string];
-        }
-    } else if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:string]) {
-        requestHost = [NSString stringWithFormat:@"[%@]", string];
-    }
-    return requestHost;
-}
-
 + (void)warnMainThreadIfNecessary {
     if ([NSThread isMainThread]) {
         HttpdnsLogDebug("Warning: A long-running Paas operation is being executed on the main thread.");
