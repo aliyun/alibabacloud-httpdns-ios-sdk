@@ -21,6 +21,7 @@
 
 #import <Foundation/Foundation.h>
 #import "HttpdnsService.h"
+#import "HttpdnsRequest.h"
 #import "HttpdnsResult.h"
 #import "HttpdnsLoggerDelegate.h"
 #import "HttpdnsDegradationDelegate.h"

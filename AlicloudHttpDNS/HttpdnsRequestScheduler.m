@@ -224,16 +224,21 @@ typedef struct {
 }
 
 - (HttpdnsHostObject *)determineResolveHostBlocking:(HttpdnsRequest *)request {
-    HttpdnsHostObject *result = nil;
-    HttpDnsLocker *locker = [HttpDnsLocker sharedInstance];
-    @try {
-        [locker lock:request.cacheKey queryType:request.queryIpType];
-        result = [self executeRequest:request retryCount:0];
-    } @catch (NSException *exception) {
-        HttpdnsLogDebug("determineResolveHostBlocking exception: %@", exception);
-    } @finally {
-        [locker unlock:request.cacheKey queryType:request.queryIpType];
-    }
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    __block HttpdnsHostObject *result = nil;
+    dispatch_async(_asyncResolveHostQueue, ^{
+        HttpDnsLocker *locker = [HttpDnsLocker sharedInstance];
+        @try {
+            [locker lock:request.cacheKey queryType:request.queryIpType];
+            result = [self executeRequest:request retryCount:0];
+        } @catch (NSException *exception) {
+            HttpdnsLogDebug("determineResolveHostBlocking exception: %@", exception);
+        } @finally {
+            [locker unlock:request.cacheKey queryType:request.queryIpType];
+            dispatch_semaphore_signal(semaphore);
+        }
+    });
+    dispatch_semaphore_wait(semaphore, request.resolveTimeoutInSecond);
     return result;
 }
 
