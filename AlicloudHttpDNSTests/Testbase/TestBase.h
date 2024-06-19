@@ -54,7 +54,7 @@ extern NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 - (void)presetNetworkEnvAsIpv4AndIpv6;
 
-- (void)shouldNotHaveCalledRequestWhenResolving:(void (^)(void))resolvingBlock;
+- (void)shouldNotHaveCallNetworkRequestWhenResolving:(void (^)(void))resolvingBlock;
 
 - (void)shouldHaveCalledRequestWhenResolving:(void (^)(void))resolvingBlock;
 
