@@ -319,16 +319,16 @@ typedef struct {
     int64_t lastLookupTime = [result getLastLookupTime];
     NSArray<NSString *> *ip4Strings = [result getIPStrings];
     NSArray<NSString *> *ip6Strings = [result getIP6Strings];
-    NSArray<HttpdnsIpObject *> *IPObjects = [result getIps];
-    NSArray<HttpdnsIpObject *> *IP6Objects = [result getIp6s];
-    NSDictionary* Extra  = [result getExtra];
+    NSArray<HttpdnsIpObject *> *ip4Objects = [result getIps];
+    NSArray<HttpdnsIpObject *> *ip6Objects = [result getIp6s];
+    NSDictionary* extra = [result getExtra];
 
     BOOL hasNoIpv4Record = NO;
     BOOL hasNoIpv6Record = NO;
-    if (queryIpType & HttpdnsQueryIPTypeIpv4 && [result getIps].count == 0) {
+    if (queryIpType & HttpdnsQueryIPTypeIpv4 && [HttpdnsUtil isEmptyArray:ip4Objects]) {
         hasNoIpv4Record = YES;
     }
-    if (queryIpType & HttpdnsQueryIPTypeIpv6 && [result getIp6s].count == 0) {
+    if (queryIpType & HttpdnsQueryIPTypeIpv6 && [HttpdnsUtil isEmptyArray:ip6Objects]) {
         hasNoIpv6Record = YES;
     }
 
@@ -341,20 +341,16 @@ typedef struct {
         [cachedHostObject setHasNoIpv4Record:hasNoIpv4Record];
         [cachedHostObject setHasNoIpv6Record:hasNoIpv6Record];
 
-        if (queryIpType & HttpdnsQueryIPTypeIpv4) {
-            [cachedHostObject setIps:IPObjects];
-            [cachedHostObject setV4TTL:result.getV4TTL];
-            [cachedHostObject setLastIPv4LookupTime:result.lastIPv4LookupTime];
-        }
+        [cachedHostObject setIps:ip4Objects];
+        [cachedHostObject setV4TTL:result.getV4TTL];
+        [cachedHostObject setLastIPv4LookupTime:result.lastIPv4LookupTime];
 
-        if (queryIpType & HttpdnsQueryIPTypeIpv6) {
-            [cachedHostObject setIp6s:IP6Objects];
-            [cachedHostObject setV6TTL:result.getV6TTL];
-            [cachedHostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
-        }
+        [cachedHostObject setIp6s:ip6Objects];
+        [cachedHostObject setV6TTL:result.getV6TTL];
+        [cachedHostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
 
-        if ([HttpdnsUtil isNotEmptyDictionary:result.extra]) {
-            [cachedHostObject setExtra:Extra];
+        if ([HttpdnsUtil isNotEmptyDictionary:extra]) {
+            [cachedHostObject setExtra:extra];
         }
 
         HttpdnsLogDebug("####### Update cached hostObject, cacheKey: %@, host: %@, result: %@", cacheKey, host, result);
@@ -362,29 +358,30 @@ typedef struct {
         cachedHostObject = [[HttpdnsHostObject alloc] init];
 
         [cachedHostObject setHostName:host];
-        [cachedHostObject setLastLookupTime:lastLookupTime];
         [cachedHostObject setTTL:ttl];
+        [cachedHostObject setLastLookupTime:lastLookupTime];
+        [cachedHostObject setIsLoadFromDB:NO];
         [cachedHostObject setHasNoIpv4Record:hasNoIpv4Record];
         [cachedHostObject setHasNoIpv6Record:hasNoIpv6Record];
 
-        [cachedHostObject setIps:IPObjects];
+        [cachedHostObject setIps:ip4Objects];
         [cachedHostObject setV4TTL:result.getV4TTL];
         [cachedHostObject setLastIPv4LookupTime:result.lastIPv4LookupTime];
 
-        [cachedHostObject setIp6s:IP6Objects];
+        [cachedHostObject setIp6s:ip6Objects];
         [cachedHostObject setV6TTL:result.getV6TTL];
         [cachedHostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
 
-        if ([HttpdnsUtil isNotEmptyDictionary:result.extra]) {
-            [cachedHostObject setExtra:Extra];
+        if ([HttpdnsUtil isNotEmptyDictionary:extra]) {
+            [cachedHostObject setExtra:extra];
         }
 
         HttpdnsLogDebug("###### New resolved hostObject, cacheKey: %@, host: %@, result: %@", cacheKey, host, result);
         [HttpdnsUtil safeAddValue:cachedHostObject key:cacheKey toDict:_hostManagerDict];
     }
 
-    if([HttpdnsUtil isNotEmptyDictionary:result.extra]) {
-        [self sdnsCacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:ip4Strings IP6s:ip6Strings TTL:ttl withExtra:Extra];
+    if([HttpdnsUtil isNotEmptyDictionary:extra]) {
+        [self sdnsCacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:ip4Strings IP6s:ip6Strings TTL:ttl withExtra:extra];
     } else {
         [self cacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:ip4Strings IP6s:ip6Strings TTL:ttl];
     }

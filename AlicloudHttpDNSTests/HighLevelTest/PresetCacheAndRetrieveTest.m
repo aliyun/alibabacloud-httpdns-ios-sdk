@@ -50,44 +50,15 @@
     [super tearDown];
 }
 
-
-// 缓存ipv4的地址，网络情况为ipv4，正常返回ipv4的地址
-- (void)testSimplyRetrieveIpv4CachedResult {
+// 网络情况为ipv4下的缓存测试
+- (void)testSimplyRetrieveCachedResultUnderIpv4Only {
     [self presetNetworkEnvAsIpv4];
-
-    HttpdnsHostObject *hostObject = [self constructSimpleIpv4HostObject];
-    [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject host:ipv4OnlyHost cacheKey:ipv4OnlyHost underQueryIpType:HttpdnsQueryIPTypeIpv4];
-
-    HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:ipv4OnlyHost byIpType:HttpdnsQueryIPTypeIpv4];
-
-    XCTAssertNotNil(result);
-    XCTAssertTrue([result.host isEqualToString:ipv4OnlyHost]);
-    XCTAssertTrue([result.ips count] == 2);
-    XCTAssertTrue([result.ips[0] isEqualToString:ipv41]);
-}
-
-// 缓存ipv6的地址，网络情况为ipv6，正常返回ipv6的地址
-- (void)testSimplyRetrieveIpv6CachedResult {
-    [self presetNetworkEnvAsIpv6];
-
-    HttpdnsHostObject *hostObject = [self constructSimpleIpv6HostObject];
-    [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject host:ipv6OnlyHost cacheKey:ipv6OnlyHost underQueryIpType:HttpdnsQueryIPTypeIpv6];
-
-    HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:ipv6OnlyHost byIpType:HttpdnsQueryIPTypeIpv6];
-
-    XCTAssertNotNil(result);
-    XCTAssertTrue([result.host isEqualToString:ipv6OnlyHost]);
-    XCTAssertTrue([result.ipv6s count] == 2);
-    XCTAssertTrue([result.ipv6s[0] isEqualToString:ipv61]);
-}
-
-// 缓存ipv4和ipv6的地址，网络情况为ipv4和ipv6，正常返回ipv4和ipv6的地址
-- (void)testSimplyRetrieveIpv4AndIpv6CachedResult {
-    [self presetNetworkEnvAsIpv4AndIpv6];
+    [self.httpdns cleanAllHostCache];
 
     HttpdnsHostObject *hostObject = [self constructSimpleIpv4AndIpv6HostObject];
     [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject host:ipv4AndIpv6Host cacheKey:ipv4AndIpv6Host underQueryIpType:HttpdnsQueryIPTypeBoth];
 
+    // 请求类型为ipv4，拿到ipv4结果
     HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeIpv4];
 
     XCTAssertNotNil(result);
@@ -95,6 +66,95 @@
     XCTAssertTrue([result.ips count] == 2);
     XCTAssertTrue([result.ips[0] isEqualToString:ipv41]);
 
+    // 请求类型为ipv6，拿到ipv6结果
+    result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeIpv6];
+    XCTAssertNotNil(result);
+    XCTAssertTrue([result.host isEqualToString:ipv4AndIpv6Host]);
+    XCTAssertTrue([result.ipv6s count] == 2);
+    XCTAssertTrue([result.ipv6s[0] isEqualToString:ipv61]);
+
+    // both
+    result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeBoth];
+    XCTAssertNotNil(result);
+    XCTAssertTrue([result.host isEqualToString:ipv4AndIpv6Host]);
+    XCTAssertTrue([result.ips count] == 2);
+    XCTAssertTrue([result.ips[0] isEqualToString:ipv41]);
+    XCTAssertTrue([result.ipv6s count] == 2);
+    XCTAssertTrue([result.ipv6s[0] isEqualToString:ipv61]);
+
+    // 请求类型为auto，只拿到ipv4结果
+    result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeAuto];
+
+    XCTAssertNotNil(result);
+    XCTAssertTrue([result.host isEqualToString:ipv4AndIpv6Host]);
+    XCTAssertTrue([result.ips count] == 2);
+    XCTAssertTrue([result.ips[0] isEqualToString:ipv41]);
+    XCTAssertTrue([result.ipv6s count] == 0);
+}
+
+// 网络请求为ipv6下的缓存测试
+- (void)testSimplyRetrieveCachedResultUnderIpv6Only {
+    [self presetNetworkEnvAsIpv6];
+    [self.httpdns cleanAllHostCache];
+
+    HttpdnsHostObject *hostObject = [self constructSimpleIpv4AndIpv6HostObject];
+    [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject host:ipv4AndIpv6Host cacheKey:ipv4AndIpv6Host underQueryIpType:HttpdnsQueryIPTypeBoth];
+
+    // 请求类型为ipv4，拿到ipv4结果
+    HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeIpv4];
+
+    XCTAssertNotNil(result);
+    XCTAssertTrue([result.host isEqualToString:ipv4AndIpv6Host]);
+    XCTAssertTrue([result.ips count] == 2);
+    XCTAssertTrue([result.ips[0] isEqualToString:ipv41]);
+
+    // 请求类型为ipv6，拿到ipv6结果
+    result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeIpv6];
+    XCTAssertNotNil(result);
+    XCTAssertTrue([result.host isEqualToString:ipv4AndIpv6Host]);
+    XCTAssertTrue([result.ipv6s count] == 2);
+    XCTAssertTrue([result.ipv6s[0] isEqualToString:ipv61]);
+
+    // both
+    result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeBoth];
+    XCTAssertNotNil(result);
+    XCTAssertTrue([result.host isEqualToString:ipv4AndIpv6Host]);
+    XCTAssertTrue([result.ips count] == 2);
+    XCTAssertTrue([result.ips[0] isEqualToString:ipv41]);
+    XCTAssertTrue([result.ipv6s count] == 2);
+    XCTAssertTrue([result.ipv6s[0] isEqualToString:ipv61]);
+
+    // 请求类型为auto，注意，我们认为ipv6only只存在理论上，比如实验室环境
+    // 因此，ipv4的地址是一定会去解析的，auto的作用在于，如果发现网络还支持ipv6，那就多获取ipv6的结果
+    // 因此，这里得到的也是ipv4+ipv6
+    result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeAuto];
+
+    XCTAssertNotNil(result);
+    XCTAssertTrue([result.host isEqualToString:ipv4AndIpv6Host]);
+    XCTAssertTrue([result.ips count] == 2);
+    XCTAssertTrue([result.ips[0] isEqualToString:ipv41]);
+    XCTAssertTrue([result.ipv6s count] == 2);
+    XCTAssertTrue([result.ipv6s[0] isEqualToString:ipv61]);
+}
+
+// 网络情况为ipv4和ipv6下的缓存测试
+- (void)testSimplyRetrieveCachedResultUnderDualStack {
+    [self presetNetworkEnvAsIpv4AndIpv6];
+    [self.httpdns cleanAllHostCache];
+
+    // 存入ipv4和ipv6的地址
+    HttpdnsHostObject *hostObject = [self constructSimpleIpv4AndIpv6HostObject];
+    [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject host:ipv4AndIpv6Host cacheKey:ipv4AndIpv6Host underQueryIpType:HttpdnsQueryIPTypeBoth];
+
+    // 只请求ipv4
+    HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeIpv4];
+
+    XCTAssertNotNil(result);
+    XCTAssertTrue([result.host isEqualToString:ipv4AndIpv6Host]);
+    XCTAssertTrue([result.ips count] == 2);
+    XCTAssertTrue([result.ips[0] isEqualToString:ipv41]);
+
+    // 只请求ipv6
     result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeIpv6];
 
     XCTAssertNotNil(result);
@@ -102,7 +162,18 @@
     XCTAssertTrue([result.ipv6s count] == 2);
     XCTAssertTrue([result.ipv6s[0] isEqualToString:ipv61]);
 
+    // 请求ipv4和ipv6
     result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeBoth];
+
+    XCTAssertNotNil(result);
+    XCTAssertTrue([result.host isEqualToString:ipv4AndIpv6Host]);
+    XCTAssertTrue([result.ips count] == 2);
+    XCTAssertTrue([result.ips[0] isEqualToString:ipv41]);
+    XCTAssertTrue([result.ipv6s count] == 2);
+    XCTAssertTrue([result.ipv6s[0] isEqualToString:ipv61]);
+
+    // 自动判断类型
+    result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeAuto];
 
     XCTAssertNotNil(result);
     XCTAssertTrue([result.host isEqualToString:ipv4AndIpv6Host]);
@@ -118,15 +189,30 @@
     [self presetNetworkEnvAsIpv4AndIpv6];
 
     HttpdnsHostObject *hostObject = [self constructSimpleIpv4HostObject];
+
     // 双栈下解析结果仅有ipv4，合并时会标记该host无ipv6
     [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject host:ipv4OnlyHost cacheKey:ipv4OnlyHost underQueryIpType:HttpdnsQueryIPTypeBoth];
 
-    [self shouldNotHaveCalledRequestWhenResolving:^{
-        HttpdnsResult *result = [self.httpdns resolveHostSync:ipv4OnlyHost byIpType:HttpdnsQueryIPTypeBoth];
-        XCTAssertNotNil(result);
-        XCTAssertTrue([result.host isEqualToString:ipv4OnlyHost]);
-        XCTAssertTrue([result.ips count] == 2);
-        XCTAssertTrue([result.ips[0] isEqualToString:ipv41]);
+    [self shouldNotHaveCallNetworkRequestWhenResolving:^{
+        dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            HttpdnsResult *result = [self.httpdns resolveHostSync:ipv4OnlyHost byIpType:HttpdnsQueryIPTypeBoth];
+            XCTAssertNotNil(result);
+            XCTAssertTrue([result.host isEqualToString:ipv4OnlyHost]);
+            XCTAssertTrue([result.ips count] == 2);
+            XCTAssertTrue([result.ips[0] isEqualToString:ipv41]);
+
+            result = [self.httpdns resolveHostSync:ipv4OnlyHost byIpType:HttpdnsQueryIPTypeAuto];
+            XCTAssertNotNil(result);
+            XCTAssertTrue([result.host isEqualToString:ipv4OnlyHost]);
+            XCTAssertTrue([result.ips count] == 2);
+            XCTAssertTrue([result.ips[0] isEqualToString:ipv41]);
+
+            dispatch_semaphore_signal(semaphore);
+        });
+
+        dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
     }];
 }
 

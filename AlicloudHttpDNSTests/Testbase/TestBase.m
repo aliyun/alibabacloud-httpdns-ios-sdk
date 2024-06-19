@@ -114,7 +114,7 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
     OCMStub([mockAdapterClass getInstance]).andReturn(mockIpv6Adapter);
 }
 
-- (void)shouldNotHaveCalledRequestWhenResolving:(void (^)(void))resolvingBlock {
+- (void)shouldNotHaveCallNetworkRequestWhenResolving:(void (^)(void))resolvingBlock {
     HttpDnsService *httpdns = [HttpDnsService sharedInstance];
     HttpdnsRequestScheduler *scheduler = httpdns.requestScheduler;
     HttpdnsRequestScheduler *mockScheduler = OCMPartialMock(scheduler);
