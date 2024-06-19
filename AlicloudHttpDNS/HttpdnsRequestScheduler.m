@@ -186,10 +186,10 @@ typedef struct {
     });
 
     HostObjectExamingResult examingResult = [self examineHttpdnsHostObject:result underQueryType:request.queryIpType];
-    BOOL isResultUsable = examingResult.isResultUsable;
+    BOOL isCachedResultUsable = examingResult.isResultUsable;
     BOOL isResolvingRequired = examingResult.isResolvingRequired;
 
-    if (isResultUsable) {
+    if (isCachedResultUsable) {
         if (isResolvingRequired) {
             // 缓存结果可用，但是需要请求，因为缓存结果已经过期
             // 这种情况异步去解析就可以了
@@ -285,8 +285,9 @@ typedef struct {
     HttpdnsLogDebug("Internal request starts, host: %@, request: %@", host, request);
 
     NSError *error = nil;
-    __block HttpdnsHostObject *result = [[HttpdnsHostResolver new] lookupHostFromServer:request
-                                                                                  error:&error];
+
+    __block HttpdnsHostObject *result = [[HttpdnsHostResolver new] lookupHostFromServer:request error:&error];
+
     if (error) {
         HttpdnsLogDebug("Internal request error, host: %@, error: %@", host, error);
 
@@ -386,11 +387,11 @@ typedef struct {
         [self cacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:ip4Strings IP6s:ip6Strings TTL:ttl];
     }
 
-    [self aysncUpdateIPRankingWithResult:cachedHostObject forHost:host cacheKey:cacheKey];
+    [self asyncUpdateIPRankingWithResult:cachedHostObject forHost:host cacheKey:cacheKey];
     return cachedHostObject;
 }
 
-- (void)aysncUpdateIPRankingWithResult:(HttpdnsHostObject *)result forHost:(NSString *)host cacheKey:(NSString *)cacheKey {
+- (void)asyncUpdateIPRankingWithResult:(HttpdnsHostObject *)result forHost:(NSString *)host cacheKey:(NSString *)cacheKey {
     if (!self.IPRankingEnabled) {
         return;
     }
@@ -671,7 +672,7 @@ typedef struct {
             // 因为当前持久化缓存为区分cachekey和host(实际是cachekey)
             // 持久化缓存里的host实际上是cachekey
             // 因此这里取出来，如果cachekey和host不一致的情况，这个IP优选会因为查不到datasource而实际不生效
-            [self aysncUpdateIPRankingWithResult:hostObject forHost:host cacheKey:host];
+            [self asyncUpdateIPRankingWithResult:hostObject forHost:host cacheKey:host];
         }
     });
 }
