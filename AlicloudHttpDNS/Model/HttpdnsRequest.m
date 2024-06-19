@@ -36,15 +36,6 @@ static double const RESOLVE_HOST_MAX_TIMEOUT_IN_SEC = 5;
             _cacheKey = host;
         }
 
-        if (timeoutInSecond == 0) {
-            timeoutInSecond = RESOLVE_HOST_DEFAULT_TIMEOUT_IN_SEC;
-        } else if (timeoutInSecond < RESOLVE_HOST_MIN_TIMEOUT_IN_SEC) {
-            timeoutInSecond = RESOLVE_HOST_MIN_TIMEOUT_IN_SEC;
-        } else if (timeoutInSecond > RESOLVE_HOST_MAX_TIMEOUT_IN_SEC) {
-            timeoutInSecond = RESOLVE_HOST_MAX_TIMEOUT_IN_SEC;
-        } else {
-            // 在范围内的正常值
-        }
         _resolveTimeoutInSecond = timeoutInSecond;
     }
     return self;
@@ -64,6 +55,18 @@ static double const RESOLVE_HOST_MAX_TIMEOUT_IN_SEC = 5;
 
 - (void)setAsNonBlockingRequest {
     _isBlockingRequest = NO;
+}
+
+- (void)ensureResolveTimeoutInReasonableRange {
+    if (_resolveTimeoutInSecond == 0) {
+        _resolveTimeoutInSecond = RESOLVE_HOST_DEFAULT_TIMEOUT_IN_SEC;
+    } else if (_resolveTimeoutInSecond < RESOLVE_HOST_MIN_TIMEOUT_IN_SEC) {
+        _resolveTimeoutInSecond = RESOLVE_HOST_MIN_TIMEOUT_IN_SEC;
+    } else if (_resolveTimeoutInSecond > RESOLVE_HOST_MAX_TIMEOUT_IN_SEC) {
+        _resolveTimeoutInSecond = RESOLVE_HOST_MAX_TIMEOUT_IN_SEC;
+    } else {
+        // 在范围内的正常值
+    }
 }
 
 - (NSString *)description {

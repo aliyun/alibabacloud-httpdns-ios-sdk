@@ -18,6 +18,8 @@
 
 - (void)setAsNonBlockingRequest;
 
+- (void)ensureResolveTimeoutInReasonableRange;
+
 @end
 
 #endif /* HttpdnsRequest_Internal_h */

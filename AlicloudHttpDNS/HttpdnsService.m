@@ -431,6 +431,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         // 缓存逻辑是依赖cacheKey工作的，如果没有主动设置cacheKey，它实际上就是host
         request.cacheKey = request.host;
     }
+
+    [request ensureResolveTimeoutInReasonableRange];
 }
 
 - (HttpdnsResult *)constructResultFromHostObject:(HttpdnsHostObject *)hostObject underQueryType:(HttpdnsQueryIPType)queryType {
