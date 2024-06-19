@@ -426,6 +426,11 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     NSDictionary *mergedSdnsParam = [self mergeWithPresetSdnsParams:request.sdnsParams];
     request.sdnsParams = mergedSdnsParam;
+
+    if (!request.cacheKey) {
+        // 缓存逻辑是依赖cacheKey工作的，如果没有主动设置cacheKey，它实际上就是host
+        request.cacheKey = request.host;
+    }
 }
 
 - (HttpdnsResult *)constructResultFromHostObject:(HttpdnsHostObject *)hostObject underQueryType:(HttpdnsQueryIPType)queryType {

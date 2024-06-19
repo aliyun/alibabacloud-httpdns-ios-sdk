@@ -36,6 +36,7 @@
 #import "HttpdnsgetNetworkInfoHelper.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpDnsLocker.h"
+#import "HttpdnsRequest_Internal.h"
 
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS = @"disable_status_key";
 static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME = @"disable_status";
@@ -147,7 +148,8 @@ typedef struct {
             if (!hostObject
                 || [hostObject isExpiredUnderQueryIpType:queryType]) {
 
-                HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:hostName isBlockingRequest:NO queryIpType:queryType];
+                HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:hostName queryIpType:queryType];
+                [request setAsNonBlockingRequest];
                 [self resolveHost:request];
                 HttpdnsLogDebug("Pre resolve host by async lookup, host: %@", hostName);
             }
@@ -238,7 +240,7 @@ typedef struct {
             dispatch_semaphore_signal(semaphore);
         }
     });
-    dispatch_semaphore_wait(semaphore, request.resolveTimeoutInSecond);
+    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(request.resolveTimeoutInSecond * NSEC_PER_SEC)));
     return result;
 }
 
