@@ -200,4 +200,38 @@
     XCTAssert(elapsedTime < 5.1, @"elapsedTime should be less than 4.1s, but is %f", elapsedTime);
 }
 
+// 最大等待时间
+- (void)testSyncMethodMaxBlockingTime {
+    HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
+    [self.httpdns cleanAllHostCache];
+
+    HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
+    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0])
+        .ignoringNonObjectArgs()
+        .andDo(^(NSInvocation *invocation) {
+            [NSThread sleepForTimeInterval:5];
+        })
+        .andReturn([self constructSimpleIpv4HostObject]);
+
+    NSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];
+
+    HttpdnsRequest *request = [HttpdnsRequest new];
+    request.host = ipv4OnlyHost;
+    request.queryIpType = HttpdnsQueryIPTypeIpv4;
+    request.resolveTimeoutInSecond = 2.5;
+
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        HttpdnsResult *result = [self.httpdns resolveHostSync:request];
+        NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSince1970] - startTime;
+        XCTAssert(elapsedTime < 2.6, @"elapsedTime should be less than 2.6s, but is %f", elapsedTime);
+        XCTAssert(elapsedTime >= 2.5, @"elapsedTime should be greater than or equal to 2.5s, but is %f", elapsedTime);
+        XCTAssertNil(result);
+        dispatch_semaphore_signal(semaphore);
+    });
+
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+}
+
 @end

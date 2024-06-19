@@ -19,6 +19,7 @@
 #import "HttpdnsService.h"
 #import "HttpdnsRequestScheduler.h"
 #import "HttpdnsService_Internal.h"
+#import "HttpdnsRequest_Internal.h"
 
 
 /**
@@ -122,7 +123,8 @@
     int startIndex = [scheduleCenter currentActiveServiceServerHostIndex];
     int serviceServerCount = (int)[scheduleCenter currentServiceServerV4HostList].count;
 
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:@"mock" isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeAuto];
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:@"mock" queryIpType:HttpdnsQueryIPTypeAuto];
+    [request setAsBlockingRequest];
 
     HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
     id mockScheduler = OCMPartialMock(scheduler);
