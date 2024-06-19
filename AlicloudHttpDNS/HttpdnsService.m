@@ -440,7 +440,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         return nil;
     }
 
-    if (![HttpdnsUtil isNotEmptyArray:[hostObject getIps]] && ![HttpdnsUtil isNotEmptyArray:[hostObject getIp6s]]) {
+    if ([HttpdnsUtil isEmptyArray:[hostObject getIps]] && [HttpdnsUtil isEmptyArray:[hostObject getIp6s]]) {
         // 这里是为了兼容过去用法的行为，如果完全没有ip信息，可以对齐到过去缓存没有ip或解析不到ip的情况，直接返回nil
         return nil;
     }
@@ -453,7 +453,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     // 由于结果可能是从缓存中获得，所以还要根据实际协议栈情况再筛选下结果
     if (queryType & HttpdnsQueryIPTypeIpv4) {
         NSArray *ipv4s = [hostObject getIps];
-        if (ipv4s != nil && [ipv4s count] > 0) {
+        if ([HttpdnsUtil isNotEmptyArray:ipv4s]) {
             NSMutableArray *ipv4Array = [NSMutableArray array];
             for (HttpdnsIpObject *ipObject in ipv4s) {
                 [ipv4Array addObject:[ipObject getIpString]];
@@ -464,7 +464,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     if (queryType & HttpdnsQueryIPTypeIpv6) {
         NSArray *ipv6s = [hostObject getIp6s];
-        if (ipv6s != nil && [ipv6s count] > 0) {
+        if ([HttpdnsUtil isNotEmptyArray:ipv6s]) {
             NSMutableArray *ipv6Array = [NSMutableArray array];
             for (HttpdnsIpObject *ipObject in ipv6s) {
                 [ipv6Array addObject:[ipObject getIpString]];

@@ -137,17 +137,17 @@ static NSURLSession *_resolveHOSTSession = nil;
         return nil;
     }
 
-    NSArray *ips;
-    NSArray *ip6s;
     NSDictionary *extra;
     if ([[json allKeys] containsObject:@"extra"]) {
         extra = [self htmlEntityDecode:[HttpdnsUtil safeObjectForKey:@"extra" dict:json]];
     }
-    ips = [HttpdnsUtil safeObjectForKey:@"ips" dict:json];
-    if (!ips) {
-        ips = @[];
+
+    NSArray *ip4s = [HttpdnsUtil safeObjectForKey:@"ips" dict:json];
+    if (!ip4s) {
+        ip4s = @[];
     }
-    ip6s = [HttpdnsUtil safeObjectForKey:@"ipsv6" dict:json];
+
+    NSArray *ip6s = [HttpdnsUtil safeObjectForKey:@"ipsv6" dict:json];
     if (!ip6s) {
         ip6s = @[];
     }
@@ -156,7 +156,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 
     // 处理ipv4
     NSMutableArray *ipArray = [NSMutableArray array];
-    for (NSString *ip in ips) {
+    for (NSString *ip in ip4s) {
         if ([HttpdnsUtil isEmptyString:ip]) {
             continue;
         }
@@ -165,7 +165,7 @@ static NSURLSession *_resolveHOSTSession = nil;
         [ipArray addObject:ipObject];
     }
 
-    // 处理IPv6解析结果
+    // 处理IPv6
     NSMutableArray *ip6Array = [NSMutableArray array];
     if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
         for (NSString *ipv6 in ip6s) {
@@ -186,23 +186,27 @@ static NSURLSession *_resolveHOSTSession = nil;
     [hostObject setIps:ipArray];
     [hostObject setIp6s:ip6Array];
 
-    //ttl 设置
     int64_t ttlInSecond = [[json objectForKey:@"ttl"] longLongValue];
 
-    //自定义ttl
+    // 自定义ttl
     HttpDnsService *dnsService = [HttpDnsService sharedInstance];
     if (dnsService.ttlDelegate && [dnsService.ttlDelegate respondsToSelector:@selector(httpdnsHost:ipType:ttl:)]) {
-        AlicloudHttpDNS_IPType ipType = AlicloudHttpDNS_IPTypeV4;
+        AlicloudHttpDNS_IPType ipType;
         if (queryIpType & HttpdnsQueryIPTypeIpv4 && queryIpType & HttpdnsQueryIPTypeIpv6) {
             ipType = AlicloudHttpDNS_IPTypeV64;
         } else if (queryIpType & HttpdnsQueryIPTypeIpv6) {
             ipType = AlicloudHttpDNS_IPTypeV6;
+        } else {
+            ipType = AlicloudHttpDNS_IPTypeV4;
         }
+
         ttlInSecond = [dnsService.ttlDelegate httpdnsHost:host ipType:ipType ttl:ttlInSecond];
     }
+
+    // 原ttl字段
     [hostObject setTTL:ttlInSecond];
 
-    //分别设置 v4ttl v6ttl
+    // 分别设置 v4ttl v6ttl
     if ([HttpdnsUtil isNotEmptyArray:ipArray]) {
         [hostObject setV4TTL:ttlInSecond];
         hostObject.lastIPv4LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
