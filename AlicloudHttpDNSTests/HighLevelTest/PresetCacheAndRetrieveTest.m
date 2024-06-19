@@ -183,6 +183,50 @@
     XCTAssertTrue([result.ipv6s[0] isEqualToString:ipv61]);
 }
 
+// ttl、lastLookupTime，ipv4和ipv6是分开处理的
+- (void)testTTLAndLastLookUpTime {
+    [self presetNetworkEnvAsIpv4AndIpv6];
+    [self.httpdns cleanAllHostCache];
+
+    // 存入ipv4和ipv6的地址
+    HttpdnsHostObject *hostObject1 = [self constructSimpleIpv4AndIpv6HostObject];
+    hostObject1.ttl = 100;
+    hostObject1.v4ttl = 200;
+    hostObject1.v6ttl = 300;
+
+    int64_t currentTimestamp = [[NSDate new] timeIntervalSince1970];
+
+    hostObject1.lastLookupTime = currentTimestamp;
+    hostObject1.lastIPv4LookupTime = currentTimestamp - 1;
+    hostObject1.lastIPv6LookupTime = currentTimestamp - 2;
+
+    // 第一次设置缓存
+    [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject1 host:ipv4AndIpv6Host cacheKey:ipv4AndIpv6Host underQueryIpType:HttpdnsQueryIPTypeBoth];
+
+    // auto在当前环境下即请求ipv4和ipv6
+    HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeAuto];
+    XCTAssertEqual(result.ttl, hostObject1.v4ttl);
+    XCTAssertEqual(result.lastUpdatedTimeInterval, hostObject1.lastIPv4LookupTime);
+    XCTAssertEqual(result.v6ttl, hostObject1.v6ttl);
+    XCTAssertEqual(result.v6LastUpdatedTimeInterval, hostObject1.lastIPv6LookupTime);
+
+    HttpdnsHostObject *hostObject2 = [self constructSimpleIpv4HostObject];
+    hostObject2.hostName = ipv4AndIpv6Host;
+    hostObject2.ttl = 500;
+    hostObject2.v4ttl = 600;
+    hostObject2.lastIPv4LookupTime = currentTimestamp - 10;
+
+    // 单独在缓存更新ipv4地址的相关信息
+    [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject2 host:ipv4AndIpv6Host cacheKey:ipv4AndIpv6Host underQueryIpType:HttpdnsQueryIPTypeIpv4];
+
+    // v4的信息发生变化，v6的信息保持不变
+    result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeAuto];
+    XCTAssertEqual(result.ttl, hostObject2.v4ttl);
+    XCTAssertEqual(result.lastUpdatedTimeInterval, hostObject2.lastIPv4LookupTime);
+    XCTAssertEqual(result.v6ttl, hostObject1.v6ttl);
+    XCTAssertEqual(result.v6LastUpdatedTimeInterval, hostObject1.lastIPv6LookupTime);
+}
+
 // 只缓存ipv4单栈的地址，按请求双栈类型存入，此时会标记该域名没有ipv6地址
 // 按预期，会判断该域名没有ipv6地址，因此不会返回ipv6地址，也不会发请求
 - (void)testMergeNoIpv6ResultAndGetBoth {

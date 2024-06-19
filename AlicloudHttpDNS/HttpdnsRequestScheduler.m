@@ -342,13 +342,17 @@ typedef struct {
         [cachedHostObject setHasNoIpv4Record:hasNoIpv4Record];
         [cachedHostObject setHasNoIpv6Record:hasNoIpv6Record];
 
-        [cachedHostObject setIps:ip4Objects];
-        [cachedHostObject setV4TTL:result.getV4TTL];
-        [cachedHostObject setLastIPv4LookupTime:result.lastIPv4LookupTime];
+        if ([HttpdnsUtil isNotEmptyArray:ip4Objects]) {
+            [cachedHostObject setIps:ip4Objects];
+            [cachedHostObject setV4TTL:result.getV4TTL];
+            [cachedHostObject setLastIPv4LookupTime:result.lastIPv4LookupTime];
+        }
 
-        [cachedHostObject setIp6s:ip6Objects];
-        [cachedHostObject setV6TTL:result.getV6TTL];
-        [cachedHostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
+        if ([HttpdnsUtil isNotEmptyArray:ip6Objects]) {
+            [cachedHostObject setIp6s:ip6Objects];
+            [cachedHostObject setV6TTL:result.getV6TTL];
+            [cachedHostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
+        }
 
         if ([HttpdnsUtil isNotEmptyDictionary:extra]) {
             [cachedHostObject setExtra:extra];

@@ -17,11 +17,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSArray<NSString *> *ips;
 @property (nonatomic, copy) NSArray<NSString *> *ipv6s;
 
-// 最后一次更新时间戳，Unix时间，单位秒
+// 最后一次ipv4地址更新时间戳，Unix时间，单位秒
 @property (nonatomic, assign) NSTimeInterval lastUpdatedTimeInterval;
 
-// ttl，单位秒
+// 最后一次ipv6地址更新时间戳，Unix时间，单位秒
+@property (nonatomic, assign) NSTimeInterval v6LastUpdatedTimeInterval;
+
+// 对应ipv4的ttl，单位秒
 @property (nonatomic, assign) NSTimeInterval ttl;
+
+// 对应ipv6的ttl，单位秒
+@property (nonatomic, assign) NSTimeInterval v6ttl;
 
 - (BOOL)hasIpv4Address;
 

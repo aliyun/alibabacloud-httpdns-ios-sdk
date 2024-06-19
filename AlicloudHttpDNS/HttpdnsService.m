@@ -447,8 +447,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     HttpdnsResult *result = [HttpdnsResult new];
     result.host = [hostObject getHostName];
-    result.ttl = [hostObject getTTL];
-    result.lastUpdatedTimeInterval = [hostObject getLastLookupTime];
 
     // 由于结果可能是从缓存中获得，所以还要根据实际协议栈情况再筛选下结果
     if (queryType & HttpdnsQueryIPTypeIpv4) {
@@ -459,6 +457,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
                 [ipv4Array addObject:[ipObject getIpString]];
             }
             result.ips = [ipv4Array copy];
+            result.ttl = hostObject.getV4TTL;
+            result.lastUpdatedTimeInterval = hostObject.lastIPv4LookupTime;
         }
     }
 
@@ -470,6 +470,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
                 [ipv6Array addObject:[ipObject getIpString]];
             }
             result.ipv6s = [ipv6Array copy];
+            result.v6ttl = hostObject.getV6TTL;
+            result.v6LastUpdatedTimeInterval = hostObject.lastIPv6LookupTime;
         }
     }
 
