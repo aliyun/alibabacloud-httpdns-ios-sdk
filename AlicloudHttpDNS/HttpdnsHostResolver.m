@@ -203,7 +203,7 @@ static NSURLSession *_resolveHOSTSession = nil;
         ttlInSecond = [dnsService.ttlDelegate httpdnsHost:host ipType:ipType ttl:ttlInSecond];
     }
 
-    // 原ttl字段
+    // 原ttl字段，实际会从外部接口返回的，只有下面的v4ttl和v6ttl
     [hostObject setTTL:ttlInSecond];
 
     // 分别设置 v4ttl v6ttl
