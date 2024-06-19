@@ -50,6 +50,14 @@ static double const RESOLVE_HOST_MAX_TIMEOUT_IN_SEC = 5;
     return self;
 }
 
+- (instancetype)init {
+    if (self = [super init]) {
+        _queryIpType = HttpdnsQueryIPTypeAuto;
+        _resolveTimeoutInSecond = RESOLVE_HOST_DEFAULT_TIMEOUT_IN_SEC;
+    }
+    return self;
+}
+
 - (void)setAsBlockingRequest {
     _isBlockingRequest = YES;
 }
