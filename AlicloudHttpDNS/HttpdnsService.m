@@ -309,32 +309,27 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (HttpdnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *,NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey {
-    if (!host || [self _shouldDegradeHTTPDNS:host]) {
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:queryIpType sdnsParams:sdnsParams cacheKey:cacheKey];
+    return [self resolveHostSyncNonBlocking:request];
+}
+
+- (HttpdnsResult *)resolveHostSyncNonBlocking:(HttpdnsRequest *)request {
+    if (![self validateResolveRequest:request]) {
         return nil;
     }
 
-    HttpdnsQueryIPType clarifiedQueryIpType = [self determineLegitQueryIpType:queryIpType];
-
-    if ([HttpdnsUtil isAnIP:host]) {
-        HttpdnsLogDebug("The host is just an IP.");
-        return [self constructResultFromIp:host underQueryType:clarifiedQueryIpType];
-    }
-    if (![HttpdnsUtil isAHost:host]) {
-        HttpdnsLogDebug("The host is illegal.");
+    if ([self _shouldDegradeHTTPDNS:request.host]) {
         return nil;
     }
 
-    sdnsParams = [self mergeWithPresetSdnsParams:sdnsParams];
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host
-                                                       queryIpType:clarifiedQueryIpType
-                                                        sdnsParams:sdnsParams
-                                                          cacheKey:cacheKey];
+    [self refineResolveRequest:request];
     [request setAsNonBlockingRequest];
+
     HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
     if (!hostObject) {
         return nil;
     }
-    return [self constructResultFromHostObject:hostObject underQueryType:clarifiedQueryIpType];
+    return [self constructResultFromHostObject:hostObject underQueryType:request.queryIpType];
 }
 
 - (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType completionHandler:(void (^)(HttpdnsResult *))handler {
@@ -342,44 +337,37 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *,NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey completionHandler:(void (^)(HttpdnsResult *))handler {
-    if (!host || [self _shouldDegradeHTTPDNS:host]) {
-        return;
-    }
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:queryIpType sdnsParams:sdnsParams cacheKey:cacheKey];
+    [self resolveHostAsync:request completionHandler:handler];
+}
 
-    HttpdnsQueryIPType clarifiedQueryIpType = [self determineLegitQueryIpType:queryIpType];
-
-    if ([HttpdnsUtil isAnIP:host]) {
-        HttpdnsLogDebug("The host is just an IP.");
-        dispatch_async(asyncTaskConcurrentQueue, ^{
-            handler([self constructResultFromIp:host underQueryType:queryIpType]);
-        });
-    }
-    if (![HttpdnsUtil isAHost:host]) {
-        HttpdnsLogDebug("The host is illegal.");
+- (void)resolveHostAsync:(HttpdnsRequest *)request completionHandler:(void (^)(HttpdnsResult *))handler {
+    if (![self validateResolveRequest:request]) {
         dispatch_async(asyncTaskConcurrentQueue, ^{
             handler(nil);
         });
     }
 
-    sdnsParams = [self mergeWithPresetSdnsParams:sdnsParams];
+    if ([self _shouldDegradeHTTPDNS:request.host]) {
+        dispatch_async(asyncTaskConcurrentQueue, ^{
+            handler(nil);
+        });
+    }
+
+    [self refineResolveRequest:request];
+
     double enqueueStart = [[NSDate date] timeIntervalSince1970] * 1000;
-    __weak typeof(self) weakSelf = self;
     dispatch_async(asyncTaskConcurrentQueue, ^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
         double executeStart = [[NSDate date] timeIntervalSince1970] * 1000;
-        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host
-                                                           queryIpType:clarifiedQueryIpType
-                                                            sdnsParams:sdnsParams
-                                                              cacheKey:cacheKey];
         [request setAsBlockingRequest];
-        HttpdnsHostObject *hostObject = [strongSelf->_requestScheduler resolveHost:request];
+        HttpdnsHostObject *hostObject = [self->_requestScheduler resolveHost:request];
         double innerEnd = [[NSDate date] timeIntervalSince1970] * 1000;
         HttpdnsLogDebug("resolveHostAsync done, inner cost time from enqueue: %fms, from execute: %fms", (innerEnd - enqueueStart), (innerEnd - executeStart));
 
         if (!hostObject) {
             handler(nil);
         } else {
-            handler([self constructResultFromHostObject:hostObject underQueryType:clarifiedQueryIpType]);
+            handler([self constructResultFromHostObject:hostObject underQueryType:request.queryIpType]);
         }
     });
 }
@@ -395,10 +383,14 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
         AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
         switch (stackType) {
+            // 双栈和ipv6only，两个类型都要请求
+            // 虽然判断是ipv6only，但现实中只有实验室才会有这种情况，考虑判断网络协议栈是有误判可能的，权衡之下，还是应该请求ipv4
+            // 如果用户是在明确的实验室环境中做测试，他应该直接指定请求type为ipv6
             case kAlicloudIPdual:
-                return HttpdnsQueryIPTypeIpv4 | HttpdnsQueryIPTypeIpv6;
             case kAlicloudIPv6only:
-                return HttpdnsQueryIPTypeIpv6;
+                return HttpdnsQueryIPTypeIpv4 | HttpdnsQueryIPTypeIpv6;
+
+            // 只有ipv4only的情况，只请求ipv4
             case kAlicloudIPv4only:
             default:
                 return HttpdnsQueryIPTypeIpv4;
@@ -535,7 +527,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         return nil;
     }
 
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeIpv4];
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4];
+    [request setAsNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];
@@ -569,7 +562,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         return nil;
     }
 
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeIpv4];
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4];
+    [request setAsNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];
@@ -605,7 +599,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     //需要检查是不是在主线程，如果是主线程，保持异步逻辑
     if ([NSThread isMainThread]) {
         //如果是主线程，仍然使用异步的方式，即先查询缓存，如果没有，则发送异步请求
-        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeIpv4];
+        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4];
+        [request setAsNonBlockingRequest];
         HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
         if (hostObject) {
             NSArray * ipsObject = [hostObject getIps];
@@ -622,7 +617,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     } else {
         NSMutableArray *ipsArray = nil;
         double start = [[NSDate date] timeIntervalSince1970] * 1000;
-        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:YES queryIpType:HttpdnsQueryIPTypeIpv4];
+        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4];
+        [request setAsBlockingRequest];
         __block HttpdnsHostObject *hostObject = [self->_requestScheduler resolveHost:request];
         double end = [[NSDate date] timeIntervalSince1970] * 1000;
         HttpdnsLogDebug("###### getIPv4ListForHostSync result: %@, resolve time delta is %f ms", hostObject, (end - start));
@@ -695,7 +691,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         return nil;
     }
 
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeIpv6];
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv6];
+    [request setAsNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
     if (hostObject) {
         NSArray *ip6sObject = [hostObject getIp6s];
@@ -734,7 +731,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         return nil;
     }
 
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeIpv6];
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv6];
+    [request setAsNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
     if (hostObject) {
         NSArray *ip6sObject = [hostObject getIp6s];
@@ -775,7 +773,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     if ([NSThread isMainThread]) {
         // 如果是主线程，仍然使用异步的方式，即先查询缓存，如果没有，则发送异步请求
-        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeIpv6];
+        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv6];
+        [request setAsNonBlockingRequest];
         HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
         if (hostObject) {
             NSArray *ipv6List = [hostObject getIp6s];
@@ -791,7 +790,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         return nil;
     } else {
         NSMutableArray *ipv6Array = nil;
-        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:YES queryIpType:HttpdnsQueryIPTypeIpv6];
+        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv6];
+        [request setAsBlockingRequest];
         HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
 
         if (hostObject) {
@@ -835,7 +835,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         return nil;
     }
 
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
+    [request setAsNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
     if (hostObject) {
         NSArray *ip4s = [hostObject getIPStrings];
@@ -884,7 +885,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         return nil;
     }
 
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
+    [request setAsNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
     if (hostObject) {
         NSArray *ip4s = [hostObject getIPStrings];
@@ -934,7 +936,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     if ([NSThread isMainThread]) {
         // 主线程的话仍然是走异步的逻辑
-        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
+        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
+        [request setAsNonBlockingRequest];
         HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
         if (hostObject) {
             NSArray *ip4s = [hostObject getIPStrings];
@@ -954,7 +957,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         return nil;
     } else {
         NSMutableDictionary *resultMDic = nil;
-        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:YES queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
+        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
+        [request setAsBlockingRequest];
         HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
         if (hostObject) {
             NSArray *ip4s = [hostObject getIPStrings];
@@ -1088,7 +1092,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     params = [self mergeWithPresetSdnsParams:params];
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:NO queryIpType:HttpdnsQueryIPTypeIpv4 sdnsParams:params cacheKey:cacheKey];
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4 sdnsParams:params cacheKey:cacheKey];
+    [request setAsNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];
@@ -1176,7 +1181,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         return nil;
     }
 
-    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host isBlockingRequest:YES queryIpType:HttpdnsQueryIPTypeIpv4];
+    HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4];
+    [request setAsBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
     if (hostObject) {
         NSArray * ipsObject = [hostObject getIps];

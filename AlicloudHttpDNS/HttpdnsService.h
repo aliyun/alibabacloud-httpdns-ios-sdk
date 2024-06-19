@@ -206,6 +206,10 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 /// @return 解析结果
 - (HttpdnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *, NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey;
 
+/// 同步解析域名，会阻塞当前线程，直到从缓存中获取到有效解析结果，或者从服务器拿到最新解析结果
+/// 如果允许复用过期的解析结果且存在过期结果的情况下，会先返回这个结果，然后启动后台线程去更新解析结果
+/// @param request 请求参数对象
+/// @return 解析结果
 - (HttpdnsResult *)resolveHostSync:(HttpdnsRequest *)request;
 
 /// 异步解析域名，不会阻塞当前线程，会在从缓存中获取到有效结果，或从服务器拿到最新解析结果后，通过回调返回结果
@@ -224,6 +228,10 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 /// @handler 解析结果回调
 - (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *, NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey completionHandler:(void (^)(HttpdnsResult *))handler;
 
+/// 异步解析域名，不会阻塞当前线程，会在从缓存中获取到有效结果，或从服务器拿到最新解析结果后，通过回调返回结果
+/// 如果允许复用过期的解析结果且存在过期结果的情况下，会先在回调中返回这个结果，然后启动后台线程去更新解析结果
+/// @param request 请求参数对象
+/// @handler 解析结果回调
 - (void)resolveHostAsync:(HttpdnsRequest *)request completionHandler:(void (^)(HttpdnsResult *))handler;
 
 /// 伪异步解析域名，不会阻塞当前线程，首次解析结果可能为空
@@ -242,6 +250,10 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 /// @return 解析结果
 - (HttpdnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *, NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey;
 
+/// 伪异步解析域名，不会阻塞当前线程，首次解析结果可能为空
+/// 先查询缓存，缓存中存在有效结果(未过期，或者过期但配置了可以复用过期解析结果)，则直接返回结果，如果缓存未命中，则发起异步解析请求
+/// @param request 请求参数对象
+/// @return 解析结果
 - (HttpdnsResult *)resolveHostSyncNonBlocking:(HttpdnsRequest *)request;
 
 
