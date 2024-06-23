@@ -117,6 +117,7 @@ static NSURLSession *_scheduleCenterSession = nil;
         }
 
         result = [HttpdnsUtil getValidDictionaryFromJson:jsonValue];
+        HttpdnsLogDebug("ScRequest get response: %@", result);
         dispatch_semaphore_signal(_sem);
     }];
 

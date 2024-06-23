@@ -94,19 +94,18 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 
     // 再从本地缓存读取之前缓存过的配置
     [self loadRegionConfigFromLocalCache];
-
-    // 距离上次更新超过一天，就再次更新
-    // 因为上一次读取的时间要从本地缓存获得，所以这里等1秒再检查
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), _scheduleFetchConfigAsyncQueue, ^{
-        [self updateRegionConfigAfterAtLeastOneDay];
-    });
 }
 
 - (void)resetRegion:(NSString *)region {
     [self initServerListByRegion:region];
 
-    self.currentActiveServiceHostIndex = 0;
-    self.currentActiveUpdateHostIndex = 0;
+    dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
+        self.currentActiveServiceHostIndex = 0;
+        self.currentActiveUpdateHostIndex = 0;
+    });
+
+    // 重置region之后马上发起一次更新
+    [self asyncUpdateRegionScheduleConfig];
 }
 
 - (void)loadRegionConfigFromLocalCache {
@@ -126,7 +125,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
     });
 }
 
-- (void)updateRegionConfigAfterAtLeastOneDay {
+- (void)asyncUpdateRegionConfigAfterAtLeastOneDay {
     NSDate *now = [NSDate date];
     if ([now timeIntervalSinceDate:self.lastScheduleCenterConnectDate] > 24 * 60 * 60) {
         [self asyncUpdateRegionScheduleConfig];
@@ -187,6 +186,9 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
             self->_ipv6ServiceServerHostList = [v6Result copy];
             self->_ipv6UpdateServerHostList = [v6Result copy];
         }
+
+        self->_currentActiveUpdateHostIndex = 0;
+        self->_currentActiveServiceHostIndex = 0;
     });
 }
 
@@ -244,6 +246,8 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 }
 
 - (NSString *)currentActiveServiceServerV4Host {
+    [self asyncUpdateRegionConfigAfterAtLeastOneDay];
+
     __block NSString *host = nil;
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
         int count = (int)self.ipv4ServiceServerHostList.count;
@@ -272,6 +276,8 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 }
 
 - (NSString *)currentActiveServiceServerV6Host {
+    [self asyncUpdateRegionConfigAfterAtLeastOneDay];
+
     __block NSString *host = nil;
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
         int count = (int)self.ipv6ServiceServerHostList.count;
