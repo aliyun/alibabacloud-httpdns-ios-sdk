@@ -46,7 +46,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 @property (nonatomic, copy) NSArray<NSString *> *ipv6ServiceServerHostList;
 
 @property (nonatomic, copy) NSArray<NSString *> *ipv4UpdateUpdateHostList;
-@property (nonatomic, copy) NSArray<NSString *> *ipv6UpdateUpdateHostList;
+@property (nonatomic, copy) NSArray<NSString *> *ipv6UpdateServerHostList;
 
 @property (nonatomic, strong) dispatch_queue_t scheduleFetchConfigAsyncQueue;
 @property (nonatomic, strong) dispatch_queue_t scheduleConfigLocalOperationQueue;
@@ -185,7 +185,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 
         if ([HttpdnsUtil isNotEmptyArray:v6Result]) {
             self->_ipv6ServiceServerHostList = [v6Result copy];
-            self->_ipv6UpdateUpdateHostList = [v6Result copy];
+            self->_ipv6UpdateServerHostList = [v6Result copy];
         }
     });
 }
@@ -196,7 +196,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 
     if (currentStack == kAlicloudIPv6only) {
         NSString *v6Host = [self currentActiveUpdateServerV6Host];
-        if ([HttpdnsUtil isAnIP:v6Host]) {
+        if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:v6Host]) {
             return [NSString stringWithFormat:@"[%@]", v6Host];
         }
         return v6Host;
@@ -213,7 +213,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
                                                 withArray:[regionConfigLoader getSeriveV4HostList:region]];
 
     self.ipv6ServiceServerHostList = [regionConfigLoader getSeriveV6HostList:region];
-    self.ipv6UpdateUpdateHostList = [HttpdnsUtil joinArrays:[regionConfigLoader getUpdateV6HostList:region]
+    self.ipv6UpdateServerHostList = [HttpdnsUtil joinArrays:[regionConfigLoader getUpdateV6HostList:region]
                                                 withArray:[regionConfigLoader getSeriveV6HostList:region]];
 }
 
@@ -260,13 +260,13 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 - (NSString *)currentActiveUpdateServerV6Host {
     __block NSString *host = nil;
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
-        int count = (int)self.ipv6UpdateUpdateHostList.count;
+        int count = (int)self.ipv6UpdateServerHostList.count;
         if (count == 0) {
             HttpdnsLogDebug("Severe error: update v6 ip list is empty, it should never happen");
             return;
         }
         int index = self.currentActiveUpdateHostIndex % count;
-        host = self.ipv6UpdateUpdateHostList[index];
+        host = self.ipv6UpdateServerHostList[index];
     });
     return host;
 }
@@ -282,6 +282,10 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
         int index = self.currentActiveServiceHostIndex % count;
         host = self.ipv6ServiceServerHostList[index];
     });
+
+    if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:host]) {
+        host = [NSString stringWithFormat:@"[%@]", host];
+    }
     return host;
 }
 
@@ -296,7 +300,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 }
 
 - (NSArray<NSString *> *)currentUpdateServerV6HostList {
-    return self.ipv6UpdateUpdateHostList;
+    return self.ipv6UpdateServerHostList;
 }
 
 - (NSArray<NSString *> *)currentServiceServerV6HostList {
