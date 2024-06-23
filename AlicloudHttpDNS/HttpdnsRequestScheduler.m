@@ -493,7 +493,8 @@ typedef struct {
     switch ([networkStatus longValue]) {
         case 0:
             statusString = @"None";
-            break;
+            HttpdnsLogDebug("Network changed, current status is None, lastNetworkStatus: %ld", _lastNetworkStatus);
+            return;
         case 1:
             statusString = @"Wifi";
             break;
@@ -505,29 +506,35 @@ typedef struct {
             break;
     }
 
-    HttpdnsLogDebug("Network changed, status: %@(%ld), lastNetworkStatus: %ld", statusString, [networkStatus longValue], _lastNetworkStatus);
+    HttpdnsLogDebug("Network changed, current status: %@(%ld), lastNetworkStatus: %ld", statusString, [networkStatus longValue], _lastNetworkStatus);
 
     if (_lastNetworkStatus == [networkStatus longValue]) {
         return;
     }
+    _lastNetworkStatus = [networkStatus longValue];
+
+    NSArray *hostArray = [HttpdnsUtil safeAllKeysFromDict:self->_hostManagerDict];
 
     dispatch_async(_asyncResolveHostQueue, ^{
-        if (![statusString isEqualToString:@"None"]) {
-            NSArray *hostArray = [HttpdnsUtil safeAllKeysFromDict:self->_hostManagerDict];
-            [self cleanAllHostMemoryCache];
-            [self resetServerDisableDate];
+        [self cleanAllHostMemoryCache];
+        [self resetServerDisableDate];
 
-            // 网络发生变化后，上面已经清理内存缓存，现在，要以当前网络运营商为条件去db里找之前是否有缓存，如果是，就复用这个缓存
-            // 同步操作，防止网络请求成功，更新后，缓存数据又被重新覆盖
-            [self syncReloadCacheFromDbToMemoryByIspCarrier];
+        // 网络发生变化后，上面已经清理内存缓存，现在，要以当前网络运营商为条件去db里找之前是否有缓存，如果是，就复用这个缓存
+        // 同步操作，防止网络请求成功，更新后，缓存数据又被重新覆盖
+        [self syncReloadCacheFromDbToMemoryByIspCarrier];
+    });
 
-            if (self->_isPreResolveAfterNetworkChangedEnabled) {
-                HttpdnsLogDebug("Network changed, pre resolve for hosts: %@", hostArray);
-                [self addPreResolveHosts:hostArray queryType:HttpdnsQueryIPTypeAuto];
-            }
+    // 网络切换过程中网络可能不稳定，发出去的请求失败概率高，所以等待一段时间再发出请求
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), _asyncResolveHostQueue, ^{
+        // 更新调度列表
+        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+        [scheduleCenter asyncUpdateRegionScheduleConfig];
+
+        if (self->_isPreResolveAfterNetworkChangedEnabled) {
+            HttpdnsLogDebug("Network changed, pre resolve for hosts: %@", hostArray);
+            [self addPreResolveHosts:hostArray queryType:HttpdnsQueryIPTypeAuto];
         }
     });
-    _lastNetworkStatus = [networkStatus longValue];
 }
 
 #pragma mark -
