@@ -219,7 +219,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
             break;
     }
 
-    // 初始化过程包含了region配置更新流程，立即做预解析可能是没有意义的
+    // 初始化过程包含了region配置更新流程，region切换会导致缓存清空，立即做预解析可能是没有意义的
     // 这是sdk接口设计的历史问题，目前没有太好办法，这里3秒之后再发预解析请求
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self->_requestScheduler addPreResolveHosts:hosts queryType:ipQueryType];
