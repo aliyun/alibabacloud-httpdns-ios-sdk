@@ -55,8 +55,38 @@ static NSArray<NSString *> *ALICLOUD_HTTPDNS_AVAILABLE_REGION_LIST = nil;
 }
 
 - (void)loadRegionConfig {
-    NSString *filePath = [[NSBundle bundleForClass:[self class]] pathForResource:@"region_config" ofType:@"plist"];
-    self.regionConfig = [NSDictionary dictionaryWithContentsOfFile:filePath];
+    self.regionConfig = @{
+        ALICLOUD_HTTPDNS_DEFAULT_REGION_KEY: @{
+            kServiceV4Key: @[@"203.107.1.1", @"203.107.1.97", @"203.107.1.100", @"203.119.238.240", @"106.11.25.239", @"59.82.99.47"],
+            kUpdateV4Key: @[],
+            kServiceV6Key: @[@"2401:b180:7001::31d", @"2401:b180:2000:30::1c", @"2401:b180:2000:20::10", @"2401:b180:2000:30::1c"],
+            kUpdateV6Key: @[]
+        },
+        ALICLOUD_HTTPDNS_HONGKONG_REGION_KEY: @{
+            kServiceV4Key: @[@"47.56.234.194", @"47.56.119.115"],
+            kUpdateV4Key: @[],
+            kServiceV6Key: @[@"240b:4000:f10::178", @"240b:4000:f10::188"],
+            kUpdateV6Key: @[]
+        },
+        ALICLOUD_HTTPDNS_SINGAPORE_REGION_KEY: @{
+            kServiceV4Key: @[@"161.117.200.122", @"47.74.222.190"],
+            kUpdateV4Key: @[],
+            kServiceV6Key: @[@"240b:4000:f10::178", @"240b:4000:f10::188"],
+            kUpdateV6Key: @[]
+        },
+        ALICLOUD_HTTPDNS_GERMANY_REGION_KEY: @{
+            kServiceV4Key: @[@"47.89.80.182", @"47.246.146.77"],
+            kUpdateV4Key: @[],
+            kServiceV6Key: @[@"2404:2280:3000::176", @"2404:2280:3000::188"],
+            kUpdateV6Key: @[]
+        },
+        ALICLOUD_HTTPDNS_AMERICA_REGION_KEY: @{
+            kServiceV4Key: @[@"47.246.131.175", @"47.246.131.141"],
+            kUpdateV4Key: @[],
+            kServiceV6Key: @[@"2404:2280:4000::2bb", @"2404:2280:4000::23e"],
+            kUpdateV6Key: @[]
+        }
+    };
 }
 
 - (NSArray *)getSeriveV4HostList:(NSString *)region {
