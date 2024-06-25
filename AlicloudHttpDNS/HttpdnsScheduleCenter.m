@@ -127,7 +127,18 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 
 - (void)asyncUpdateRegionConfigAfterAtLeastOneDay {
     NSDate *now = [NSDate date];
-    if ([now timeIntervalSinceDate:self.lastScheduleCenterConnectDate] > 24 * 60 * 60) {
+    if ([now timeIntervalSinceDate:self->_lastScheduleCenterConnectDate] > 24 * 60 * 60) {
+        self->_lastScheduleCenterConnectDate = [NSDate date];
+
+        [self asyncUpdateRegionScheduleConfig];
+    }
+}
+
+- (void)asyncUpdateRegionConfigAfterAtLeast30Seconds {
+    NSDate *now = [NSDate date];
+    if ([now timeIntervalSinceDate:self->_lastScheduleCenterConnectDate] > 30) {
+        self->_lastScheduleCenterConnectDate = [NSDate date];
+
         [self asyncUpdateRegionScheduleConfig];
     }
 }
@@ -142,7 +153,6 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
     }
 
     dispatch_async(_scheduleFetchConfigAsyncQueue, ^(void) {
-        self->_lastScheduleCenterConnectDate = [NSDate date];
         HttpdnsScheduleCenterRequest *scheduleCenterRequest = [HttpdnsScheduleCenterRequest new];
 
         NSError *error = nil;
@@ -220,9 +230,19 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 }
 
 - (void)moveToNextServiceServerHost {
+    __block int timeToUpdate = NO;
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
         self.currentActiveServiceHostIndex++;
+
+        int total = (int)self.ipv4ServiceServerHostList.count + (int)self.ipv6ServiceServerHostList.count;
+        if (self.currentActiveServiceHostIndex % total == 0) {
+            timeToUpdate = YES;
+        }
     });
+
+    if (timeToUpdate) {
+        [self asyncUpdateRegionConfigAfterAtLeast30Seconds];
+    }
 }
 
 - (void)moveToNextUpdateServerHost {
