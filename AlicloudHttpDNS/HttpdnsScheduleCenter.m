@@ -45,7 +45,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 @property (nonatomic, copy) NSArray<NSString *> *ipv4ServiceServerHostList;
 @property (nonatomic, copy) NSArray<NSString *> *ipv6ServiceServerHostList;
 
-@property (nonatomic, copy) NSArray<NSString *> *ipv4UpdateUpdateHostList;
+@property (nonatomic, copy) NSArray<NSString *> *ipv4UpdateServerHostList;
 @property (nonatomic, copy) NSArray<NSString *> *ipv6UpdateServerHostList;
 
 @property (nonatomic, strong) dispatch_queue_t scheduleFetchConfigAsyncQueue;
@@ -53,6 +53,8 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 
 @property (nonatomic, copy) NSString *scheduleCenterResultPath;
 @property (nonatomic, copy) NSDate *lastScheduleCenterConnectDate;
+
+@property (nonatomic, copy) NSString *currentRegion;
 
 @end
 
@@ -187,14 +189,22 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
     NSArray *v6Result = [HttpdnsUtil safeObjectForKey:kAlicloudHttpdnsRegionConfigV6HostKey dict:scheduleCenterResult];
 
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
+        HttpdnsRegionConfigLoader *regionConfigLoader = [HttpdnsRegionConfigLoader sharedInstance];
+
         if ([HttpdnsUtil isNotEmptyArray:v4Result]) {
             self->_ipv4ServiceServerHostList = [v4Result copy];
-            self->_ipv4UpdateUpdateHostList = [v4Result copy];
+
+            // 调度server列表总是服务server列表加上兜底域名
+            self->_ipv4UpdateServerHostList = [HttpdnsUtil joinArrays:v4Result
+                                                            withArray:[regionConfigLoader getUpdateV4FallbackHostList:self->_currentRegion]];
         }
 
         if ([HttpdnsUtil isNotEmptyArray:v6Result]) {
             self->_ipv6ServiceServerHostList = [v6Result copy];
-            self->_ipv6UpdateServerHostList = [v6Result copy];
+
+            // 调度server列表总是服务server列表加上兜底域名
+            self->_ipv6UpdateServerHostList = [HttpdnsUtil joinArrays:v6Result
+                                                            withArray:[regionConfigLoader getUpdateV6FallbackHostList:self->_currentRegion]];
         }
 
         self->_currentActiveUpdateHostIndex = 0;
@@ -218,15 +228,17 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 }
 
 - (void)initServerListByRegion:(NSString *)region {
+    self->_currentRegion = region;
+
     HttpdnsRegionConfigLoader *regionConfigLoader = [HttpdnsRegionConfigLoader sharedInstance];
 
     self.ipv4ServiceServerHostList = [regionConfigLoader getSeriveV4HostList:region];
-    self.ipv4UpdateUpdateHostList = [HttpdnsUtil joinArrays:[regionConfigLoader getUpdateV4HostList:region]
-                                                withArray:[regionConfigLoader getSeriveV4HostList:region]];
+    self.ipv4UpdateServerHostList = [HttpdnsUtil joinArrays:[regionConfigLoader getSeriveV4HostList:region]
+                                                  withArray:[regionConfigLoader getUpdateV4FallbackHostList:region]];
 
     self.ipv6ServiceServerHostList = [regionConfigLoader getSeriveV6HostList:region];
-    self.ipv6UpdateServerHostList = [HttpdnsUtil joinArrays:[regionConfigLoader getUpdateV6HostList:region]
-                                                withArray:[regionConfigLoader getSeriveV6HostList:region]];
+    self.ipv6UpdateServerHostList = [HttpdnsUtil joinArrays:[regionConfigLoader getSeriveV6HostList:region]
+                                                  withArray:[regionConfigLoader getUpdateV6FallbackHostList:region]];
 }
 
 - (void)moveToNextServiceServerHost {
@@ -254,13 +266,13 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 - (NSString *)currentActiveUpdateServerV4Host {
     __block NSString *host = nil;
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
-        int count = (int)self.ipv4UpdateUpdateHostList.count;
+        int count = (int)self.ipv4UpdateServerHostList.count;
         if (count == 0) {
             HttpdnsLogDebug("Severe error: update v4 ip list is empty, it should never happen");
             return;
         }
         int index = self.currentActiveUpdateHostIndex % count;
-        host = self.ipv4UpdateUpdateHostList[index];
+        host = self.ipv4UpdateServerHostList[index];
     });
     return host;
 }
@@ -318,7 +330,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 #pragma mark - For Test Only
 
 - (NSArray<NSString *> *)currentUpdateServerV4HostList {
-    return self.ipv4UpdateUpdateHostList;
+    return self.ipv4UpdateServerHostList;
 }
 
 - (NSArray<NSString *> *)currentServiceServerV4HostList {
