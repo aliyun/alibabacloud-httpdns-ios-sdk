@@ -525,7 +525,7 @@ typedef struct {
     });
 
     // 网络切换过程中网络可能不稳定，发出去的请求失败概率高，所以等待一段时间再发出请求
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), _asyncResolveHostQueue, ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), _asyncResolveHostQueue, ^{
         // 更新调度列表
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
         [scheduleCenter asyncUpdateRegionScheduleConfig];

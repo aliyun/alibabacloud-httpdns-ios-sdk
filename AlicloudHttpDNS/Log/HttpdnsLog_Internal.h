@@ -21,7 +21,7 @@ if ([HttpdnsLog validLogHandler]) {\
 }\
 if ([HttpdnsLog isEnabled]) {\
     @try {\
-        NSLog((@"HTTPDNSSDKLOG - " frmt), ##__VA_ARGS__);\
+        NSLog((@"%@ HTTPDNSSDKLOG - " frmt), [HttpdnsLog getFormattedDateTimeStr], ##__VA_ARGS__);\
     } @catch (NSException *exception){\
     }\
 }
@@ -55,6 +55,8 @@ if ([HttpdnsLog validTestLogHandler]) {\
 + (void)setTestLogHandler:(id<HttpdnsLog_testOnly_protocol>)handler;
 + (BOOL)validTestLogHandler;
 + (void)outputTestToLogHandler:(NSString *)logStr;
+
++ (NSString *)getFormattedDateTimeStr;
 
 
 @end

@@ -73,4 +73,15 @@ static __weak id<HttpdnsLog_testOnly_protocol> sTestLogHandler;
     }
 }
 
++ (NSString *)getFormattedDateTimeStr {
+    static NSDateFormatter *dateFormatter;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        dateFormatter = [[NSDateFormatter alloc] init];
+    });
+
+    [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss.SSS"];
+    return [dateFormatter stringFromDate:[NSDate date]];
+}
+
 @end
