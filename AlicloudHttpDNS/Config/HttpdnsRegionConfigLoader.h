@@ -18,11 +18,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)getSeriveV4HostList:(NSString *)region;
 
-- (NSArray *)getUpdateV4HostList:(NSString *)region;
+- (NSArray *)getUpdateV4FallbackHostList:(NSString *)region;
 
 - (NSArray *)getSeriveV6HostList:(NSString *)region;
 
-- (NSArray *)getUpdateV6HostList:(NSString *)region;
+- (NSArray *)getUpdateV6FallbackHostList:(NSString *)region;
 
 @end
 
