@@ -167,7 +167,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
             [self moveToNextUpdateServerHost];
 
             // 3秒之后重试
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), self->_scheduleFetchConfigAsyncQueue, ^{
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)((retryCount + 1) * NSEC_PER_SEC)), self->_scheduleFetchConfigAsyncQueue, ^{
                 [self asyncUpdateRegionScheduleConfigAtRetry:retryCount + 1];
             });
 
