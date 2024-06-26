@@ -358,7 +358,7 @@ typedef struct {
             [cachedHostObject setExtra:extra];
         }
 
-        HttpdnsLogDebug("####### Update cached hostObject, cacheKey: %@, host: %@, result: %@", cacheKey, host, result);
+        HttpdnsLogDebug("####### Update cached hostObject, cacheKey: %@, host: %@", cacheKey, host);
     } else {
         cachedHostObject = [[HttpdnsHostObject alloc] init];
 
@@ -492,8 +492,7 @@ typedef struct {
     __block NSString *statusString = nil;
     switch ([networkStatus longValue]) {
         case 0:
-            statusString = @"None";
-            HttpdnsLogDebug("Network changed, current status is None, lastNetworkStatus: %ld", _lastNetworkStatus);
+            HttpdnsLogDebug("Network changed, currentNetworkStatus: None, lastNetworkStatus: %ld", _lastNetworkStatus);
             return;
         case 1:
             statusString = @"Wifi";
@@ -506,7 +505,7 @@ typedef struct {
             break;
     }
 
-    HttpdnsLogDebug("Network changed, current status: %@(%ld), lastNetworkStatus: %ld", statusString, [networkStatus longValue], _lastNetworkStatus);
+    HttpdnsLogDebug("Network changed, currentNetworkStatus: %ld(%@), lastNetworkStatus: %ld", [networkStatus longValue], statusString, _lastNetworkStatus);
 
     if (_lastNetworkStatus == [networkStatus longValue]) {
         return;
