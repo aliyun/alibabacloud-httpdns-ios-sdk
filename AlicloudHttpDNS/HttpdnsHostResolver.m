@@ -540,6 +540,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     _inputStream = (__bridge_transfer NSInputStream *)requestReadStream;
 
     NSThread *networkRequestThread = [[NSThread alloc] initWithTarget:self selector:@selector(networkRequestThreadEntryPoint:) object:nil];
+    [networkRequestThread setQualityOfService:NSQualityOfServiceUserInitiated];
     [networkRequestThread start];
 
     CFRelease(url);
