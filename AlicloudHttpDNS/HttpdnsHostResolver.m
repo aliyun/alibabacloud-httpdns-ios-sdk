@@ -481,6 +481,9 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                            cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                        timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
+
+    [request addValue:[HttpdnsUtil generateUserAgent] forHTTPHeaderField:@"User-Agent"];
+
     __block NSDictionary *json = nil;
     __block NSError *errorStrong = nil;
     __weak typeof(self) weakSelf = self;
@@ -528,6 +531,11 @@ static NSURLSession *_resolveHOSTSession = nil;
     CFURLRef url = CFURLCreateWithString(kCFAllocatorDefault, urlString, NULL);
     CFStringRef requestMethod = CFSTR("GET");
     CFHTTPMessageRef request = CFHTTPMessageCreateRequest(kCFAllocatorDefault, requestMethod, url, kCFHTTPVersion1_1);
+
+    CFStringRef headerFieldName = CFSTR("User-Agent");
+    CFStringRef headerFieldValue = (__bridge CFStringRef)([HttpdnsUtil generateUserAgent]);
+    CFHTTPMessageSetHeaderFieldValue(request, headerFieldName, headerFieldValue);
+
     CFReadStreamRef requestReadStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, request);
     _inputStream = (__bridge_transfer NSInputStream *)requestReadStream;
 

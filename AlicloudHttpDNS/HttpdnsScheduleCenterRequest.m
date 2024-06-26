@@ -78,6 +78,9 @@ static NSURLSession *_scheduleCenterSession = nil;
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                               cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                           timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
+
+    [request addValue:[HttpdnsUtil generateUserAgent] forHTTPHeaderField:@"User-Agent"];
+
     __block NSDictionary * result = nil;
     __block NSError * errorStrong = nil;
 
