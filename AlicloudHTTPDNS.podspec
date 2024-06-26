@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "AlicloudHTTPDNS"
-  s.version      = "3.0.2"
+  s.version      = "3.1.0"
   s.summary      = "Aliyun Mobile Service HTTPDNS iOS SDK."
   s.homepage     = "https://www.aliyun.com/product/httpdns"
   s.author       = { "junmo" => "lingkun.lk@alibaba-inc.com" }
@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.vendored_frameworks = 'httpdns/AlicloudHttpDNS.xcframework'
 
   s.platform     = :ios
-  s.ios.deployment_target = '12.0'
+  s.ios.deployment_target = '10.0'
 
   s.frameworks = 'CoreTelephony', 'SystemConfiguration'
   s.libraries = 'sqlite3.0', 'resolv'

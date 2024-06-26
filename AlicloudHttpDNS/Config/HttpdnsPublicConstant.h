@@ -1,5 +1,5 @@
 //
-//  PublicConstant.h
+//  HttpdnsPublicConstant.h
 //  AlicloudHttpDNS
 //
 //  Created by xuyecan on 2024/6/16.
