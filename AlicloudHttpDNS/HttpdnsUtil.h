@@ -64,6 +64,8 @@
 
 + (NSString *)generateSessionID;
 
++ (NSString *)generateUserAgent;
+
 + (void)safeAddObject:(id)object toArray:(NSMutableArray *)mutableArray;
 
 + (void)safeAddValue:(id)value key:(NSString *)key toDict:(NSMutableDictionary* )dict;

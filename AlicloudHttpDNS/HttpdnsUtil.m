@@ -278,6 +278,17 @@ _Pragma("clang diagnostic pop") \
     return sessionId;
 }
 
++ (NSString *)generateUserAgent {
+    UIDevice *device = [UIDevice currentDevice];
+    NSString *systemName = [device systemName];
+    NSString *systemVersion = [device systemVersion];
+    NSString *model = [device model];
+
+    NSString *userAgent = [NSString stringWithFormat:@"HttpdnsSDK/%@ (%@; iOS %@; %@)", HTTPDNS_IOS_SDK_VERSION, model, systemVersion, systemName];
+
+    return userAgent;
+}
+
 + (void)safeAddObject:(id)object toArray:(NSMutableArray *)mutableArray {
     @try {
         @synchronized(self) {
