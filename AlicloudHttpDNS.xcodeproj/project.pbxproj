@@ -120,7 +120,7 @@
 		947E5C192C00764C00123579 /* HttpDnsLocker.m in Sources */ = {isa = PBXBuildFile; fileRef = CB1E4EE72A8CBD1B00F01EAC /* HttpDnsLocker.m */; };
 		947E5C1D2C02DB9300123579 /* PresetCacheAndRetrieveTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 947E5C1C2C02DB9300123579 /* PresetCacheAndRetrieveTest.m */; };
 		948CD0092C031EB000F9F075 /* MultithreadCorrectnessTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 948CD0082C031EB000F9F075 /* MultithreadCorrectnessTest.m */; };
-		948DA4DE2C1E7E5F00D81682 /* HttpdnsPublicConstant.h in Headers */ = {isa = PBXBuildFile; fileRef = 948DA4DA2C1E7E5F00D81682 /* HttpdnsPublicConstant.h */; };
+		948DA4DE2C1E7E5F00D81682 /* HttpdnsPublicConstant.h in Headers */ = {isa = PBXBuildFile; fileRef = 948DA4DA2C1E7E5F00D81682 /* HttpdnsPublicConstant.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		948DA4DF2C1E7E5F00D81682 /* HttpdnsPublicConstant.h in Headers */ = {isa = PBXBuildFile; fileRef = 948DA4DA2C1E7E5F00D81682 /* HttpdnsPublicConstant.h */; };
 		948DA4E42C1EAA8200D81682 /* HttpdnsRegionConfigLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 948DA4E22C1EAA8200D81682 /* HttpdnsRegionConfigLoader.h */; };
 		948DA4E52C1EAA8200D81682 /* HttpdnsRegionConfigLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 948DA4E22C1EAA8200D81682 /* HttpdnsRegionConfigLoader.h */; };
@@ -680,6 +680,7 @@
 				943FA42A2BFA4B410006F169 /* HttpdnsRequest.h in Headers */,
 				94A014732BF38F410018B096 /* HttpdnsService.h in Headers */,
 				9AF899271E8B5CF600D9CA8E /* HttpdnsRequestScheduler_Internal.h in Headers */,
+				948DA4DE2C1E7E5F00D81682 /* HttpdnsPublicConstant.h in Headers */,
 				9AE63A031ECDA74D00F9C723 /* HttpdnsDB.h in Headers */,
 				943FA4262BFA44F30006F169 /* HttpdnsResult.h in Headers */,
 				4A36B63821C9EE9C00B1D008 /* HttpdnsLoggerDelegate.h in Headers */,
@@ -707,7 +708,6 @@
 				9406FDC42C19AA8F0003CB6A /* HttpdnsIPCacheStore.h in Headers */,
 				943FA4222BF9D4FA0006F169 /* HttpdnsHostObject.h in Headers */,
 				9AC27F061FDFCB9100DF016A /* HttpdnsSpeedTester.h in Headers */,
-				948DA4DE2C1E7E5F00D81682 /* HttpdnsPublicConstant.h in Headers */,
 				9AC27F031FDFCB4800DF016A /* HttpdnsTCPSpeedTester.h in Headers */,
 				9AF9A6111EC4E9990018063B /* HttpdnsIPRecord.h in Headers */,
 				9406FDB42C19AA8F0003CB6A /* HttpdnsHostCacheStore.h in Headers */,
@@ -1263,7 +1263,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
 				INFOPLIST_FILE = "$(SRCROOT)/AlicloudHttpDNS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = YES;
@@ -1297,7 +1297,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				INFOPLIST_FILE = "$(SRCROOT)/AlicloudHttpDNS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = staticlib;
 				OTHER_CFLAGS = "-fembed-bitcode";
