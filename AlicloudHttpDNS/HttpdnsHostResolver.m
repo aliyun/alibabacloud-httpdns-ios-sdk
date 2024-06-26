@@ -218,9 +218,9 @@ static NSURLSession *_resolveHOSTSession = nil;
 
     [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
     if (![HttpdnsUtil isNotEmptyArray:ip6Array]) {
-        HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@", [hostObject getHostName], [hostObject getTTL], ipArray);
+        HttpdnsLogDebug("Parsed host: %@ ttl: %lld ipsCount: %ld", [hostObject getHostName], [hostObject getTTL], [ipArray count]);
     } else {
-        HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@ ip6s: %@", [hostObject getHostName], [hostObject getTTL], ipArray, ip6Array);
+        HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@ ip6sCount: %ld", [hostObject getHostName], [hostObject getTTL], ipArray, [ip6Array count]);
     }
     return hostObject;
 }
