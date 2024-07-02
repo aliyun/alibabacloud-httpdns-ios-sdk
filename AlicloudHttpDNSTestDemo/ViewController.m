@@ -20,7 +20,7 @@
 NSArray *ipv4HostArray = nil;
 NSArray *ipv6HostArray = nil;
 
-@interface ViewController ()
+@interface ViewController () <HttpdnsTTLDelegate>
 
 @property (nonatomic, strong) HttpDnsService *service;
 @property (nonatomic, strong) HttpdnsScheduleCenter *sc;
@@ -30,6 +30,9 @@ NSArray *ipv6HostArray = nil;
 
 @implementation ViewController
 
+- (int64_t)httpdnsHost:(NSString *)host ipType:(AlicloudHttpDNS_IPType)ipType ttl:(int64_t)ttl {
+    return 0;
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -73,11 +76,12 @@ NSArray *ipv6HostArray = nil;
     _service = [[HttpDnsService alloc] initWithAccountID:139450];
     [_service setLogEnabled:YES];
     [_service setCachedIPEnabled:YES];
-    [_service setExpiredIPEnabled:NO];
+    [_service setExpiredIPEnabled:YES];
     [_service setHTTPSRequestEnabled:YES];
+    [_service setPreResolveHosts:ipv4HostArray];
     [_service enableIPv6:YES];
 
-    [_service setIPRankingDatasource:@{@"dns.xuyecan1919.tech": @443}];
+    // [_service setIPRankingDatasource:@{@"dns.xuyecan1919.tech": @443}];
 }
 
 
@@ -86,16 +90,9 @@ NSArray *ipv6HostArray = nil;
     AlicloudIPStackType stackType = [_service currentIpStack];
     NSLog(@"onHost1, stackType: %d", stackType);
 
-    // for (NSString *ipv4Host in ipv4HostArray) {
-    //     [_service asyncGetHostByName:ipv4Host completionHandler:^(NSDictionary<NSString *,NSString *> *result) {
-    //         NSLog(@"host: %@, result: %@", ipv4Host, result);
-    //     }];
-    // }
-    // for (NSString *ipv6Host in ipv6HostArray) {
-    //     [_service asyncGetHostByName:ipv6Host completionHandler:^(NSDictionary<NSString *,NSString *> *result) {
-    //         NSLog(@"host: %@, result: %@", ipv6Host, result);
-    //     }];
-    // }
+    for (NSString *ipv4Host in ipv4HostArray) {
+        [_service getIpByHostAsync:ipv4Host];
+    }
 }
 
 - (IBAction)onHost2:(id)sender {
