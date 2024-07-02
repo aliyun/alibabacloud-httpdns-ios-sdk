@@ -146,7 +146,7 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     });
 }
 
-- (void)addPreResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType{
+- (void)addPreResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType {
     if (![HttpdnsUtil isAbleToRequest]) {
         HttpdnsLogDebug("You should set accountID before adding PreResolveHosts");
         return;
@@ -154,27 +154,12 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
     if (![HttpdnsUtil isValidArray:hosts]) {
         return;
     }
-    dispatch_async(_syncDispatchQueue, ^{
-        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-        for (NSString *hostName in hosts) {
-            if ([self isHostsNumberLimitReached]) {
-                break;
-            }
-            HttpdnsHostObject *hostObject = [self hostObjectFromCacheForHostName:hostName];
-            if (!hostObject) {
-                [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex queryIPType:queryType];
-                HttpdnsLogDebug("Pre resolve host %@ by async lookup.", hostName);
-            } else if (![hostObject isQuerying]) {
-                if ([hostObject isExpiredWithQueryIPType:queryType]) {
-                    HttpdnsLogDebug("%@ is expired, pre fetch again.", hostName);
-                    [self executeRequest:hostName synchronously:NO retryCount:0 activatedServerIPIndex:scheduleCenter.activatedServerIPIndex queryIPType:queryType];
-                } else {
-                    HttpdnsLogDebug("%@ is omitted, expired: %d querying: %d", hostName, [hostObject isExpiredWithQueryIPType:HttpdnsQueryIPTypeIpv4], [hostObject isQuerying]);
-                    continue;
-                }
-            }
-        }
-    });
+    if ([self isHostsNumberLimitReached]) {
+        return;
+    }
+    for (NSString *hostName in hosts) {
+        [self addSingleHostAndLookup:hostName synchronously:NO queryType:queryType];
+    }
 }
 
 #pragma mark - core method for all public query API
@@ -788,16 +773,9 @@ static dispatch_queue_t _syncLoadCacheQueue = NULL;
                 NSArray *hostArray = [HttpdnsUtil safeAllKeysFromDict:self->_hostManagerDict];
                 [self cleanAllHostMemoryCache];
                 [self resetServerDisableDate];
-                //同步操作，防止网络请求成功，更新后，缓存数据再覆盖掉。
+
+                // 同步操作，防止网络请求成功，更新后，缓存数据再覆盖掉。
                 [self loadIPsFromCacheSyncIfNeeded];
-                if (self->_isPreResolveAfterNetworkChangedEnabled == YES) {
-                    @try {
-                        HttpdnsLogDebug("Network changed, pre resolve for hosts: %@", hostArray);
-                    } @catch (NSException *exception) {
-                    }
-                    
-                    [self addPreResolveHosts:hostArray queryType:HttpdnsQueryIPTypeAuto];
-                }
             }
         });
     }

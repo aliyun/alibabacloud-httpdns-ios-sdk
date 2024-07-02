@@ -196,13 +196,7 @@ static HttpDnsService * _httpDnsClient = nil;
 }
 
 - (void)setPreResolveHosts:(NSArray *)hosts {
-    if (ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE == NO) {
-        HttpdnsScheduleCenter *scheduleCenter  = [HttpdnsScheduleCenter sharedInstance];
-        [scheduleCenter forceUpdateIpListAsync];
-        [_requestScheduler addPreResolveHosts:hosts queryType:HttpdnsQueryIPTypeIpv4];
-    } else {
-        [_requestScheduler addPreResolveHosts:hosts queryType:HttpdnsQueryIPTypeIpv4];
-    }
+    [_requestScheduler addPreResolveHosts:hosts queryType:HttpdnsQueryIPTypeIpv4];
 }
 
 
