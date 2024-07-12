@@ -46,8 +46,7 @@ NSInteger const ALICLOUD_HTTPDNS_HTTP_USER_LEVEL_CHANGED_ERROR_CODE = 403;
 NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_KEY = @"activated_IP_index_key";
 NSString *const ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED_INDEX_CACHE_FILE_NAME = @"activated_IP_index";
 
-static dispatch_queue_t _runloopOperateQueue = 0;
-static dispatch_queue_t _errorOperateQueue = 0;
+static dispatch_queue_t _streamOperateSyncQueue = 0;
 
 static NSURLSession *_resolveHOSTSession = nil;
 
@@ -72,50 +71,25 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSTimer *_timeoutTimer;
     NSDictionary *_httpJSONDict;
 }
-@synthesize runloop = _runloop;
-@synthesize networkError = _networkError;
 
 #pragma mark init
 
 + (void)initialize {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        _runloopOperateQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.runloopOperateQueue.HttpdnsRequest", DISPATCH_QUEUE_SERIAL);
-        _errorOperateQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.errorOperateQueue.HttpdnsRequest", DISPATCH_QUEUE_SERIAL);
-    });
-}
-
-- (NSRunLoop *)runloop {
-    __block NSRunLoop *runloop = nil;
-    dispatch_sync(_runloopOperateQueue, ^{
-        runloop = _runloop;
-    });
-    return runloop;
-}
-
-- (void)setRunloop:(NSRunLoop *)runloop {
-    dispatch_sync(_runloopOperateQueue, ^{
-        _runloop = runloop;
-    });
-};
-
-- (NSError *)networkError {
-    __block NSError *networkError = nil;
-    dispatch_sync(_errorOperateQueue, ^{
-        networkError = _networkError;
-    });
-    return networkError;
-}
-
-- (void)setNetworkError:(NSError *)networkError {
-    dispatch_sync(_errorOperateQueue, ^{
-        _networkError = networkError;
+        _streamOperateSyncQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.runloopOperateQueue.HttpdnsRequest", DISPATCH_QUEUE_SERIAL);
     });
 }
 
 - (instancetype)init {
     if (self = [super init]) {
-        [self resetRequestConfigure];
+        _sem = dispatch_semaphore_create(0);
+        _resultData = [NSMutableData data];
+        _httpJSONDict = nil;
+        self.networkError = nil;
+        _responseResolved = NO;
+        _compeleted = NO;
+
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
             NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
@@ -125,21 +99,12 @@ static NSURLSession *_resolveHOSTSession = nil;
     return self;
 }
 
-- (void)resetRequestConfigure {
-    _sem = dispatch_semaphore_create(0);
-    _resultData = [NSMutableData data];
-    _httpJSONDict = nil;
-    self.networkError = nil;
-    _responseResolved = NO;
-    _compeleted = NO;
-}
-
 #pragma mark LookupIpAction
 
 - (HttpdnsHostObject *)parseHostInfoFromHttpResponse:(NSDictionary *)json withHostStr:(NSString *)hostStr {
     if (json == nil) {
         return nil;
-    }    
+    }
     NSString *hostName;
     NSArray *ips;
     NSArray *ip6s;
@@ -161,7 +126,7 @@ static NSURLSession *_resolveHOSTSession = nil;
         return nil;
     }
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
-    
+
     //处理ipv4
     NSMutableArray *ipArray = [NSMutableArray array];
     for (NSString *ip in ips) {
@@ -178,7 +143,7 @@ static NSURLSession *_resolveHOSTSession = nil;
         }
         [ipArray addObject:ipObject];
     }
-    
+
     // 处理IPv6解析结果
     NSMutableArray *ip6Array = [NSMutableArray array];
     if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
@@ -198,7 +163,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     [hostObject setHostName:hostName];
     [hostObject setIps:ipArray];
     [hostObject setIp6s:ip6Array];
-    
+
     //ttl 设置
     int64_t TTL = [[json objectForKey:@"ttl"] longLongValue];
     HttpDnsService *dnsService = [HttpDnsService sharedInstance];
@@ -214,7 +179,7 @@ static NSURLSession *_resolveHOSTSession = nil;
         TTL = [dnsService.ttlDelegate httpdnsHost:hostName ipType:ipType ttl:TTL];
     }
     [hostObject setTTL:TTL];
-    
+
     //分别设置 v4ttl v6ttl
     if ([HttpdnsUtil isValidArray:ipArray]) {
         [hostObject setV4TTL:TTL];
@@ -226,8 +191,8 @@ static NSURLSession *_resolveHOSTSession = nil;
         hostObject.lastIPv6LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
         hostObject.ip6Region = self.serviceRegion;
     }
-    
-    
+
+
     [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
     [hostObject setQueryingState:NO];
     if (![EMASTools isValidArray:ip6Array]) {
@@ -263,25 +228,25 @@ static NSURLSession *_resolveHOSTSession = nil;
 }
 
 - (NSString *)constructV6RequestURLWith:(NSString *)hostsString reallyHostKey:(NSString *)reallyHostKey queryIPType:(HttpdnsQueryIPType)queryIPType {
-    
+
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *serverIp = @"";
-    
+
     serverIp = ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6;
     self.serviceRegion = [scheduleCenter getServiceIPRegion];
     if ([EMASTools isValidString:self.serviceRegion] && [@[ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2] containsObject:serverIp]) { //如果当前设置region 并且 当次服务IP是国内兜底IP 则直接禁止解析行为
         return nil;
     }
-    
+
     serverIp = [NSString stringWithFormat:@"[%@]", serverIp];
     NSString *requestType = @"d";
     NSString *signatureRequestString = nil;
-    
+
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
 
     NSString *secretKey = sharedService.secretKey;
     NSUInteger localTimestampOffset = sharedService.authTimeOffset;
-    
+
     if ([HttpdnsUtil isValidString:secretKey ]) {
         requestType = @"sign_d";
         NSUInteger localTimestamp = (NSUInteger)[[NSDate date] timeIntervalSince1970] ;
@@ -293,28 +258,28 @@ static NSURLSession *_resolveHOSTSession = nil;
         NSArray *hostArray= [hostsString componentsSeparatedByString:@"&"];
         NSString *hostStr = [hostArray firstObject];
         NSString *signOriginString = [NSString stringWithFormat:@"%@-%@-%@", hostStr, secretKey, expiredTimestampString];
-        
+
         NSString *sign = [HttpdnsUtil getMD5StringFrom:signOriginString];
         signatureRequestString = [NSString stringWithFormat:@"&t=%@&s=%@", expiredTimestampString, sign];
     }
-    
+
     NSString *port = HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED ? ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT : ALICLOUD_HTTPDNS_HTTP_SERVER_PORT;
-    
+
     NSString *url = [NSString stringWithFormat:@"%@:%@/%d/%@?host=%@",
                      serverIp, port, sharedService.accountID, requestType, hostsString];
-    
+
     if ([HttpdnsUtil isValidString:signatureRequestString]) {
         url = [NSString stringWithFormat:@"%@%@", url, signatureRequestString];
     }
     NSString *versionInfo = [NSString stringWithFormat:@"ios_%@", HTTPDNS_IOS_SDK_VERSION];
     url = [NSString stringWithFormat:@"%@&sdk=%@", url, versionInfo];
-    
+
     // sessionId
     NSString *sessionId = [HttpdnsUtil generateSessionID];
     if ([HttpdnsUtil isValidString:sessionId]) {
         url = [NSString stringWithFormat:@"%@&sid=%@", url, sessionId];
     }
-    
+
     // 添加net和bssid(wifi)
     NSString *netType = [HttpdnsgetNetworkInfoHelper getNetworkType];
     if ([HttpdnsUtil isValidString:netType]) {
@@ -326,34 +291,34 @@ static NSURLSession *_resolveHOSTSession = nil;
             }
         }
     }
-    
+
     // 开启IPv6解析结果后，URL处理
     if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
         //设置当前域名的查询策略
         [[HttpdnsIPv6Manager sharedInstance] setQueryHost:reallyHostKey ipQueryType:queryIPType];
-        
+
         url = [[HttpdnsIPv6Manager sharedInstance] assembleIPv6ResultURL:url queryHost:reallyHostKey];
     }
-    
+
     return url;
 }
 
 - (NSString *)constructRequestURLWith:(NSString *)hostsString activatedServerIPIndex:(NSInteger)activatedServerIPIndex reallyHostKey:(NSString *)reallyHostKey queryIPType:(HttpdnsQueryIPType)queryIPType useV4Ip:(bool *) useV4Ip {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *serverIp = @"";
-    
+
     if ([HttpdnsUtil canUseIPv6_Syn]) {
         serverIp = [scheduleCenter getActivatedServerIPWithIndex:activatedServerIPIndex];
     } else {
         serverIp = [scheduleCenter getActivatedServerIPv6WithAuto];
     }
-    
+
     self.serviceRegion = [scheduleCenter getServiceIPRegion]; //获取当前service IP 的region
-    
+
     if ([EMASTools isValidString:self.serviceRegion] && [@[ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_SERVER_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IP_2, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6, ALICLOUD_HTTPDNS_SCHEDULE_CENTER_REQUEST_HOST_IPV6_2] containsObject:serverIp]) { //如果当前设置region 并且 当次服务IP是国内兜底IP 则直接禁止解析行为
         return nil;
     }
-    
+
     // Adapt to IPv6-only network.
     if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
         if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:serverIp]) {
@@ -364,7 +329,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     } else if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:serverIp]) {
         serverIp = [NSString stringWithFormat:@"[%@]", serverIp];
     }
-    
+
     if ([[AlicloudIPv6Adapter getInstance] isIPv4Address:serverIp]) {
         *useV4Ip = YES;
     } else {
@@ -372,7 +337,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     }
     NSString *requestType = @"d";
     NSString *signatureRequestString = nil;
-    
+
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
 
     NSString *secretKey = sharedService.secretKey;
@@ -388,28 +353,28 @@ static NSURLSession *_resolveHOSTSession = nil;
         NSArray *hostArray= [hostsString componentsSeparatedByString:@"&"];
         NSString *hostStr = [hostArray firstObject];
         NSString *signOriginString = [NSString stringWithFormat:@"%@-%@-%@", hostStr, secretKey, expiredTimestampString];
-        
+
         NSString *sign = [HttpdnsUtil getMD5StringFrom:signOriginString];
         signatureRequestString = [NSString stringWithFormat:@"&t=%@&s=%@", expiredTimestampString, sign];
     }
-    
+
     NSString *port = HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED ? ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT : ALICLOUD_HTTPDNS_HTTP_SERVER_PORT;
-    
+
     NSString *url = [NSString stringWithFormat:@"%@:%@/%d/%@?host=%@",
                      serverIp, port, sharedService.accountID, requestType, hostsString];
-    
+
     if ([HttpdnsUtil isValidString:signatureRequestString]) {
         url = [NSString stringWithFormat:@"%@%@", url, signatureRequestString];
     }
     NSString *versionInfo = [NSString stringWithFormat:@"ios_%@", HTTPDNS_IOS_SDK_VERSION];
     url = [NSString stringWithFormat:@"%@&sdk=%@", url, versionInfo];
-    
+
     // sessionId
     NSString *sessionId = [HttpdnsUtil generateSessionID];
     if ([HttpdnsUtil isValidString:sessionId]) {
         url = [NSString stringWithFormat:@"%@&sid=%@", url, sessionId];
     }
-    
+
     // 添加net和bssid(wifi)
     NSString *netType = [HttpdnsgetNetworkInfoHelper getNetworkType];
     if ([HttpdnsUtil isValidString:netType]) {
@@ -421,15 +386,15 @@ static NSURLSession *_resolveHOSTSession = nil;
             }
         }
     }
-    
+
     // 开启IPv6解析结果后，URL处理
     if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
         //设置当前域名的查询策略
         [[HttpdnsIPv6Manager sharedInstance] setQueryHost:reallyHostKey ipQueryType:queryIPType];
-        
+
         url = [[HttpdnsIPv6Manager sharedInstance] assembleIPv6ResultURL:url queryHost:reallyHostKey];
     }
-    
+
     return url;
 }
 
@@ -439,12 +404,10 @@ static NSURLSession *_resolveHOSTSession = nil;
 }
 
 - (HttpdnsHostObject *)lookupHostFromServer:(NSString *)hostString error:(NSError **)error activatedServerIPIndex:(NSInteger)activatedServerIPIndex queryIPType:(HttpdnsQueryIPType)queryIPType{
-    // 配置设置
-    [self resetRequestConfigure];
-    // 解析主机
+
     HttpdnsLogDebug("\n ====== Resolve host(%@) over network.", hostString);
     HttpdnsHostObject *hostObject = nil;
-    
+
     NSString *copyHostString = hostString;
     NSArray *hostArray= [hostString componentsSeparatedByString:@"]"];
     hostString = [hostArray lastObject];
@@ -455,19 +418,18 @@ static NSURLSession *_resolveHOSTSession = nil;
     NSString * hostsUrl = [hostMArray componentsJoinedByString:@""];
     bool useV4ServerIp;
     NSString *url = [self constructRequestURLWith:hostsUrl activatedServerIPIndex:activatedServerIPIndex reallyHostKey:hostString queryIPType:queryIPType useV4Ip:&useV4ServerIp];
-    
+
     if (![EMASTools isValidString:url]) {
         return nil;
     }
-    
+
     // HTTP / HTTPS  请求
     if (HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED) {
         hostObject = [self sendHTTPSRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];
     } else {
         hostObject = [self sendHTTPRequest:url host:copyHostString error:error activatedServerIPIndex:activatedServerIPIndex];
     }
-    
-    
+
     NSError *outError = nil;
     if (error != NULL) {
         outError = (*error);
@@ -501,8 +463,6 @@ static NSURLSession *_resolveHOSTSession = nil;
             }
         }
     }
-    BOOL success = !outError;
-    BOOL cachedIPEnabled = [self.requestScheduler _getCachedIPEnabled];
     return hostObject;
 }
 
@@ -536,7 +496,7 @@ static NSURLSession *_resolveHOSTSession = nil;
     if (!errorStrong) {
         return [self parseHostInfoFromHttpResponse:json withHostStr:hostStr];
     }
-    
+
     if (pError != NULL) {
         *pError = errorStrong;
         [self.requestScheduler changeToNextServerIPIfNeededWithError:errorStrong
@@ -549,7 +509,7 @@ static NSURLSession *_resolveHOSTSession = nil;
 - (HttpdnsHostObject *)sendHTTPRequest:(NSString *)urlStr
                                   host:(NSString *)hostStr
                                  error:(NSError **)error
- activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
+                activatedServerIPIndex:(NSInteger)activatedServerIPIndex {
     if (!error) {
         return nil;
     }
@@ -565,15 +525,14 @@ static NSURLSession *_resolveHOSTSession = nil;
     CFHTTPMessageRef request = CFHTTPMessageCreateRequest(kCFAllocatorDefault, requestMethod, url, kCFHTTPVersion1_1);
     CFReadStreamRef requestReadStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, request);
     _inputStream = (__bridge_transfer NSInputStream *)requestReadStream;
-    
+
     NSThread *networkRequestThread = [[NSThread alloc] initWithTarget:self selector:@selector(networkRequestThreadEntryPoint:) object:nil];
     [networkRequestThread start];
-    
+
     CFRelease(url);
     CFRelease(request);
     CFRelease(requestMethod);
     request = NULL;
-    NSDate *methodStart = [NSDate date];
     dispatch_semaphore_wait(_sem, DISPATCH_TIME_FOREVER);
     *error = self.networkError;
     [self.requestScheduler changeToNextServerIPIfNeededWithError:self.networkError
@@ -589,7 +548,12 @@ static NSURLSession *_resolveHOSTSession = nil;
     @autoreleasepool {
         self.runloop = [NSRunLoop currentRunLoop];
         [self openInputStream];
-        [self startTimer];
+
+        if (!_timeoutTimer) {
+            _timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:[HttpDnsService sharedInstance].timeoutInterval target:self selector:@selector(timeoutStop) userInfo:nil repeats:NO];
+            [self.runloop addTimer:_timeoutTimer forMode:NSRunLoopCommonModes];
+        }
+
         /*
          *  通过调用[runloop run]; 开启线程的RunLoop时，引用苹果文档描述，"Manually removing all known input sources and timers from the run loop is not a guarantee that the run loop will exit. "，
          *  一定要手动停止RunLoop，CFRunLoopStop([runloop getCFRunLoop])；
@@ -606,45 +570,43 @@ static NSURLSession *_resolveHOSTSession = nil;
     [_inputStream open];
 }
 
-- (void)closeInputStream {
-    if (_inputStream) {
-        [_inputStream close];
-        [_inputStream removeFromRunLoop:self.runloop forMode:NSRunLoopCommonModes];
-        [_inputStream setDelegate:nil];
-        _inputStream = nil;
-        CFRunLoopStop([self.runloop getCFRunLoop]);
-    }
-}
-
-- (void)startTimer {
-    if (!_timeoutTimer) {
-        _timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:[HttpDnsService sharedInstance].timeoutInterval target:self selector:@selector(checkRequestStatus) userInfo:nil repeats:NO];
-        [self.runloop addTimer:_timeoutTimer forMode:NSRunLoopCommonModes];
-    }
-}
-
-- (void)stopTimer {
-    if (_timeoutTimer) {
-        [_timeoutTimer invalidate];
-        _timeoutTimer = nil;
-    }
-}
-
-- (void)checkRequestStatus {
-    [self stopTimer];
-    [self closeInputStream];
-    if (!_compeleted) {
+- (void)stopAllAndExitRunloop {
+    dispatch_sync(_streamOperateSyncQueue, ^{
+        if (_compeleted) {
+            return;
+        }
         _compeleted = YES;
-        NSDictionary *dic = [[NSDictionary alloc] initWithObjectsAndKeys:
-                             @"Request timeout.", @"ErrorMessage", nil];
-        self.networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE userInfo:dic];
-        dispatch_semaphore_signal(_sem);
-    }
+
+        @try {
+            if (_timeoutTimer) {
+                [_timeoutTimer invalidate];
+                _timeoutTimer = nil;
+            }
+
+            if (_inputStream) {
+                [_inputStream close];
+                [_inputStream removeFromRunLoop:self.runloop forMode:NSRunLoopCommonModes];
+                [_inputStream setDelegate:nil];
+                _inputStream = nil;
+                CFRunLoopStop([self.runloop getCFRunLoop]);
+            }
+        } @catch (NSException *exception) {
+            HttpdnsLogDebug("Close stream failed with exception: %@", exception);
+        } @finally {
+            dispatch_semaphore_signal(_sem);
+        }
+    });
+}
+
+- (void)timeoutStop {
+    NSDictionary *dic = [[NSDictionary alloc] initWithObjectsAndKeys:@"Request timeout.", @"ErrorMessage", nil];
+    self.networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE userInfo:dic];
+    [self stopAllAndExitRunloop];
 }
 
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode {
     switch (eventCode) {
-        case NSStreamEventHasBytesAvailable:{
+        case NSStreamEventHasBytesAvailable: {
             if (!_responseResolved) {
                 CFReadStreamRef readStream = (__bridge CFReadStreamRef)_inputStream;
                 CFHTTPMessageRef message = (CFHTTPMessageRef)CFReadStreamCopyProperty(readStream, kCFStreamPropertyHTTPResponseHeader);
@@ -657,11 +619,11 @@ static NSURLSession *_resolveHOSTSession = nil;
                     return;
                 }
                 _responseResolved = YES;
-                
+
                 //先处理JSON
                 CFIndex statusCode = CFHTTPMessageGetResponseStatusCode(message);
                 CFRelease(message);
- 
+
                 UInt8 buffer[16 * 1024];
                 NSInteger numBytesRead = 0;
                 // Read data
@@ -674,7 +636,7 @@ static NSURLSession *_resolveHOSTSession = nil;
                         [_resultData appendBytes:buffer length:numBytesRead];
                     }
                 } while (numBytesRead > 0);
-                
+
                 NSDictionary *json;
                 NSError *errorStrong = nil;
                 if (_resultData) {
@@ -685,28 +647,22 @@ static NSURLSession *_resolveHOSTSession = nil;
                 if (statusCode != 200) {
                     errorStrong = [HttpdnsUtil getErrorFromError:errorStrong statusCode:statusCode json:json isHTTPS:NO];
                     self.networkError = errorStrong;
-                    _compeleted = YES;
-                    [self stopTimer];
-                    [self closeInputStream];
-                    dispatch_semaphore_signal(_sem);
+                    [self stopAllAndExitRunloop];
                     return;
                 }
                 HttpdnsLogDebug("Response code 200.");
             }
-            
-        }
             break;
-        case NSStreamEventErrorOccurred:
-        {
+        }
+        case NSStreamEventErrorOccurred: {
             NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                   [NSString stringWithFormat:@"read stream error: %@", [aStream streamError].userInfo], @"ErrorMessage", nil];
             self.networkError = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTP" code:ALICLOUD_HTTPDNS_HTTP_STREAM_READ_ERROR_CODE userInfo:dict];
+
+            [self stopAllAndExitRunloop];
         }
         case NSStreamEventEndEncountered:
-            [self stopTimer];
-            [self closeInputStream];
-            _compeleted = YES;
-            dispatch_semaphore_signal(_sem);
+            [self stopAllAndExitRunloop];
             break;
         default:
             break;
