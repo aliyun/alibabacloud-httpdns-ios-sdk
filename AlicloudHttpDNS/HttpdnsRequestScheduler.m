@@ -333,55 +333,38 @@ typedef struct {
         hasNoIpv6Record = YES;
     }
 
+    BOOL isJustCreated = NO;
     HttpdnsHostObject *cachedHostObject = [HttpdnsUtil safeObjectForKey:cacheKey dict:_hostManagerDict];
-    if (cachedHostObject) {
-        [cachedHostObject setHostName:host];
-        [cachedHostObject setTTL:ttl];
-        [cachedHostObject setLastLookupTime:lastLookupTime];
-        [cachedHostObject setIsLoadFromDB:NO];
-        [cachedHostObject setHasNoIpv4Record:hasNoIpv4Record];
-        [cachedHostObject setHasNoIpv6Record:hasNoIpv6Record];
-
-        if ([HttpdnsUtil isNotEmptyArray:ip4Objects]) {
-            [cachedHostObject setIps:ip4Objects];
-            [cachedHostObject setV4TTL:result.getV4TTL];
-            [cachedHostObject setLastIPv4LookupTime:result.lastIPv4LookupTime];
-        }
-
-        if ([HttpdnsUtil isNotEmptyArray:ip6Objects]) {
-            [cachedHostObject setIp6s:ip6Objects];
-            [cachedHostObject setV6TTL:result.getV6TTL];
-            [cachedHostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
-        }
-
-        if ([HttpdnsUtil isNotEmptyDictionary:extra]) {
-            [cachedHostObject setExtra:extra];
-        }
-
-        HttpdnsLogDebug("####### Update cached hostObject, cacheKey: %@, host: %@", cacheKey, host);
-    } else {
+    if (!cachedHostObject) {
+        isJustCreated = YES;
         cachedHostObject = [[HttpdnsHostObject alloc] init];
+    }
 
-        [cachedHostObject setHostName:host];
-        [cachedHostObject setTTL:ttl];
-        [cachedHostObject setLastLookupTime:lastLookupTime];
-        [cachedHostObject setIsLoadFromDB:NO];
-        [cachedHostObject setHasNoIpv4Record:hasNoIpv4Record];
-        [cachedHostObject setHasNoIpv6Record:hasNoIpv6Record];
+    [cachedHostObject setHostName:host];
+    [cachedHostObject setTTL:ttl];
+    [cachedHostObject setLastLookupTime:lastLookupTime];
+    [cachedHostObject setIsLoadFromDB:NO];
+    [cachedHostObject setHasNoIpv4Record:hasNoIpv4Record];
+    [cachedHostObject setHasNoIpv6Record:hasNoIpv6Record];
 
+    if ([HttpdnsUtil isNotEmptyArray:ip4Objects]) {
         [cachedHostObject setIps:ip4Objects];
         [cachedHostObject setV4TTL:result.getV4TTL];
         [cachedHostObject setLastIPv4LookupTime:result.lastIPv4LookupTime];
+    }
 
+    if ([HttpdnsUtil isNotEmptyArray:ip6Objects]) {
         [cachedHostObject setIp6s:ip6Objects];
         [cachedHostObject setV6TTL:result.getV6TTL];
         [cachedHostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
+    }
 
-        if ([HttpdnsUtil isNotEmptyDictionary:extra]) {
-            [cachedHostObject setExtra:extra];
-        }
+    if ([HttpdnsUtil isNotEmptyDictionary:extra]) {
+        [cachedHostObject setExtra:extra];
+    }
 
-        HttpdnsLogDebug("###### New resolved hostObject, cacheKey: %@, host: %@, result: %@", cacheKey, host, result);
+    HttpdnsLogDebug("Updated hostObject to cached, isJustCreated: %d, cacheKey: %@, host: %@", isJustCreated, cacheKey, host);
+    if (isJustCreated) {
         [HttpdnsUtil safeAddValue:cachedHostObject key:cacheKey toDict:_hostManagerDict];
     }
 
