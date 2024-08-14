@@ -22,7 +22,7 @@
 
 #import <Foundation/Foundation.h>
 
-static NSString *const HTTPDNS_IOS_SDK_VERSION = @"3.1.0";
+static NSString *const HTTPDNS_IOS_SDK_VERSION = @"3.1.1";
 
 
 // 调度地址示例：http://106.11.90.200/sc/httpdns_config?account_id=153519&platform=ios&sdk_version=1.6.1
