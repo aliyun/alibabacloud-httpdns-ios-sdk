@@ -38,6 +38,14 @@
     [aCoder encodeObject:self.ip forKey:@"ip"];
 }
 
+- (id)copyWithZone:(NSZone *)zone {
+    HttpdnsIpObject *copy = [[[self class] allocWithZone:zone] init];
+    if (copy) {
+        copy.ip = [self.ip copyWithZone:zone];
+    }
+    return copy;
+}
+
 + (NSArray<HttpdnsIpObject *> *)IPObjectsFromIPs:(NSArray<NSString *> *)IPs {
     NSMutableArray *IPObjects = [NSMutableArray arrayWithCapacity:IPs.count];
     for (NSString *IP in IPs) {
@@ -116,6 +124,26 @@
         }
     }
     return NO;
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+    HttpdnsHostObject *copy = [[[self class] allocWithZone:zone] init];
+    if (copy) {
+        copy.hostName = [self.hostName copyWithZone:zone];
+        copy.ips = [[NSArray allocWithZone:zone] initWithArray:self.ips copyItems:YES];
+        copy.ip6s = [[NSArray allocWithZone:zone] initWithArray:self.ip6s copyItems:YES];
+        copy.ttl = self.ttl;
+        copy.lastLookupTime = self.lastLookupTime;
+        copy.v4ttl = self.v4ttl;
+        copy.lastIPv4LookupTime = self.lastIPv4LookupTime;
+        copy.v6ttl = self.v6ttl;
+        copy.lastIPv6LookupTime = self.lastIPv6LookupTime;
+        copy.hasNoIpv4Record = self.hasNoIpv4Record;
+        copy.hasNoIpv6Record = self.hasNoIpv6Record;
+        copy.extra = [[NSDictionary allocWithZone:zone] initWithDictionary:self.extra copyItems:YES];
+        copy.isLoadFromDB = self.isLoadFromDB;
+    }
+    return copy;
 }
 
 - (BOOL)isExpiredUnderQueryIpType:(HttpdnsQueryIPType)queryIPType {
