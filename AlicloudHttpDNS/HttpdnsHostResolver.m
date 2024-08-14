@@ -547,29 +547,29 @@ static NSURLSession *_resolveHOSTSession = nil;
 }
 
 - (void)stopAllAndExitRunloop {
-    dispatch_sync(_streamOperateSyncQueue, ^{
-        if (_compeleted) {
+    dispatch_async(_streamOperateSyncQueue, ^{
+        if (self->_compeleted) {
             return;
         }
-        _compeleted = YES;
+        self->_compeleted = YES;
 
         @try {
-            if (_timeoutTimer) {
-                [_timeoutTimer invalidate];
-                _timeoutTimer = nil;
+            if (self->_timeoutTimer) {
+                [self->_timeoutTimer invalidate];
+                self->_timeoutTimer = nil;
             }
 
-            if (_inputStream) {
-                [_inputStream close];
-                [_inputStream removeFromRunLoop:self.runloop forMode:NSRunLoopCommonModes];
-                [_inputStream setDelegate:nil];
-                _inputStream = nil;
+            if (self->_inputStream) {
+                [self->_inputStream close];
+                [self->_inputStream removeFromRunLoop:self.runloop forMode:NSRunLoopCommonModes];
+                [self->_inputStream setDelegate:nil];
+                self->_inputStream = nil;
                 CFRunLoopStop([self.runloop getCFRunLoop]);
             }
         } @catch (NSException *exception) {
             HttpdnsLogDebug("Close stream failed with exception: %@", exception);
         } @finally {
-            dispatch_semaphore_signal(_sem);
+            dispatch_semaphore_signal(self->_sem);
         }
     });
 }
