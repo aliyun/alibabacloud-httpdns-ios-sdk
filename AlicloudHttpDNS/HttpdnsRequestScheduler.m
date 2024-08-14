@@ -304,7 +304,9 @@ typedef struct {
     dispatch_sync(_memoryCacheSerialQueue, ^{
         HttpdnsLogDebug("Internal request finished, host: %@, cacheKey: %@, result: %@", host, cacheKey, result);
         // merge之后，返回的应当是存储在缓存中的实际对象，而非请求过程中构造出来的对象
-        result = [self mergeLookupResultToManager:result host:host cacheKey:cacheKey underQueryIpType:queryIPType];
+        HttpdnsHostObject *lookupResult = [self mergeLookupResultToManager:result host:host cacheKey:cacheKey underQueryIpType:queryIPType];
+        // 立即打一个快照，避免进行中的一些缓存调整影响返回去的结果
+        result = [lookupResult copy];
     });
     return result;
 }

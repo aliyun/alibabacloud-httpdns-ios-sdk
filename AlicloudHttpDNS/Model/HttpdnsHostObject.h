@@ -25,14 +25,14 @@
 @class HttpdnsServerIpObject;
 
 
-@interface HttpdnsIpObject: NSObject<NSCoding>
+@interface HttpdnsIpObject: NSObject<NSCoding, NSCopying>
 
 @property (nonatomic, copy, getter=getIpString, setter=setIp:) NSString *ip;
 
 @end
 
 
-@interface HttpdnsHostObject : NSObject<NSCoding>
+@interface HttpdnsHostObject : NSObject<NSCoding, NSCopying>
 
 @property (nonatomic, strong, setter=setHostName:, getter=getHostName) NSString *hostName;
 @property (nonatomic, strong, setter=setIps:, getter=getIps) NSArray<HttpdnsIpObject *> *ips;
