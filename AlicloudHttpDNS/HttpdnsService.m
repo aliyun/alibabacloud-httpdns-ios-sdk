@@ -270,17 +270,17 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 #pragma mark -
 #pragma mark -------------- resolving method start
 
-- (HttpdnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType {
+- (nullable HttpdnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType {
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:queryIpType];
     return [self resolveHostSync:request];
 }
 
-- (HttpdnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *,NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey {
+- (nullable HttpdnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *,NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey {
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:queryIpType sdnsParams:sdnsParams cacheKey:cacheKey];
     return [self resolveHostSync:request];
 }
 
-- (HttpdnsResult *)resolveHostSync:(HttpdnsRequest *)request {
+- (nullable HttpdnsResult *)resolveHostSync:(HttpdnsRequest *)request {
     if ([NSThread isMainThread]) {
         // 主线程做一个防御
         return [self resolveHostSyncNonBlocking:request];
@@ -304,16 +304,16 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     return [self constructResultFromHostObject:hostObject underQueryType:request.queryIpType];
 }
 
-- (HttpdnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType {
+- (nullable HttpdnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType {
     return [self resolveHostSyncNonBlocking:host byIpType:queryIpType withSdnsParams:nil sdnsCacheKey:nil];
 }
 
-- (HttpdnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *,NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey {
+- (nullable HttpdnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *,NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey {
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:queryIpType sdnsParams:sdnsParams cacheKey:cacheKey];
     return [self resolveHostSyncNonBlocking:request];
 }
 
-- (HttpdnsResult *)resolveHostSyncNonBlocking:(HttpdnsRequest *)request {
+- (nullable HttpdnsResult *)resolveHostSyncNonBlocking:(HttpdnsRequest *)request {
     if (![self validateResolveRequest:request]) {
         return nil;
     }
@@ -332,16 +332,16 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     return [self constructResultFromHostObject:hostObject underQueryType:request.queryIpType];
 }
 
-- (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType completionHandler:(void (^)(HttpdnsResult *))handler {
+- (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType completionHandler:(void (^)(HttpdnsResult * nullable))handler {
     [self resolveHostAsync:host byIpType:queryIpType withSdnsParams:nil sdnsCacheKey:nil completionHandler:handler];
 }
 
-- (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *,NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey completionHandler:(void (^)(HttpdnsResult *))handler {
+- (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *,NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey completionHandler:(void (^)(HttpdnsResult * nullable))handler {
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:queryIpType sdnsParams:sdnsParams cacheKey:cacheKey];
     [self resolveHostAsync:request completionHandler:handler];
 }
 
-- (void)resolveHostAsync:(HttpdnsRequest *)request completionHandler:(void (^)(HttpdnsResult *))handler {
+- (void)resolveHostAsync:(HttpdnsRequest *)request completionHandler:(void (^)(HttpdnsResult * nullable))handler {
     if (![self validateResolveRequest:request]) {
         dispatch_async(asyncTaskConcurrentQueue, ^{
             handler(nil);

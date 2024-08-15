@@ -12,6 +12,7 @@
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsLog.h"
 #import "HttpdnsConstants.h"
+#import "HttpdnsPublicConstant.h"
 
 NSString *const ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTEXT = @"ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTEXT";
 NSUInteger const ALICLOUD_HTTPDNS_BOOTING_PROTECTION_CONTINUOUS_CRASH_ON_LAUNCH_NEED_TO_FIX = 2;

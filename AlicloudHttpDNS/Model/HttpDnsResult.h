@@ -33,9 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)hasIpv6Address;
 
-- (NSString *)firstIpv4Address;
+- (nullable NSString *)firstIpv4Address;
 
-- (NSString *)firstIpv6Address;
+- (nullable NSString *)firstIpv6Address;
 
 @end
 
