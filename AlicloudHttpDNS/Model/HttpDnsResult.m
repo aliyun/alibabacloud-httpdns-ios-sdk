@@ -18,14 +18,14 @@
     return self.ipv6s.count > 0;
 }
 
-- (NSString *)firstIpv4Address {
+- (nullable NSString *)firstIpv4Address {
     if (self.ips.count == 0) {
         return nil;
     }
     return self.ips.firstObject;
 }
 
-- (NSString *)firstIpv6Address {
+- (nullable NSString *)firstIpv6Address {
     if (self.ipv6s.count == 0) {
         return nil;
     }
