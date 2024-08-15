@@ -26,6 +26,7 @@
 #import "HttpdnsConstants.h"
 #import "HttpdnsHostResolver.h"
 #import "HttpdnsIPv6Manager.h"
+#import "HttpdnsPublicConstant.h"
 
 
 #define HTTPDNSUTIL_SuppressPerformSelectorLeakWarning(code) \
