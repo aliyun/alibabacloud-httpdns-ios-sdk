@@ -40,8 +40,6 @@
 
 + (NSDictionary *)getValidDictionaryFromJson:(id)jsonValue;
 
-+ (id)convertJsonStringToObject:(NSString *)jsonStr;
-
 + (BOOL)isEmptyArray:(NSArray *)inputArr;
 
 + (BOOL)isNotEmptyArray:(NSArray *)inputArr;
@@ -73,10 +71,15 @@
 + (void)safeRemoveObjectForKey:(NSString *)key toDict:(NSMutableDictionary *)dict;
 
 + (void)safeRemoveAllObjectsFromDict:(NSMutableDictionary *)dict;
+
 + (id)safeObjectForKey:(NSString *)key dict:(NSDictionary *)dict;
+
 + (id)safeOjectAtIndex:(int)index array:(NSArray *)array;
+
 + (id)safeObjectAtIndexOrTheFirst:(int)index array:(NSArray *)array defaultValue:(id)defaultValue;
+
 + (id)safeAllKeysFromDict:(NSDictionary *)dict;
+
 + (NSInteger)safeCountFromDict:(NSDictionary *)dict;
 
 @end
