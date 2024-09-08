@@ -35,6 +35,7 @@ static NSString *const kAlicloudHttpdnsRegionConfigV6HostKey = @"service_ipv6";
 
 static NSString *const kAlicloudHttpdnsRegionKey = @"HttpdnsRegion";
 
+#define SECONDS_OF_ONE_YEAR 365 * 24 * 60 * 60
 
 //当前时间戳，单位秒
 #define ALICLOUD_HTTPDNS_DISTANT_CURRENT_TIMESTAMP \

@@ -155,7 +155,17 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)setPersistentCacheIPEnabled:(BOOL)enable {
-    [_requestScheduler setCachedIPEnabled:enable];
+    [_requestScheduler setCachedIPEnabled:enable discardRecordsHasExpiredFor:0];
+}
+
+- (void)setPersistentCacheIPEnabled:(BOOL)enable discardRecordsHasExpiredFor:(NSTimeInterval)duration {
+    if (duration < 0) {
+        duration = 0;
+    }
+    if (duration > SECONDS_OF_ONE_YEAR) {
+        duration = SECONDS_OF_ONE_YEAR;
+    }
+    [_requestScheduler setCachedIPEnabled:enable discardRecordsHasExpiredFor:duration];
 }
 
 - (void)setExpiredIPEnabled:(BOOL)enable {

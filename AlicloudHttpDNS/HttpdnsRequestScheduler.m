@@ -448,13 +448,17 @@ typedef struct {
     _isExpiredIPEnabled = enable;
 }
 
-- (void)setCachedIPEnabled:(BOOL)enable {
+- (void)setCachedIPEnabled:(BOOL)enable discardRecordsHasExpiredFor:(NSTimeInterval)duration {
     // 开启允许持久化缓存
     [self setPersistentCacheIpEnabled:enable];
-    // 先把当前内存缓存清空
-    [self cleanAllExpiredHostRecordsAsyncIfNeeded];
-    // 再根据当前网络运营商读取持久化缓存中的历史记录，加载到内存缓存里
-    [self asyncReloadCacheFromDbToMemoryByIspCarrier];
+
+    if (enable) {
+        // 先清理过期时间超过阈值的缓存结果
+        [self cleanHostRecordsAlreadyExpiredAt:[[NSDate date] timeIntervalSince1970] - duration];
+
+        // 再根据当前网络运营商读取持久化缓存中的历史记录，加载到内存缓存里
+        [self asyncReloadCacheFromDbToMemoryByIspCarrier];
+    }
 }
 
 - (void)setPersistentCacheIpEnabled:(BOOL)enable {
@@ -657,12 +661,11 @@ typedef struct {
             NSString *host = hostRecord.host;
 
             HttpdnsHostObject *hostObject = [HttpdnsHostObject hostObjectWithHostRecord:hostRecord];
-            // 从DB缓存中加载到内存里的数据，此时不会出现过期的情况，TTL时间后过期。
-            [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
-            [HttpdnsUtil safeAddValue:hostObject key:host toDict:_hostManagerDict];
 
-            // 清除持久化缓存
-            [hostCacheStore deleteHostRecordAndItsIPsWithHostRecordIDs:@[@(hostRecord.hostRecordId)]];
+            // 从DB缓存中加载到内存里的数据，更新其查询时间为当前，使得它可以有一个TTL的可用期
+            [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
+
+            [HttpdnsUtil safeAddValue:hostObject key:host toDict:_hostManagerDict];
 
             // 因为当前持久化缓存为区分cachekey和host(实际是cachekey)
             // 持久化缓存里的host实际上是cachekey
@@ -694,12 +697,12 @@ typedef struct {
     });
 }
 
-- (void)cleanAllExpiredHostRecordsAsyncIfNeeded {
+- (void)cleanHostRecordsAlreadyExpiredAt:(NSTimeInterval)specifiedTime {
     if (!_persistentCacheIpEnabled) {
         return;
     }
     dispatch_async(_persistentCacheConcurrentQueue, ^{
-        [[HttpdnsHostCacheStore sharedInstance] cleanAllExpiredHostRecordsSync];
+        [[HttpdnsHostCacheStore sharedInstance] cleanHostRecordsAlreadyExpiredAt:specifiedTime];
     });
 }
 
