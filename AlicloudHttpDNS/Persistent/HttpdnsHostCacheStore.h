@@ -12,15 +12,11 @@
 @class HttpdnsHostRecord;
 @class HttpdnsIPRecord;
 
-static NSTimeInterval ALICLOUD_HTTPDNS_HOST_CACHE_MAX_CACHE_AGE = 0;
-
 @interface HttpdnsHostCacheStore : HttpdnsCacheStore
 
 + (instancetype)sharedInstance;
 
 - (void)insertHostRecords:(NSArray<HttpdnsHostRecord *> *)hostRecords;
-
-//- (NSArray<HttpdnsIPRecord *> *)IPRecordsForHosts:(NSArray<NSString *> *)hosts;
 
 - (NSArray<NSNumber *> *)hostRecordIdsForHost:(NSString *)host;
 
@@ -31,7 +27,7 @@ static NSTimeInterval ALICLOUD_HTTPDNS_HOST_CACHE_MAX_CACHE_AGE = 0;
 
 - (HttpdnsHostRecord *)hostRecordsForHost:(NSString *)host carrier:(NSString *)carrier;
 
-- (void)cleanAllExpiredHostRecordsSync;
+- (void)cleanHostRecordsAlreadyExpiredAt:(NSTimeInterval)specifiedTime;
 
 - (void)deleteHostRecordAndItsIPsWithHostRecordIDs:(NSArray<NSNumber *> *)hostRecordIDs;
 

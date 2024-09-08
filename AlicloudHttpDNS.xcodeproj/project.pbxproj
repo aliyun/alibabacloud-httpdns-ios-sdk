@@ -47,8 +47,6 @@
 		9406FDBF2C19AA8F0003CB6A /* HttpdnsIP6CacheStoreSQL.h in Headers */ = {isa = PBXBuildFile; fileRef = 9406FDAF2C19AA8F0003CB6A /* HttpdnsIP6CacheStoreSQL.h */; };
 		9406FDC02C19AA8F0003CB6A /* HttpdnsHostCacheStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 9406FDB02C19AA8F0003CB6A /* HttpdnsHostCacheStore.m */; };
 		9406FDC12C19AA8F0003CB6A /* HttpdnsHostCacheStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 9406FDB02C19AA8F0003CB6A /* HttpdnsHostCacheStore.m */; };
-		9406FDC22C19AA8F0003CB6A /* HttpdnsHostCacheStore_Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 9406FDB12C19AA8F0003CB6A /* HttpdnsHostCacheStore_Internal.h */; };
-		9406FDC32C19AA8F0003CB6A /* HttpdnsHostCacheStore_Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 9406FDB12C19AA8F0003CB6A /* HttpdnsHostCacheStore_Internal.h */; };
 		9406FDC42C19AA8F0003CB6A /* HttpdnsIPCacheStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 9406FDB22C19AA8F0003CB6A /* HttpdnsIPCacheStore.h */; };
 		9406FDC52C19AA8F0003CB6A /* HttpdnsIPCacheStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 9406FDB22C19AA8F0003CB6A /* HttpdnsIPCacheStore.h */; };
 		9406FDC62C19AA8F0003CB6A /* HttpdnsCacheStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 9406FDB32C19AA8F0003CB6A /* HttpdnsCacheStore.m */; };
@@ -256,7 +254,6 @@
 		9406FDAE2C19AA8F0003CB6A /* HttpdnsIPCacheStoreSQL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPCacheStoreSQL.h; sourceTree = "<group>"; };
 		9406FDAF2C19AA8F0003CB6A /* HttpdnsIP6CacheStoreSQL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsIP6CacheStoreSQL.h; sourceTree = "<group>"; };
 		9406FDB02C19AA8F0003CB6A /* HttpdnsHostCacheStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsHostCacheStore.m; sourceTree = "<group>"; };
-		9406FDB12C19AA8F0003CB6A /* HttpdnsHostCacheStore_Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsHostCacheStore_Internal.h; sourceTree = "<group>"; };
 		9406FDB22C19AA8F0003CB6A /* HttpdnsIPCacheStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPCacheStore.h; sourceTree = "<group>"; };
 		9406FDB32C19AA8F0003CB6A /* HttpdnsCacheStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsCacheStore.m; sourceTree = "<group>"; };
 		942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsDegradationDelegate.h; sourceTree = "<group>"; };
@@ -531,7 +528,6 @@
 				9406FDB32C19AA8F0003CB6A /* HttpdnsCacheStore.m */,
 				9406FDAA2C19AA8F0003CB6A /* HttpdnsHostCacheStore.h */,
 				9406FDB02C19AA8F0003CB6A /* HttpdnsHostCacheStore.m */,
-				9406FDB12C19AA8F0003CB6A /* HttpdnsHostCacheStore_Internal.h */,
 				9406FDB22C19AA8F0003CB6A /* HttpdnsIPCacheStore.h */,
 				9406FDAB2C19AA8F0003CB6A /* HttpdnsIPCacheStore.m */,
 			);
@@ -701,7 +697,6 @@
 				2197CAC31BC7B3D400BDB65B /* AlicloudHttpDNS.h in Headers */,
 				9A5BF7D31EC06B81001588B2 /* HttpdnsKeyValueSQL.h in Headers */,
 				942376DE1C5764CF00736E50 /* HttpdnsDegradationDelegate.h in Headers */,
-				9406FDC22C19AA8F0003CB6A /* HttpdnsHostCacheStore_Internal.h in Headers */,
 				947C4BF22C1F45330095A302 /* HttpdnsScheduleCenter_Internal.h in Headers */,
 				9AA0FC5F1EB9846E00E242DD /* HttpdnsDatabaseCommon.h in Headers */,
 				9A5BF7D41EC06B81001588B2 /* HttpdnsKeyValueStore.h in Headers */,
@@ -752,7 +747,6 @@
 				947E5BE72C0075AA00123579 /* HttpdnsHostObject.h in Headers */,
 				947E5BEC2C0075B800123579 /* HttpdnsLog.h in Headers */,
 				947E5BED2C0075B800123579 /* HttpdnsLog_Internal.h in Headers */,
-				9406FDC32C19AA8F0003CB6A /* HttpdnsHostCacheStore_Internal.h in Headers */,
 				9406FDC52C19AA8F0003CB6A /* HttpdnsIPCacheStore.h in Headers */,
 				947E5BEE2C0075B800123579 /* HttpdnsLoggerDelegate.h in Headers */,
 				947E5BE82C0075B100123579 /* HttpdnsHostRecord.h in Headers */,

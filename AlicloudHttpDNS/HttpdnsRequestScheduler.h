@@ -45,7 +45,7 @@ FOUNDATION_EXTERN NSString *ALICLOUD_HTTPDNS_SERVER_IP_REGION;
 - (HttpdnsHostObject *)resolveHost:(HttpdnsRequest *)request;
 
 - (void)setExpiredIPEnabled:(BOOL)enable;
-- (void)setCachedIPEnabled:(BOOL)enable;
+- (void)setCachedIPEnabled:(BOOL)enable discardRecordsHasExpiredFor:(NSTimeInterval)duration;
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
 
 @end

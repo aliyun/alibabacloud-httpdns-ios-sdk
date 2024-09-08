@@ -16,17 +16,8 @@
 #import "HttpdnsIPCacheStore.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsIPRecord.h"
-#import "HttpdnsHostCacheStore_Internal.h"
 
 @implementation HttpdnsHostCacheStore
-
-+ (void)initialize {
-    [self configureHostCacheMaxAge];
-}
-
-+ (void)configureHostCacheMaxAge {
-    ALICLOUD_HTTPDNS_HOST_CACHE_MAX_CACHE_AGE  = 60 * 60 * 24 * 7;
-}
 
 + (instancetype)sharedInstance {
     static id singletonInstance = nil;
@@ -52,14 +43,10 @@
 }
 
 - (void)insertHostRecords:(NSArray<HttpdnsHostRecord *> *)hostRecords  {
+    [HttpdnsUtil warnMainThreadIfNecessary];
     if (!hostRecords || hostRecords.count == 0) {
         return;
     }
-    [self insertHostRecords:hostRecords maxAge:ALICLOUD_HTTPDNS_HOST_CACHE_MAX_CACHE_AGE];
-}
-
-- (void)insertHostRecords:(NSArray<HttpdnsHostRecord *> *)hostRecords maxAge:(NSTimeInterval)maxAge {
-    [HttpdnsUtil warnMainThreadIfNecessary];
     // 当前网络运营商名字，或者wifi名字
     NSString *carrier = [HttpdnsgetNetworkInfoHelper getNetworkName];
     // 当在断网状态下，carrier为nil
@@ -80,7 +67,7 @@
         //Host Record表
         //先删除重复的，再插入，防止直接覆盖导致host覆盖后，IP表未更新。
         [self deleteHostRecordAndItsIPsWithHost:hostRecord.host carrier:carrier];
-        NSArray *insertionRecord = [self insertionRecordForRecord:hostRecord networkName:carrier maxAge:maxAge];
+        NSArray *insertionRecord = [self insertionRecordForRecord:hostRecord networkName:carrier];
         __block sqlite_int64 hostRecordId = 0;
         ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
             [db executeUpdate:ALICLOUD_HTTPDNS_SQL_INSERT_HOST_RECORD withArgumentsInArray:insertionRecord];
@@ -253,8 +240,8 @@
     return record;
 }
 
-- (NSArray *)insertionRecordForRecord:(HttpdnsHostRecord *)hostRecord networkName:(NSString *)networkName maxAge:(NSTimeInterval)maxAge {
-    NSTimeInterval expireAt = [[NSDate date] timeIntervalSince1970] + maxAge;
+- (NSArray *)insertionRecordForRecord:(HttpdnsHostRecord *)hostRecord networkName:(NSString *)networkName {
+    NSTimeInterval expireAt = [[NSDate date] timeIntervalSince1970] + hostRecord.TTL;
     return @[
              hostRecord.host,                               //ALICLOUD_HTTPDNS_FIELD_HOST
              networkName,                                   //ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER
@@ -286,9 +273,9 @@
     [self deleteIPCacheForHostRecordIDs:hostRecordIDs];
 }
 
-- (void)cleanAllExpiredHostRecordsSync {
+- (void)cleanHostRecordsAlreadyExpiredAt:(NSTimeInterval)specifiedTime {
     [HttpdnsUtil warnMainThreadIfNecessary];
-    NSArray<NSNumber *> *hostIds = [self allExpiredHostRecordNumbers];
+    NSArray<NSNumber *> *hostIds = [self hostRecordIdsAlreadyExpiredAt:specifiedTime];
     [self deleteHostRecordAndItsIPsWithHostRecordIDs:hostIds];
 }
 
@@ -323,23 +310,23 @@
     [[HttpdnsIPCacheStore sharedInstance] cleanIP6Record];
 }
 
-- (NSArray<NSNumber *> *)allExpiredHostRecordNumbers {
+- (NSArray<NSNumber *> *)hostRecordIdsAlreadyExpiredAt:(NSTimeInterval)specifiedTime {
     [HttpdnsUtil warnMainThreadIfNecessary];
-    NSMutableArray *hostRecordNumbers = [NSMutableArray array];
+    NSMutableArray *hostRecordIds = [NSMutableArray array];
 
     ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
-        NSArray *args = @[[NSNumber numberWithDouble:[[NSDate date] timeIntervalSince1970]]];
+        NSArray *args = @[[NSNumber numberWithDouble:specifiedTime]];
         HttpdnsResultSet *result = [db executeQuery:ALICLOUD_HTTPDNS_SQL_SELECT_EXPIRED_HOST_RECORD withArgumentsInArray:args];
 
         while ([result next]) {
             NSNumber *hostID = [self recordNumberIdWitResult:result];
-            [hostRecordNumbers addObject:hostID];
+            [hostRecordIds addObject:hostID];
         }
 
         [result close];
     }));
 
-    return [hostRecordNumbers copy];
+    return [hostRecordIds copy];
 }
 
 - (NSArray<NSNumber *> *)hostIdsFromHostRecords:(NSArray<HttpdnsHostRecord *> *)hostRecords {
@@ -389,14 +376,6 @@
         dbCache = [NSString stringWithFormat:@"%@", hostRecords];
     }
     return dbCache;
-}
-
-@end
-
-@implementation HttpdnsHostCacheStoreTestHelper
-
-+ (void)shortCacheExpireTime {
-    ALICLOUD_HTTPDNS_HOST_CACHE_MAX_CACHE_AGE  = 5;//60 * 60 * 24 * 7
 }
 
 @end

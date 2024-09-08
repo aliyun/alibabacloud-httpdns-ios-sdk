@@ -89,9 +89,16 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 
 /// 设置持久化缓存功能
 /// 开启后，每次解析会将结果持久化缓存到本地，当下次应用启动时，可以从本地加载缓存解析结果，提高应用启动时获取解析结果的速度
+/// 加载时，会丢弃已经过期的解析结果
 /// @param enable YES: 开启 NO: 关闭
 - (void)setPersistentCacheIPEnabled:(BOOL)enable;
 
+/// 设置持久化缓存功能
+/// 开启后，每次解析会将结果持久化缓存到本地，当下次应用启动时，可以从本地加载缓存解析结果，提高应用启动时获取解析结果的速度
+/// 加载时，会丢弃过期时间已经超过指定值的解析结果
+/// @param enable YES: 开启 NO: 关闭
+/// @param duration 决定丢弃IP的过期时间阈值，单位为秒，过期超过这个时间范围的IP会被丢弃，取值范围为0-1年。这个值仅在开启持久化缓存功能时才有意义
+- (void)setPersistentCacheIPEnabled:(BOOL)enable discardRecordsHasExpiredFor:(NSTimeInterval)duration;
 
 /// 是否允许 HTTPDNS 返回 TTL 过期域名的 ip ，建议允许（默认不允许）
 /// @param enable YES: 开启 NO: 关闭
