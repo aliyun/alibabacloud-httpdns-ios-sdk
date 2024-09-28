@@ -40,6 +40,8 @@ FOUNDATION_EXTERN NSString *ALICLOUD_HTTPDNS_SERVER_IP_REGION;
 
 @interface HttpdnsRequestScheduler : NSObject
 
++ (instancetype)sharedInstance;
+
 - (void)addPreResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType;
 
 - (HttpdnsHostObject *)resolveHost:(HttpdnsRequest *)request;
