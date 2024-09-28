@@ -128,6 +128,10 @@
 		94A014712BF38F410018B096 /* HttpdnsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 94A0146D2BF38F410018B096 /* HttpdnsService.m */; };
 		94A014732BF38F410018B096 /* HttpdnsService.h in Headers */ = {isa = PBXBuildFile; fileRef = 94A0146E2BF38F410018B096 /* HttpdnsService.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		94A014742BF38F410018B096 /* HttpdnsService_Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 94A0146F2BF38F410018B096 /* HttpdnsService_Internal.h */; };
+		94AE92412CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 94AE923F2CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.h */; };
+		94AE92422CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 94AE92402CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.m */; };
+		94AE92432CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 94AE923F2CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.h */; };
+		94AE92442CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 94AE92402CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.m */; };
 		94B60FED2C21EAD700DCA078 /* HttpdnsRequest_Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 94B60FEC2C21EAD700DCA078 /* HttpdnsRequest_Internal.h */; };
 		94B60FEE2C21EAD700DCA078 /* HttpdnsRequest_Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 94B60FEC2C21EAD700DCA078 /* HttpdnsRequest_Internal.h */; };
 		94C3F8AE2C05D23F00A4A9B8 /* ResolvingEffectiveHostTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 94C3F8AD2C05D23F00A4A9B8 /* ResolvingEffectiveHostTest.m */; };
@@ -277,6 +281,8 @@
 		94A0146D2BF38F410018B096 /* HttpdnsService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsService.m; sourceTree = "<group>"; };
 		94A0146E2BF38F410018B096 /* HttpdnsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsService.h; sourceTree = "<group>"; };
 		94A0146F2BF38F410018B096 /* HttpdnsService_Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsService_Internal.h; sourceTree = "<group>"; };
+		94AE923F2CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsThreadSafeDictionary.h; sourceTree = "<group>"; };
+		94AE92402CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsThreadSafeDictionary.m; sourceTree = "<group>"; };
 		94B60FEC2C21EAD700DCA078 /* HttpdnsRequest_Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsRequest_Internal.h; sourceTree = "<group>"; };
 		94C3F8AD2C05D23F00A4A9B8 /* ResolvingEffectiveHostTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ResolvingEffectiveHostTest.m; sourceTree = "<group>"; };
 		94C3F8AF2C05D4FD00A4A9B8 /* EnableReuseExpiredIpTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EnableReuseExpiredIpTest.m; sourceTree = "<group>"; };
@@ -405,8 +411,8 @@
 				2197CAB81BC7B3D400BDB65B /* HttpdnsHostResolver.h */,
 				2197CAB91BC7B3D400BDB65B /* HttpdnsHostResolver.m */,
 				2197CABA1BC7B3D400BDB65B /* HttpdnsRequestScheduler.h */,
-				2197CABB1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m */,
 				9AF899261E8B5CF600D9CA8E /* HttpdnsRequestScheduler_Internal.h */,
+				2197CABB1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m */,
 				94A0146F2BF38F410018B096 /* HttpdnsService_Internal.h */,
 				94A0146E2BF38F410018B096 /* HttpdnsService.h */,
 				94A0146D2BF38F410018B096 /* HttpdnsService.m */,
@@ -594,6 +600,8 @@
 				9A5BF7D21EC06B81001588B2 /* HttpdnsKeyValueStore.m */,
 				9AA0FC7B1EB9D17700E242DD /* HttpdnsgetNetworkInfoHelper.h */,
 				9AA0FC7C1EB9D17700E242DD /* HttpdnsgetNetworkInfoHelper.m */,
+				94AE923F2CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.h */,
+				94AE92402CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.m */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -712,6 +720,7 @@
 				9406FDBE2C19AA8F0003CB6A /* HttpdnsIP6CacheStoreSQL.h in Headers */,
 				9AA0FC701EB9AFB700E242DD /* HttpdnsHostRecord.h in Headers */,
 				9AA0FC7D1EB9D17700E242DD /* HttpdnsgetNetworkInfoHelper.h in Headers */,
+				94AE92412CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.h in Headers */,
 				4AD90CA22138EC21008ECE64 /* HttpdnsIPv6Manager.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -739,6 +748,7 @@
 				947E5C0F2C00760200123579 /* HttpdnsScheduleCenter.h in Headers */,
 				948DA4E52C1EAA8200D81682 /* HttpdnsRegionConfigLoader.h in Headers */,
 				947E5C112C00760200123579 /* HttpdnsScheduleCenterRequest.h in Headers */,
+				94AE92432CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.h in Headers */,
 				947E5C122C00760200123579 /* UIApplication+ABSHTTPDNSSetting.h in Headers */,
 				9406FDB92C19AA8F0003CB6A /* HttpdnsHostCacheStoreSQL.h in Headers */,
 				947E5C132C00760200123579 /* UIApplication+ABSHTTPDNSSetting.m in Headers */,
@@ -1007,6 +1017,7 @@
 				9A4D181E1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.m in Sources */,
 				9406FDB62C19AA8F0003CB6A /* HttpdnsIPCacheStore.m in Sources */,
 				9AE639FE1ECDA74D00F9C723 /* HttpdnsDatabaseAdditions.m in Sources */,
+				94AE92422CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.m in Sources */,
 				9A5914831EA0815D00A7ED28 /* HttpdnsPersistenceUtils.m in Sources */,
 				9AA0FC711EB9AFB700E242DD /* HttpdnsHostRecord.m in Sources */,
 				948DA4E62C1EAA8200D81682 /* HttpdnsRegionConfigLoader.m in Sources */,
@@ -1065,6 +1076,7 @@
 				9A5D5E2B1E9D027200CAC3A6 /* HttpdnsScheduleCenter.m in Sources */,
 				9A0903791EA07C0C007B6821 /* HttpdnsScheduleCenterRequest.m in Sources */,
 				9A24A85C1F179CEB00BDA719 /* UIApplication+ABSHTTPDNSSetting.m in Sources */,
+				94AE92442CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.m in Sources */,
 				948CD0092C031EB000F9F075 /* MultithreadCorrectnessTest.m in Sources */,
 				947E5C192C00764C00123579 /* HttpDnsLocker.m in Sources */,
 				945BA3F82C203F7F0098FC52 /* ManuallyCleanCacheTest.m in Sources */,

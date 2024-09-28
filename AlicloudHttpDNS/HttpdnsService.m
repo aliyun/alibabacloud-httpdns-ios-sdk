@@ -127,7 +127,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     sharedInstance.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
     sharedInstance.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
 
-    sharedInstance.requestScheduler = [[HttpdnsRequestScheduler alloc] init];
+    sharedInstance.requestScheduler = [HttpdnsRequestScheduler sharedInstance];
 
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
