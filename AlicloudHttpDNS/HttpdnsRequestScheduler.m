@@ -200,7 +200,7 @@ typedef struct {
         }
         // 缓存是以cacheKey为准，这里返回前，要把host替换成用户请求的这个
         result.hostName = host;
-        HttpdnsLogDebug("Load available cache for cacheKey: %@, result: %@", cacheKey, result);
+        HttpdnsLogDebug("Reuse available cache for cacheKey: %@, result: %@", cacheKey, result);
         // 因为缓存结果可用，可以立即返回
         return result;
     }
