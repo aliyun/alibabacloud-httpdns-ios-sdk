@@ -34,9 +34,12 @@
 
 - (id)objectForKey:(NSString *)key {
     [_lock lock];
-    id object = _cacheDict[key];
-    [_lock unlock];
-    return object;
+    @try {
+        id object = _cacheDict[key];
+        return [object copy];
+    } @finally {
+        [_lock unlock];
+    }
 }
 
 - (id)getObjectForKey:(NSString *)key createIfNotExists:(id (^)(void))objectProducer {
@@ -47,10 +50,10 @@
             object = objectProducer();
             _cacheDict[key] = object;
         }
+        return [object copy];
     } @finally {
         [_lock unlock];
     }
-    return object;
 }
 
 - (void)removeObjectForKey:(NSString *)key {
