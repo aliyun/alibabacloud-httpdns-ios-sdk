@@ -178,15 +178,13 @@
 
 
 - (NSString *)description {
-    NSString *des;
     if (![HttpdnsUtil isNotEmptyArray:_IP6s]) {
-        des = [NSString stringWithFormat:@"hostRecordId = %@, host = %@, carrier = %@, IPs = %@ , TTL = %@---",
+        return [NSString stringWithFormat:@"hostRecordId = %@, host = %@, carrier = %@, IPs = %@ , TTL = %@---",
                @(_hostRecordId), _host, _carrier, _IPs, @(_TTL)];
     } else {
-        des = [NSString stringWithFormat:@"hostRecordId = %@, host = %@, carrier = %@, IPs = %@ , IP6s = %@, TTL = %@---",
+        return [NSString stringWithFormat:@"hostRecordId = %@, host = %@, carrier = %@, IPs = %@ , IP6s = %@, TTL = %@---",
                @(_hostRecordId), _host, _carrier, _IPs, _IP6s, @(_TTL)];
     }
-    return des;
 }
 
 @end

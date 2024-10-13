@@ -34,7 +34,7 @@
 
 @interface HttpdnsHostObject : NSObject<NSCoding, NSCopying>
 
-@property (nonatomic, strong, setter=setHostName:, getter=getHostName) NSString *hostName;
+@property (nonatomic, copy, setter=setHostName:, getter=getHostName) NSString *hostName;
 @property (nonatomic, strong, setter=setIps:, getter=getIps) NSArray<HttpdnsIpObject *> *ips;
 @property (nonatomic, strong, setter=setIp6s:, getter=getIp6s) NSArray<HttpdnsIpObject *> *ip6s;
 

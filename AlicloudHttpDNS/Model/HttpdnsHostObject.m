@@ -211,18 +211,13 @@
 }
 
 - (NSString *)description {
-    @try {
-        if (![HttpdnsUtil isNotEmptyArray:_ip6s]) {
-            return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld extra = %@",
-                    _hostName, _ips, _lastLookupTime, _ttl, _extra];
-        } else {
-            return [NSString stringWithFormat:@"Host = %@ ips = %@ ip6s = %@ lastLookup = %lld ttl = %lld extra = %@",
-                    _hostName, _ips, _ip6s, _lastLookupTime, _ttl, _extra];
-        }
-    } @catch (NSException *exception) {
-        NSLog(@"🔴类名与方法名：%@（在第%@行），描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception.reason);
+    if (![HttpdnsUtil isNotEmptyArray:_ip6s]) {
+        return [NSString stringWithFormat:@"Host = %@ ips = %@ lastLookup = %lld ttl = %lld extra = %@",
+                _hostName, _ips, _lastLookupTime, _ttl, _extra];
+    } else {
+        return [NSString stringWithFormat:@"Host = %@ ips = %@ ip6s = %@ lastLookup = %lld ttl = %lld extra = %@",
+                _hostName, _ips, _ip6s, _lastLookupTime, _ttl, _extra];
     }
-    return @"HttpdnsHostObject";
 }
 
 @end

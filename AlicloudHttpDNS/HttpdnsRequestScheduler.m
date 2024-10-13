@@ -336,10 +336,9 @@ typedef struct {
         hasNoIpv6Record = YES;
     }
 
-    BOOL isJustCreated = NO;
     HttpdnsHostObject *cachedHostObject = [_hostMemCache objectForKey:cacheKey];
     if (!cachedHostObject) {
-        isJustCreated = YES;
+        HttpdnsLogDebug("Create new hostObject for cache, cacheKey: %@, host: %@", cacheKey, host);
         cachedHostObject = [[HttpdnsHostObject alloc] init];
     }
 
@@ -366,10 +365,10 @@ typedef struct {
         [cachedHostObject setExtra:extra];
     }
 
-    HttpdnsLogDebug("Updated hostObject to cached, isJustCreated: %d, cacheKey: %@, host: %@", isJustCreated, cacheKey, host);
-    if (isJustCreated) {
-        [_hostMemCache setObject:cachedHostObject forKey:cacheKey];
-    }
+    HttpdnsLogDebug("Updated hostObject to cached, cacheKey: %@, host: %@", cacheKey, host);
+
+    // 由于从缓存中读取到的是拷贝出来的新对象，字段赋值不会影响缓存中的值对象，因此这里无论如何都要放回缓存
+    [_hostMemCache setObject:cachedHostObject forKey:cacheKey];
 
     if([HttpdnsUtil isNotEmptyDictionary:extra]) {
         [self sdnsCacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:ip4Strings IP6s:ip6Strings TTL:ttl withExtra:extra];
