@@ -367,6 +367,8 @@ typedef struct {
 
     HttpdnsLogDebug("Updated hostObject to cached, cacheKey: %@, host: %@", cacheKey, host);
 
+    NSArray *ipv4StrArray = [cachedHostObject getIPStrings];
+
     // 由于从缓存中读取到的是拷贝出来的新对象，字段赋值不会影响缓存中的值对象，因此这里无论如何都要放回缓存
     [_hostMemCache setObject:cachedHostObject forKey:cacheKey];
 
@@ -376,11 +378,12 @@ typedef struct {
         [self cacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:ip4Strings IP6s:ip6Strings TTL:ttl];
     }
 
-    [self asyncUpdateIPRankingWithResult:cachedHostObject forHost:host cacheKey:cacheKey];
+    // 目前只处理ipv4地址
+    [self asyncUpdateIPRankingWithIpv4StrArray:ipv4StrArray forHost:host cacheKey:cacheKey];
     return cachedHostObject;
 }
 
-- (void)asyncUpdateIPRankingWithResult:(HttpdnsHostObject *)result forHost:(NSString *)host cacheKey:(NSString *)cacheKey {
+- (void)asyncUpdateIPRankingWithIpv4StrArray:(NSArray *)ipv4StrArray forHost:(NSString *)host cacheKey:(NSString *)cacheKey {
     if (!self.IPRankingEnabled) {
         return;
     }
@@ -392,34 +395,29 @@ typedef struct {
     }
 
     dispatch_async(_asyncResolveHostQueue, ^(void) {
-        [self syncUpdateIPRankingWithResult:result forHost:host cacheKey:cacheKey];
+        [self syncUpdateIPRankingWithIpv4StrArray:ipv4StrArray forHost:host cacheKey:cacheKey];
     });
 }
 
-- (void)syncUpdateIPRankingWithResult:(HttpdnsHostObject *)result forHost:(NSString *)host cacheKey:cacheKey {
-    // 目前只处理ipv4地址
-    NSArray<NSString *> *ipStrings = [result getIPStrings];
+- (void)syncUpdateIPRankingWithIpv4StrArray:(NSArray *)ipv4StrArray forHost:(NSString *)host cacheKey:cacheKey {
+    NSArray *sortedIps = [[HttpdnsTCPSpeedTester new] ipRankingWithIPs:ipv4StrArray host:host];
 
-    NSArray *sortedIps = [[HttpdnsTCPSpeedTester new] ipRankingWithIPs:ipStrings host:host];
+    if ([HttpdnsUtil isEmptyArray:sortedIps]) {
+        return;
+    }
 
     [self updateHostManagerDictWithIPs:sortedIps host:host cacheKey:cacheKey];
 }
 
-- (void)updateHostManagerDictWithIPs:(NSArray *)ips host:(NSString *)host cacheKey:cacheKey {
+- (void)updateHostManagerDictWithIPs:(NSArray *)sortedIps host:(NSString *)host cacheKey:cacheKey {
     HttpdnsHostObject *hostObject = [_hostMemCache objectForKey:cacheKey];
-
     if (!hostObject) {
         return;
     }
 
-    if ([HttpdnsUtil isEmptyArray:ips] || [HttpdnsUtil isEmptyString:host]) {
-        return;
-    }
-
     @synchronized(self) {
-        //FIXME:
         NSMutableArray *ipArray = [[NSMutableArray alloc] init];
-        for (NSString *ip in ips) {
+        for (NSString *ip in sortedIps) {
             if ([HttpdnsUtil isEmptyString:ip]) {
                 continue;
             }
@@ -663,12 +661,14 @@ typedef struct {
             // 从DB缓存中加载到内存里的数据，更新其查询时间为当前，使得它可以有一个TTL的可用期
             [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
 
+            NSArray *ipv4StrArr = [hostObject getIPStrings];
+
             [_hostMemCache setObject:hostObject forKey:host];
 
             // 因为当前持久化缓存为区分cachekey和host(实际是cachekey)
             // 持久化缓存里的host实际上是cachekey
             // 因此这里取出来，如果cachekey和host不一致的情况，这个IP优选会因为查不到datasource而实际不生效
-            [self asyncUpdateIPRankingWithResult:hostObject forHost:host cacheKey:host];
+            [self asyncUpdateIPRankingWithIpv4StrArray:ipv4StrArr forHost:host cacheKey:host];
         }
     });
 }
