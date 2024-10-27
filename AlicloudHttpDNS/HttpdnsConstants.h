@@ -41,14 +41,18 @@ static NSString *const kAlicloudHttpdnsRegionKey = @"HttpdnsRegion";
 #define ALICLOUD_HTTPDNS_DISTANT_CURRENT_TIMESTAMP \
     ([[NSDate date] timeIntervalSince1970])
 
-//单位秒
-#define ALICLOUD_HTTPDNS_DISTANT_FUTURE_TIMESTAMP \
-    ([[NSDate distantFuture] timeIntervalSince1970])
+static NSString *const ALICLOUD_HTTPDNS_ERROR_DOMAIN = @"HttpdnsErrorDomain";
 
-#define ALICLOUD_HTTPDNS_VALID_TIMESTAMP(timestamp) ({      \
-    int64_t timestamp_ = (int64_t)(timestamp);  \
-    if (timestamp_ <= 0) timestamp_ = ALICLOUD_HTTPDNS_DISTANT_FUTURE_TIMESTAMP;  \
-    timestamp_;  \
-})
+NSInteger const ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE = 10003;
+NSInteger const ALICLOUD_HTTPDNS_HTTP_COMMON_ERROR_CODE = 10004;
+
+NSInteger const ALICLOUD_HTTPDNS_HTTPS_TIMEOUT_ERROR_CODE = 10005;
+NSInteger const ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE = 10006;
+
+NSInteger const ALICLOUD_HTTPDNS_HTTP_STREAM_READ_ERROR_CODE = 10007;
+NSInteger const ALICLOUD_HTTPDNS_HTTP_CANNOT_CONNECT_SERVER_ERROR_CODE = 10008;
+
+NSInteger const ALICLOUD_HTTP_UNSUPPORTED_STATUS_CODE = 10013;
+NSInteger const ALICLOUD_HTTP_PARSE_JSON_FAILED = 10014;
 
 #endif /* HttpdnsConstants_h */

@@ -51,8 +51,6 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 
 @property (nonatomic, weak) id<HttpdnsTTLDelegate> ttlDelegate;
 
-@property (nonatomic, assign) NSTimeInterval timeoutInterval;
-
 + (instancetype)sharedInstance;
 
 - (instancetype)autoInit;
@@ -115,6 +113,12 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 /// HTTP 请求基于底层 CFNetwork 实现，不受 ATS 限制；
 /// @param enable YES: HTTPS请求 NO: HTTP请求
 - (void)setHTTPSRequestEnabled:(BOOL)enable;
+
+
+/// 声明App是否配置了ATS为AllowsArbitraryLoads，默认认为没有配置
+/// 若做了声明，则当指定走HTTP方式解析域名时，解析链路会走系统NSURLSession逻辑
+/// 否则，会走定制的CFHTTP链路，避免被ATS拦截请求
+- (void)setHasAllowedArbitraryLoadsInATS:(BOOL)hasAllowedArbitraryLoadsInATS;
 
 
 /// 设置底层HTTPDNS网络请求超时时间，单位为秒

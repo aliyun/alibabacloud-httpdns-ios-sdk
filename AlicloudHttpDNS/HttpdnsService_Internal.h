@@ -30,14 +30,17 @@
 
 @property (nonatomic, copy) NSDictionary *IPRankingDataSource;
 
+@property (nonatomic, assign) NSTimeInterval timeoutInterval;
+
+@property (nonatomic, assign) BOOL enableHttpsRequest;
+
+@property (nonatomic, assign) BOOL hasAllowedArbitraryLoadsInATS;
+
 - (NSString *)getIpByHost:(NSString *)host;
 
 - (NSArray *)getIpsByHost:(NSString *)host;
 
 - (NSString *)getIpByHostInURLFormat:(NSString *)host;
-
-//设置测试场景下的日志回调
-- (void)setTestLogHannder:(id<HttpdnsLog_testOnly_protocol>)handler;
 
 @end
 

@@ -136,7 +136,7 @@ typedef struct {
 
        strongSelf.serverDisable = [[HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS dict:json] boolValue];
         if (strongSelf.serverDisable) {
-            HttpdnsLogDebug("HTTPDNS is disabled");
+            HttpdnsLogDebug("HTTPDNS is disabled at initializing.");
         }
     });
 }
@@ -277,12 +277,13 @@ typedef struct {
     HttpdnsQueryIPType queryIPType = request.queryIpType;
 
     if (hasRetryedCount > HTTPDNS_MAX_REQUEST_RETRY_TIME) {
-        HttpdnsLogDebug("Internal request retry count exceed limit, host: %@", host);
+        HttpdnsLogDebug("Internal request retry count exceed limit, we disable the server for a while, host: %@", host);
         [self disableHttpDnsServer:YES];
         return nil;
     }
 
     if ([self isDisableToServer]) {
+        HttpdnsLogDebug("Internal request is skipped due to server disabled, host: %@", host);
         return nil;
     }
 
@@ -598,6 +599,7 @@ typedef struct {
 
 - (BOOL)isDisableToServer {
     if (_serverDisable) {
+        HttpdnsLogDebug("Http service is disabled but we are able to sniffer now.")
         if (self.isAbleToSniffer) {
             return NO;
         }
