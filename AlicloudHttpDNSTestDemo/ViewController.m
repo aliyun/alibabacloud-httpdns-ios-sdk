@@ -18,7 +18,7 @@
 NSArray *ipv4HostArray = nil;
 NSArray *ipv6HostArray = nil;
 
-@interface ViewController ()
+@interface ViewController () <HttpdnsTTLDelegate>
 
 @property (nonatomic, strong) HttpDnsService *service;
 @property (nonatomic, strong) HttpdnsScheduleCenter *sc;
@@ -67,10 +67,12 @@ NSArray *ipv6HostArray = nil;
 
     // ams_test账号139450
     _service = [[HttpDnsService alloc] initWithAccountID:139450];
+    [_service setTtlDelegate:self];
     [_service setLogEnabled:YES];
-    [_service setPersistentCacheIPEnabled:YES];
+    // [_service setHasAllowedArbitraryLoadsInATS:YES];
+    [_service setPersistentCacheIPEnabled:NO];
     [_service setReuseExpiredIPEnabled:NO];
-    [_service setHTTPSRequestEnabled:YES];
+    [_service setHTTPSRequestEnabled:NO];
     [_service setIPv6Enabled:YES];
 
     NSString *sessionId = [[HttpDnsService sharedInstance] getSessionId];
@@ -80,12 +82,14 @@ NSArray *ipv6HostArray = nil;
     // [_service setPreResolveHosts:@[@"only-v4.xuyecan1919.tech"]];
 }
 
+- (int64_t)httpdnsHost:(NSString *)host ipType:(AlicloudHttpDNS_IPType)ipType ttl:(int64_t)ttl {
+    return 1;
+}
 
 - (IBAction)onHost1:(id)sender {
     HttpDnsService *service = [HttpDnsService sharedInstance];
-    NSDictionary<NSString *, NSString *> *params = @{@"key1": @"value1", @"key2": @"value2"};
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        HttpdnsResult *result = [service resolveHostSync:@"action.test.com" byIpType:HttpdnsQueryIPTypeAuto withSdnsParams:params sdnsCacheKey:nil];
+        HttpdnsResult *result = [service resolveHostSync:@"www.aliyun.com" byIpType:HttpdnsQueryIPTypeBoth];
         NSLog(@"result: %@, firstIp: %@", result, [result firstIpv4Address]);
     });
 }

@@ -20,9 +20,8 @@
 #import "HttpdnsLog_Internal.h"
 
 static BOOL HttpdnsLogIsEnabled = NO;
-static __weak id<HttpdnsLoggerProtocol> sLogHandler;
 
-static __weak id<HttpdnsLog_testOnly_protocol> sTestLogHandler;
+static __weak id<HttpdnsLoggerProtocol> sLogHandler;
 
 @implementation HttpdnsLog
 
@@ -52,24 +51,6 @@ static __weak id<HttpdnsLog_testOnly_protocol> sTestLogHandler;
 + (void)outputToLogHandler:(NSString *)logStr {
     if (sLogHandler) {
         [sLogHandler log:logStr];
-    }
-}
-
-
-
-+ (void)setTestLogHandler:(id<HttpdnsLog_testOnly_protocol>)handler {
-    if (handler && [handler respondsToSelector:@selector(testLog:)]) {
-        sTestLogHandler = handler;
-    }
-}
-
-+ (BOOL)validTestLogHandler {
-    return (sTestLogHandler != nil);
-}
-
-+ (void)outputTestToLogHandler:(NSString *)logStr {
-    if (sTestLogHandler) {
-        [sTestLogHandler testLog:logStr];
     }
 }
 

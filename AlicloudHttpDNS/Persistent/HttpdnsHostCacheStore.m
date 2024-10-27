@@ -241,11 +241,12 @@
 }
 
 - (NSArray *)insertionRecordForRecord:(HttpdnsHostRecord *)hostRecord networkName:(NSString *)networkName {
-    NSTimeInterval expireAt = [[NSDate date] timeIntervalSince1970] + hostRecord.TTL;
+    NSTimeInterval createAt = [[NSDate date] timeIntervalSince1970];
+    NSTimeInterval expireAt = createAt + hostRecord.TTL;
     return @[
              hostRecord.host,                               //ALICLOUD_HTTPDNS_FIELD_HOST
              networkName,                                   //ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER
-             @(ALICLOUD_HTTPDNS_DISTANT_CURRENT_TIMESTAMP), //ALICLOUD_HTTPDNS_FIELD_CREATE_AT
+             @(createAt),                                   //ALICLOUD_HTTPDNS_FIELD_CREATE_AT
              @(expireAt)                                    //ALICLOUD_HTTPDNS_FIELD_EXPIRE_AT
              ];
 }

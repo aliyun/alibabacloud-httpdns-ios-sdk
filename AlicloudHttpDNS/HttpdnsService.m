@@ -58,8 +58,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 @property (nonatomic, strong) HttpdnsScheduleCenter *scheduleCenter;
 @end
 
-@implementation HttpDnsService {
-}
+@implementation HttpDnsService
 
 @synthesize IPRankingDataSource = _IPRankingDataSource;
 
@@ -69,7 +68,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         asyncTaskConcurrentQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.asyncTask", DISPATCH_QUEUE_CONCURRENT);
 
         // 注册 UIApplication+ABSHTTPDNSSetting 中的Swizzle
-        [[UIApplication sharedApplication] onBeforeBootingProtection];
+        // [[UIApplication sharedApplication] onBeforeBootingProtection];
     });
 }
 
@@ -126,6 +125,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     sharedInstance.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
     sharedInstance.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
+    sharedInstance.enableHttpsRequest = NO;
+    sharedInstance.hasAllowedArbitraryLoadsInATS = NO;
 
     sharedInstance.requestScheduler = [HttpdnsRequestScheduler sharedInstance];
 
@@ -177,11 +178,15 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)setHTTPSRequestEnabled:(BOOL)enable {
-    HTTPDNS_REQUEST_PROTOCOL_HTTPS_ENABLED = enable;
+    _enableHttpsRequest = enable;
+}
+
+- (void)setHasAllowedArbitraryLoadsInATS:(BOOL)hasAllowedArbitraryLoadsInATS {
+    _hasAllowedArbitraryLoadsInATS = hasAllowedArbitraryLoadsInATS;
 }
 
 - (void)setNetworkingTimeoutInterval:(NSTimeInterval)timeoutInterval {
-    self.timeoutInterval = timeoutInterval;
+    _timeoutInterval = timeoutInterval;
 }
 
 - (void)setRegion:(NSString *)region {
@@ -1061,10 +1066,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (void)setLogHandler:(id<HttpdnsLoggerProtocol>)logHandler {
     [HttpdnsLog setLogHandler:logHandler];
-}
-
-- (void)setTestLogHannder:(id<HttpdnsLog_testOnly_protocol>)handler {
-    [HttpdnsLog setTestLogHandler:handler];
 }
 
 - (void)cleanHostCache:(NSArray<NSString *> *)hostArray {

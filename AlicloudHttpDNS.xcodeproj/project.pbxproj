@@ -52,6 +52,10 @@
 		9406FDC62C19AA8F0003CB6A /* HttpdnsCacheStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 9406FDB32C19AA8F0003CB6A /* HttpdnsCacheStore.m */; };
 		9406FDC72C19AA8F0003CB6A /* HttpdnsCacheStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 9406FDB32C19AA8F0003CB6A /* HttpdnsCacheStore.m */; };
 		942376DE1C5764CF00736E50 /* HttpdnsDegradationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		943F159C2CCDF1D60045865D /* HttpdnsCFHttpWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 943F159B2CCDF1D60045865D /* HttpdnsCFHttpWrapper.m */; };
+		943F159D2CCDF1D60045865D /* HttpdnsCFHttpWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 943F159A2CCDF1D60045865D /* HttpdnsCFHttpWrapper.h */; };
+		943F159E2CCDF1D60045865D /* HttpdnsCFHttpWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 943F159B2CCDF1D60045865D /* HttpdnsCFHttpWrapper.m */; };
+		943F159F2CCDF1D60045865D /* HttpdnsCFHttpWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 943F159A2CCDF1D60045865D /* HttpdnsCFHttpWrapper.h */; };
 		943FA4222BF9D4FA0006F169 /* HttpdnsHostObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 943FA4202BF9D4FA0006F169 /* HttpdnsHostObject.h */; };
 		943FA4232BF9D4FA0006F169 /* HttpdnsHostObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 943FA4212BF9D4FA0006F169 /* HttpdnsHostObject.m */; };
 		943FA4262BFA44F30006F169 /* HttpdnsResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 943FA4242BFA44F30006F169 /* HttpdnsResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -261,6 +265,8 @@
 		9406FDB22C19AA8F0003CB6A /* HttpdnsIPCacheStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPCacheStore.h; sourceTree = "<group>"; };
 		9406FDB32C19AA8F0003CB6A /* HttpdnsCacheStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsCacheStore.m; sourceTree = "<group>"; };
 		942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsDegradationDelegate.h; sourceTree = "<group>"; };
+		943F159A2CCDF1D60045865D /* HttpdnsCFHttpWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsCFHttpWrapper.h; sourceTree = "<group>"; };
+		943F159B2CCDF1D60045865D /* HttpdnsCFHttpWrapper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsCFHttpWrapper.m; sourceTree = "<group>"; };
 		943FA4202BF9D4FA0006F169 /* HttpdnsHostObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsHostObject.h; sourceTree = "<group>"; };
 		943FA4212BF9D4FA0006F169 /* HttpdnsHostObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsHostObject.m; sourceTree = "<group>"; };
 		943FA4242BFA44F30006F169 /* HttpdnsResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsResult.h; sourceTree = "<group>"; };
@@ -602,6 +608,8 @@
 				9AA0FC7C1EB9D17700E242DD /* HttpdnsgetNetworkInfoHelper.m */,
 				94AE923F2CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.h */,
 				94AE92402CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.m */,
+				943F159A2CCDF1D60045865D /* HttpdnsCFHttpWrapper.h */,
+				943F159B2CCDF1D60045865D /* HttpdnsCFHttpWrapper.m */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -709,6 +717,7 @@
 				9AA0FC5F1EB9846E00E242DD /* HttpdnsDatabaseCommon.h in Headers */,
 				9A5BF7D41EC06B81001588B2 /* HttpdnsKeyValueStore.h in Headers */,
 				9406FDC42C19AA8F0003CB6A /* HttpdnsIPCacheStore.h in Headers */,
+				943F159F2CCDF1D60045865D /* HttpdnsCFHttpWrapper.h in Headers */,
 				943FA4222BF9D4FA0006F169 /* HttpdnsHostObject.h in Headers */,
 				9AC27F061FDFCB9100DF016A /* HttpdnsSpeedTester.h in Headers */,
 				9AC27F031FDFCB4800DF016A /* HttpdnsTCPSpeedTester.h in Headers */,
@@ -742,6 +751,7 @@
 				947E5C0B2C00760200123579 /* HttpdnsSpeedTester.h in Headers */,
 				947E5C0C2C00760200123579 /* HttpdnsTCPSpeedTester.h in Headers */,
 				947E5C0D2C00760200123579 /* HttpdnsPersistenceUtils.h in Headers */,
+				943F159D2CCDF1D60045865D /* HttpdnsCFHttpWrapper.h in Headers */,
 				947E5C0E2C00760200123579 /* HttpdnsConstants.h in Headers */,
 				948DA4DF2C1E7E5F00D81682 /* HttpdnsPublicConstant.h in Headers */,
 				9406FDBB2C19AA8F0003CB6A /* HttpdnsCacheStore.h in Headers */,
@@ -1027,6 +1037,7 @@
 				9AA0FC7E1EB9D17700E242DD /* HttpdnsgetNetworkInfoHelper.m in Sources */,
 				2197CACD1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m in Sources */,
 				9AC200381F0E169400754CC2 /* UIApplication+ABSHTTPDNSSetting.m in Sources */,
+				943F159E2CCDF1D60045865D /* HttpdnsCFHttpWrapper.m in Sources */,
 				9AE63A021ECDA74D00F9C723 /* HttpdnsDatabaseQueue.m in Sources */,
 				9AE639FC1ECDA74D00F9C723 /* HttpdnsDatabase.m in Sources */,
 				943FA4232BF9D4FA0006F169 /* HttpdnsHostObject.m in Sources */,
@@ -1070,6 +1081,7 @@
 				4AF5AB871DCB332800206DD8 /* HttpdnsRequestScheduler.m in Sources */,
 				94A014712BF38F410018B096 /* HttpdnsService.m in Sources */,
 				4AF5AB891DCB332800206DD8 /* HttpdnsUtil.m in Sources */,
+				943F159C2CCDF1D60045865D /* HttpdnsCFHttpWrapper.m in Sources */,
 				9A09D7821FF2033200585632 /* HttpdnsTCPSpeedTester.m in Sources */,
 				9A5914851EA081AB00A7ED28 /* HttpdnsPersistenceUtils.m in Sources */,
 				947E5C1D2C02DB9300123579 /* PresetCacheAndRetrieveTest.m in Sources */,

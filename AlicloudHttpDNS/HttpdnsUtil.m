@@ -230,33 +230,6 @@ _Pragma("clang diagnostic pop") \
     return [string copy];
 }
 
-+ (NSError *)getErrorFromError:(NSError *)error statusCode:(NSInteger)statusCode json:(NSDictionary *)json isHTTPS:(BOOL)isHTTPS {
-    NSError *errorStrong = [error copy];
-    if (statusCode != 200) {
-        if (errorStrong) {
-            NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                  @"Response code not 200, and parse response message error", ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY,
-                                  [NSString stringWithFormat:@"%ld", (long)statusCode], @"ResponseCode", nil];
-            errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10002 userInfo:dict];
-        } else {
-            NSString *errCode = @"";
-            @try {
-                errCode = [json objectForKey:@"code"];
-            } @catch (NSException *exception) {}
-            NSDictionary *dict = nil;
-            if ([HttpdnsUtil isNotEmptyString:errCode]) {
-                dict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                        errCode, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
-            }
-
-            NSString *domainString = [NSString stringWithFormat:@"httpdns.request.lookupAllHostsFromServer-%@", isHTTPS? @"HTTPS": @"HTTP"];
-            NSInteger code = isHTTPS ? ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE : ALICLOUD_HTTPDNS_HTTP_COMMON_ERROR_CODE;
-            errorStrong = [NSError errorWithDomain:domainString code:code userInfo:dict];
-        }
-    }
-    return errorStrong;
-}
-
 /**
  生成sessionId
  App打开生命周期只生成一次，不做持久化
