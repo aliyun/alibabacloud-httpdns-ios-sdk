@@ -19,7 +19,7 @@ end
 
 target 'AlicloudHttpDNSTests' do
   shared_pods
-  pod 'OCMock', '3.9.3'
+  pod 'OCMock'
 end
 
 post_install do |installer|
