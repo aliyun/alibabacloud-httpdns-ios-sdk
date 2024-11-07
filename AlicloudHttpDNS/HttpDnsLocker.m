@@ -41,6 +41,15 @@
     }
 }
 
+- (BOOL)tryLock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType {
+    NSLock *condition = [self getLock:host queryType:queryType];
+
+    if (condition) {
+        return [condition tryLock];
+    }
+    return NO;
+}
+
 - (void)unlock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType {
     NSLock *condition = [self getLock:host queryType:queryType];
     if (condition) {

@@ -218,13 +218,16 @@ typedef struct {
 - (void)determineResolvingHostNonBlocking:(HttpdnsRequest *)request {
     dispatch_async(_asyncResolveHostQueue, ^{
         HttpDnsLocker *locker = [HttpDnsLocker sharedInstance];
-        @try {
-            [locker lock:request.cacheKey queryType:request.queryIpType];
-            [self executeRequest:request retryCount:0];
-        } @catch (NSException *exception) {
-            HttpdnsLogDebug("determineResolvingHostNonBlocking exception: %@", exception);
-        } @finally {
-            [locker unlock:request.cacheKey queryType:request.queryIpType];
+        if ([locker tryLock:request.cacheKey queryType:request.queryIpType]) {
+            @try {
+                [self executeRequest:request retryCount:0];
+            } @catch (NSException *exception) {
+                HttpdnsLogDebug("determineResolvingHostNonBlocking host: %@, exception: %@", request.host, exception);
+            } @finally {
+                [locker unlock:request.cacheKey queryType:request.queryIpType];
+            }
+        } else {
+            HttpdnsLogDebug("determineResolvingHostNonBlocking skipped due to concurrent limitation, host: %@", request.host);
         }
     });
 }
@@ -236,9 +239,16 @@ typedef struct {
         HttpDnsLocker *locker = [HttpDnsLocker sharedInstance];
         @try {
             [locker lock:request.cacheKey queryType:request.queryIpType];
+
+            result = [self->_hostMemCache objectForKey:request.cacheKey];
+            if (result && ![result isExpiredUnderQueryIpType:request.queryIpType]) {
+                // 存在且未过期，意味着其他线程已经解析到了新的结果
+                return;
+            }
+
             result = [self executeRequest:request retryCount:0];
         } @catch (NSException *exception) {
-            HttpdnsLogDebug("determineResolveHostBlocking exception: %@", exception);
+            HttpdnsLogDebug("determineResolveHostBlocking host: %@, exception: %@", request.host, exception);
         } @finally {
             [locker unlock:request.cacheKey queryType:request.queryIpType];
             dispatch_semaphore_signal(semaphore);

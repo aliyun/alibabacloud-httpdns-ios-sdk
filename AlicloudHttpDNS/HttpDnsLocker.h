@@ -18,6 +18,8 @@
 
 - (void)lock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType;
 
+- (BOOL)tryLock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType;
+
 - (void)unlock:(NSString *)host queryType:(HttpdnsQueryIPType)queryType;
 
 @end
