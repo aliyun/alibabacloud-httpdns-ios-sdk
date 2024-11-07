@@ -83,7 +83,7 @@ NSArray *ipv6HostArray = nil;
 }
 
 - (int64_t)httpdnsHost:(NSString *)host ipType:(AlicloudHttpDNS_IPType)ipType ttl:(int64_t)ttl {
-    return 1;
+    return 2;
 }
 
 - (IBAction)onHost1:(id)sender {
@@ -96,7 +96,7 @@ NSArray *ipv6HostArray = nil;
 
 - (IBAction)onHost2:(id)sender {
     HttpDnsService *service = [HttpDnsService sharedInstance];
-    [service resolveHostAsync:@"dual-stack.xuyecan1919.tech" byIpType:HttpdnsQueryIPTypeBoth completionHandler:^(HttpdnsResult *result) {
+    [service resolveHostAsync:@"www.aliyun.com" byIpType:HttpdnsQueryIPTypeBoth completionHandler:^(HttpdnsResult *result) {
         NSLog(@"result: %@, firstIp: %@", result, [result firstIpv4Address]);
     }];
 }
