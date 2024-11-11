@@ -131,8 +131,6 @@
 
     [scheduler executeRequest:request retryCount:1];
 
-    OCMStub([mockScheduler disableHttpDnsServer:[OCMArg any]]);
-
     int secondIndex = [scheduleCenter currentActiveServiceServerHostIndex];
 
     XCTAssertEqual((startIndex + 1) % serviceServerCount, secondIndex);

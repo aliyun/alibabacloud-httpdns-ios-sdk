@@ -89,6 +89,9 @@ typedef struct {
         context->timer = NULL;
     }
 
+    context->url = nil;
+    context->responseData = nil;
+
     free(context);
 }
 
@@ -120,7 +123,8 @@ typedef struct {
             if (responseMessage) {
                 CFIndex statusCode = CFHTTPMessageGetResponseStatusCode(responseMessage);
                 if (statusCode == 200) {
-                    UInt8 buffer[8 * 1024];
+                    // httpdns的返回内容都比较少，开1024个字节就够了
+                    UInt8 buffer[1024];
                     CFIndex bytesRead = CFReadStreamRead(stream, buffer, sizeof(buffer));
                     if (bytesRead > 0) {
                         [context->responseData appendBytes:buffer length:bytesRead];

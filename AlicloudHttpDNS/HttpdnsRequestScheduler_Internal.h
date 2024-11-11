@@ -24,21 +24,11 @@ FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_2;
 FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_3;
 FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_4;
 
-static NSTimeInterval intervalBeforeAllowToSniffAfterLastServerDisable;
-
 @interface HttpdnsRequestScheduler ()
 
 // ip探测优选开关 两者需要同时满足
 // 这个ip探测优选开关是走的beacon服务
 @property (nonatomic, assign) BOOL IPRankingEnabled;
-
-- (void)disableHttpDnsServer:(BOOL)serverDisable;
-
-- (void)setServerDisable:(BOOL)serverDisable;
-
-- (BOOL)isServerDisable;
-
-+ (void)setZeroSnifferTimeInterval;
 
 - (NSString *)showMemoryCache;
 
@@ -49,8 +39,6 @@ static NSTimeInterval intervalBeforeAllowToSniffAfterLastServerDisable;
 // 内部缓存开关，不触发加载DB到内存的操作
 - (void)setPersistentCacheIpEnabled:(BOOL)enable;
 - (BOOL)getPersistentCacheIpEnabled;
-
-+ (void)configureServerIPsAndResetActivatedIPTime;
 
 - (void)syncReloadCacheFromDbToMemoryByIspCarrier;
 
