@@ -39,15 +39,7 @@
 #import "HttpdnsRequest_Internal.h"
 #import "HttpdnsThreadSafeDictionary.h"
 
-static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS = @"disable_status_key";
-static NSString *const ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME = @"disable_status";
-
 NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP = @"203.107.1.1";
-
-NSString *const ALICLOUD_HTTPDNS_HTTP_SERVER_PORT = @"80";
-NSString *const ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT = @"443";
-
-NSTimeInterval serverDisableStateLocalCacheTimeInterval = 0;
 
 static dispatch_queue_t _persistentCacheConcurrentQueue = NULL;
 static dispatch_queue_t _asyncResolveHostQueue = NULL;
@@ -62,10 +54,7 @@ typedef struct {
 /**
  * disable 状态置位的逻辑会在 `-mergeLookupResultToManager` 中执行。
  */
-@property (nonatomic, assign, getter=isServerDisable) BOOL serverDisable;
-@property (nonatomic, strong) NSDate *lastServerDisableDate;
 @property (nonatomic, strong) dispatch_queue_t cacheQueue;
-@property (nonatomic, copy) NSString *disableStatusPath;
 @property (nonatomic, assign) BOOL persistentCacheIpEnabled;
 
 @end
@@ -84,16 +73,6 @@ typedef struct {
         _persistentCacheConcurrentQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.persistentCacheOperationQueue", DISPATCH_QUEUE_CONCURRENT);
         _asyncResolveHostQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.asyncResolveHostQueue", DISPATCH_QUEUE_CONCURRENT);
     });
-
-    [self configureServerIPsAndResetActivatedIPTime];
-}
-
-+ (void)configureServerIPsAndResetActivatedIPTime {
-    // Disable状态开始30秒后可以进行“嗅探”行为
-    intervalBeforeAllowToSniffAfterLastServerDisable = 30;
-
-    // sever disable状态缓存时间默认为1天
-    serverDisableStateLocalCacheTimeInterval = 1 * 24 * 60 * 60;
 }
 
 + (instancetype)sharedInstance {
@@ -117,28 +96,8 @@ typedef struct {
                                                  selector:@selector(networkChanged:)
                                                      name:ALICLOUD_NETWOEK_STATUS_NOTIFY
                                                    object:nil];
-        [self initServerDisableStatus];
     }
     return self;
-}
-
-- (void)initServerDisableStatus {
-    __weak typeof(self) weakSelf = self;
-    dispatch_async(self.cacheQueue, ^{
-        NSDictionary *json = [HttpdnsPersistenceUtils getJSONFromDirectory:[HttpdnsPersistenceUtils disableStatusPath]
-                                                                  fileName:ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME
-                                                                   timeout:serverDisableStateLocalCacheTimeInterval];
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!json) {
-            // 本地无缓存，常见于第一次安装，或者未发生过 DNS 故障。
-            return;
-        }
-
-       strongSelf.serverDisable = [[HttpdnsUtil safeObjectForKey:ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS dict:json] boolValue];
-        if (strongSelf.serverDisable) {
-            HttpdnsLogDebug("HTTPDNS is disabled at initializing.");
-        }
-    });
 }
 
 - (void)addPreResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType{
@@ -287,13 +246,7 @@ typedef struct {
     HttpdnsQueryIPType queryIPType = request.queryIpType;
 
     if (hasRetryedCount > HTTPDNS_MAX_REQUEST_RETRY_TIME) {
-        HttpdnsLogDebug("Internal request retry count exceed limit, we disable the server for a while, host: %@", host);
-        [self disableHttpDnsServer:YES];
-        return nil;
-    }
-
-    if ([self isDisableToServer]) {
-        HttpdnsLogDebug("Internal request is skipped due to server disabled, host: %@", host);
+        HttpdnsLogDebug("Internal request retry count exceed limit, host: %@", host);
         return nil;
     }
 
@@ -327,8 +280,6 @@ typedef struct {
     if (!result) {
         return nil;
     }
-
-    [self disableHttpDnsServer:NO];
 
     int64_t ttl = [result getTTL];
     int64_t lastLookupTime = [result getLastLookupTime];
@@ -512,7 +463,6 @@ typedef struct {
 
     dispatch_async(_asyncResolveHostQueue, ^{
         [self cleanAllHostMemoryCache];
-        [self resetServerDisableDate];
 
         // 网络发生变化后，上面已经清理内存缓存，现在，要以当前网络运营商为条件去db里找之前是否有缓存，如果是，就复用这个缓存
         // 同步操作，防止网络请求成功，更新后，缓存数据又被重新覆盖
@@ -542,81 +492,8 @@ typedef struct {
     return _cacheQueue;
 }
 
-- (void)disableHttpDnsServer:(BOOL)serverDisable {
-    dispatch_async(self.cacheQueue, ^{
-        if (serverDisable) {
-            self->_lastServerDisableDate = [NSDate date];
-        } else {
-            self->_lastServerDisableDate = nil;
-        }
-    });
-    if (_serverDisable == serverDisable) {
-        return;
-    }
-    _serverDisable = serverDisable;
-    if (!serverDisable) {
-        [HttpdnsPersistenceUtils removeFile:self.disableStatusPath];
-        return;
-    }
-    NSDictionary *json = @{
-                           ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_KEY_STATUS : @(serverDisable)
-                           };
-    BOOL success = [HttpdnsPersistenceUtils saveJSON:json toPath:self.disableStatusPath];
-    HttpdnsLogDebug("HTTPDNS server disable takes effect, persist success: %@", success ? @"succeeded" : @"failed");
-}
-
-- (NSDate *)lastServerDisableDate {
-    __block NSDate *lastServerDisableDate = nil;
-    dispatch_sync(self.cacheQueue, ^{
-        lastServerDisableDate = _lastServerDisableDate;
-    });
-    return lastServerDisableDate;
-}
-
-- (void)resetServerDisableDate {
-    dispatch_sync(self.cacheQueue, ^{
-        _lastServerDisableDate = nil;
-    });
-}
-
-- (NSString *)disableStatusPath {
-    @synchronized(self) {
-        if (_disableStatusPath) {
-            return _disableStatusPath;
-        }
-        NSString *fileName = ALICLOUD_HTTPDNS_SERVER_DISABLE_CACHE_FILE_NAME;
-        NSString *fullPath = [[HttpdnsPersistenceUtils disableStatusPath] stringByAppendingPathComponent:fileName];
-        _disableStatusPath = fullPath;
-    }
-    return _disableStatusPath;
-}
-
 #pragma mark -
 #pragma mark - Flag for Disable and Sniffer Method
-
-/**
- * AbleToSniffer means being able to sniffer
- * 可以进行嗅探行为，也即：异步请求服务端解析 DNS，且不执行重试逻辑。
- */
-- (BOOL)isAbleToSniffer {
-    // 需要考虑首次启动，值恒为nil，或者网络变化后，都可以允许网络探测
-    if (!self.lastServerDisableDate) {
-        return YES;
-    }
-    NSTimeInterval timeInterval = [[NSDate date] timeIntervalSinceDate:self.lastServerDisableDate];
-    return timeInterval > intervalBeforeAllowToSniffAfterLastServerDisable;
-}
-
-- (BOOL)isDisableToServer {
-    if (_serverDisable) {
-        HttpdnsLogDebug("Http service is disabled but we are able to sniffer now.")
-        if (self.isAbleToSniffer) {
-            return NO;
-        }
-        return YES;
-    }
-    return NO;
-}
 
 - (void)asyncReloadCacheFromDbToMemoryByIspCarrier {
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
@@ -723,10 +600,6 @@ typedef struct {
     NSString *cacheDes;
     cacheDes = [NSString stringWithFormat:@"%@", _hostMemCache];
     return cacheDes;
-}
-
-+ (void)setZeroSnifferTimeInterval {
-    intervalBeforeAllowToSniffAfterLastServerDisable = 0;
 }
 
 @end

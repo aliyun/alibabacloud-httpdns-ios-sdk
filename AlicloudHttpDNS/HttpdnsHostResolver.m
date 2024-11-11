@@ -234,9 +234,8 @@ static NSURLSession *_resolveHostSession = nil;
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
 
     int accountId = sharedService.accountID;
-    NSString *port = sharedService.enableHttpsRequest ? ALICLOUD_HTTPDNS_HTTPS_SERVER_PORT : ALICLOUD_HTTPDNS_HTTP_SERVER_PORT;
 
-    NSString *url = [NSString stringWithFormat:@"%@:%@/%d/d?host=%@", serverIp, port, accountId, request.host];
+    NSString *url = [NSString stringWithFormat:@"%@/%d/d?host=%@", serverIp, accountId, request.host];
 
     // signature
     NSString *secretKey = sharedService.secretKey;
@@ -254,7 +253,7 @@ static NSURLSession *_resolveHostSession = nil;
         NSString *sign = [HttpdnsUtil getMD5StringFrom:signOriginString];
         NSString *signatureRequestString = [NSString stringWithFormat:@"t=%@&s=%@", expiredTimestampString, sign];
 
-        url = [NSString stringWithFormat:@"%@:%@/%d/sign_d?host=%@&%@",serverIp, port, accountId, request.host, signatureRequestString];
+        url = [NSString stringWithFormat:@"%@/%d/sign_d?host=%@&%@", serverIp, accountId, request.host, signatureRequestString];
     }
 
     // version
