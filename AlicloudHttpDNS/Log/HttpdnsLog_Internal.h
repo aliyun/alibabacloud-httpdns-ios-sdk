@@ -30,6 +30,7 @@ if ([HttpdnsLog isEnabled]) {\
 @interface HttpdnsLog ()
 
 + (void)setLogHandler:(id<HttpdnsLoggerProtocol>)handler;
++ (void)unsetLogHandler;
 + (BOOL)validLogHandler;
 + (void)outputToLogHandler:(NSString *)logStr;
 
