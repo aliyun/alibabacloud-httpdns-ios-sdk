@@ -1065,7 +1065,11 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)setLogHandler:(id<HttpdnsLoggerProtocol>)logHandler {
-    [HttpdnsLog setLogHandler:logHandler];
+    if (logHandler != nil) {
+        [HttpdnsLog setLogHandler:logHandler];
+    } else {
+        [HttpdnsLog unsetLogHandler];
+    }
 }
 
 - (void)cleanHostCache:(NSArray<NSString *> *)hostArray {

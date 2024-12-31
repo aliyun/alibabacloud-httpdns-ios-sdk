@@ -21,7 +21,7 @@
 
 static BOOL HttpdnsLogIsEnabled = NO;
 
-static __weak id<HttpdnsLoggerProtocol> sLogHandler;
+static id<HttpdnsLoggerProtocol> sLogHandler;
 
 @implementation HttpdnsLog
 
@@ -42,6 +42,10 @@ static __weak id<HttpdnsLoggerProtocol> sLogHandler;
     if (handler && [handler respondsToSelector:sel]) {
         sLogHandler = handler;
     }
+}
+
++ (void)unsetLogHandler {
+    sLogHandler = nil;
 }
 
 + (BOOL)validLogHandler {
