@@ -148,7 +148,7 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 - (void)setLogEnabled:(BOOL)enable;
 
 
-/// 设置网络切换时是否自动跟新所有域名解析结果
+/// 设置网络切换时是否自动更新所有域名解析结果
 /// 如果打开此开关，在网络切换时，会自动刷新所有域名的解析结果，但会产生一定流量消耗
 /// @param enable YES: 开启 NO: 关闭
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;

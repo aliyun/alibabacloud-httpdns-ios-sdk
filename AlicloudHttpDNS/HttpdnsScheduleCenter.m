@@ -128,10 +128,16 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 }
 
 - (void)asyncUpdateRegionConfigAfterAtLeastOneDay {
-    NSDate *now = [NSDate date];
-    if ([now timeIntervalSinceDate:self->_lastScheduleCenterConnectDate] > 24 * 60 * 60) {
-        self->_lastScheduleCenterConnectDate = [NSDate date];
+    __block BOOL shouldUpdate = NO;
+    dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
+        NSDate *now = [NSDate date];
+        if ([now timeIntervalSinceDate:self->_lastScheduleCenterConnectDate] > 24 * 60 * 60) {
+            self->_lastScheduleCenterConnectDate = now;
+            shouldUpdate = YES;
+        }
+    });
 
+    if (shouldUpdate) {
         [self asyncUpdateRegionScheduleConfig];
     }
 }
