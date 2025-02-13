@@ -90,19 +90,23 @@ static NSArray<NSString *> *ALICLOUD_HTTPDNS_AVAILABLE_REGION_LIST = nil;
 }
 
 - (NSArray *)getSeriveV4HostList:(NSString *)region {
-    return [self.regionConfig mutableArrayValueForKeyPath:[NSString stringWithFormat:@"%@.%@", region, kServiceV4Key]];
+    NSDictionary *regionConfing = [self.regionConfig objectForKey:region];
+    return [regionConfing objectForKey:kServiceV4Key];
 }
 
 - (NSArray *)getUpdateV4FallbackHostList:(NSString *)region {
-    return [self.regionConfig mutableArrayValueForKeyPath:[NSString stringWithFormat:@"%@.%@", region, kUpdateV4FallbackHostKey]];
+    NSDictionary *regionConfing = [self.regionConfig objectForKey:region];
+    return [regionConfing objectForKey:kUpdateV4FallbackHostKey];
 }
 
 - (NSArray *)getSeriveV6HostList:(NSString *)region {
-    return [self.regionConfig mutableArrayValueForKeyPath:[NSString stringWithFormat:@"%@.%@", region, kServiceV6Key]];
+    NSDictionary *regionConfing = [self.regionConfig objectForKey:region];
+    return [regionConfing objectForKey:kServiceV6Key];
 }
 
 - (NSArray *)getUpdateV6FallbackHostList:(NSString *)region {
-    return [self.regionConfig mutableArrayValueForKeyPath:[NSString stringWithFormat:@"%@.%@", region, kUpdateV6FallbackHostKey]];
+    NSDictionary *regionConfing = [self.regionConfig objectForKey:region];
+    return [regionConfing objectForKey:kUpdateV6FallbackHostKey];
 }
 
 @end
