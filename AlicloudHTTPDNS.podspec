@@ -3,7 +3,7 @@ Pod::Spec.new do |s|
   s.version      = "3.1.6"
   s.summary      = "Aliyun Mobile Service HTTPDNS iOS SDK."
   s.homepage     = "https://www.aliyun.com/product/httpdns"
-  s.author       = { "junmo" => "lingkun.lk@alibaba-inc.com" }
+  s.author       = { "zhouzhuo" => "yecan.xyc@alibaba-inc.com" }
 
   s.source       = { :http => "framework_url" }
   s.vendored_frameworks = 'httpdns/AlicloudHttpDNS.xcframework'
@@ -15,5 +15,5 @@ Pod::Spec.new do |s|
   s.libraries = 'sqlite3.0', 'resolv'
   s.xcconfig = { 'OTHER_LDFLAGS' => '$(inherited) -ObjC -lz' }
 
-  s.dependency "AlicloudUtils"
+  s.dependency "AlicloudUtils", '>=2.0.1'
 end
