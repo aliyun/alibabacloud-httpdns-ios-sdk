@@ -8,6 +8,7 @@
 
 #import "HttpdnsLoggerDelegate.h"
 #import "HttpdnsLog.h"
+#import <pthread/pthread.h>
 
 // logHandler输出日志，不受日志开关影响
 #define HttpdnsLogDebug(frmt, ...) \
