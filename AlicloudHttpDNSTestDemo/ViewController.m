@@ -12,7 +12,7 @@
 #import "MyLoggerHandler.h"
 #import "HttpdnsScheduleCenter.h"
 #import "TestIPv6ViewController.h"
-#import "AlicloudIPv6Adapter.h"
+#import "HttpdnsIPv6Adapter.h"
 
 NSArray *ipv4HostArray = nil;
 NSArray *ipv6HostArray = nil;

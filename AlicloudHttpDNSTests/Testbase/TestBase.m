@@ -88,29 +88,29 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 }
 
 - (void)presetNetworkEnvAsIpv4 {
-    AlicloudIPv6Adapter *mockIpv6Adapter = OCMPartialMock([AlicloudIPv6Adapter getInstance]);
+    HttpdnsIPv6Adapter *mockIpv6Adapter = OCMPartialMock([HttpdnsIPv6Adapter getInstance]);
     OCMStub([mockIpv6Adapter currentIpStackType]).andReturn(kAlicloudIPv4only);
     OCMStub([mockIpv6Adapter isIPv6OnlyNetwork]).andReturn(NO);
 
-    id mockAdapterClass = OCMClassMock([AlicloudIPv6Adapter class]);
+    id mockAdapterClass = OCMClassMock([HttpdnsIPv6Adapter class]);
     OCMStub([mockAdapterClass getInstance]).andReturn(mockIpv6Adapter);
 }
 
 - (void)presetNetworkEnvAsIpv6 {
-    AlicloudIPv6Adapter *mockIpv6Adapter = OCMPartialMock([AlicloudIPv6Adapter getInstance]);
+    HttpdnsIPv6Adapter *mockIpv6Adapter = OCMPartialMock([HttpdnsIPv6Adapter getInstance]);
     OCMStub([mockIpv6Adapter currentIpStackType]).andReturn(kAlicloudIPv6only);
     OCMStub([mockIpv6Adapter isIPv6OnlyNetwork]).andReturn(YES);
 
-    id mockAdapterClass = OCMClassMock([AlicloudIPv6Adapter class]);
+    id mockAdapterClass = OCMClassMock([HttpdnsIPv6Adapter class]);
     OCMStub([mockAdapterClass getInstance]).andReturn(mockIpv6Adapter);
 }
 
 - (void)presetNetworkEnvAsIpv4AndIpv6 {
-    AlicloudIPv6Adapter *mockIpv6Adapter = OCMPartialMock([AlicloudIPv6Adapter getInstance]);
+    HttpdnsIPv6Adapter *mockIpv6Adapter = OCMPartialMock([HttpdnsIPv6Adapter getInstance]);
     OCMStub([mockIpv6Adapter currentIpStackType]).andReturn(kAlicloudIPdual);
     OCMStub([mockIpv6Adapter isIPv6OnlyNetwork]).andReturn(NO);
 
-    id mockAdapterClass = OCMClassMock([AlicloudIPv6Adapter class]);
+    id mockAdapterClass = OCMClassMock([HttpdnsIPv6Adapter class]);
     OCMStub([mockAdapterClass getInstance]).andReturn(mockIpv6Adapter);
 }
 

@@ -28,7 +28,7 @@
 #import "HttpdnsUtil.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsLog_Internal.h"
-#import "AlicloudIPv6Adapter.h"
+#import "HttpdnsIPv6Adapter.h"
 
 static NSString *const testSpeedKey = @"testSpeed";
 static NSString *const ipKey = @"ip";
@@ -161,7 +161,7 @@ static NSString *const ipKey = @"ip";
 }
 
 + (BOOL)isIPv6OnlyNetwork {
-    return [[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork];
+    return [[HttpdnsIPv6Adapter getInstance] isIPv6OnlyNetwork];
 }
 
 - (int)testSpeedOf:(NSString *)ip port:(int16_t)port {

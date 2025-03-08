@@ -29,7 +29,7 @@
 #import "HttpdnsUtil.h"
 #import "HttpdnsPublicConstant.h"
 #import "HttpdnsRegionConfigLoader.h"
-#import "AlicloudIPv6Adapter.h"
+#import "HttpdnsIPv6Adapter.h"
 
 static NSString *const kLastUpdateUnixTimestampKey = @"last_update_unix_timestamp";
 static NSString *const kScheduleRegionConfigLocalCacheFileName = @"schedule_center_result";
@@ -220,12 +220,12 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 }
 
 - (NSString *)getActiveUpdateServerHost {
-    AlicloudIPv6Adapter *adapter = [AlicloudIPv6Adapter getInstance];
+    HttpdnsIPv6Adapter *adapter = [HttpdnsIPv6Adapter getInstance];
     AlicloudIPStackType currentStack = [adapter currentIpStackType];
 
     if (currentStack == kAlicloudIPv6only) {
         NSString *v6Host = [self currentActiveUpdateServerV6Host];
-        if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:v6Host]) {
+        if ([[HttpdnsIPv6Adapter getInstance] isIPv6Address:v6Host]) {
             return [NSString stringWithFormat:@"[%@]", v6Host];
         }
         return v6Host;
@@ -328,7 +328,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
         host = self.ipv6ServiceServerHostList[index];
     });
 
-    if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:host]) {
+    if ([[HttpdnsIPv6Adapter getInstance] isIPv6Address:host]) {
         host = [NSString stringWithFormat:@"[%@]", host];
     }
     return host;

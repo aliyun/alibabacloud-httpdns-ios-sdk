@@ -31,7 +31,7 @@
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
 #import "HttpdnsIPv6Manager.h"
-#import "AlicloudIPv6Adapter.h"
+#import "HttpdnsIPv6Adapter.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsRequestScheduler.h"
 #import "HttpdnsCFHttpWrapper.h"
@@ -308,7 +308,7 @@ static NSURLSession *_resolveHostSession = nil;
     }
 
     @try {
-        AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
+        HttpdnsIPv6Adapter *ipv6Adapter = [HttpdnsIPv6Adapter getInstance];
         AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
 
         // 由于上面默认只用ipv4请求，这里判断如果是ipv6-only环境，那就用v6的ip再试一次
