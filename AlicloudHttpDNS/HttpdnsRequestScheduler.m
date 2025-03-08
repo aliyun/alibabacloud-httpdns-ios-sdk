@@ -34,7 +34,7 @@
 #import "HttpdnsTCPSpeedTester.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
 #import "HttpdnsIPv6Manager.h"
-#import "AlicloudIPv6Adapter.h"
+#import "HttpdnsIPv6Adapter.h"
 #import "HttpDnsLocker.h"
 #import "HttpdnsRequest_Internal.h"
 #import "HttpdnsThreadSafeDictionary.h"
@@ -87,12 +87,12 @@ typedef struct {
 
 - (instancetype)init {
     if (self = [super init]) {
-        _lastNetworkStatus = [AlicloudReachabilityManager shareInstance].currentNetworkStatus;
+        _lastNetworkStatus = [HttpdnsReachabilityManager shareInstance].currentNetworkStatus;
         _isExpiredIPEnabled = NO;
         _IPRankingEnabled = NO;
         _isPreResolveAfterNetworkChangedEnabled = NO;
         _hostMemCache = [[HttpdnsThreadSafeDictionary alloc] init];
-        [AlicloudIPv6Adapter getInstance];
+        [HttpdnsIPv6Adapter getInstance];
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(networkChanged:)
                                                      name:ALICLOUD_NETWOEK_STATUS_NOTIFY

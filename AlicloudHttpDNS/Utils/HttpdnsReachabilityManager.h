@@ -19,19 +19,19 @@ typedef enum {
     AlicloudReachableVia4G
 } AlicloudNetworkStatus;
 
-@interface AlicloudReachabilityManager : NSObject
+@interface HttpdnsReachabilityManager : NSObject
 
 /**
  *  获取Reachability单例对象
  */
-+ (AlicloudReachabilityManager *)shareInstance;
++ (HttpdnsReachabilityManager *)shareInstance;
 
 /**
  *  获取Reachability单例对象，为保证全局维护一个netInfo实例，可从外部传入netInfo对象的引用
  *  warn: netInfo多次实例化，有一定几率crash
  *
  */
-+ (AlicloudReachabilityManager *)shareInstanceWithNetInfo:(CTTelephonyNetworkInfo *)netInfo;
++ (HttpdnsReachabilityManager *)shareInstanceWithNetInfo:(CTTelephonyNetworkInfo *)netInfo;
 
 /**
  *	返回当前网络状态(同步调用，可能会阻塞调用线程)

@@ -27,7 +27,7 @@
  * Many systems should provide route information through raw PF_ROUTE
  * sockets. */
 
-#define __ROUTE_HEADER_FILE__ "Alicloud_route.h"
+#define __ROUTE_HEADER_FILE__ "HttpdnsRoute.h"
 
 #ifdef __linux__
 #define USE_PROC_NET_ROUTE
@@ -49,7 +49,7 @@
 #include <TargetConditionals.h>
 #if !TARGET_OS_SIMULATOR
 #undef __ROUTE_HEADER_FILE__
-#define __ROUTE_HEADER_FILE__  "Alicloud_route.h"
+#define __ROUTE_HEADER_FILE__  "HttpdnsRoute.h"
 #endif
 
 #endif //__APPLE__
@@ -88,7 +88,7 @@
 #define MAX_VALUE_LENGTH 16383
 #endif
 
-#include "Alicloud_getgateway.h"
+#include "HttpdnsGetgateway.h"
 
 #define SUCCESS (0)
 #define FAILED  (-1)

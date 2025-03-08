@@ -6,8 +6,8 @@
 //  Copyright (c) 2014年 Twitter. All rights reserved.
 //
 
-#import "AlicloudReachabilityManager.h"
-#import "AlicloudIPv6Adapter.h"
+#import "HttpdnsReachabilityManager.h"
+#import "HttpdnsIPv6Adapter.h"
 #import <arpa/inet.h>
 #import <CommonCrypto/CommonDigest.h>
 #import <CoreTelephony/CTCarrier.h>
@@ -27,22 +27,22 @@ static NSString *const CHECK_HOSTNAME = @"www.taobao.com";
 
 static CTTelephonyNetworkInfo *networkInfo;
 
-@implementation AlicloudReachabilityManager
+@implementation HttpdnsReachabilityManager
 {
     AlicloudNetworkStatus          _currentNetworkStatus;
     AlicloudNetworkStatus              _preNetworkStatus;
     SCNetworkReachabilityRef            _reachabilityRef;
 }
 
-+ (AlicloudReachabilityManager *)shareInstance {
-    return [AlicloudReachabilityManager getInstanceWithNetInfo:nil];
++ (HttpdnsReachabilityManager *)shareInstance {
+    return [HttpdnsReachabilityManager getInstanceWithNetInfo:nil];
 }
 
-+ (AlicloudReachabilityManager *)shareInstanceWithNetInfo:(CTTelephonyNetworkInfo *)netInfo {
-    return [AlicloudReachabilityManager getInstanceWithNetInfo:netInfo];
++ (HttpdnsReachabilityManager *)shareInstanceWithNetInfo:(CTTelephonyNetworkInfo *)netInfo {
+    return [HttpdnsReachabilityManager getInstanceWithNetInfo:netInfo];
 }
 
-+ (AlicloudReachabilityManager *)getInstanceWithNetInfo:(CTTelephonyNetworkInfo *)netInfo {
++ (HttpdnsReachabilityManager *)getInstanceWithNetInfo:(CTTelephonyNetworkInfo *)netInfo {
     static id singletonInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -278,16 +278,16 @@ static CTTelephonyNetworkInfo *networkInfo;
 
 //网络变化回调函数
 static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info) {
-    AlicloudNetworkStatus status = [[AlicloudReachabilityManager shareInstance] _networkStatusForReachabilityFlags:flags];
-    [[AlicloudReachabilityManager shareInstance] updateCurStatus:status];
+    AlicloudNetworkStatus status = [[HttpdnsReachabilityManager shareInstance] _networkStatusForReachabilityFlags:flags];
+    [[HttpdnsReachabilityManager shareInstance] updateCurStatus:status];
 
-    if ([[AlicloudIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
+    if ([[HttpdnsIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
         HttpdnsLogDebug("[AlicloudReachabilityManager]: Network changed, Pre network status is IPv6-Only.");
     } else {
         HttpdnsLogDebug("[AlicloudReachabilityManager]: Network changed, Pre network status is not IPv6-Only.");
     }
 
-    [[AlicloudIPv6Adapter getInstance] reResolveIPv6OnlyStatus];
+    [[HttpdnsIPv6Adapter getInstance] reResolveIPv6OnlyStatus];
 
     // network type change notify
     [[NSNotificationCenter defaultCenter] postNotificationName: ALICLOUD_NETWOEK_STATUS_NOTIFY

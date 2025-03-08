@@ -15,7 +15,7 @@
 #include <sys/socket.h>
 
 #import "HttpdnsLog_Internal.h"
-#import "AlicloudIPv6PrefixResolver.h"
+#import "HttpdnsIPv6PrefixResolver.h"
 
 #define IPV6_PREFIX_32       32
 #define IPV6_PREFIX_40       40
@@ -53,7 +53,7 @@ typedef enum {
     IPv6PrefixResolved
 } IPv6PrefixResolveStatus;
 
-@implementation AlicloudIPv6PrefixResolver
+@implementation HttpdnsIPv6PrefixResolver
 {
     IPv6PrefixResolveStatus ipv6PrefixResolveStatus;
     __uint8_t ipv6Prefix[16];

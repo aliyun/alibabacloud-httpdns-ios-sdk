@@ -6,7 +6,7 @@
 //  Copyright © 2018年 alibaba-inc.com. All rights reserved.
 //
 
-#import "AlicloudIPv6Adapter.h"
+#import "HttpdnsIPv6Adapter.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsUtil.h"
 

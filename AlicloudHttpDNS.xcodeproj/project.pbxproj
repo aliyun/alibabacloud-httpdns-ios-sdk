@@ -116,28 +116,28 @@
 		947E5C182C00762100123579 /* HttpdnsRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 943FA4292BFA4B410006F169 /* HttpdnsRequest.m */; };
 		947E5C192C00764C00123579 /* HttpDnsLocker.m in Sources */ = {isa = PBXBuildFile; fileRef = CB1E4EE72A8CBD1B00F01EAC /* HttpDnsLocker.m */; };
 		947E5C1D2C02DB9300123579 /* PresetCacheAndRetrieveTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 947E5C1C2C02DB9300123579 /* PresetCacheAndRetrieveTest.m */; };
-		948540F12D7ACFD60013CC3B /* Alicloud_getgateway.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540E82D7ACFD60013CC3B /* Alicloud_getgateway.h */; };
-		948540F22D7ACFD60013CC3B /* Alicloud_socket_udp.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540EB2D7ACFD60013CC3B /* Alicloud_socket_udp.h */; };
-		948540F32D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540EF2D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.h */; };
-		948540F42D7ACFD60013CC3B /* Alicloud_route.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540EA2D7ACFD60013CC3B /* Alicloud_route.h */; };
-		948540F52D7ACFD60013CC3B /* AlicloudIPv6Adapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540ED2D7ACFD60013CC3B /* AlicloudIPv6Adapter.h */; };
-		948540F62D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 948540F02D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.m */; };
-		948540F72D7ACFD60013CC3B /* Alicloud_getgateway.c in Sources */ = {isa = PBXBuildFile; fileRef = 948540E92D7ACFD60013CC3B /* Alicloud_getgateway.c */; };
-		948540F82D7ACFD60013CC3B /* Alicloud_socket_udp.c in Sources */ = {isa = PBXBuildFile; fileRef = 948540EC2D7ACFD60013CC3B /* Alicloud_socket_udp.c */; };
-		948540F92D7ACFD60013CC3B /* AlicloudIPv6Adapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 948540EE2D7ACFD60013CC3B /* AlicloudIPv6Adapter.m */; };
-		948540FA2D7ACFD60013CC3B /* Alicloud_getgateway.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540E82D7ACFD60013CC3B /* Alicloud_getgateway.h */; };
-		948540FB2D7ACFD60013CC3B /* Alicloud_socket_udp.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540EB2D7ACFD60013CC3B /* Alicloud_socket_udp.h */; };
-		948540FC2D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540EF2D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.h */; };
-		948540FD2D7ACFD60013CC3B /* Alicloud_route.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540EA2D7ACFD60013CC3B /* Alicloud_route.h */; };
-		948540FE2D7ACFD60013CC3B /* AlicloudIPv6Adapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540ED2D7ACFD60013CC3B /* AlicloudIPv6Adapter.h */; };
-		948540FF2D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 948540F02D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.m */; };
-		948541002D7ACFD60013CC3B /* Alicloud_getgateway.c in Sources */ = {isa = PBXBuildFile; fileRef = 948540E92D7ACFD60013CC3B /* Alicloud_getgateway.c */; };
-		948541012D7ACFD60013CC3B /* Alicloud_socket_udp.c in Sources */ = {isa = PBXBuildFile; fileRef = 948540EC2D7ACFD60013CC3B /* Alicloud_socket_udp.c */; };
-		948541022D7ACFD60013CC3B /* AlicloudIPv6Adapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 948540EE2D7ACFD60013CC3B /* AlicloudIPv6Adapter.m */; };
-		948541052D7AD1400013CC3B /* AlicloudReachabilityManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 948541032D7AD1400013CC3B /* AlicloudReachabilityManager.h */; };
-		948541062D7AD1400013CC3B /* AlicloudReachabilityManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 948541042D7AD1400013CC3B /* AlicloudReachabilityManager.m */; };
-		948541072D7AD1400013CC3B /* AlicloudReachabilityManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 948541032D7AD1400013CC3B /* AlicloudReachabilityManager.h */; };
-		948541082D7AD1400013CC3B /* AlicloudReachabilityManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 948541042D7AD1400013CC3B /* AlicloudReachabilityManager.m */; };
+		948540F12D7ACFD60013CC3B /* HttpdnsGetgateway.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540E82D7ACFD60013CC3B /* HttpdnsGetgateway.h */; };
+		948540F22D7ACFD60013CC3B /* HttpdnsSocketUdp.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540EB2D7ACFD60013CC3B /* HttpdnsSocketUdp.h */; };
+		948540F32D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540EF2D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.h */; };
+		948540F42D7ACFD60013CC3B /* HttpdnsRoute.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540EA2D7ACFD60013CC3B /* HttpdnsRoute.h */; };
+		948540F52D7ACFD60013CC3B /* HttpdnsIPv6Adapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540ED2D7ACFD60013CC3B /* HttpdnsIPv6Adapter.h */; };
+		948540F62D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 948540F02D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.m */; };
+		948540F72D7ACFD60013CC3B /* HttpdnsGetgateway.c in Sources */ = {isa = PBXBuildFile; fileRef = 948540E92D7ACFD60013CC3B /* HttpdnsGetgateway.c */; };
+		948540F82D7ACFD60013CC3B /* HttpdnsSocketUdp.c in Sources */ = {isa = PBXBuildFile; fileRef = 948540EC2D7ACFD60013CC3B /* HttpdnsSocketUdp.c */; };
+		948540F92D7ACFD60013CC3B /* HttpdnsIPv6Adapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 948540EE2D7ACFD60013CC3B /* HttpdnsIPv6Adapter.m */; };
+		948540FA2D7ACFD60013CC3B /* HttpdnsGetgateway.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540E82D7ACFD60013CC3B /* HttpdnsGetgateway.h */; };
+		948540FB2D7ACFD60013CC3B /* HttpdnsSocketUdp.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540EB2D7ACFD60013CC3B /* HttpdnsSocketUdp.h */; };
+		948540FC2D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540EF2D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.h */; };
+		948540FD2D7ACFD60013CC3B /* HttpdnsRoute.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540EA2D7ACFD60013CC3B /* HttpdnsRoute.h */; };
+		948540FE2D7ACFD60013CC3B /* HttpdnsIPv6Adapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 948540ED2D7ACFD60013CC3B /* HttpdnsIPv6Adapter.h */; };
+		948540FF2D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 948540F02D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.m */; };
+		948541002D7ACFD60013CC3B /* HttpdnsGetgateway.c in Sources */ = {isa = PBXBuildFile; fileRef = 948540E92D7ACFD60013CC3B /* HttpdnsGetgateway.c */; };
+		948541012D7ACFD60013CC3B /* HttpdnsSocketUdp.c in Sources */ = {isa = PBXBuildFile; fileRef = 948540EC2D7ACFD60013CC3B /* HttpdnsSocketUdp.c */; };
+		948541022D7ACFD60013CC3B /* HttpdnsIPv6Adapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 948540EE2D7ACFD60013CC3B /* HttpdnsIPv6Adapter.m */; };
+		948541052D7AD1400013CC3B /* HttpdnsReachabilityManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 948541032D7AD1400013CC3B /* HttpdnsReachabilityManager.h */; };
+		948541062D7AD1400013CC3B /* HttpdnsReachabilityManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 948541042D7AD1400013CC3B /* HttpdnsReachabilityManager.m */; };
+		948541072D7AD1400013CC3B /* HttpdnsReachabilityManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 948541032D7AD1400013CC3B /* HttpdnsReachabilityManager.h */; };
+		948541082D7AD1400013CC3B /* HttpdnsReachabilityManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 948541042D7AD1400013CC3B /* HttpdnsReachabilityManager.m */; };
 		948CD0092C031EB000F9F075 /* MultithreadCorrectnessTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 948CD0082C031EB000F9F075 /* MultithreadCorrectnessTest.m */; };
 		948DA4DE2C1E7E5F00D81682 /* HttpdnsPublicConstant.h in Headers */ = {isa = PBXBuildFile; fileRef = 948DA4DA2C1E7E5F00D81682 /* HttpdnsPublicConstant.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		948DA4DF2C1E7E5F00D81682 /* HttpdnsPublicConstant.h in Headers */ = {isa = PBXBuildFile; fileRef = 948DA4DA2C1E7E5F00D81682 /* HttpdnsPublicConstant.h */; };
@@ -291,17 +291,17 @@
 		945BA3F72C203F7F0098FC52 /* ManuallyCleanCacheTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ManuallyCleanCacheTest.m; sourceTree = "<group>"; };
 		947C4BF12C1F45330095A302 /* HttpdnsScheduleCenter_Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsScheduleCenter_Internal.h; sourceTree = "<group>"; };
 		947E5C1C2C02DB9300123579 /* PresetCacheAndRetrieveTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PresetCacheAndRetrieveTest.m; sourceTree = "<group>"; };
-		948540E82D7ACFD60013CC3B /* Alicloud_getgateway.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Alicloud_getgateway.h; sourceTree = "<group>"; };
-		948540E92D7ACFD60013CC3B /* Alicloud_getgateway.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Alicloud_getgateway.c; sourceTree = "<group>"; };
-		948540EA2D7ACFD60013CC3B /* Alicloud_route.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Alicloud_route.h; sourceTree = "<group>"; };
-		948540EB2D7ACFD60013CC3B /* Alicloud_socket_udp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Alicloud_socket_udp.h; sourceTree = "<group>"; };
-		948540EC2D7ACFD60013CC3B /* Alicloud_socket_udp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Alicloud_socket_udp.c; sourceTree = "<group>"; };
-		948540ED2D7ACFD60013CC3B /* AlicloudIPv6Adapter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AlicloudIPv6Adapter.h; sourceTree = "<group>"; };
-		948540EE2D7ACFD60013CC3B /* AlicloudIPv6Adapter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AlicloudIPv6Adapter.m; sourceTree = "<group>"; };
-		948540EF2D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AlicloudIPv6PrefixResolver.h; sourceTree = "<group>"; };
-		948540F02D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AlicloudIPv6PrefixResolver.m; sourceTree = "<group>"; };
-		948541032D7AD1400013CC3B /* AlicloudReachabilityManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AlicloudReachabilityManager.h; sourceTree = "<group>"; };
-		948541042D7AD1400013CC3B /* AlicloudReachabilityManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AlicloudReachabilityManager.m; sourceTree = "<group>"; };
+		948540E82D7ACFD60013CC3B /* HttpdnsGetgateway.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsGetgateway.h; sourceTree = "<group>"; };
+		948540E92D7ACFD60013CC3B /* HttpdnsGetgateway.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = HttpdnsGetgateway.c; sourceTree = "<group>"; };
+		948540EA2D7ACFD60013CC3B /* HttpdnsRoute.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsRoute.h; sourceTree = "<group>"; };
+		948540EB2D7ACFD60013CC3B /* HttpdnsSocketUdp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsSocketUdp.h; sourceTree = "<group>"; };
+		948540EC2D7ACFD60013CC3B /* HttpdnsSocketUdp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = HttpdnsSocketUdp.c; sourceTree = "<group>"; };
+		948540ED2D7ACFD60013CC3B /* HttpdnsIPv6Adapter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPv6Adapter.h; sourceTree = "<group>"; };
+		948540EE2D7ACFD60013CC3B /* HttpdnsIPv6Adapter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsIPv6Adapter.m; sourceTree = "<group>"; };
+		948540EF2D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPv6PrefixResolver.h; sourceTree = "<group>"; };
+		948540F02D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsIPv6PrefixResolver.m; sourceTree = "<group>"; };
+		948541032D7AD1400013CC3B /* HttpdnsReachabilityManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsReachabilityManager.h; sourceTree = "<group>"; };
+		948541042D7AD1400013CC3B /* HttpdnsReachabilityManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsReachabilityManager.m; sourceTree = "<group>"; };
 		948CD0082C031EB000F9F075 /* MultithreadCorrectnessTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MultithreadCorrectnessTest.m; sourceTree = "<group>"; };
 		948DA4DA2C1E7E5F00D81682 /* HttpdnsPublicConstant.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsPublicConstant.h; sourceTree = "<group>"; };
 		948DA4E22C1EAA8200D81682 /* HttpdnsRegionConfigLoader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsRegionConfigLoader.h; sourceTree = "<group>"; };
@@ -483,15 +483,15 @@
 		4AD90C9F2138EBD5008ECE64 /* ipv6 */ = {
 			isa = PBXGroup;
 			children = (
-				948540E82D7ACFD60013CC3B /* Alicloud_getgateway.h */,
-				948540E92D7ACFD60013CC3B /* Alicloud_getgateway.c */,
-				948540EA2D7ACFD60013CC3B /* Alicloud_route.h */,
-				948540EB2D7ACFD60013CC3B /* Alicloud_socket_udp.h */,
-				948540EC2D7ACFD60013CC3B /* Alicloud_socket_udp.c */,
-				948540ED2D7ACFD60013CC3B /* AlicloudIPv6Adapter.h */,
-				948540EE2D7ACFD60013CC3B /* AlicloudIPv6Adapter.m */,
-				948540EF2D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.h */,
-				948540F02D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.m */,
+				948540E82D7ACFD60013CC3B /* HttpdnsGetgateway.h */,
+				948540E92D7ACFD60013CC3B /* HttpdnsGetgateway.c */,
+				948540EA2D7ACFD60013CC3B /* HttpdnsRoute.h */,
+				948540EB2D7ACFD60013CC3B /* HttpdnsSocketUdp.h */,
+				948540EC2D7ACFD60013CC3B /* HttpdnsSocketUdp.c */,
+				948540ED2D7ACFD60013CC3B /* HttpdnsIPv6Adapter.h */,
+				948540EE2D7ACFD60013CC3B /* HttpdnsIPv6Adapter.m */,
+				948540EF2D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.h */,
+				948540F02D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.m */,
 				4AD90CA02138EC21008ECE64 /* HttpdnsIPv6Manager.h */,
 				4AD90CA12138EC21008ECE64 /* HttpdnsIPv6Manager.m */,
 			);
@@ -616,8 +616,8 @@
 		9AA0FC591EB9843A00E242DD /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				948541032D7AD1400013CC3B /* AlicloudReachabilityManager.h */,
-				948541042D7AD1400013CC3B /* AlicloudReachabilityManager.m */,
+				948541032D7AD1400013CC3B /* HttpdnsReachabilityManager.h */,
+				948541042D7AD1400013CC3B /* HttpdnsReachabilityManager.m */,
 				9AA0FC5E1EB9846D00E242DD /* HttpdnsDatabaseCommon.h */,
 				9AA0FC761EB9B5FD00E242DD /* HttpdnsDatabaseCoordinator.h */,
 				9AA0FC771EB9B5FD00E242DD /* HttpdnsDatabaseCoordinator.m */,
@@ -714,11 +714,11 @@
 				9AE63A031ECDA74D00F9C723 /* HttpdnsDB.h in Headers */,
 				943FA4262BFA44F30006F169 /* HttpdnsResult.h in Headers */,
 				4A36B63821C9EE9C00B1D008 /* HttpdnsLoggerDelegate.h in Headers */,
-				948540FA2D7ACFD60013CC3B /* Alicloud_getgateway.h in Headers */,
-				948540FB2D7ACFD60013CC3B /* Alicloud_socket_udp.h in Headers */,
-				948540FC2D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.h in Headers */,
-				948540FD2D7ACFD60013CC3B /* Alicloud_route.h in Headers */,
-				948540FE2D7ACFD60013CC3B /* AlicloudIPv6Adapter.h in Headers */,
+				948540FA2D7ACFD60013CC3B /* HttpdnsGetgateway.h in Headers */,
+				948540FB2D7ACFD60013CC3B /* HttpdnsSocketUdp.h in Headers */,
+				948540FC2D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.h in Headers */,
+				948540FD2D7ACFD60013CC3B /* HttpdnsRoute.h in Headers */,
+				948540FE2D7ACFD60013CC3B /* HttpdnsIPv6Adapter.h in Headers */,
 				9A5D5E291E9CB4D400CAC3A6 /* HttpdnsScheduleCenterRequest.h in Headers */,
 				94B60FED2C21EAD700DCA078 /* HttpdnsRequest_Internal.h in Headers */,
 				9AE639FB1ECDA74D00F9C723 /* HttpdnsDatabase.h in Headers */,
@@ -747,7 +747,7 @@
 				9406FDB42C19AA8F0003CB6A /* HttpdnsHostCacheStore.h in Headers */,
 				9AE639FF1ECDA74D00F9C723 /* HttpdnsDatabasePool.h in Headers */,
 				9AA0FC5C1EB9843A00E242DD /* HttpdnsDatabaseMigrator.h in Headers */,
-				948541072D7AD1400013CC3B /* AlicloudReachabilityManager.h in Headers */,
+				948541072D7AD1400013CC3B /* HttpdnsReachabilityManager.h in Headers */,
 				9406FDB82C19AA8F0003CB6A /* HttpdnsHostCacheStoreSQL.h in Headers */,
 				9406FDBE2C19AA8F0003CB6A /* HttpdnsIP6CacheStoreSQL.h in Headers */,
 				9AA0FC701EB9AFB700E242DD /* HttpdnsHostRecord.h in Headers */,
@@ -769,16 +769,16 @@
 				947E5C072C00760200123579 /* HttpdnsRequestScheduler_Internal.h in Headers */,
 				9406FDBD2C19AA8F0003CB6A /* HttpdnsIPCacheStoreSQL.h in Headers */,
 				947E5C082C00760200123579 /* HttpdnsService_Internal.h in Headers */,
-				948540F12D7ACFD60013CC3B /* Alicloud_getgateway.h in Headers */,
-				948540F22D7ACFD60013CC3B /* Alicloud_socket_udp.h in Headers */,
-				948540F32D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.h in Headers */,
-				948540F42D7ACFD60013CC3B /* Alicloud_route.h in Headers */,
-				948540F52D7ACFD60013CC3B /* AlicloudIPv6Adapter.h in Headers */,
+				948540F12D7ACFD60013CC3B /* HttpdnsGetgateway.h in Headers */,
+				948540F22D7ACFD60013CC3B /* HttpdnsSocketUdp.h in Headers */,
+				948540F32D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.h in Headers */,
+				948540F42D7ACFD60013CC3B /* HttpdnsRoute.h in Headers */,
+				948540F52D7ACFD60013CC3B /* HttpdnsIPv6Adapter.h in Headers */,
 				947E5C092C00760200123579 /* HttpdnsService.h in Headers */,
 				947E5C0A2C00760200123579 /* HttpdnsUtil.h in Headers */,
 				947E5C0B2C00760200123579 /* HttpdnsSpeedTester.h in Headers */,
 				947E5C0C2C00760200123579 /* HttpdnsTCPSpeedTester.h in Headers */,
-				948541052D7AD1400013CC3B /* AlicloudReachabilityManager.h in Headers */,
+				948541052D7AD1400013CC3B /* HttpdnsReachabilityManager.h in Headers */,
 				947E5C0D2C00760200123579 /* HttpdnsPersistenceUtils.h in Headers */,
 				943F159D2CCDF1D60045865D /* HttpdnsCFHttpWrapper.h in Headers */,
 				947E5C0E2C00760200123579 /* HttpdnsConstants.h in Headers */,
@@ -1018,11 +1018,11 @@
 				9AA0FC7E1EB9D17700E242DD /* HttpdnsgetNetworkInfoHelper.m in Sources */,
 				2197CACD1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m in Sources */,
 				943F159E2CCDF1D60045865D /* HttpdnsCFHttpWrapper.m in Sources */,
-				948541082D7AD1400013CC3B /* AlicloudReachabilityManager.m in Sources */,
-				948540FF2D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.m in Sources */,
-				948541002D7ACFD60013CC3B /* Alicloud_getgateway.c in Sources */,
-				948541012D7ACFD60013CC3B /* Alicloud_socket_udp.c in Sources */,
-				948541022D7ACFD60013CC3B /* AlicloudIPv6Adapter.m in Sources */,
+				948541082D7AD1400013CC3B /* HttpdnsReachabilityManager.m in Sources */,
+				948540FF2D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.m in Sources */,
+				948541002D7ACFD60013CC3B /* HttpdnsGetgateway.c in Sources */,
+				948541012D7ACFD60013CC3B /* HttpdnsSocketUdp.c in Sources */,
+				948541022D7ACFD60013CC3B /* HttpdnsIPv6Adapter.m in Sources */,
 				9AE63A021ECDA74D00F9C723 /* HttpdnsDatabaseQueue.m in Sources */,
 				9AE639FC1ECDA74D00F9C723 /* HttpdnsDatabase.m in Sources */,
 				943FA4232BF9D4FA0006F169 /* HttpdnsHostObject.m in Sources */,
@@ -1047,7 +1047,7 @@
 				4AF5AB841DCB332800206DD8 /* HttpdnsLog.m in Sources */,
 				9AF9A5FE1EC4CFCF0018063B /* HttpdnsHostRecord.m in Sources */,
 				9AF9A6131EC4F5500018063B /* HttpdnsIPRecord.m in Sources */,
-				948541062D7AD1400013CC3B /* AlicloudReachabilityManager.m in Sources */,
+				948541062D7AD1400013CC3B /* HttpdnsReachabilityManager.m in Sources */,
 				945BA3F12C20091D0098FC52 /* ScheduleCenterV6Test.m in Sources */,
 				947E5C172C00762100123579 /* HttpdnsResult.m in Sources */,
 				947E5C182C00762100123579 /* HttpdnsRequest.m in Sources */,
@@ -1062,10 +1062,10 @@
 				9AE63A071ECDAB3A00F9C723 /* HttpdnsDatabaseAdditions.m in Sources */,
 				4AF5AB831DCB332800206DD8 /* HttpdnsConfig.m in Sources */,
 				94C3F8B02C05D4FD00A4A9B8 /* EnableReuseExpiredIpTest.m in Sources */,
-				948540F62D7ACFD60013CC3B /* AlicloudIPv6PrefixResolver.m in Sources */,
-				948540F72D7ACFD60013CC3B /* Alicloud_getgateway.c in Sources */,
-				948540F82D7ACFD60013CC3B /* Alicloud_socket_udp.c in Sources */,
-				948540F92D7ACFD60013CC3B /* AlicloudIPv6Adapter.m in Sources */,
+				948540F62D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.m in Sources */,
+				948540F72D7ACFD60013CC3B /* HttpdnsGetgateway.c in Sources */,
+				948540F82D7ACFD60013CC3B /* HttpdnsSocketUdp.c in Sources */,
+				948540F92D7ACFD60013CC3B /* HttpdnsIPv6Adapter.m in Sources */,
 				9406FDB72C19AA8F0003CB6A /* HttpdnsIPCacheStore.m in Sources */,
 				4AF5AB861DCB332800206DD8 /* HttpdnsHostResolver.m in Sources */,
 				4AF5AB871DCB332800206DD8 /* HttpdnsRequestScheduler.m in Sources */,

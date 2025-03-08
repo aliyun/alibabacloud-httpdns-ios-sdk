@@ -77,7 +77,7 @@ typedef enum {
     kAlicloudIPdual       = 3     // 双栈
 } AlicloudIPStackType;
 
-@interface AlicloudIPv6Adapter : NSObject
+@interface HttpdnsIPv6Adapter : NSObject
 
 + (instancetype)getInstance;
 

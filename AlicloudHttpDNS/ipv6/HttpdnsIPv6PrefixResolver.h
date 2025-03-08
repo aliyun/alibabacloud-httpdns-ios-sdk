@@ -10,7 +10,7 @@
 #define AlicloudIPv6PrefixResolver_h
 #import <Foundation/Foundation.h>
 
-@interface AlicloudIPv6PrefixResolver : NSObject
+@interface HttpdnsIPv6PrefixResolver : NSObject
 
 + (instancetype)getInstance;
 

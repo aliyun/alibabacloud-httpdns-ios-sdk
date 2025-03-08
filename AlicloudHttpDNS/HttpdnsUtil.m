@@ -27,7 +27,7 @@
 #import "HttpdnsHostResolver.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsPublicConstant.h"
-#import "AlicloudReachabilityManager.h"
+#import "HttpdnsReachabilityManager.h"
 
 
 #define HTTPDNSUTIL_SuppressPerformSelectorLeakWarning(code) \
@@ -89,13 +89,13 @@ _Pragma("clang diagnostic pop") \
 
 //wifi是否可用
 + (BOOL)isWifiEnable {
-    BOOL isReachableViaWiFi =  [[AlicloudReachabilityManager shareInstance] isReachableViaWifi];
+    BOOL isReachableViaWiFi =  [[HttpdnsReachabilityManager shareInstance] isReachableViaWifi];
     return isReachableViaWiFi;
 }
 
 //蜂窝移动网络是否可用
 + (BOOL)isCarrierConnectEnable {
-    BOOL isReachableViaWWAN = [[AlicloudReachabilityManager shareInstance] isReachableViaWWAN];
+    BOOL isReachableViaWWAN = [[HttpdnsReachabilityManager shareInstance] isReachableViaWWAN];
     return isReachableViaWWAN;
 }
 

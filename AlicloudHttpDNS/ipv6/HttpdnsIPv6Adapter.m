@@ -21,12 +21,12 @@
 #include <sys/socket.h>
 #include <sys/sysctl.h>
 
-#import "AlicloudIPv6PrefixResolver.h"
-#import "AlicloudIPv6Adapter.h"
-#import "Alicloud_route.h"
+#import "HttpdnsIPv6PrefixResolver.h"
+#import "HttpdnsIPv6Adapter.h"
+#import "HttpdnsRoute.h"
 
-#import "Alicloud_getgateway.h"
-#import "Alicloud_socket_udp.h"
+#import "HttpdnsGetgateway.h"
+#import "HttpdnsSocketUdp.h"
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsUtil.h"
 
@@ -43,7 +43,7 @@
 #define ALICLOUD_UTILS_IPV6HELP_DETECT_INTERVAL      5
 
 
-@interface AlicloudIPv6Adapter ()
+@interface HttpdnsIPv6Adapter ()
 
 @property (nonatomic, strong)   dispatch_queue_t    ipStackDetectingQueue;   // 同步，防止多线程同时触发
 @property (nonatomic, assign)   AlicloudIPStackType       ipStackType;
@@ -54,7 +54,7 @@
 @end
 
 
-@implementation AlicloudIPv6Adapter
+@implementation HttpdnsIPv6Adapter
 
 - (instancetype)init {
     if (self = [super init]) {
@@ -119,7 +119,7 @@
     NSString *convertedAddr;
     if ([self isIPv6OnlyNetwork]) {
         HttpdnsLogDebug("[AliCloudIPv6Adapter]: In IPv6-Only network status, convert IP address.");
-        convertedAddr = [[AlicloudIPv6PrefixResolver getInstance] convertIPv4toIPv6:addr];
+        convertedAddr = [[HttpdnsIPv6PrefixResolver getInstance] convertIPv4toIPv6:addr];
     } else  {
         HttpdnsLogDebug("[AliCloudIPv6Adapter]: Not in IPv6-Only network status, return.");
         convertedAddr = addr;
@@ -245,7 +245,7 @@
     }
 
     // S3: 在 iOS 版本<9.0 的情况下，如果是双栈，需要进一步通过 DNS 判断
-    if (ipstackType == kAlicloudIPdual && ![AlicloudIPv6Adapter deviceSystemIsLargeIOS9] ) {
+    if (ipstackType == kAlicloudIPdual && ![HttpdnsIPv6Adapter deviceSystemIsLargeIOS9] ) {
         ipstackType = [self currentDnsIPStackType];
     }
 

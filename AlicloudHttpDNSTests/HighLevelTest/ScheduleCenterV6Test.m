@@ -83,7 +83,7 @@
     NSString *activeUpdateHost = [scheduleCenter getActiveUpdateServerHost];
 
     // 因为可能是域名，所以只判断一定不是ipv4
-    XCTAssertFalse([[AlicloudIPv6Adapter getInstance] isIPv4Address:activeUpdateHost]);
+    XCTAssertFalse([[HttpdnsIPv6Adapter getInstance] isIPv4Address:activeUpdateHost]);
 
     OCMVerify([mockRequest fetchRegionConfigFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]]);
 
