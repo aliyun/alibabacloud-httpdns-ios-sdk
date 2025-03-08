@@ -17,16 +17,17 @@
  * under the License.
  */
 
+#import <UIKit/UIKit.h>
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
 #import "CommonCrypto/CommonCrypto.h"
 #import "arpa/inet.h"
 #import "HttpdnsService_Internal.h"
-#import "UIApplication+ABSHTTPDNSSetting.h"
 #import "HttpdnsConstants.h"
 #import "HttpdnsHostResolver.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsPublicConstant.h"
+#import "AlicloudReachabilityManager.h"
 
 
 #define HTTPDNSUTIL_SuppressPerformSelectorLeakWarning(code) \
@@ -228,6 +229,14 @@ _Pragma("clang diagnostic pop") \
         [string appendFormat:@"%02x",md5Buffer[i]];
 
     return [string copy];
+}
+
++ (NSString *)URLEncodedString:(NSString *)str {
+    if (str) {
+        return [str stringByAddingPercentEncodingWithAllowedCharacters:
+                [NSCharacterSet characterSetWithCharactersInString:@"!*'();:@&=+$,/?%#[]\""].invertedSet];
+    }
+    return nil;
 }
 
 /**

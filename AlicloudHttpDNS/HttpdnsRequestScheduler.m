@@ -23,7 +23,6 @@
 #import "HttpdnsConfig.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
-#import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsScheduleCenter.h"
@@ -35,9 +34,11 @@
 #import "HttpdnsTCPSpeedTester.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
 #import "HttpdnsIPv6Manager.h"
+#import "AlicloudIPv6Adapter.h"
 #import "HttpDnsLocker.h"
 #import "HttpdnsRequest_Internal.h"
 #import "HttpdnsThreadSafeDictionary.h"
+
 
 NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP = @"203.107.1.1";
 

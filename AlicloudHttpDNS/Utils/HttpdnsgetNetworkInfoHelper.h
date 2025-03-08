@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreTelephony/CTCarrier.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
-#import <AlicloudUtils/AlicloudReachabilityManager.h>
+#import "AlicloudReachabilityManager.h"
 
 @interface HttpdnsgetNetworkInfoHelper : NSObject
 

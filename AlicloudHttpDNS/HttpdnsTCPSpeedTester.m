@@ -24,11 +24,11 @@
 #import <arpa/inet.h>
 #import <netdb.h>
 #include <sys/time.h>
-#import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsLog_Internal.h"
+#import "AlicloudIPv6Adapter.h"
 
 static NSString *const testSpeedKey = @"testSpeed";
 static NSString *const ipKey = @"ip";

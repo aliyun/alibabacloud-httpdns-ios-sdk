@@ -11,7 +11,6 @@
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsConstants.h"
 #import "HttpdnsConfig.h"
-#import "AlicloudUtils/AlicloudUtils.h"
 #import "HttpdnsUtil.h"
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsScheduleCenter.h"
@@ -65,7 +64,7 @@ static NSURLSession *_scheduleCenterSession = nil;
         if ([HttpdnsgetNetworkInfoHelper isWifiNetwork]) {
             NSString *bssid = [HttpdnsgetNetworkInfoHelper getWifiBssid];
             if ([HttpdnsUtil isNotEmptyString:bssid]) {
-                url = [NSString stringWithFormat:@"%@&bssid=%@", url, [EMASTools URLEncodedString:bssid]];
+                url = [NSString stringWithFormat:@"%@&bssid=%@", url, [HttpdnsUtil URLEncodedString:bssid]];
             }
         }
     }
