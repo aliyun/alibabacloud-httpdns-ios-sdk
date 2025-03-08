@@ -29,6 +29,7 @@
 #import "HttpdnsUtil.h"
 #import "HttpdnsPublicConstant.h"
 #import "HttpdnsRegionConfigLoader.h"
+#import "AlicloudIPv6Adapter.h"
 
 static NSString *const kLastUpdateUnixTimestampKey = @"last_update_unix_timestamp";
 static NSString *const kScheduleRegionConfigLocalCacheFileName = @"schedule_center_result";

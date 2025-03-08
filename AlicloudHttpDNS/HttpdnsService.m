@@ -16,8 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#import <AlicloudUtils/AlicloudUtils.h>
-#import <AlicloudUtils/AlicloudIPv6Adapter.h>
+#import "AlicloudIPv6Adapter.h"
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsHostResolver.h"
 #import "HttpdnsConfig.h"
@@ -31,14 +30,15 @@
 #import "HttpdnsConstants.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsScheduleCenter.h"
-#import "UIApplication+ABSHTTPDNSSetting.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
 #import "HttpdnsPublicConstant.h"
 #import "HttpdnsRegionConfigLoader.h"
 
 
-NSString *const ALICLOUDHDNS_IPV4 = @"ALICLOUDHDNS_IPV4";
-NSString *const ALICLOUDHDNS_IPV6 = @"ALICLOUDHDNS_IPV6";
+const NSString *const ALICLOUDHDNS_IPV4 = @"ALICLOUDHDNS_IPV4";
+const NSString *const ALICLOUDHDNS_IPV6 = @"ALICLOUDHDNS_IPV6";
+
+const NSString *EXT_INFO_KEY_VERSION = @"SdkVersion";
 
 
 static NSDictionary *HTTPDNS_EXT_INFO = nil;
@@ -66,9 +66,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         asyncTaskConcurrentQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.asyncTask", DISPATCH_QUEUE_CONCURRENT);
-
-        // 注册 UIApplication+ABSHTTPDNSSetting 中的Swizzle
-        // [[UIApplication sharedApplication] onBeforeBootingProtection];
     });
 }
 
@@ -83,30 +80,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         _sharedInstance = [[self alloc] init];
     });
     return _sharedInstance;
-}
-
-- (instancetype)autoInit {
-    NSString *sdkVersion;//= HTTPDNS_IOS_SDK_VERSION;
-    NSNumber *sdkStatus;
-    NSString *sdkId = @"httpdns";
-
-    NSString *accountID;
-    NSString *secretKey;
-
-    EMASOptions *defaultOptions = [EMASOptions defaultOptions];
-    // Get config
-    accountID = defaultOptions.httpdnsAccountId;
-    secretKey = defaultOptions.httpdnsSecretKey;
-    EMASOptionSDKServiceItem *sdkItem = [defaultOptions sdkServiceItemForSdkId:sdkId];
-    if (sdkItem) {
-        sdkVersion = sdkItem.version;
-        sdkStatus = sdkItem.status;
-    }
-    if ([HttpdnsUtil isNotEmptyString:accountID]) {
-        return [self initWithAccountID:[accountID intValue] secretKey:secretKey];
-    }
-    HttpdnsLogDebug("Auto init fail, can not get accountId / secretKey, please check the file named: AliyunEmasServices-Info.plist.");
-    return nil;
 }
 
 - (instancetype)initWithAccountID:(int)accountID {

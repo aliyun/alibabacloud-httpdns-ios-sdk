@@ -18,7 +18,6 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <AlicloudUtils/AlicloudUtils.h>
 
 @interface HttpdnsUtil : NSObject
 
@@ -58,7 +57,7 @@
 
 + (NSString *)getMD5StringFrom:(NSString *)originString;
 
-+ (NSError *)getErrorFromError:(NSError *)error statusCode:(NSInteger)statusCode json:(NSDictionary *)json isHTTPS:(BOOL)isHTTPS;
++ (NSString *)URLEncodedString:(NSString *)str;
 
 + (NSString *)generateSessionID;
 

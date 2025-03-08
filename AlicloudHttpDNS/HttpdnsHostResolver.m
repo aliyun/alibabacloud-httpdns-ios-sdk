@@ -31,6 +31,7 @@
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsgetNetworkInfoHelper.h"
 #import "HttpdnsIPv6Manager.h"
+#import "AlicloudIPv6Adapter.h"
 #import "HttpdnsConfig.h"
 #import "HttpdnsRequestScheduler.h"
 #import "HttpdnsCFHttpWrapper.h"
@@ -279,7 +280,7 @@ static NSURLSession *_resolveHostSession = nil;
         if ([HttpdnsgetNetworkInfoHelper isWifiNetwork]) {
             NSString *bssid = [HttpdnsgetNetworkInfoHelper getWifiBssid];
             if ([HttpdnsUtil isNotEmptyString:bssid]) {
-                url = [NSString stringWithFormat:@"%@&bssid=%@", url, [EMASTools URLEncodedString:bssid]];
+                url = [NSString stringWithFormat:@"%@&bssid=%@", url, [HttpdnsUtil URLEncodedString:bssid]];
             }
         }
     }

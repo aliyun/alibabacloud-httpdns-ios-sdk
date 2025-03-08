@@ -6,8 +6,7 @@
 //  Copyright © 2018年 alibaba-inc.com. All rights reserved.
 //
 
-#import <AlicloudUtils/AlicloudIPv6Adapter.h>
-#import <AlicloudUtils/EMASTools.h>
+#import "AlicloudIPv6Adapter.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsUtil.h"
 
@@ -57,7 +56,7 @@ static NSString *const QueryCacheIPV6Key = @"QueryCacheIPV6Key";
 
 - (NSString *)appendQueryTypeToURL:(NSString *)originURL queryType:(HttpdnsQueryIPType)queryType {
     if (queryType & HttpdnsQueryIPTypeIpv4 && queryType & HttpdnsQueryIPTypeIpv6) {
-        return [NSString stringWithFormat:@"%@&query=%@", originURL, [EMASTools URLEncodedString:@"4,6"]];
+        return [NSString stringWithFormat:@"%@&query=%@", originURL, [HttpdnsUtil URLEncodedString:@"4,6"]];
     } else if (queryType & HttpdnsQueryIPTypeIpv6) {
         return [NSString stringWithFormat:@"%@&query=%@", originURL, @"6"];
     } else {
