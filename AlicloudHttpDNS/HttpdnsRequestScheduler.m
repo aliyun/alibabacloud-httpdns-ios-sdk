@@ -20,7 +20,7 @@
 #import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsHostObject.h"
 #import "HttpdnsHostResolver.h"
-#import "HttpdnsConfig.h"
+#import "HttpdnsInternalConstant.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsPersistenceUtils.h"
@@ -92,7 +92,7 @@ typedef struct {
         _IPRankingEnabled = NO;
         _isPreResolveAfterNetworkChangedEnabled = NO;
         _hostMemCache = [[HttpdnsThreadSafeDictionary alloc] init];
-        [HttpdnsIPv6Adapter getInstance];
+        [HttpdnsIPv6Adapter sharedInstance];
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(networkChanged:)
                                                      name:ALICLOUD_NETWOEK_STATUS_NOTIFY

@@ -19,7 +19,7 @@
 #import "HttpdnsIPv6Adapter.h"
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsHostResolver.h"
-#import "HttpdnsConfig.h"
+#import "HttpdnsInternalConstant.h"
 #import "HttpdnsHostObject.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsRequest_Internal.h"
@@ -368,7 +368,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
             return HttpdnsQueryIPTypeIpv4;
         }
 
-        HttpdnsIPv6Adapter *ipv6Adapter = [HttpdnsIPv6Adapter getInstance];
+        HttpdnsIPv6Adapter *ipv6Adapter = [HttpdnsIPv6Adapter sharedInstance];
         AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
         switch (stackType) {
             // 双栈和ipv6only，两个类型都要请求
@@ -471,13 +471,13 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     result.host = ip;
 
     if (queryType & HttpdnsQueryIPTypeIpv4) {
-        if ([[HttpdnsIPv6Adapter getInstance] isIPv4Address:ip]) {
+        if ([[HttpdnsIPv6Adapter sharedInstance] isIPv4Address:ip]) {
             result.ips = @[ip];
         }
     }
 
     if (queryType & HttpdnsQueryIPTypeIpv6) {
-        if ([[HttpdnsIPv6Adapter getInstance] isIPv6Address:ip]) {
+        if ([[HttpdnsIPv6Adapter sharedInstance] isIPv6Address:ip]) {
             result.ipv6s = @[ip];
         }
     }
@@ -635,7 +635,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host {
     NSString *IP = [self getIpByHostAsync:host];
-    if ([[HttpdnsIPv6Adapter getInstance] isIPv6Address:IP]) {
+    if ([[HttpdnsIPv6Adapter sharedInstance] isIPv6Address:IP]) {
         return [NSString stringWithFormat:@"[%@]", IP];
     }
     return IP;
@@ -819,9 +819,9 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     if ([HttpdnsUtil isAnIP:host]) {
         HttpdnsLogDebug("The host is just an IP: %@", host);
-        if ([[HttpdnsIPv6Adapter getInstance] isIPv4Address:host]) {
+        if ([[HttpdnsIPv6Adapter sharedInstance] isIPv4Address:host]) {
             return @{ALICLOUDHDNS_IPV4: @[host?:@""]};
-        } else if ([[HttpdnsIPv6Adapter getInstance] isIPv6Address:host]) {
+        } else if ([[HttpdnsIPv6Adapter sharedInstance] isIPv6Address:host]) {
             return @{ALICLOUDHDNS_IPV6: @[host?:@""]};
         }
         return nil;
@@ -869,9 +869,9 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     if ([HttpdnsUtil isAnIP:host]) {
         HttpdnsLogDebug("The host is just an IP: %@", host);
-        if ([[HttpdnsIPv6Adapter getInstance] isIPv4Address:host]) {
+        if ([[HttpdnsIPv6Adapter sharedInstance] isIPv4Address:host]) {
             return @{ALICLOUDHDNS_IPV4: @[host?:@""]};
-        } else if ([[HttpdnsIPv6Adapter getInstance] isIPv6Address:host]) {
+        } else if ([[HttpdnsIPv6Adapter sharedInstance] isIPv6Address:host]) {
             return @{ALICLOUDHDNS_IPV6: @[host?:@""]};
         }
         return nil;
@@ -918,9 +918,9 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     if ([HttpdnsUtil isAnIP:host]) {
         HttpdnsLogDebug("The host is just an IP: %@", host);
-        if ([[HttpdnsIPv6Adapter getInstance] isIPv4Address:host]) {
+        if ([[HttpdnsIPv6Adapter sharedInstance] isIPv4Address:host]) {
             return @{ALICLOUDHDNS_IPV4: @[host?:@""]};
-        } else if ([[HttpdnsIPv6Adapter getInstance] isIPv6Address:host]) {
+        } else if ([[HttpdnsIPv6Adapter sharedInstance] isIPv6Address:host]) {
             return @{ALICLOUDHDNS_IPV6: @[host?:@""]};
         }
         return nil;
@@ -974,7 +974,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 -(NSDictionary <NSString *, NSArray *>*)autoGetIpsByHostAsync:(NSString *)host {
-    HttpdnsIPv6Adapter *ipv6Adapter = [HttpdnsIPv6Adapter getInstance];
+    HttpdnsIPv6Adapter *ipv6Adapter = [HttpdnsIPv6Adapter sharedInstance];
     AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
 
     NSMutableDictionary *ipv4_ipv6 = [NSMutableDictionary dictionary];
@@ -996,7 +996,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 -(NSDictionary <NSString *, NSArray *>*)autoGetHttpDnsResultForHostAsync:(NSString *)host {
-    HttpdnsIPv6Adapter *ipv6Adapter = [HttpdnsIPv6Adapter getInstance];
+    HttpdnsIPv6Adapter *ipv6Adapter = [HttpdnsIPv6Adapter sharedInstance];
     AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
 
     NSMutableDictionary *httpdnsResult = [NSMutableDictionary dictionary];
@@ -1018,7 +1018,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (NSDictionary <NSString *, NSArray *>*)autoGetHttpDnsResultForHostSync:(NSString *)host {
-    HttpdnsIPv6Adapter *ipv6Adapter = [HttpdnsIPv6Adapter getInstance];
+    HttpdnsIPv6Adapter *ipv6Adapter = [HttpdnsIPv6Adapter sharedInstance];
     AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
     NSMutableDictionary *httpdnsResult = [NSMutableDictionary dictionary];
     if (stackType == kAlicloudIPv4only) {
@@ -1196,7 +1196,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (NSString *)getIpByHostInURLFormat:(NSString *)host {
     NSString *IP = [self getIpByHost:host];
-    if ([[HttpdnsIPv6Adapter getInstance] isIPv6Address:IP]) {
+    if ([[HttpdnsIPv6Adapter sharedInstance] isIPv6Address:IP]) {
         return [NSString stringWithFormat:@"[%@]", IP];
     }
     return IP;

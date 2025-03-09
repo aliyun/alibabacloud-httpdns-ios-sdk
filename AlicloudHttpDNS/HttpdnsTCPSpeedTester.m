@@ -161,7 +161,7 @@ static NSString *const ipKey = @"ip";
 }
 
 + (BOOL)isIPv6OnlyNetwork {
-    return [[HttpdnsIPv6Adapter getInstance] isIPv6OnlyNetwork];
+    return [[HttpdnsIPv6Adapter sharedInstance] isIPv6OnlyNetwork];
 }
 
 - (int)testSpeedOf:(NSString *)ip port:(int16_t)port {

@@ -50,7 +50,6 @@
 @property (nonatomic, strong)   NSTimer             *timer;
 @property (atomic, assign)      NSUInteger          detectedTimes;
 
-
 @end
 
 
@@ -58,42 +57,20 @@
 
 - (instancetype)init {
     if (self = [super init]) {
-
         _ipStackDetectingQueue  = dispatch_queue_create("utils.httpdns.ipstackdetecting.queue", DISPATCH_QUEUE_SERIAL);
         _ipStackType            = kAlicloudIPUnkown;
         _detectedTimes          = 0;
-
     }
     return self;
 }
 
-+ (BOOL)deviceSystemIsLargeIOS9 {
-    static BOOL __ios9__ = NO;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        __ios9__ = [[[UIDevice currentDevice] systemVersion] floatValue] >= 9.0;
-    });
-
-    return __ios9__;
-}
-
-+ (instancetype)getInstance {
++ (instancetype)sharedInstance {
     static id singletonInstance = nil;
     static dispatch_once_t once_token;
     dispatch_once(&once_token, ^{
-        if (!singletonInstance) {
-            singletonInstance = [[super allocWithZone:NULL] init];
-        }
+        singletonInstance = [[self alloc] init];
     });
     return singletonInstance;
-}
-
-+ (id)allocWithZone:(struct _NSZone *)zone {
-    return [self getInstance];
-}
-
-- (id)copyWithZone:(struct _NSZone *)zone {
-    return self;
 }
 
 - (BOOL)isIPv6OnlyNetwork {
@@ -242,11 +219,6 @@
     if ( test_udp_connect_ipv6() ) {
         HttpdnsLogDebug("[AlicloudUtil-IPV6Help] IPv6 UDP connect success");
         ipstackType |= kAlicloudIPv6only;
-    }
-
-    // S3: 在 iOS 版本<9.0 的情况下，如果是双栈，需要进一步通过 DNS 判断
-    if (ipstackType == kAlicloudIPdual && ![HttpdnsIPv6Adapter deviceSystemIsLargeIOS9] ) {
-        ipstackType = [self currentDnsIPStackType];
     }
 
     if (ipstackType == kAlicloudIPdual) {

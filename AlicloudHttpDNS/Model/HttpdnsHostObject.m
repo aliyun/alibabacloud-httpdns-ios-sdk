@@ -18,7 +18,7 @@
  */
 
 #import "HttpdnsHostObject.h"
-#import "HttpdnsConfig.h"
+#import "HttpdnsInternalConstant.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsHostRecord.h"
