@@ -7,7 +7,6 @@
 //
 
 #import "TestIPv6ViewController.h"
-#import <AlicloudUtils/AlicloudUtils.h>
 #import "HttpdnsRequestScheduler.h"
 #import "HttpdnsService.h"
 #import "HttpdnsService_Internal.h"

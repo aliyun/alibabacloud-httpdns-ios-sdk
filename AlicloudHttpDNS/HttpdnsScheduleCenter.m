@@ -220,12 +220,12 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 }
 
 - (NSString *)getActiveUpdateServerHost {
-    HttpdnsIPv6Adapter *adapter = [HttpdnsIPv6Adapter getInstance];
+    HttpdnsIPv6Adapter *adapter = [HttpdnsIPv6Adapter sharedInstance];
     AlicloudIPStackType currentStack = [adapter currentIpStackType];
 
     if (currentStack == kAlicloudIPv6only) {
         NSString *v6Host = [self currentActiveUpdateServerV6Host];
-        if ([[HttpdnsIPv6Adapter getInstance] isIPv6Address:v6Host]) {
+        if ([[HttpdnsIPv6Adapter sharedInstance] isIPv6Address:v6Host]) {
             return [NSString stringWithFormat:@"[%@]", v6Host];
         }
         return v6Host;
@@ -328,7 +328,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
         host = self.ipv6ServiceServerHostList[index];
     });
 
-    if ([[HttpdnsIPv6Adapter getInstance] isIPv6Address:host]) {
+    if ([[HttpdnsIPv6Adapter sharedInstance] isIPv6Address:host]) {
         host = [NSString stringWithFormat:@"[%@]", host];
     }
     return host;

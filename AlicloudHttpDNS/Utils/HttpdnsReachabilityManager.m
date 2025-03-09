@@ -192,9 +192,8 @@ static CTTelephonyNetworkInfo *networkInfo;
     return (isReachable && !needsConnection) ? YES : NO;
 }
 
-- (AlicloudNetworkStatus) currentNetworkStatusForiOS7:(AlicloudNetworkStatus)status {
+- (AlicloudNetworkStatus)currentNetworkStatusForiOS7:(AlicloudNetworkStatus)status {
     NSString *nettype = networkInfo.currentRadioAccessTechnology;
-
     if (nettype)
     {
         if ([CTRadioAccessTechnologyGPRS isEqualToString:nettype] ||
@@ -270,7 +269,7 @@ static CTTelephonyNetworkInfo *networkInfo;
     double version = [[UIDevice currentDevice].systemVersion doubleValue];
     if (version >= 7.0f && returnValue != AlicloudReachableViaWiFi)
     {
-        returnValue = [self currentNetworkStatusForiOS7: returnValue];
+        returnValue = [self currentNetworkStatusForiOS7:returnValue];
     }
 
     return returnValue;
@@ -281,13 +280,13 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     AlicloudNetworkStatus status = [[HttpdnsReachabilityManager shareInstance] _networkStatusForReachabilityFlags:flags];
     [[HttpdnsReachabilityManager shareInstance] updateCurStatus:status];
 
-    if ([[HttpdnsIPv6Adapter getInstance] isIPv6OnlyNetwork]) {
+    if ([[HttpdnsIPv6Adapter sharedInstance] isIPv6OnlyNetwork]) {
         HttpdnsLogDebug("[AlicloudReachabilityManager]: Network changed, Pre network status is IPv6-Only.");
     } else {
         HttpdnsLogDebug("[AlicloudReachabilityManager]: Network changed, Pre network status is not IPv6-Only.");
     }
 
-    [[HttpdnsIPv6Adapter getInstance] reResolveIPv6OnlyStatus];
+    [[HttpdnsIPv6Adapter sharedInstance] reResolveIPv6OnlyStatus];
 
     // network type change notify
     [[NSNotificationCenter defaultCenter] postNotificationName: ALICLOUD_NETWOEK_STATUS_NOTIFY

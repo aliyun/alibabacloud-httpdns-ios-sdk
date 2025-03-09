@@ -22,7 +22,6 @@
 - (NSString *)convertBySystem:(NSString *)ipv4Addr;
 - (void)forceConvertByType:(int)type;
 - (BOOL)ipv4OnlyIP:(const __uint8_t *)ip matchPrefixBitsCount:(__uint8_t)count;
-- (BOOL)isSystemVersionBiggerThanIOS9;
 
 @end
 

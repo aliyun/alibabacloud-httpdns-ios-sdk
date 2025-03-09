@@ -79,7 +79,7 @@ typedef enum {
 
 @interface HttpdnsIPv6Adapter : NSObject
 
-+ (instancetype)getInstance;
++ (instancetype)sharedInstance;
 
 /**
  *  判断当前是否为IPv6-Only网络
