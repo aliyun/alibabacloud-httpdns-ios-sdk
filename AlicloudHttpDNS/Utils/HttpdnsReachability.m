@@ -33,7 +33,6 @@
 #import <arpa/inet.h>
 #import <ifaddrs.h>
 #import <netdb.h>
-#import <CoreTelephony/CTCarrier.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 
 NSString *const kHttpdnsReachabilityChangedNotification = @"kHttpdnsReachabilityChangedNotification";

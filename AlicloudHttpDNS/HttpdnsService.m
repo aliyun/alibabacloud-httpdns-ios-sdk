@@ -30,7 +30,7 @@
 #import "HttpdnsConstants.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsScheduleCenter.h"
-#import "HttpdnsgetNetworkInfoHelper.h"
+#import "HttpdnsNetworkInfoHelper.h"
 #import "HttpdnsPublicConstant.h"
 #import "HttpdnsRegionConfigLoader.h"
 
@@ -239,11 +239,11 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)enableNetworkInfo:(BOOL)enable {
-    [self setReadNetworkInfoEnabled:enable];
+    // 弃用此接口
 }
 
 - (void)setReadNetworkInfoEnabled:(BOOL)enable {
-    [HttpdnsgetNetworkInfoHelper setNetworkInfoEnable:enable];
+    // 弃用此接口
 }
 
 - (void)enableCustomIPRank:(BOOL)enable {

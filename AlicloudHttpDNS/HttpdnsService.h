@@ -172,12 +172,12 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 
 /// 是否允许通过 CNCopyCurrentNetworkInfo 获取wifi ssid bssid
 /// @param enable YES: 开启 NO: 关闭 ，默认关闭
-- (void)enableNetworkInfo:(BOOL)enable ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService setReadNetworkInfoEnabled:] instead.");
+- (void)enableNetworkInfo:(BOOL)enable ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. We do not utilize network information anymore");
 
 
 /// 是否允许通过 CNCopyCurrentNetworkInfo 获取wifi ssid bssid
 /// @param enable YES: 开启 NO: 关闭 ，默认关闭
-- (void)setReadNetworkInfoEnabled:(BOOL)enable;
+- (void)setReadNetworkInfoEnabled:(BOOL)enable ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. We do not utilize network information anymore.");
 
 
 /// 是否开启IP探测功能

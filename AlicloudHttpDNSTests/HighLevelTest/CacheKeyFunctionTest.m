@@ -74,7 +74,7 @@ static NSString *sdnsHost = @"sdns1.onlyforhttpdnstest.run.place";
     [self.httpdns.requestScheduler cleanAllHostMemoryCache];
 
     // 从db再加载到缓存中
-    [self.httpdns.requestScheduler syncReloadCacheFromDbToMemoryByIspCarrier];
+    [self.httpdns.requestScheduler syncReloadCacheFromDbToMemory];
 
     HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:testHost byIpType:HttpdnsQueryIPTypeIpv4];
     // 没有使用cacheKey，所以这里应该是nil

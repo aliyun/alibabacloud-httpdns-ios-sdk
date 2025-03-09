@@ -14,7 +14,7 @@
 #import "HttpdnsUtil.h"
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsScheduleCenter.h"
-#import "HttpdnsgetNetworkInfoHelper.h"
+#import "HttpdnsNetworkInfoHelper.h"
 #import "HttpdnsHostObject.h"
 
 static NSURLSession *_scheduleCenterSession = nil;
@@ -58,15 +58,9 @@ static NSURLSession *_scheduleCenterSession = nil;
         url = [NSString stringWithFormat:@"%@&sid=%@", url, sessionId];
     }
 
-    NSString *netType = [HttpdnsgetNetworkInfoHelper getNetworkType];
+    NSString *netType = [HttpdnsNetworkInfoHelper getNetworkType];
     if ([HttpdnsUtil isNotEmptyString:netType]) {
         url = [NSString stringWithFormat:@"%@&net=%@", url, netType];
-        if ([HttpdnsgetNetworkInfoHelper isWifiNetwork]) {
-            NSString *bssid = [HttpdnsgetNetworkInfoHelper getWifiBssid];
-            if ([HttpdnsUtil isNotEmptyString:bssid]) {
-                url = [NSString stringWithFormat:@"%@&bssid=%@", url, [HttpdnsUtil URLEncodedString:bssid]];
-            }
-        }
     }
     return url;
 }

@@ -40,7 +40,7 @@ FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_4;
 - (void)setPersistentCacheIpEnabled:(BOOL)enable;
 - (BOOL)getPersistentCacheIpEnabled;
 
-- (void)syncReloadCacheFromDbToMemoryByIspCarrier;
+- (void)syncReloadCacheFromDbToMemory;
 
 - (void)cleanAllHostMemoryCache;
 

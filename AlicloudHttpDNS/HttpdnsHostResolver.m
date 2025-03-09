@@ -29,7 +29,7 @@
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsConstants.h"
 #import "AlicloudHttpDNS.h"
-#import "HttpdnsgetNetworkInfoHelper.h"
+#import "HttpdnsNetworkInfoHelper.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsIPv6Adapter.h"
 #import "HttpdnsInternalConstant.h"
@@ -274,15 +274,9 @@ static NSURLSession *_resolveHostSession = nil;
     }
 
     // 添加net和bssid(wifi)
-    NSString *netType = [HttpdnsgetNetworkInfoHelper getNetworkType];
+    NSString *netType = [HttpdnsNetworkInfoHelper getNetworkType];
     if ([HttpdnsUtil isNotEmptyString:netType]) {
         url = [NSString stringWithFormat:@"%@&net=%@", url, netType];
-        if ([HttpdnsgetNetworkInfoHelper isWifiNetwork]) {
-            NSString *bssid = [HttpdnsgetNetworkInfoHelper getWifiBssid];
-            if ([HttpdnsUtil isNotEmptyString:bssid]) {
-                url = [NSString stringWithFormat:@"%@&bssid=%@", url, [HttpdnsUtil URLEncodedString:bssid]];
-            }
-        }
     }
 
     // 开启IPv6解析结果后，URL处理
