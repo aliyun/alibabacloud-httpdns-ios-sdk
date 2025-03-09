@@ -18,7 +18,7 @@ typedef NS_ENUM(NSInteger, HttpdnsCarrierType) {
     HttpdnsCarrierTypeWifi    /**< Wifi */
 };
 
-static NSString *sNetworkType = @"unknown";
+static NSString *sNetworkStatusString = @"unknown";
 static NSString *sWifiBssid = @"unknown";
 static dispatch_queue_t sNetworkTypeQueue = 0;
 static dispatch_queue_t sWifiBssidQueue = 0;
@@ -47,7 +47,7 @@ static BOOL networkInfoEnable = NO;
 }
 
 + (NSString *)getNetworkName {
-    if ([HttpdnsUtil isWifiEnable]) {
+    if ([[HttpdnsReachability sharedInstance] isReachableViaWiFi]) {
         NSString *currentWifiHotSpotName = [self getCurrentWifiHotSpotName];
         NSString *networkName = ALICLOUD_HTTPDNS_NETWORK_FROME_WIFI_SSID(HttpdnsCarrierTypeWifi, @"0");
         if (currentWifiHotSpotName.length == 0 || !currentWifiHotSpotName) {
@@ -59,9 +59,8 @@ static BOOL networkInfoEnable = NO;
         networkName = ALICLOUD_HTTPDNS_NETWORK_FROME_WIFI_SSID(HttpdnsCarrierTypeWifi, currentWifiHotSpotName);
         return networkName;
     }
-    if ([HttpdnsUtil isCarrierConnectEnable]) {
-        NSString *networkName = [self checkMobileOperator];
-        return networkName;
+    if ([[HttpdnsReachability sharedInstance] isReachableViaWWAN]) {
+        return [self checkMobileOperator];
     }
 
     HttpdnsLogDebug("Get network name failed!");
@@ -96,45 +95,33 @@ static BOOL networkInfoEnable = NO;
 + (NSString *)checkMobileOperator {
     CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];
     CTCarrier *carrier = info.subscriberCellularProvider;
-    NSString *mobileCountryCode = carrier.mobileCountryCode;// 运营商国家编号
-    NSString *mobileNetworkCode = carrier.mobileNetworkCode;// 运营商编号
+
+    // 运营商国家编号
+    NSString *mobileCountryCode = carrier.mobileCountryCode;
+    // 运营商编号
+    NSString *mobileNetworkCode = carrier.mobileNetworkCode;
+
     if (mobileCountryCode && mobileCountryCode.length > 0 && mobileNetworkCode && mobileNetworkCode.length > 0) {
         return ALICLOUD_HTTPDNS_NETWORK_FROME_COUNTRY_NETWORK(HttpdnsCarrierTypeWWAN, mobileCountryCode, mobileNetworkCode);
     }
-    return ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeUnknown);//查询不到运营商
+
+    // 查询不到运营商
+    return ALICLOUD_HTTPDNS_NETWORK_FROME_TYPE(HttpdnsCarrierTypeUnknown);
 }
 
-+ (void)updateNetworkStatus:(AlicloudNetworkStatus)status {
++ (void)updateNetworkStatusString:(NSString *)statusString {
     dispatch_sync(sNetworkTypeQueue, ^{
-        switch (status) {
-            case AlicloudReachableViaWiFi:
-                sNetworkType = @"wifi";
-                [self updateWifiBssid];
-                break;
-            case AlicloudReachableVia2G:
-                sNetworkType = @"2g";
-                break;
-            case AlicloudReachableVia3G:
-                sNetworkType = @"3g";
-                break;
-            case AlicloudReachableVia4G:
-                sNetworkType = @"4g";
-                break;
-            case AlicloudNotReachable:
-                sNetworkType = @"unknown";
-                break;
-            default:
-                sNetworkType = @"unknown";
-                break;
+        sNetworkStatusString = statusString;
+        if ([statusString caseInsensitiveCompare:@"wifi"] == NSOrderedSame) {
+            [self updateWifiBssid];
         }
-        HttpdnsLogDebug("Update network status: %d, network type: %@", status, sNetworkType);
     });
 }
 
 + (NSString *)getNetworkType {
     __block NSString *networkType = nil;
     dispatch_sync(sNetworkTypeQueue, ^{
-        networkType = sNetworkType;
+        networkType = sNetworkStatusString;
     });
     return networkType;
 }
@@ -142,7 +129,7 @@ static BOOL networkInfoEnable = NO;
 + (BOOL)isWifiNetwork {
     __block BOOL res = NO;
     dispatch_sync(sNetworkTypeQueue, ^{
-       res = [sNetworkType isEqualToString:@"wifi"];
+        res = ([sNetworkStatusString caseInsensitiveCompare:@"wifi"] == NSOrderedSame);
     });
     return res;
 }

@@ -148,7 +148,7 @@
     dispatch_sync(self.ipStackDetectingQueue, ^(){
         // 双重判断，避免重复探测
         if (self.ipStackType == kAlicloudIPUnkown) {
-            HttpdnsLogDebug("[AlicloudUtil-IPV6Help] Start detecting network stack type, current detect time: %ld", self.detectedTimes);
+            HttpdnsLogDebug("[IPStackHelper] Start detecting network stack type, current detect time: %ld", self.detectedTimes);
 
             // 先检查一次
             self.ipStackType = [self detectIpStack];
@@ -166,7 +166,7 @@
 }
 
 - (void)reset {
-    HttpdnsLogDebug("[AlicloudUtil-IPV6Help] reset...");
+    HttpdnsLogDebug("[IPStackHelper] reset...");
 
     dispatch_sync(self.ipStackDetectingQueue, ^(){
         [self timerinvalidate];
@@ -193,45 +193,45 @@
     // S0: 先获取IPv6 gateway: 没有IPv6网关，认为是IPv4-only网络
     struct in6_addr addr6;
     if (-1 == getdefaultgateway6(&addr6)) {
-        HttpdnsLogDebug("[AlicloudUtil-IPV6Help] [IPv6-Test] detect IP stack type: IPv4-only");
+        HttpdnsLogDebug("[IPStackHelper] [IPv6-Test] detect IP stack type: IPv4-only");
         return kAlicloudIPv4only;
     }
     if (inet_ntop(AF_INET6, &addr6, addrBuf, INET6_ADDRSTRLEN)) {
-        HttpdnsLogDebug("[AlicloudUtil-IPV6Help] IPv6 gateway: %@", [NSString stringWithUTF8String:addrBuf]);
+        HttpdnsLogDebug("[IPStackHelper] IPv6 gateway: %@", [NSString stringWithUTF8String:addrBuf]);
     }
 
     // S1: 获取IPv4 gateway: 没有IPv4网关，认为是IPv6-only网络
     struct in_addr addr4;
     if (-1 == getdefaultgateway(&addr4)) {
-        HttpdnsLogDebug("[AlicloudUtil-IPV6Help] [IPv6-Test] detect IP stack type: IPv6-only");
+        HttpdnsLogDebug("[IPStackHelper] [IPv6-Test] detect IP stack type: IPv6-only");
         return kAlicloudIPv6only;
     }
     if (inet_ntop(AF_INET, &addr4, addrBuf, INET_ADDRSTRLEN)) {
-        HttpdnsLogDebug("[AlicloudUtil-IPV6Help] IPv4 gateway: %@", [NSString stringWithUTF8String:addrBuf]);
+        HttpdnsLogDebug("[IPStackHelper] IPv4 gateway: %@", [NSString stringWithUTF8String:addrBuf]);
     }
 
     // S2: UDP 探测
     AlicloudIPStackType ipstackType = kAlicloudIPUnkown;
     if ( test_udp_connect_ipv4() ) {
         ipstackType |= kAlicloudIPv4only;
-        HttpdnsLogDebug("[AlicloudUtil-IPV6Help] IPv4 UDP connect success");
+        HttpdnsLogDebug("[IPStackHelper] IPv4 UDP connect success");
     }
     if ( test_udp_connect_ipv6() ) {
-        HttpdnsLogDebug("[AlicloudUtil-IPV6Help] IPv6 UDP connect success");
+        HttpdnsLogDebug("[IPStackHelper] IPv6 UDP connect success");
         ipstackType |= kAlicloudIPv6only;
     }
 
     if (ipstackType == kAlicloudIPdual) {
-        HttpdnsLogDebug("[AlicloudUtil-IPV6Help] [IPv6-Test] detect IP stack type: Dual-Stack");
+        HttpdnsLogDebug("[IPStackHelper] [IPv6-Test] detect IP stack type: Dual-Stack");
     }
     else if (ipstackType == kAlicloudIPv4only) {
-        HttpdnsLogDebug("[AlicloudUtil-IPV6Help] [IPv6-Test] detect IP stack type: IPv4-only");
+        HttpdnsLogDebug("[IPStackHelper] [IPv6-Test] detect IP stack type: IPv4-only");
     }
     else if (ipstackType == kAlicloudIPv6only) {
-        HttpdnsLogDebug("[AlicloudUtil-IPV6Help] [IPv6-Test] detect IP stack type: IPv6-only");
+        HttpdnsLogDebug("[IPStackHelper] [IPv6-Test] detect IP stack type: IPv6-only");
     }
     else {
-        HttpdnsLogDebug("[AlicloudUtil-IPV6Help] [IPv6-Test] detect IP stack type: Unknown, set it as IPv4-only");
+        HttpdnsLogDebug("[IPStackHelper] [IPv6-Test] detect IP stack type: Unknown, set it as IPv4-only");
     }
 
     return ipstackType;
@@ -239,7 +239,7 @@
 }
 
 - (void)redetect {
-    HttpdnsLogDebug("[AlicloudUtil-IPV6Help] redetect times = [ %ld ]", self.detectedTimes);
+    HttpdnsLogDebug("[IPStackHelper] redetect times = [ %ld ]", self.detectedTimes);
 
     __weak typeof(self) wself = self;
 
@@ -252,7 +252,7 @@
             wself.ipStackType = ipstackType;
             [wself timerinvalidate];
 
-            HttpdnsLogDebug("[AlicloudUtil-IPV6Help] STOP redetect");
+            HttpdnsLogDebug("[IPStackHelper] STOP redetect");
         }
     });
 }
@@ -277,14 +277,14 @@
         for (int i=0; i<_res_state->nscount; i++) {
             if (addr_union[i].sin6.sin6_family == AF_INET6) {
                 if(inet_ntop(AF_INET6, &(addr_union[i].sin6.sin6_addr), addrBuf, INET6_ADDRSTRLEN)) {
-                    HttpdnsLogDebug("[AlicloudUtil-IPV6Help] DNS[%d], IPv6: %@", i, [NSString stringWithUTF8String:addrBuf]);
+                    HttpdnsLogDebug("[IPStackHelper] DNS[%d], IPv6: %@", i, [NSString stringWithUTF8String:addrBuf]);
                     ipstackType |= kAlicloudIPv6only;
                 }
 
             }
             else if(addr_union[i].sin.sin_family == AF_INET) {
                 if(inet_ntop(AF_INET, &(addr_union[i].sin.sin_addr), addrBuf, INET_ADDRSTRLEN)) {
-                    HttpdnsLogDebug("[AlicloudUtil-IPV6Help] DNS[%d], IPv4: %@", i, [NSString stringWithUTF8String:addrBuf]);
+                    HttpdnsLogDebug("[IPStackHelper] DNS[%d], IPv4: %@", i, [NSString stringWithUTF8String:addrBuf]);
                     ipstackType |= kAlicloudIPv4only;
                 }
             }

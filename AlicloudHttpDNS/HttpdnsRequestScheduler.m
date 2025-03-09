@@ -61,7 +61,7 @@ typedef struct {
 @end
 
 @implementation HttpdnsRequestScheduler {
-    long _lastNetworkStatus;
+    HttpdnsNetworkStatus _lastNetworkStatus;
     BOOL _isExpiredIPEnabled;
     BOOL _isPreResolveAfterNetworkChangedEnabled;
     HttpdnsThreadSafeDictionary *_hostMemCache;
@@ -87,16 +87,18 @@ typedef struct {
 
 - (instancetype)init {
     if (self = [super init]) {
-        _lastNetworkStatus = [HttpdnsReachabilityManager shareInstance].currentNetworkStatus;
+        HttpdnsReachability *reachability = [HttpdnsReachability sharedInstance];
         _isExpiredIPEnabled = NO;
         _IPRankingEnabled = NO;
         _isPreResolveAfterNetworkChangedEnabled = NO;
         _hostMemCache = [[HttpdnsThreadSafeDictionary alloc] init];
         [HttpdnsIPv6Adapter sharedInstance];
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(networkChanged:)
-                                                     name:ALICLOUD_NETWOEK_STATUS_NOTIFY
-                                                   object:nil];
+
+        _lastNetworkStatus = reachability.currentReachabilityStatus;
+        reachability.reachabilityBlock = ^(HttpdnsReachability * reachability, SCNetworkConnectionFlags flags) {
+            [self networkChanged];
+        };
+        [reachability startNotifier];
     }
     return self;
 }
@@ -432,33 +434,16 @@ typedef struct {
     _isPreResolveAfterNetworkChangedEnabled = enable;
 }
 
-- (void)networkChanged:(NSNotification *)notification {
-    NSNumber *networkStatus = [notification object];
+- (void)networkChanged {
+    HttpdnsNetworkStatus currentStatus = [[HttpdnsReachability sharedInstance] currentReachabilityStatus];
+    NSString *currentStatusString = [[HttpdnsReachability sharedInstance] currentReachabilityString];
+    [HttpdnsgetNetworkInfoHelper updateNetworkStatusString:currentStatusString];
+    HttpdnsLogDebug("Network changed, currentNetworkStatus: %ld(%@), lastNetworkStatus: %ld", currentStatus, currentStatusString, _lastNetworkStatus);
 
-    [HttpdnsgetNetworkInfoHelper updateNetworkStatus:(AlicloudNetworkStatus)[networkStatus intValue]];
-
-    __block NSString *statusString = nil;
-    switch ([networkStatus longValue]) {
-        case 0:
-            HttpdnsLogDebug("Network changed, currentNetworkStatus: None, lastNetworkStatus: %ld", _lastNetworkStatus);
-            return;
-        case 1:
-            statusString = @"Wifi";
-            break;
-        case 3:
-            statusString = @"3G";
-            break;
-        default:
-            statusString = @"Unknown";
-            break;
-    }
-
-    HttpdnsLogDebug("Network changed, currentNetworkStatus: %ld(%@), lastNetworkStatus: %ld", [networkStatus longValue], statusString, _lastNetworkStatus);
-
-    if (_lastNetworkStatus == [networkStatus longValue]) {
+    if (_lastNetworkStatus == currentStatus) {
         return;
     }
-    _lastNetworkStatus = [networkStatus longValue];
+    _lastNetworkStatus = currentStatus;
 
     NSArray *hostArray = [_hostMemCache allKeys];
 
