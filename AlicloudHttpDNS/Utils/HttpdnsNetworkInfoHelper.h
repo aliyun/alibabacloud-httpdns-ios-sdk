@@ -11,21 +11,12 @@
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import "HttpdnsReachability.h"
 
-@interface HttpdnsgetNetworkInfoHelper : NSObject
-
-/*!
- * 当前网络运营商名字，或者wifi名字
- */
-+ (NSString *)getNetworkName;
+@interface HttpdnsNetworkInfoHelper : NSObject
 
 + (void)updateNetworkStatusString:(NSString *)statusString;
+
 + (NSString *)getNetworkType;
+
 + (BOOL)isWifiNetwork;
-+ (NSString *)getWifiBssid;
-
-
-/// 设置networkInfo 开关 默认打开
-+ (void)setNetworkInfoEnable:(BOOL)enable;
-
 
 @end

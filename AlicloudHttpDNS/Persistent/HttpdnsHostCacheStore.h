@@ -18,28 +18,25 @@
 
 - (void)insertHostRecords:(NSArray<HttpdnsHostRecord *> *)hostRecords;
 
-- (NSArray<NSNumber *> *)hostRecordIdsForHost:(NSString *)host;
+- (NSArray<NSNumber *> *)getHostRecordIdsForHost:(NSString *)host;
 
-- (NSArray<HttpdnsHostRecord *> *)hostRecordsForCurrentCarrier;
-- (NSArray<HttpdnsHostRecord *> *)hostRecordsForCarrier:(NSString *)carrier;
+- (NSArray<HttpdnsHostRecord *> *)getAllHostRecords;
 
-- (HttpdnsHostRecord *)hostRecordsWithCurrentCarrierForHost:(NSString *)host;
-
-- (HttpdnsHostRecord *)hostRecordsForHost:(NSString *)host carrier:(NSString *)carrier;
+- (HttpdnsHostRecord *)getHostRecordsForHost:(NSString *)host;
 
 - (void)cleanHostRecordsAlreadyExpiredAt:(NSTimeInterval)specifiedTime;
 
 - (void)deleteHostRecordAndItsIPsWithHostRecordIDs:(NSArray<NSNumber *> *)hostRecordIDs;
 
+- (void)deleteHostRecordAndItsIPsWithHost:(NSString *)host;
+
 
 /// 清空指定host的数据库数据 包括(HostRecord + ipv4 + ipv6 三张表的数据)
-/// @param hostArray host数组
 - (void)cleanDbOfHosts:(NSArray <NSString *>*)hostArray;
 
 - (void)cleanDbOfAllHosts;
 
-// for test
-- (void)deleteHostRecordAndItsIPsWithHost:(NSString *)host;
+// only for testcase
 - (NSString *)showDBCache;
 
 @end

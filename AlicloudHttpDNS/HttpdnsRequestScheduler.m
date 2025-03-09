@@ -32,7 +32,7 @@
 #import "HttpdnsIPRecord.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsTCPSpeedTester.h"
-#import "HttpdnsgetNetworkInfoHelper.h"
+#import "HttpdnsNetworkInfoHelper.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsIPv6Adapter.h"
 #import "HttpDnsLocker.h"
@@ -417,8 +417,8 @@ typedef struct {
         // 先清理过期时间超过阈值的缓存结果
         [self cleanHostRecordsAlreadyExpiredAt:[[NSDate date] timeIntervalSince1970] - duration];
 
-        // 再根据当前网络运营商读取持久化缓存中的历史记录，加载到内存缓存里
-        [self asyncReloadCacheFromDbToMemoryByIspCarrier];
+        // 再读取持久化缓存中的历史记录，加载到内存缓存里
+        [self asyncReloadCacheFromDbToMemory];
     }
 }
 
@@ -437,7 +437,7 @@ typedef struct {
 - (void)networkChanged {
     HttpdnsNetworkStatus currentStatus = [[HttpdnsReachability sharedInstance] currentReachabilityStatus];
     NSString *currentStatusString = [[HttpdnsReachability sharedInstance] currentReachabilityString];
-    [HttpdnsgetNetworkInfoHelper updateNetworkStatusString:currentStatusString];
+    [HttpdnsNetworkInfoHelper updateNetworkStatusString:currentStatusString];
     HttpdnsLogDebug("Network changed, currentNetworkStatus: %ld(%@), lastNetworkStatus: %ld", currentStatus, currentStatusString, _lastNetworkStatus);
 
     if (_lastNetworkStatus == currentStatus) {
@@ -447,16 +447,10 @@ typedef struct {
 
     NSArray *hostArray = [_hostMemCache allKeys];
 
-    dispatch_async(_asyncResolveHostQueue, ^{
+    // 网络切换过程中网络可能不稳定，刷新解析发出去的请求失败概率高，所以等待一段时间再清理缓存和发出请求
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), _asyncResolveHostQueue, ^{
         [self cleanAllHostMemoryCache];
 
-        // 网络发生变化后，上面已经清理内存缓存，现在，要以当前网络运营商为条件去db里找之前是否有缓存，如果是，就复用这个缓存
-        // 同步操作，防止网络请求成功，更新后，缓存数据又被重新覆盖
-        [self syncReloadCacheFromDbToMemoryByIspCarrier];
-    });
-
-    // 网络切换过程中网络可能不稳定，发出去的请求失败概率高，所以等待一段时间再发出请求
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), _asyncResolveHostQueue, ^{
         // 更新调度列表
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
         [scheduleCenter asyncUpdateRegionScheduleConfig];
@@ -481,9 +475,9 @@ typedef struct {
 #pragma mark -
 #pragma mark - Flag for Disable and Sniffer Method
 
-- (void)asyncReloadCacheFromDbToMemoryByIspCarrier {
+- (void)asyncReloadCacheFromDbToMemory {
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [self syncReloadCacheFromDbToMemoryByIspCarrier];
+        [self syncReloadCacheFromDbToMemory];
     });
 }
 
@@ -513,7 +507,7 @@ typedef struct {
     });
 }
 
-- (void)syncReloadCacheFromDbToMemoryByIspCarrier {
+- (void)syncReloadCacheFromDbToMemory {
     dispatch_sync(_persistentCacheConcurrentQueue, ^{
         if (!_persistentCacheIpEnabled) {
             return;
@@ -521,8 +515,7 @@ typedef struct {
 
         HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
 
-        // 根据运营商名称在db中找一下历史记录
-        NSArray<HttpdnsHostRecord *> *hostRecords = [hostCacheStore hostRecordsForCurrentCarrier];
+        NSArray<HttpdnsHostRecord *> *hostRecords = [hostCacheStore getAllHostRecords];
 
         if (![HttpdnsUtil isNotEmptyArray:hostRecords]) {
             return;

@@ -8,7 +8,7 @@
 
 #import "HttpdnsHostCacheStore.h"
 #import "HttpdnsHostRecord.h"
-#import "HttpdnsgetNetworkInfoHelper.h"
+#import "HttpdnsNetworkInfoHelper.h"
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsDatabaseMigrator.h"
 #import "HttpdnsHostCacheStoreSQL.h"
@@ -16,6 +16,7 @@
 #import "HttpdnsIPCacheStore.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsIPRecord.h"
+#import "HttpdnsInternalConstant.h"
 
 @implementation HttpdnsHostCacheStore
 
@@ -39,18 +40,12 @@
 }
 
 - (void)migrateDatabaseIfNeeded:(NSString *)databasePath {
-    //后续数据库升级，兼容操作
+    // 后续数据库升级，兼容操作
 }
 
 - (void)insertHostRecords:(NSArray<HttpdnsHostRecord *> *)hostRecords  {
     [HttpdnsUtil warnMainThreadIfNecessary];
     if (!hostRecords || hostRecords.count == 0) {
-        return;
-    }
-    // 当前网络运营商名字，或者wifi名字
-    NSString *carrier = [HttpdnsgetNetworkInfoHelper getNetworkName];
-    // 当在断网状态下，carrier为nil
-    if (!carrier || carrier.length == 0) {
         return;
     }
     for (HttpdnsHostRecord *hostRecord in hostRecords) {
@@ -59,15 +54,15 @@
         HttpdnsIPCacheStore *IPCacheStore = [HttpdnsIPCacheStore sharedInstance];
 
         if (![HttpdnsUtil isNotEmptyArray:hostRecord.IPs] && ![HttpdnsUtil isNotEmptyArray:hostRecord.IP6s]) {
-            //删除记录，此时hostRecord.hostRecordId为nil，不能依据Id删，要先从数据库里拿id，再依据id删。
-            NSArray<NSNumber *> *ids = [self hostRecordIdsForHost:hostRecord.host];
+            // 删除记录，此时hostRecord.hostRecordId为nil，不能依据Id删，要先从数据库里拿id，再依据id删。
+            NSArray<NSNumber *> *ids = [self getHostRecordIdsForHost:hostRecord.host];
             [self deleteHostRecordAndItsIPsWithHostRecordIDs:ids];
             continue;
         }
-        //Host Record表
-        //先删除重复的，再插入，防止直接覆盖导致host覆盖后，IP表未更新。
-        [self deleteHostRecordAndItsIPsWithHost:hostRecord.host carrier:carrier];
-        NSArray *insertionRecord = [self insertionRecordForRecord:hostRecord networkName:carrier];
+        // 处理Host Record表
+        // 先删除重复的，再插入，防止直接覆盖导致host覆盖后，IP表未更新。
+        [self deleteHostRecordAndItsIPsWithHost:hostRecord.host];
+        NSArray *insertionRecord = [self insertionRecordForRecord:hostRecord];
         __block sqlite_int64 hostRecordId = 0;
         ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
             [db executeUpdate:ALICLOUD_HTTPDNS_SQL_INSERT_HOST_RECORD withArgumentsInArray:insertionRecord];
@@ -92,22 +87,12 @@
     }
 }
 
-- (NSArray<HttpdnsHostRecord *> *)hostRecordsForCurrentCarrier {
-    NSString *carrier = [HttpdnsgetNetworkInfoHelper getNetworkName];
-    HttpdnsLogDebug("network named : %@", carrier);
-    return [self hostRecordsForCarrier:carrier];
-}
-
-- (NSArray<HttpdnsHostRecord *> *)hostRecordsForCarrier:(NSString *)carrier {
-    if (!carrier || carrier.length == 0) {
-        HttpdnsLogDebug("network named is nil");
-        return nil;
-    }
+- (NSArray<HttpdnsHostRecord *> *)getAllHostRecords {
     [HttpdnsUtil warnMainThreadIfNecessary];
     NSMutableArray *hostRecords = [NSMutableArray arrayWithCapacity:1];
 
     ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
-        NSArray *args = @[ carrier ];
+        NSArray *args = @[ HTTPDNS_DEFAULT_NETWORK_CARRIER_NAME ];
         HttpdnsResultSet *result = [db executeQuery:ALICLOUD_HTTPDNS_SQL_SELECT_HOST_RECORD_WITH_CARRIER withArgumentsInArray:args];
 
         while ([result next]) {
@@ -123,7 +108,7 @@
 
 }
 
-- (NSArray<NSNumber *> *)hostRecordIdsForHost:(NSString *)host {
+- (NSArray<NSNumber *> *)getHostRecordIdsForHost:(NSString *)host {
     [HttpdnsUtil warnMainThreadIfNecessary];
     if (!host || host.length == 0) {
         return nil;
@@ -146,24 +131,15 @@
     return [hostRecordIds copy];
 }
 
-- (HttpdnsHostRecord *)hostRecordsWithCurrentCarrierForHost:(NSString *)host {
-    NSString *carrier = [HttpdnsgetNetworkInfoHelper getNetworkName];
-    HttpdnsLogDebug("network named : %@", carrier);
-    return [self hostRecordsForHost:host carrier:carrier];
-}
-
-- (HttpdnsHostRecord *)hostRecordsForHost:(NSString *)host carrier:(NSString *)carrier {
+- (HttpdnsHostRecord *)getHostRecordsForHost:(NSString *)host {
     [HttpdnsUtil warnMainThreadIfNecessary];
     if (!host || host.length == 0) {
-        return nil;
-    }
-    if (!carrier || carrier.length == 0) {
         return nil;
     }
     __block HttpdnsHostRecord *hostRecord = nil;
 
     ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
-        NSArray *args = @[ host, carrier ];
+        NSArray *args = @[ host, HTTPDNS_DEFAULT_NETWORK_CARRIER_NAME ];
         HttpdnsResultSet *result = [db executeQuery:ALICLOUD_HTTPDNS_SQL_SELECT_HOST_RECORD_WITH_HOST_AND_CARRIER withArgumentsInArray:args];
         if ([result next]) {
             HttpdnsHostRecord *hostRecordResult = [self recordWithResult:result db:db];
@@ -240,25 +216,22 @@
     return record;
 }
 
-- (NSArray *)insertionRecordForRecord:(HttpdnsHostRecord *)hostRecord networkName:(NSString *)networkName {
+- (NSArray *)insertionRecordForRecord:(HttpdnsHostRecord *)hostRecord {
     NSTimeInterval createAt = [[NSDate date] timeIntervalSince1970];
     NSTimeInterval expireAt = createAt + hostRecord.TTL;
     return @[
              hostRecord.host,                               //ALICLOUD_HTTPDNS_FIELD_HOST
-             networkName,                                   //ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER
+             HTTPDNS_DEFAULT_NETWORK_CARRIER_NAME,                                   //ALICLOUD_HTTPDNS_FIELD_SERVICE_CARRIER
              @(createAt),                                   //ALICLOUD_HTTPDNS_FIELD_CREATE_AT
              @(expireAt)                                    //ALICLOUD_HTTPDNS_FIELD_EXPIRE_AT
              ];
 }
 
-- (void)deleteHostRecordAndItsIPsWithHost:(NSString *)host carrier:(NSString *)carrier {
+- (void)deleteHostRecordAndItsIPsWithHost:(NSString *)host {
     if (!host || host.length == 0) {
         return;
     }
-    if (!carrier || carrier.length == 0) {
-        return;
-    }
-    HttpdnsHostRecord *hostRecord = [self hostRecordsForHost:host carrier:carrier];
+    HttpdnsHostRecord *hostRecord = [self getHostRecordsForHost:host];
     if (!hostRecord) {
         return;
     }
@@ -286,7 +259,7 @@
 
     for (NSString *host in hostArray) {
         //删除域名对应的数据库数据
-        NSArray<NSNumber *> *ids = [self hostRecordIdsForHost:host];
+        NSArray<NSNumber *> *ids = [self getHostRecordIdsForHost:host];
         [self deleteHostRecordAndItsIPsWithHostRecordIDs:ids];
     }
 }
@@ -301,12 +274,12 @@
 #pragma mark - Private Methods
 
 - (void)cleanDatabaseCache {
-    //删除host表
+    // 删除host表
     ALICLOUD_HTTPDNS_OPEN_DATABASE(db, ({
         [db executeUpdate:ALICLOUD_HTTPDNS_SQL_CLEAN_HOST_RECORD_TABLE];;
     }));
 
-    //删除ip表
+    // 删除ip表
     [[HttpdnsIPCacheStore sharedInstance] cleanIPRecord];
     [[HttpdnsIPCacheStore sharedInstance] cleanIP6Record];
 }
@@ -363,16 +336,10 @@
     [IPCacheStore deleteIP6RecordWithHostRecordIDs:hostRecordIDs];
 }
 
-// for test
-- (void)deleteHostRecordAndItsIPsWithHost:(NSString *)host {
-    NSString *carrier = [HttpdnsgetNetworkInfoHelper getNetworkName];
-    [self deleteHostRecordAndItsIPsWithHost:host carrier:carrier];
-}
-
-// for test
+// only for testcase
 - (NSString *)showDBCache {
     NSString *dbCache;
-    NSArray *hostRecords = [self hostRecordsForCurrentCarrier];
+    NSArray *hostRecords = [self getAllHostRecords];
     if ([HttpdnsUtil isNotEmptyArray:hostRecords]) {
         dbCache = [NSString stringWithFormat:@"%@", hostRecords];
     }

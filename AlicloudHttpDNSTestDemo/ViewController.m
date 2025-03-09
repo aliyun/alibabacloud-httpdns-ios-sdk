@@ -69,9 +69,9 @@ NSArray *ipv6HostArray = nil;
     [_service setTtlDelegate:self];
     [_service setLogEnabled:YES];
     // [_service setHasAllowedArbitraryLoadsInATS:YES];
-    [_service setPersistentCacheIPEnabled:NO];
-    [_service setReuseExpiredIPEnabled:NO];
-    [_service setHTTPSRequestEnabled:NO];
+    [_service setPersistentCacheIPEnabled:YES];
+    [_service setReuseExpiredIPEnabled:YES];
+    [_service setHTTPSRequestEnabled:YES];
     [_service setIPv6Enabled:YES];
 
     NSString *sessionId = [[HttpDnsService sharedInstance] getSessionId];
