@@ -31,12 +31,6 @@
 
 + (void)warnMainThreadIfNecessary;
 
-//wifi是否可用
-+ (BOOL)isWifiEnable;
-
-//蜂窝移动网络是否可用
-+ (BOOL)isCarrierConnectEnable;
-
 + (NSDictionary *)getValidDictionaryFromJson:(id)jsonValue;
 
 + (BOOL)isEmptyArray:(NSArray *)inputArr;

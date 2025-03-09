@@ -132,10 +132,10 @@
 		948541002D7ACFD60013CC3B /* HttpdnsGetgateway.c in Sources */ = {isa = PBXBuildFile; fileRef = 948540E92D7ACFD60013CC3B /* HttpdnsGetgateway.c */; };
 		948541012D7ACFD60013CC3B /* HttpdnsSocketUdp.c in Sources */ = {isa = PBXBuildFile; fileRef = 948540EC2D7ACFD60013CC3B /* HttpdnsSocketUdp.c */; };
 		948541022D7ACFD60013CC3B /* HttpdnsIPv6Adapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 948540EE2D7ACFD60013CC3B /* HttpdnsIPv6Adapter.m */; };
-		948541052D7AD1400013CC3B /* HttpdnsReachabilityManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 948541032D7AD1400013CC3B /* HttpdnsReachabilityManager.h */; };
-		948541062D7AD1400013CC3B /* HttpdnsReachabilityManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 948541042D7AD1400013CC3B /* HttpdnsReachabilityManager.m */; };
-		948541072D7AD1400013CC3B /* HttpdnsReachabilityManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 948541032D7AD1400013CC3B /* HttpdnsReachabilityManager.h */; };
-		948541082D7AD1400013CC3B /* HttpdnsReachabilityManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 948541042D7AD1400013CC3B /* HttpdnsReachabilityManager.m */; };
+		9485410B2D7DA5B90013CC3B /* HttpdnsReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 948541092D7DA5B90013CC3B /* HttpdnsReachability.h */; };
+		9485410C2D7DA5B90013CC3B /* HttpdnsReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 9485410A2D7DA5B90013CC3B /* HttpdnsReachability.m */; };
+		9485410D2D7DA5B90013CC3B /* HttpdnsReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 9485410A2D7DA5B90013CC3B /* HttpdnsReachability.m */; };
+		9485410E2D7DA5B90013CC3B /* HttpdnsReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 948541092D7DA5B90013CC3B /* HttpdnsReachability.h */; };
 		948CD0092C031EB000F9F075 /* MultithreadCorrectnessTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 948CD0082C031EB000F9F075 /* MultithreadCorrectnessTest.m */; };
 		948DA4DE2C1E7E5F00D81682 /* HttpdnsPublicConstant.h in Headers */ = {isa = PBXBuildFile; fileRef = 948DA4DA2C1E7E5F00D81682 /* HttpdnsPublicConstant.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		948DA4DF2C1E7E5F00D81682 /* HttpdnsPublicConstant.h in Headers */ = {isa = PBXBuildFile; fileRef = 948DA4DA2C1E7E5F00D81682 /* HttpdnsPublicConstant.h */; };
@@ -297,8 +297,8 @@
 		948540EE2D7ACFD60013CC3B /* HttpdnsIPv6Adapter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsIPv6Adapter.m; sourceTree = "<group>"; };
 		948540EF2D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsIPv6PrefixResolver.h; sourceTree = "<group>"; };
 		948540F02D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsIPv6PrefixResolver.m; sourceTree = "<group>"; };
-		948541032D7AD1400013CC3B /* HttpdnsReachabilityManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsReachabilityManager.h; sourceTree = "<group>"; };
-		948541042D7AD1400013CC3B /* HttpdnsReachabilityManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsReachabilityManager.m; sourceTree = "<group>"; };
+		948541092D7DA5B90013CC3B /* HttpdnsReachability.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsReachability.h; sourceTree = "<group>"; };
+		9485410A2D7DA5B90013CC3B /* HttpdnsReachability.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsReachability.m; sourceTree = "<group>"; };
 		948CD0082C031EB000F9F075 /* MultithreadCorrectnessTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MultithreadCorrectnessTest.m; sourceTree = "<group>"; };
 		948DA4DA2C1E7E5F00D81682 /* HttpdnsPublicConstant.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsPublicConstant.h; sourceTree = "<group>"; };
 		948DA4E22C1EAA8200D81682 /* HttpdnsRegionConfigLoader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsRegionConfigLoader.h; sourceTree = "<group>"; };
@@ -612,8 +612,8 @@
 		9AA0FC591EB9843A00E242DD /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				948541032D7AD1400013CC3B /* HttpdnsReachabilityManager.h */,
-				948541042D7AD1400013CC3B /* HttpdnsReachabilityManager.m */,
+				948541092D7DA5B90013CC3B /* HttpdnsReachability.h */,
+				9485410A2D7DA5B90013CC3B /* HttpdnsReachability.m */,
 				9AA0FC5E1EB9846D00E242DD /* HttpdnsDatabaseCommon.h */,
 				9AA0FC761EB9B5FD00E242DD /* HttpdnsDatabaseCoordinator.h */,
 				9AA0FC771EB9B5FD00E242DD /* HttpdnsDatabaseCoordinator.m */,
@@ -722,6 +722,7 @@
 				9AA0FC781EB9B5FD00E242DD /* HttpdnsDatabaseCoordinator.h in Headers */,
 				94A014742BF38F410018B096 /* HttpdnsService_Internal.h in Headers */,
 				9406FDBC2C19AA8F0003CB6A /* HttpdnsIPCacheStoreSQL.h in Headers */,
+				9485410E2D7DA5B90013CC3B /* HttpdnsReachability.h in Headers */,
 				9A5914821EA0815D00A7ED28 /* HttpdnsPersistenceUtils.h in Headers */,
 				9A4D181A1E8F8FE1001E45B4 /* HttpdnsConstants.h in Headers */,
 				9AE63A041ECDA74D00F9C723 /* HttpdnsResultSet.h in Headers */,
@@ -743,7 +744,6 @@
 				9406FDB42C19AA8F0003CB6A /* HttpdnsHostCacheStore.h in Headers */,
 				9AE639FF1ECDA74D00F9C723 /* HttpdnsDatabasePool.h in Headers */,
 				9AA0FC5C1EB9843A00E242DD /* HttpdnsDatabaseMigrator.h in Headers */,
-				948541072D7AD1400013CC3B /* HttpdnsReachabilityManager.h in Headers */,
 				9406FDB82C19AA8F0003CB6A /* HttpdnsHostCacheStoreSQL.h in Headers */,
 				9406FDBE2C19AA8F0003CB6A /* HttpdnsIP6CacheStoreSQL.h in Headers */,
 				9AA0FC701EB9AFB700E242DD /* HttpdnsHostRecord.h in Headers */,
@@ -774,7 +774,6 @@
 				947E5C0A2C00760200123579 /* HttpdnsUtil.h in Headers */,
 				947E5C0B2C00760200123579 /* HttpdnsSpeedTester.h in Headers */,
 				947E5C0C2C00760200123579 /* HttpdnsTCPSpeedTester.h in Headers */,
-				948541052D7AD1400013CC3B /* HttpdnsReachabilityManager.h in Headers */,
 				947E5C0D2C00760200123579 /* HttpdnsPersistenceUtils.h in Headers */,
 				943F159D2CCDF1D60045865D /* HttpdnsCFHttpWrapper.h in Headers */,
 				947E5C0E2C00760200123579 /* HttpdnsConstants.h in Headers */,
@@ -798,6 +797,7 @@
 				9406FDB52C19AA8F0003CB6A /* HttpdnsHostCacheStore.h in Headers */,
 				947C4BF32C1F45330095A302 /* HttpdnsScheduleCenter_Internal.h in Headers */,
 				947E5BEF2C0075BE00123579 /* HttpdnsIPv6Manager.h in Headers */,
+				9485410B2D7DA5B90013CC3B /* HttpdnsReachability.h in Headers */,
 				947E5BF72C0075E100123579 /* HttpdnsDatabaseCommon.h in Headers */,
 				94B60FEE2C21EAD700DCA078 /* HttpdnsRequest_Internal.h in Headers */,
 				947E5BF82C0075E100123579 /* HttpdnsDatabaseCoordinator.h in Headers */,
@@ -1014,9 +1014,9 @@
 				9AA0FC7E1EB9D17700E242DD /* HttpdnsgetNetworkInfoHelper.m in Sources */,
 				2197CACD1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m in Sources */,
 				943F159E2CCDF1D60045865D /* HttpdnsCFHttpWrapper.m in Sources */,
-				948541082D7AD1400013CC3B /* HttpdnsReachabilityManager.m in Sources */,
 				948540FF2D7ACFD60013CC3B /* HttpdnsIPv6PrefixResolver.m in Sources */,
 				948541002D7ACFD60013CC3B /* HttpdnsGetgateway.c in Sources */,
+				9485410D2D7DA5B90013CC3B /* HttpdnsReachability.m in Sources */,
 				948541012D7ACFD60013CC3B /* HttpdnsSocketUdp.c in Sources */,
 				948541022D7ACFD60013CC3B /* HttpdnsIPv6Adapter.m in Sources */,
 				9AE63A021ECDA74D00F9C723 /* HttpdnsDatabaseQueue.m in Sources */,
@@ -1042,7 +1042,6 @@
 				4AF5AB841DCB332800206DD8 /* HttpdnsLog.m in Sources */,
 				9AF9A5FE1EC4CFCF0018063B /* HttpdnsHostRecord.m in Sources */,
 				9AF9A6131EC4F5500018063B /* HttpdnsIPRecord.m in Sources */,
-				948541062D7AD1400013CC3B /* HttpdnsReachabilityManager.m in Sources */,
 				945BA3F12C20091D0098FC52 /* ScheduleCenterV6Test.m in Sources */,
 				947E5C172C00762100123579 /* HttpdnsResult.m in Sources */,
 				947E5C182C00762100123579 /* HttpdnsRequest.m in Sources */,
@@ -1068,6 +1067,7 @@
 				943F159C2CCDF1D60045865D /* HttpdnsCFHttpWrapper.m in Sources */,
 				9A09D7821FF2033200585632 /* HttpdnsTCPSpeedTester.m in Sources */,
 				9A5914851EA081AB00A7ED28 /* HttpdnsPersistenceUtils.m in Sources */,
+				9485410C2D7DA5B90013CC3B /* HttpdnsReachability.m in Sources */,
 				947E5C1D2C02DB9300123579 /* PresetCacheAndRetrieveTest.m in Sources */,
 				9A5D5E2B1E9D027200CAC3A6 /* HttpdnsScheduleCenter.m in Sources */,
 				9A0903791EA07C0C007B6821 /* HttpdnsScheduleCenterRequest.m in Sources */,

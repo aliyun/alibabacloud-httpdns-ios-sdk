@@ -27,8 +27,7 @@
 #import "HttpdnsHostResolver.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsPublicConstant.h"
-#import "HttpdnsReachabilityManager.h"
-
+#import "httpdnsReachability.h"
 
 #define HTTPDNSUTIL_SuppressPerformSelectorLeakWarning(code) \
 do { \
@@ -85,18 +84,6 @@ _Pragma("clang diagnostic pop") \
     if ([NSThread isMainThread]) {
         HttpdnsLogDebug("Warning: A long-running Paas operation is being executed on the main thread.");
     }
-}
-
-//wifi是否可用
-+ (BOOL)isWifiEnable {
-    BOOL isReachableViaWiFi =  [[HttpdnsReachabilityManager shareInstance] isReachableViaWifi];
-    return isReachableViaWiFi;
-}
-
-//蜂窝移动网络是否可用
-+ (BOOL)isCarrierConnectEnable {
-    BOOL isReachableViaWWAN = [[HttpdnsReachabilityManager shareInstance] isReachableViaWWAN];
-    return isReachableViaWWAN;
 }
 
 + (NSDictionary *)getValidDictionaryFromJson:(id)jsonValue {
