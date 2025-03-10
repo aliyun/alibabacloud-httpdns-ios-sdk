@@ -57,11 +57,12 @@ typedef struct {
  */
 @property (nonatomic, strong) dispatch_queue_t cacheQueue;
 @property (nonatomic, assign) BOOL persistentCacheIpEnabled;
+@property (atomic, assign) NSTimeInterval lastNetworkChangeTimestamp;
+@property (atomic, assign) HttpdnsNetworkStatus lastNetworkStatus;
 
 @end
 
 @implementation HttpdnsRequestScheduler {
-    HttpdnsNetworkStatus _lastNetworkStatus;
     BOOL _isExpiredIPEnabled;
     BOOL _isPreResolveAfterNetworkChangedEnabled;
     HttpdnsThreadSafeDictionary *_hostMemCache;
@@ -95,6 +96,7 @@ typedef struct {
         [HttpdnsIPv6Adapter sharedInstance];
 
         _lastNetworkStatus = reachability.currentReachabilityStatus;
+        _lastNetworkChangeTimestamp = 0;
         reachability.reachabilityBlock = ^(HttpdnsReachability * reachability, SCNetworkConnectionFlags flags) {
             [self networkChanged];
         };
@@ -438,28 +440,49 @@ typedef struct {
     HttpdnsNetworkStatus currentStatus = [[HttpdnsReachability sharedInstance] currentReachabilityStatus];
     NSString *currentStatusString = [[HttpdnsReachability sharedInstance] currentReachabilityString];
     [HttpdnsNetworkInfoHelper updateNetworkStatusString:currentStatusString];
-    HttpdnsLogDebug("Network changed, currentNetworkStatus: %ld(%@), lastNetworkStatus: %ld", currentStatus, currentStatusString, _lastNetworkStatus);
 
-    if (_lastNetworkStatus == currentStatus) {
-        return;
+    NSTimeInterval currentTimestamp = [NSDate date].timeIntervalSince1970;
+    NSTimeInterval elapsedTime = currentTimestamp - _lastNetworkChangeTimestamp;
+    BOOL statusChanged = (_lastNetworkStatus != currentStatus);
+
+    if (elapsedTime >= 5) {
+        // 更新调度列表代价小，可以激进些
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), _asyncResolveHostQueue, ^{
+            HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+            [scheduleCenter asyncUpdateRegionScheduleConfig];
+        });
     }
-    _lastNetworkStatus = currentStatus;
 
-    NSArray *hostArray = [_hostMemCache allKeys];
+    // 仅在以下情况下响应网络变化去尝试更新缓存:
+    // 1. 首次事件（lastNetworkChangeTimestamp为0），或
+    // 2. 距离上次处理事件至少过去了1分钟（60秒），或
+    // 3. 网络状态发生变化且至少过去了5秒
+    if (_lastNetworkChangeTimestamp == 0 ||
+        elapsedTime >= 60 ||
+        (statusChanged && elapsedTime >= 5)) {
 
-    // 网络切换过程中网络可能不稳定，刷新解析发出去的请求失败概率高，所以等待一段时间再清理缓存和发出请求
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), _asyncResolveHostQueue, ^{
-        [self cleanAllHostMemoryCache];
+        HttpdnsLogDebug("Processing network change: oldStatus: %ld, newStatus: %ld(%@), elapsedTime=%.2f seconds",
+                        _lastNetworkStatus, currentStatus, currentStatusString, elapsedTime);
 
-        // 更新调度列表
-        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-        [scheduleCenter asyncUpdateRegionScheduleConfig];
+        // 更新时间戳和状态
+        _lastNetworkChangeTimestamp = currentTimestamp;
+        _lastNetworkStatus = currentStatus;
 
-        if (self->_isPreResolveAfterNetworkChangedEnabled) {
-            HttpdnsLogDebug("Network changed, pre resolve for hosts: %@", hostArray);
-            [self addPreResolveHosts:hostArray queryType:HttpdnsQueryIPTypeAuto];
-        }
-    });
+        NSArray *hostArray = [_hostMemCache allKeys];
+
+        // 网络在切换过程中可能不稳定，所以在清理缓存和发送请求前等待3秒
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), _asyncResolveHostQueue, ^{
+            [self cleanAllHostMemoryCache];
+
+            if (self->_isPreResolveAfterNetworkChangedEnabled) {
+                HttpdnsLogDebug("Network changed, pre resolve for hosts: %@", hostArray);
+                [self addPreResolveHosts:hostArray queryType:HttpdnsQueryIPTypeAuto];
+            }
+        });
+    } else {
+        HttpdnsLogDebug("Ignoring network change event: oldStatus: %ld, newStatus: %ld(%@), elapsedTime=%.2f seconds",
+                        _lastNetworkStatus, currentStatus, currentStatusString, elapsedTime);
+    }
 }
 
 #pragma mark -
