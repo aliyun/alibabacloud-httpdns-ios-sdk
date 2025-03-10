@@ -95,7 +95,7 @@
 
     NSString *convertedAddr;
     if ([self isIPv6OnlyNetwork]) {
-        HttpdnsLogDebug("[AliCloudIPv6Adapter]: In IPv6-Only network status, convert IP address.");
+HttpdnsLogDebug("[HttpdnsIPv6Adapter]: In IPv6-Only network status, convert IP address.");
         convertedAddr = [[HttpdnsIPv6PrefixResolver getInstance] convertIPv4toIPv6:addr];
     } else  {
         HttpdnsLogDebug("[AliCloudIPv6Adapter]: Not in IPv6-Only network status, return.");

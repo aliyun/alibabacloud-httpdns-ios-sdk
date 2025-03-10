@@ -1,5 +1,5 @@
 //
-//  HttpdnsgetNetworkInfoHelper.m
+//  HttpdnsNetworkInfoHelper.m
 //  AlicloudHttpDNS
 //
 //  Created by ElonChan（地风） on 2017/5/3.

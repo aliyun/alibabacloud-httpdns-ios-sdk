@@ -94,7 +94,6 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         networkInfo = [[CTTelephonyNetworkInfo alloc] init];
-        networkInfo = [[CTTelephonyNetworkInfo alloc] init];
         instance = [HttpdnsReachability reachabilityWithHostname:@"www.taobao.com"];
     });
     return instance;
