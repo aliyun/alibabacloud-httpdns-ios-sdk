@@ -89,10 +89,9 @@ static NSString *const ipKey = @"ip";
         return nil;
     }
 
-    int16_t port = 80;//
+    int16_t port = 80;
     @try {
-        id port_ = dataSource[host];
-        port = [port_ integerValue];
+        port = [dataSource[host] integerValue];
     } @catch (NSException *exception) {}
 
     NSMutableArray<NSDictionary *> *IPSpeeds = [NSMutableArray arrayWithCapacity:IPs.count];

@@ -35,8 +35,6 @@
 #import "HttpdnsRegionConfigLoader.h"
 
 
-const NSString *const ALICLOUDHDNS_IPV4 = @"ALICLOUDHDNS_IPV4";
-const NSString *const ALICLOUDHDNS_IPV6 = @"ALICLOUDHDNS_IPV6";
 
 static dispatch_queue_t asyncTaskConcurrentQueue;
 
