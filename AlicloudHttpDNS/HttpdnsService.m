@@ -38,10 +38,6 @@
 const NSString *const ALICLOUDHDNS_IPV4 = @"ALICLOUDHDNS_IPV4";
 const NSString *const ALICLOUDHDNS_IPV6 = @"ALICLOUDHDNS_IPV6";
 
-const NSString *EXT_INFO_KEY_VERSION = @"SdkVersion";
-
-
-static NSDictionary *HTTPDNS_EXT_INFO = nil;
 static dispatch_queue_t asyncTaskConcurrentQueue;
 
 @interface HttpDnsService ()
@@ -87,10 +83,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (instancetype)initWithAccountID:(int)accountID secretKey:(NSString *)secretKey {
-    HTTPDNS_EXT_INFO = @{
-        EXT_INFO_KEY_VERSION : HTTPDNS_IOS_SDK_VERSION,
-    };
-
     HttpDnsService *sharedInstance = [HttpDnsService sharedInstance];;
 
     sharedInstance.accountID = accountID;

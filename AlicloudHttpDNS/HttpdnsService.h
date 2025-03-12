@@ -53,8 +53,6 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 
 + (instancetype)sharedInstance;
 
-- (instancetype)autoInit;
-
 - (instancetype)initWithAccountID:(int)accountID;
 
 /*!
