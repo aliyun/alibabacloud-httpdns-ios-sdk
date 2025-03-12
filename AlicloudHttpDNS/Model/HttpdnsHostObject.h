@@ -60,9 +60,6 @@
 // 标识是否从持久化缓存加载
 @property (nonatomic, assign, setter=setIsLoadFromDB:, getter=isLoadFromDB) BOOL isLoadFromDB;
 
-// 是否正在执行请求
-@property (atomic, assign) BOOL isQuerying;
-
 - (instancetype)init;
 
 - (BOOL)isIpEmptyUnderQueryIpType:(HttpdnsQueryIPType)queryType;

@@ -432,8 +432,6 @@
 				94A0146F2BF38F410018B096 /* HttpdnsService_Internal.h */,
 				94A0146E2BF38F410018B096 /* HttpdnsService.h */,
 				94A0146D2BF38F410018B096 /* HttpdnsService.m */,
-				2197CABE1BC7B3D400BDB65B /* HttpdnsUtil.h */,
-				2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */,
 				9AC27F051FDFCB9000DF016A /* HttpdnsSpeedTester.h */,
 				9AC27F011FDFCB4800DF016A /* HttpdnsTCPSpeedTester.h */,
 				9AC27F021FDFCB4800DF016A /* HttpdnsTCPSpeedTester.m */,
@@ -628,6 +626,8 @@
 				94AE92402CA84F1000CB95F2 /* HttpdnsThreadSafeDictionary.m */,
 				943F159A2CCDF1D60045865D /* HttpdnsCFHttpWrapper.h */,
 				943F159B2CCDF1D60045865D /* HttpdnsCFHttpWrapper.m */,
+				2197CABE1BC7B3D400BDB65B /* HttpdnsUtil.h */,
+				2197CABF1BC7B3D400BDB65B /* HttpdnsUtil.m */,
 			);
 			path = Utils;
 			sourceTree = "<group>";

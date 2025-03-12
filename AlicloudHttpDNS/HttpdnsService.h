@@ -25,8 +25,14 @@
 
 #define ALICLOUD_HTTPDNS_DEPRECATED(explain) __attribute__((deprecated(explain)))
 
-extern NSString *const ALICLOUDHDNS_IPV4;
-extern NSString *const ALICLOUDHDNS_IPV6;
+
+#ifndef ALICLOUDHDNS_STACK_KEY
+#define ALICLOUDHDNS_STACK_KEY
+
+#define ALICLOUDHDNS_IPV4 @"ALICLOUDHDNS_IPV4"
+#define ALICLOUDHDNS_IPV6 @"ALICLOUDHDNS_IPV6"
+
+#endif
 
 
 @protocol HttpdnsTTLDelegate <NSObject>
