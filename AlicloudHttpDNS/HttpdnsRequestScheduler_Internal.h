@@ -26,10 +26,6 @@ FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_4;
 
 @interface HttpdnsRequestScheduler ()
 
-// ip探测优选开关 两者需要同时满足
-// 这个ip探测优选开关是走的beacon服务
-@property (nonatomic, assign) BOOL IPRankingEnabled;
-
 - (NSString *)showMemoryCache;
 
 - (HttpdnsHostObject *)mergeLookupResultToManager:(HttpdnsHostObject *)result host:host cacheKey:(NSString *)cacheKey underQueryIpType:(HttpdnsQueryIPType)queryIpType;

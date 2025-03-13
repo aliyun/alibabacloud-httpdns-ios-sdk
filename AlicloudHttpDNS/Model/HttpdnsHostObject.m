@@ -23,25 +23,38 @@
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsIPRecord.h"
+#import "HttpdnsIPQualityDetector.h"
+#import "HttpdnsIpv6Adapter.h"
 
 
 @implementation HttpdnsIpObject
 
+- (instancetype)init {
+    if (self = [super init]) {
+        // 初始化detectRT为最大整数值
+        self.connectedRT = NSIntegerMax;
+    }
+    return self;
+}
+
 - (id)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super init]) {
         self.ip = [aDecoder decodeObjectForKey:@"ip"];
+        self.connectedRT = [aDecoder decodeIntegerForKey:@"detectRT"];
     }
     return self;
 }
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     [aCoder encodeObject:self.ip forKey:@"ip"];
+    [aCoder encodeInteger:self.connectedRT forKey:@"detectRT"];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
     HttpdnsIpObject *copy = [[[self class] allocWithZone:zone] init];
     if (copy) {
         copy.ip = [self.ip copyWithZone:zone];
+        copy.connectedRT = self.connectedRT;
     }
     return copy;
 }
@@ -189,7 +202,7 @@
     return hostObject;
 }
 
-- (NSArray<NSString *> *)getIPStrings {
+- (NSArray<NSString *> *)getIP4Strings {
     NSArray<HttpdnsIpObject *> *ipRecords = [self getIps];
     NSMutableArray<NSString *> *ips = [NSMutableArray arrayWithCapacity:ipRecords.count];
     for (HttpdnsIpObject *IPObject in ipRecords) {
@@ -207,6 +220,58 @@
         }
     }
     return [ips copy];
+}
+
+- (BOOL)updateConnectedRT:(NSInteger)connectedRT forIP:(NSString *)ip {
+    if ([HttpdnsUtil isEmptyString:ip]) {
+        return NO;
+    }
+
+    BOOL isIPv6 = [HttpdnsIPv6Adapter isIPv6Address:ip];
+
+    NSArray<HttpdnsIpObject *> *ipObjects = isIPv6 ? [self getIp6s] : [self getIps];
+    if ([HttpdnsUtil isEmptyArray:ipObjects]) {
+        return NO;
+    }
+
+    // 查找匹配的IP对象并更新detectRT
+    BOOL found = NO;
+    NSMutableArray<HttpdnsIpObject *> *mutableIpObjects = [ipObjects mutableCopy];
+
+    for (HttpdnsIpObject *ipObject in ipObjects) {
+        if ([ipObject.ip isEqualToString:ip]) {
+            ipObject.connectedRT = connectedRT;
+            found = YES;
+            break;
+        }
+    }
+
+    if (!found) {
+        return NO;
+    }
+
+    // 根据detectRT值对IP列表进行排序，-1值放在最后
+    [mutableIpObjects sortUsingComparator:^NSComparisonResult(HttpdnsIpObject *obj1, HttpdnsIpObject *obj2) {
+        // 如果obj1的detectRT为-1，将其排在后面
+        if (obj1.connectedRT == -1) {
+            return NSOrderedDescending;
+        }
+        // 如果obj2的detectRT为-1，将其排在后面
+        if (obj2.connectedRT == -1) {
+            return NSOrderedAscending;
+        }
+        // 否则按照detectRT值从小到大排序
+        return obj1.connectedRT > obj2.connectedRT ? NSOrderedDescending : (obj1.connectedRT < obj2.connectedRT ? NSOrderedAscending : NSOrderedSame);
+    }];
+
+    // 更新排序后的IP列表
+    if (isIPv6) {
+        [self setIp6s:[mutableIpObjects copy]];
+    } else {
+        [self setIps:[mutableIpObjects copy]];
+    }
+
+    return YES;
 }
 
 - (NSString *)description {

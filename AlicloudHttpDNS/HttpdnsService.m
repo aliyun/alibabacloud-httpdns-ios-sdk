@@ -42,18 +42,16 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 @property (nonatomic, assign) int accountID;
 @property (nonatomic, copy) NSString *secretKey;
 
-/**
- * 每次访问的签名有效期，SDK内部定死，当前不暴露设置接口，有效期定为10分钟。
- */
+ // 每次访问的签名有效期，SDK内部定死，当前不暴露设置接口，有效期定为10分钟。
 @property (nonatomic, assign) NSUInteger authTimeoutInterval;
+
 @property (nonatomic, copy) NSDictionary<NSString *, NSString *> *presetSdnsParamsDict;
 
 @property (nonatomic, strong) HttpdnsScheduleCenter *scheduleCenter;
+
 @end
 
 @implementation HttpDnsService
-
-@synthesize IPRankingDataSource = _IPRankingDataSource;
 
 + (void)initialize {
     static dispatch_once_t onceToken;
@@ -217,6 +215,10 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource {
     _IPRankingDataSource = IPRankingDatasource;
+}
+
+- (NSDictionary<NSString *, NSNumber *> *)getIPRankingDatasource {
+    return [_IPRankingDataSource copy];
 }
 
 - (void)enableIPv6:(BOOL)enable {
@@ -460,13 +462,13 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     result.host = ip;
 
     if (queryType & HttpdnsQueryIPTypeIpv4) {
-        if ([[HttpdnsIPv6Adapter sharedInstance] isIPv4Address:ip]) {
+        if ([HttpdnsIPv6Adapter isIPv4Address:ip]) {
             result.ips = @[ip];
         }
     }
 
     if (queryType & HttpdnsQueryIPTypeIpv6) {
-        if ([[HttpdnsIPv6Adapter sharedInstance] isIPv6Address:ip]) {
+        if ([HttpdnsIPv6Adapter isIPv6Address:ip]) {
             result.ipv6s = @[ip];
         }
     }
@@ -624,7 +626,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host {
     NSString *IP = [self getIpByHostAsync:host];
-    if ([[HttpdnsIPv6Adapter sharedInstance] isIPv6Address:IP]) {
+    if ([HttpdnsIPv6Adapter isIPv6Address:IP]) {
         return [NSString stringWithFormat:@"[%@]", IP];
     }
     return IP;
@@ -808,9 +810,9 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     if ([HttpdnsUtil isAnIP:host]) {
         HttpdnsLogDebug("The host is just an IP: %@", host);
-        if ([[HttpdnsIPv6Adapter sharedInstance] isIPv4Address:host]) {
+        if ([HttpdnsIPv6Adapter isIPv4Address:host]) {
             return @{ALICLOUDHDNS_IPV4: @[host?:@""]};
-        } else if ([[HttpdnsIPv6Adapter sharedInstance] isIPv6Address:host]) {
+        } else if ([HttpdnsIPv6Adapter isIPv6Address:host]) {
             return @{ALICLOUDHDNS_IPV6: @[host?:@""]};
         }
         return nil;
@@ -825,7 +827,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     [request setAsNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
     if (hostObject) {
-        NSArray *ip4s = [hostObject getIPStrings];
+        NSArray *ip4s = [hostObject getIP4Strings];
         NSArray *ip6s = [hostObject getIP6Strings];
         NSMutableDictionary *resultMDic = [NSMutableDictionary dictionary];
         if ([HttpdnsUtil isNotEmptyArray:ip4s]) {
@@ -858,9 +860,9 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     if ([HttpdnsUtil isAnIP:host]) {
         HttpdnsLogDebug("The host is just an IP: %@", host);
-        if ([[HttpdnsIPv6Adapter sharedInstance] isIPv4Address:host]) {
+        if ([HttpdnsIPv6Adapter isIPv4Address:host]) {
             return @{ALICLOUDHDNS_IPV4: @[host?:@""]};
-        } else if ([[HttpdnsIPv6Adapter sharedInstance] isIPv6Address:host]) {
+        } else if ([HttpdnsIPv6Adapter isIPv6Address:host]) {
             return @{ALICLOUDHDNS_IPV6: @[host?:@""]};
         }
         return nil;
@@ -875,7 +877,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     [request setAsNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
     if (hostObject) {
-        NSArray *ip4s = [hostObject getIPStrings];
+        NSArray *ip4s = [hostObject getIP4Strings];
         NSArray *ip6s = [hostObject getIP6Strings];
         NSMutableDictionary *httpdnsResult = [NSMutableDictionary dictionary];
         NSLog(@"getHttpDnsResultHostAsync result is %@", httpdnsResult);
@@ -907,9 +909,9 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     if ([HttpdnsUtil isAnIP:host]) {
         HttpdnsLogDebug("The host is just an IP: %@", host);
-        if ([[HttpdnsIPv6Adapter sharedInstance] isIPv4Address:host]) {
+        if ([HttpdnsIPv6Adapter isIPv4Address:host]) {
             return @{ALICLOUDHDNS_IPV4: @[host?:@""]};
-        } else if ([[HttpdnsIPv6Adapter sharedInstance] isIPv6Address:host]) {
+        } else if ([HttpdnsIPv6Adapter isIPv6Address:host]) {
             return @{ALICLOUDHDNS_IPV6: @[host?:@""]};
         }
         return nil;
@@ -926,7 +928,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         [request setAsNonBlockingRequest];
         HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
         if (hostObject) {
-            NSArray *ip4s = [hostObject getIPStrings];
+            NSArray *ip4s = [hostObject getIP4Strings];
             NSArray *ip6s = [hostObject getIP6Strings];
             NSMutableDictionary *resultMDic = [NSMutableDictionary dictionary];
             NSLog(@"getIPv4_v6ByHostAsync result is %@", resultMDic);
@@ -947,7 +949,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         [request setAsBlockingRequest];
         HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
         if (hostObject) {
-            NSArray *ip4s = [hostObject getIPStrings];
+            NSArray *ip4s = [hostObject getIP4Strings];
             NSArray *ip6s = [hostObject getIP6Strings];
             resultMDic = [NSMutableDictionary dictionary];
             if ([HttpdnsUtil isNotEmptyArray:ip4s]) {
@@ -1118,16 +1120,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     return result;
 }
 
-- (NSDictionary *)IPRankingDataSource {
-    NSDictionary *IPRankingDataSource = nil;
-    @synchronized(self) {
-        if ([HttpdnsUtil isNotEmptyDictionary:_IPRankingDataSource]) {
-            IPRankingDataSource = _IPRankingDataSource;
-        }
-    }
-    return IPRankingDataSource;
-}
-
 - (BOOL)_shouldDegradeHTTPDNS:(NSString *)host {
     if (self.delegate && [self.delegate respondsToSelector:@selector(shouldDegradeHTTPDNS:)]) {
         return [self.delegate shouldDegradeHTTPDNS:host];
@@ -1185,7 +1177,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (NSString *)getIpByHostInURLFormat:(NSString *)host {
     NSString *IP = [self getIpByHost:host];
-    if ([[HttpdnsIPv6Adapter sharedInstance] isIPv6Address:IP]) {
+    if ([HttpdnsIPv6Adapter isIPv6Address:IP]) {
         return [NSString stringWithFormat:@"[%@]", IP];
     }
     return IP;

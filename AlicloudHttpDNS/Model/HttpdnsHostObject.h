@@ -28,6 +28,7 @@
 @interface HttpdnsIpObject: NSObject<NSCoding, NSCopying>
 
 @property (nonatomic, copy, getter=getIpString, setter=setIp:) NSString *ip;
+@property (nonatomic, assign) NSInteger connectedRT;
 
 @end
 
@@ -68,8 +69,16 @@
 
 + (instancetype)hostObjectWithHostRecord:(HttpdnsHostRecord *)IPRecord;
 
-- (NSArray<NSString *> *)getIPStrings;
+- (NSArray<NSString *> *)getIP4Strings;
 
 - (NSArray<NSString *> *)getIP6Strings;
+
+/**
+ * 更新指定IP的detectRT值并重新排序IP列表
+ * @param ip 需要更新的IP地址
+ * @param detectRT 检测到的RT值，-1表示不可达
+ * @return 是否成功更新
+ */
+- (BOOL)updateConnectedRT:(NSInteger)connectedRT forIP:(NSString *)ip;
 
 @end

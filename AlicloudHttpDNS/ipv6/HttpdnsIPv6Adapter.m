@@ -89,7 +89,7 @@
 }
 
 - (NSString *)handleIpv4Address:(NSString *)addr {
-    if (!addr || ![self isIPv4Address:addr]) {
+    if (!addr || ![HttpdnsIPv6Adapter isIPv4Address:addr]) {
         return addr;
     }
 
@@ -103,16 +103,13 @@ HttpdnsLogDebug("[HttpdnsIPv6Adapter]: In IPv6-Only network status, convert IP a
     }
 
     // return valid addr
-    if ([self isIPv4Address:convertedAddr] || [self isIPv6Address:convertedAddr]) {
+    if ([HttpdnsIPv6Adapter isIPv4Address:convertedAddr] || [HttpdnsIPv6Adapter isIPv6Address:convertedAddr]) {
         return convertedAddr;
     }
     return addr;
 }
 
-/**
- *  判断是否为IPv4地址
- */
-- (BOOL)isIPv4Address:(NSString *)addr {
++ (BOOL)isIPv4Address:(NSString *)addr {
     if (!addr) {
         return NO;
     }
@@ -123,18 +120,12 @@ HttpdnsLogDebug("[HttpdnsIPv6Adapter]: In IPv6-Only network status, convert IP a
     return (success == 1);
 }
 
-/**
- *  判断是否为IPv6地址
- */
-- (BOOL)isIPv6Address:(NSString *)addr {
++ (BOOL)isIPv6Address:(NSString *)addr {
     if (!addr) {
         return NO;
     }
-    const char *utf8 = [addr UTF8String];
-    // Check valid IPv6.
     struct in6_addr dst6;
-    int success = inet_pton(AF_INET6, utf8, &dst6);
-    return (success == 1);
+    return inet_pton(AF_INET6, [addr UTF8String], &dst6) == 1;
 }
 
 
