@@ -30,13 +30,13 @@
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsIPRecord.h"
 #import "HttpdnsUtil.h"
-#import "HttpdnsTCPSpeedTester.h"
 #import "HttpdnsNetworkInfoHelper.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsIPv6Adapter.h"
 #import "HttpDnsLocker.h"
 #import "HttpdnsRequest_Internal.h"
 #import "HttpdnsHostObjectInMemoryCache.h"
+#import "HttpdnsIPQualityDetector.h"
 
 
 NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP = @"203.107.1.1";
@@ -89,7 +89,6 @@ typedef struct {
     if (self = [super init]) {
         HttpdnsReachability *reachability = [HttpdnsReachability sharedInstance];
         _isExpiredIPEnabled = NO;
-        _IPRankingEnabled = NO;
         _isPreResolveAfterNetworkChangedEnabled = NO;
         _hostObjectInMemoryCache = [[HttpdnsHostObjectInMemoryCache alloc] init];
         [HttpdnsIPv6Adapter sharedInstance];
@@ -287,7 +286,7 @@ typedef struct {
 
     int64_t ttl = [result getTTL];
     int64_t lastLookupTime = [result getLastLookupTime];
-    NSArray<NSString *> *ip4Strings = [result getIPStrings];
+    NSArray<NSString *> *ip4Strings = [result getIP4Strings];
     NSArray<NSString *> *ip6Strings = [result getIP6Strings];
     NSArray<HttpdnsIpObject *> *ip4Objects = [result getIps];
     NSArray<HttpdnsIpObject *> *ip6Objects = [result getIp6s];
@@ -333,7 +332,7 @@ typedef struct {
 
     HttpdnsLogDebug("Updated hostObject to cached, cacheKey: %@, host: %@", cacheKey, host);
 
-    NSArray *ipv4StrArray = [cachedHostObject getIPStrings];
+    NSArray *ipv4StrArray = [cachedHostObject getIP4Strings];
 
     // 由于从缓存中读取到的是拷贝出来的新对象，字段赋值不会影响缓存中的值对象，因此这里无论如何都要放回缓存
     [_hostObjectInMemoryCache setHostObject:cachedHostObject forCacheKey:cacheKey];
@@ -345,56 +344,24 @@ typedef struct {
     }
 
     // 目前只处理ipv4地址
-    [self asyncUpdateIPRankingWithIpv4StrArray:ipv4StrArray forHost:host cacheKey:cacheKey];
+    [self initiateQualityDetectionForV4IP:ipv4StrArray forHost:host cacheKey:cacheKey];
     return cachedHostObject;
 }
 
-- (void)asyncUpdateIPRankingWithIpv4StrArray:(NSArray *)ipv4StrArray forHost:(NSString *)host cacheKey:(NSString *)cacheKey {
-    if (!self.IPRankingEnabled) {
-        return;
-    }
-
+- (void)initiateQualityDetectionForV4IP:(NSArray *)ipv4StrArray forHost:(NSString *)host cacheKey:(NSString *)cacheKey {
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    NSDictionary<NSString *, NSString *> *dataSource = sharedService.IPRankingDataSource;
+    NSDictionary<NSString *, NSNumber *> *dataSource = [sharedService getIPRankingDatasource];
     if (!dataSource || ![dataSource objectForKey:host]) {
         return;
     }
-
-    dispatch_async(_asyncResolveHostQueue, ^(void) {
-        [self syncUpdateIPRankingWithIpv4StrArray:ipv4StrArray forHost:host cacheKey:cacheKey];
-    });
-}
-
-- (void)syncUpdateIPRankingWithIpv4StrArray:(NSArray *)ipv4StrArray forHost:(NSString *)host cacheKey:cacheKey {
-    NSArray *sortedIps = [[HttpdnsTCPSpeedTester new] ipRankingWithIPs:ipv4StrArray host:host];
-
-    if ([HttpdnsUtil isEmptyArray:sortedIps]) {
-        return;
-    }
-
-    [self updateHostManagerDictWithIPs:sortedIps host:host cacheKey:cacheKey];
-}
-
-- (void)updateHostManagerDictWithIPs:(NSArray *)sortedIps host:(NSString *)host cacheKey:cacheKey {
-    HttpdnsHostObject *hostObject = [_hostObjectInMemoryCache getHostObjectByCacheKey:cacheKey];
-    if (!hostObject) {
-        return;
-    }
-
-    @synchronized(self) {
-        NSMutableArray *ipArray = [[NSMutableArray alloc] init];
-        for (NSString *ip in sortedIps) {
-            if ([HttpdnsUtil isEmptyString:ip]) {
-                continue;
-            }
-
-            HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
-            [ipObject setIp:ip];
-            [ipArray addObject:ipObject];
-        }
-        [hostObject setIps:ipArray];
-
-        [_hostObjectInMemoryCache setHostObject:hostObject forCacheKey:cacheKey];
+    NSNumber *port = [dataSource objectForKey:host];
+    for (NSString *ip in ipv4StrArray) {
+        [[HttpdnsIPQualityDetector sharedInstance] scheduleIPQualityDetection:cacheKey
+                                                                           ip:ip
+                                                                         port:port
+                                                                     callback:^(NSString * _Nonnull cacheKey, NSString * _Nonnull ip, NSInteger costTime) {
+            [self->_hostObjectInMemoryCache updateQualityForCacheKey:cacheKey forIp:ip withDetectRT:costTime];
+        }];
     }
 }
 
@@ -551,14 +518,14 @@ typedef struct {
             // 从DB缓存中加载到内存里的数据，更新其查询时间为当前，使得它可以有一个TTL的可用期
             [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
 
-            NSArray *ipv4StrArr = [hostObject getIPStrings];
+            NSArray *ipv4StrArr = [hostObject getIP4Strings];
 
             [_hostObjectInMemoryCache setHostObject:hostObject forCacheKey:host];
 
             // 因为当前持久化缓存为区分cachekey和host(实际是cachekey)
             // 持久化缓存里的host实际上是cachekey
             // 因此这里取出来，如果cachekey和host不一致的情况，这个IP优选会因为查不到datasource而实际不生效
-            [self asyncUpdateIPRankingWithIpv4StrArray:ipv4StrArr forHost:host cacheKey:host];
+            [self initiateQualityDetectionForV4IP:ipv4StrArr forHost:host cacheKey:host];
         }
     });
 }

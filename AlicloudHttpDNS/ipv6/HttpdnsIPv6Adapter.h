@@ -81,9 +81,6 @@ typedef enum {
 
 + (instancetype)sharedInstance;
 
-/**
- *  判断当前是否为IPv6-Only网络
- */
 - (BOOL)isIPv6OnlyNetwork;
 
 /**
@@ -102,26 +99,14 @@ typedef enum {
  */
 - (NSString *)handleIpv4Address:(NSString *)addr;
 
-/**
- *  判断是否为IPv4地址
- */
-- (BOOL)isIPv4Address:(NSString *)addr;
++ (BOOL)isIPv4Address:(NSString *)addr;
 
-/**
- *  判断是否为IPv6地址
- */
-- (BOOL)isIPv6Address:(NSString *)addr;
++ (BOOL)isIPv6Address:(NSString *)addr;
 
 
-/**
- 获取当前网络栈
- */
 - (AlicloudIPStackType)currentIpStackType;
 
 
-/**
- 重置
- */
 - (void)reset;
 
 @end

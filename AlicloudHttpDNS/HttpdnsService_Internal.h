@@ -28,7 +28,7 @@
 
 @property (nonatomic, assign) NSTimeInterval authTimeOffset;
 
-@property (nonatomic, copy) NSDictionary *IPRankingDataSource;
+@property (nonatomic, copy) NSDictionary<NSString *, NSNumber *> *IPRankingDataSource;
 
 @property (nonatomic, assign) NSTimeInterval timeoutInterval;
 
@@ -41,6 +41,8 @@
 - (NSArray *)getIpsByHost:(NSString *)host;
 
 - (NSString *)getIpByHostInURLFormat:(NSString *)host;
+
+- (NSDictionary<NSString *, NSNumber *> *)getIPRankingDatasource;
 
 @end
 
