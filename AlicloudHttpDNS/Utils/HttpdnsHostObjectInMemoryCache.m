@@ -56,11 +56,11 @@
     }
 }
 
-- (void)updateQualityForCacheKey:(NSString *)key forIp:(NSString *)ip withDetectRT:(NSInteger)detectRT {
+- (void)updateQualityForCacheKey:(NSString *)key forIp:(NSString *)ip withConnectedRT:(NSInteger)connectedRT {
     [_lock lock];
     HttpdnsHostObject *object = _cacheDict[key];
     if (object) {
-        [object updateConnectedRT:detectRT forIP:ip];
+        [object updateConnectedRT:connectedRT forIP:ip];
     }
     [_lock unlock];
 }

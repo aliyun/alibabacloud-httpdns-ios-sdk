@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (HttpdnsHostObject *)getHostObjectByCacheKey:(NSString *)key createIfNotExists:(HttpdnsHostObject *(^)(void))objectProducer;
 
-- (void)updateQualityForCacheKey:(NSString *)key forIp:(NSString *)ip withDetectRT:(NSInteger)detectRT;
+- (void)updateQualityForCacheKey:(NSString *)key forIp:(NSString *)ip withConnectedRT:(NSInteger)connectedRT;
 
 - (void)removeHostObjectByCacheKey:(NSString *)key;
 

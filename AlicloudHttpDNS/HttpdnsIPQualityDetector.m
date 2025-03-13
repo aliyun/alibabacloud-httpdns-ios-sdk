@@ -16,6 +16,7 @@
 #import <sys/time.h>
 #import <fcntl.h>
 #import <errno.h>
+#import "HttpdnsLog_Internal.h"
 
 // 定义任务类，替代之前的结构体，确保正确的内存管理
 @interface HttpdnsDetectionTask : NSObject
@@ -67,6 +68,7 @@
         // 重新创建信号量
         _maxConcurrentDetections = maxConcurrentDetections;
         _concurrencySemaphore = dispatch_semaphore_create(_maxConcurrentDetections);
+        HttpdnsLogDebug("IPQualityDetector max concurrent detections updated to: %lu", (unsigned long)_maxConcurrentDetections);
     }
 }
 
@@ -75,12 +77,16 @@
                               port:(NSNumber *)port
                           callback:(HttpdnsIPQualityCallback)callback {
     if (!cacheKey || !ip || !callback) {
+        HttpdnsLogDebug("IPQualityDetector invalid parameters for detection: cacheKey=%@, ip=%@", cacheKey, ip);
         return;
     }
+
+    HttpdnsLogDebug("IPQualityDetector scheduling detection for %@:%@", ip, port ? [port stringValue] : @"80");
 
     // 尝试获取信号量，如果获取不到，说明已达到最大并发数
     if (dispatch_semaphore_wait(_concurrencySemaphore, DISPATCH_TIME_NOW) != 0) {
         // 将任务加入等待队列
+        HttpdnsLogDebug("IPQualityDetector reached max concurrent limit, queueing task for %@", ip);
         [self addPendingTask:cacheKey ip:ip port:port callback:callback];
         return;
     }
@@ -188,6 +194,7 @@
     if (isIPv6) {
         socketFd = socket(AF_INET6, SOCK_STREAM, 0);
         if (socketFd < 0) {
+            HttpdnsLogDebug("IPQualityDetector failed to create IPv6 socket: %s", strerror(errno));
             return -1;
         }
 
@@ -201,6 +208,7 @@
     } else {
         socketFd = socket(AF_INET, SOCK_STREAM, 0);
         if (socketFd < 0) {
+            HttpdnsLogDebug("IPQualityDetector failed to create IPv4 socket: %s", strerror(errno));
             return -1;
         }
 
@@ -242,6 +250,7 @@
 
             if (selectResult <= 0) {
                 // 超时或错误
+                HttpdnsLogDebug("IPQualityDetector connection to %@ timed out or error: %s", ip, strerror(errno));
                 close(socketFd);
                 return -1;
             } else {
@@ -249,12 +258,14 @@
                 int error;
                 socklen_t errorLen = sizeof(error);
                 if (getsockopt(socketFd, SOL_SOCKET, SO_ERROR, &error, &errorLen) < 0 || error != 0) {
+                    HttpdnsLogDebug("IPQualityDetector connection to %@ failed after select: %s", ip, strerror(error));
                     close(socketFd);
                     return -1;
                 }
             }
         } else {
             // 其他错误
+            HttpdnsLogDebug("IPQualityDetector connection to %@ failed: %s", ip, strerror(errno));
             close(socketFd);
             return -1;
         }

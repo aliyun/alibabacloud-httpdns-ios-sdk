@@ -77,7 +77,7 @@ NSArray *ipv6HostArray = nil;
     NSString *sessionId = [[HttpDnsService sharedInstance] getSessionId];
     NSLog(@"Print sessionId: %@", sessionId);
 
-    [_service setIPRankingDatasource:@{@"only-v4.xuyecan1919.tech": @443}];
+    [_service setIPRankingDatasource:@{@"www.aliyun.com": @443}];
     // [_service setPreResolveHosts:@[@"only-v4.xuyecan1919.tech"]];
 }
 
