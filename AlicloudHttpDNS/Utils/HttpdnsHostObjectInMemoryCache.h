@@ -1,5 +1,5 @@
 //
-//  HttpdnsThreadSafeDictionary.h
+//  HttpdnsHostObjectInMemoryCache.h
 //  AlicloudHttpDNS
 //
 //  Created by xuyecan on 2024/9/28.
@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "HttpdnsHostObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -14,21 +15,21 @@ NS_ASSUME_NONNULL_BEGIN
 // 通常从缓存中获得这个对象之后，会根据不同场景改变一些字段的值，而且很可能发生在不同线程中
 // 而不同线程从缓存中直接读取共享对象的话，很有可能发生线程竞争的情况，多线程访问某个对象的同一个字段，在swift环境有较高概率发生crash
 // 因此，除了确保字典操作的线程安全，拿出对象的时候，也直接copy一个复制对象返回(HttpdnsHostObject对象实现了NSCopying协议)
-@interface HttpdnsThreadSafeDictionary : NSObject
+@interface HttpdnsHostObjectInMemoryCache : NSObject
 
-- (void)setObject:(id)object forKey:(NSString *)key;
+- (void)setHostObject:(HttpdnsHostObject *)object forCacheKey:(NSString *)key;
 
-- (id)objectForKey:(NSString *)key;
+- (HttpdnsHostObject *)getHostObjectByCacheKey:(NSString *)key;
 
-- (id)getObjectForKey:(NSString *)key createIfNotExists:(id (^)(void))objectProducer;
+- (HttpdnsHostObject *)getHostObjectByCacheKey:(NSString *)key createIfNotExists:(HttpdnsHostObject *(^)(void))objectProducer;
 
-- (void)removeObjectForKey:(NSString *)key;
+- (void)removeHostObjectByCacheKey:(NSString *)key;
 
-- (void)removeAllObjects;
+- (void)removeAllHostObjects;
 
 - (NSInteger)count;
 
-- (NSArray *)allKeys;
+- (NSArray *)allCacheKeys;
 
 @end
 
