@@ -26,7 +26,6 @@
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsScheduleCenter.h"
-#import "HttpdnsConstants.h"
 #import "HttpdnsHostCacheStore.h"
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsIPRecord.h"

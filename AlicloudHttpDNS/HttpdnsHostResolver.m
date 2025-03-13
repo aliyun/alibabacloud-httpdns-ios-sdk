@@ -27,7 +27,6 @@
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsScheduleCenter.h"
-#import "HttpdnsConstants.h"
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsNetworkInfoHelper.h"
 #import "HttpdnsIPv6Manager.h"
