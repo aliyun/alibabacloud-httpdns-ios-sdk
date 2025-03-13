@@ -36,7 +36,7 @@
 #import "HttpdnsIPv6Adapter.h"
 #import "HttpDnsLocker.h"
 #import "HttpdnsRequest_Internal.h"
-#import "HttpdnsThreadSafeDictionary.h"
+#import "HttpdnsHostObjectInMemoryCache.h"
 
 
 NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP = @"203.107.1.1";
@@ -64,7 +64,7 @@ typedef struct {
 @implementation HttpdnsRequestScheduler {
     BOOL _isExpiredIPEnabled;
     BOOL _isPreResolveAfterNetworkChangedEnabled;
-    HttpdnsThreadSafeDictionary *_hostMemCache;
+    HttpdnsHostObjectInMemoryCache *_hostObjectInMemoryCache;
 }
 
 + (void)initialize {
@@ -91,7 +91,7 @@ typedef struct {
         _isExpiredIPEnabled = NO;
         _IPRankingEnabled = NO;
         _isPreResolveAfterNetworkChangedEnabled = NO;
-        _hostMemCache = [[HttpdnsThreadSafeDictionary alloc] init];
+        _hostObjectInMemoryCache = [[HttpdnsHostObjectInMemoryCache alloc] init];
         [HttpdnsIPv6Adapter sharedInstance];
 
         _lastNetworkStatus = reachability.currentReachabilityStatus;
@@ -119,7 +119,7 @@ typedef struct {
             if ([strongSelf isHostsNumberLimitReached]) {
                 break;
             }
-            HttpdnsHostObject *hostObject = [strongSelf->_hostMemCache objectForKey:hostName];
+            HttpdnsHostObject *hostObject = [strongSelf->_hostObjectInMemoryCache getHostObjectByCacheKey:hostName];
             if (!hostObject || [hostObject isExpiredUnderQueryIpType:queryType]) {
                 HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:hostName queryIpType:queryType];
                 [request setAsNonBlockingRequest];
@@ -141,7 +141,7 @@ typedef struct {
         return nil;
     }
 
-    HttpdnsHostObject *result = [_hostMemCache getObjectForKey:cacheKey createIfNotExists:^id _Nonnull {
+    HttpdnsHostObject *result = [_hostObjectInMemoryCache getHostObjectByCacheKey:cacheKey createIfNotExists:^id _Nonnull {
         HttpdnsLogDebug("No cache for cacheKey: %@", cacheKey);
         HttpdnsHostObject *newObject = [HttpdnsHostObject new];
         newObject.hostName = host;
@@ -203,7 +203,7 @@ typedef struct {
         @try {
             [locker lock:request.cacheKey queryType:request.queryIpType];
 
-            result = [self->_hostMemCache objectForKey:request.cacheKey];
+            result = [self->_hostObjectInMemoryCache getHostObjectByCacheKey:request.cacheKey];
             if (result && ![result isExpiredUnderQueryIpType:request.queryIpType]) {
                 // 存在且未过期，意味着其他线程已经解析到了新的结果
                 return;
@@ -302,7 +302,7 @@ typedef struct {
         hasNoIpv6Record = YES;
     }
 
-    HttpdnsHostObject *cachedHostObject = [_hostMemCache objectForKey:cacheKey];
+    HttpdnsHostObject *cachedHostObject = [_hostObjectInMemoryCache getHostObjectByCacheKey:cacheKey];
     if (!cachedHostObject) {
         HttpdnsLogDebug("Create new hostObject for cache, cacheKey: %@, host: %@", cacheKey, host);
         cachedHostObject = [[HttpdnsHostObject alloc] init];
@@ -336,7 +336,7 @@ typedef struct {
     NSArray *ipv4StrArray = [cachedHostObject getIPStrings];
 
     // 由于从缓存中读取到的是拷贝出来的新对象，字段赋值不会影响缓存中的值对象，因此这里无论如何都要放回缓存
-    [_hostMemCache setObject:cachedHostObject forKey:cacheKey];
+    [_hostObjectInMemoryCache setHostObject:cachedHostObject forCacheKey:cacheKey];
 
     if([HttpdnsUtil isNotEmptyDictionary:extra]) {
         [self sdnsCacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:ip4Strings IP6s:ip6Strings TTL:ttl withExtra:extra];
@@ -376,7 +376,7 @@ typedef struct {
 }
 
 - (void)updateHostManagerDictWithIPs:(NSArray *)sortedIps host:(NSString *)host cacheKey:cacheKey {
-    HttpdnsHostObject *hostObject = [_hostMemCache objectForKey:cacheKey];
+    HttpdnsHostObject *hostObject = [_hostObjectInMemoryCache getHostObjectByCacheKey:cacheKey];
     if (!hostObject) {
         return;
     }
@@ -394,12 +394,12 @@ typedef struct {
         }
         [hostObject setIps:ipArray];
 
-        [_hostMemCache setObject:hostObject forKey:cacheKey];
+        [_hostObjectInMemoryCache setHostObject:hostObject forCacheKey:cacheKey];
     }
 }
 
 - (BOOL)isHostsNumberLimitReached {
-    if ([_hostMemCache count] >= HTTPDNS_MAX_MANAGE_HOST_NUM) {
+    if ([_hostObjectInMemoryCache count] >= HTTPDNS_MAX_MANAGE_HOST_NUM) {
         HttpdnsLogDebug("Can't handle more than %d hosts due to the software configuration.", HTTPDNS_MAX_MANAGE_HOST_NUM);
         return YES;
     }
@@ -467,7 +467,7 @@ typedef struct {
         _lastNetworkChangeTimestamp = currentTimestamp;
         _lastNetworkStatus = currentStatus;
 
-        NSArray *hostArray = [_hostMemCache allKeys];
+        NSArray *hostArray = [_hostObjectInMemoryCache allCacheKeys];
 
         // 网络在切换过程中可能不稳定，所以在清理缓存和发送请求前等待3秒
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), _asyncResolveHostQueue, ^{
@@ -504,13 +504,13 @@ typedef struct {
 }
 
 - (void)cleanAllHostMemoryCache {
-    [_hostMemCache removeAllObjects];
+    [_hostObjectInMemoryCache removeAllHostObjects];
 }
 
 - (void)cleanMemoryAndPersistentCacheOfHostArray:(NSArray<NSString *> *)hostArray {
     for (NSString *host in hostArray) {
         if ([HttpdnsUtil isNotEmptyString:host]) {
-            [_hostMemCache removeObjectForKey:host];
+            [_hostObjectInMemoryCache removeHostObjectByCacheKey:host];
         }
     }
 
@@ -553,7 +553,7 @@ typedef struct {
 
             NSArray *ipv4StrArr = [hostObject getIPStrings];
 
-            [_hostMemCache setObject:hostObject forKey:host];
+            [_hostObjectInMemoryCache setHostObject:hostObject forCacheKey:host];
 
             // 因为当前持久化缓存为区分cachekey和host(实际是cachekey)
             // 持久化缓存里的host实际上是cachekey
@@ -599,7 +599,7 @@ typedef struct {
 
 - (NSString *)showMemoryCache {
     NSString *cacheDes;
-    cacheDes = [NSString stringWithFormat:@"%@", _hostMemCache];
+    cacheDes = [NSString stringWithFormat:@"%@", _hostObjectInMemoryCache];
     return cacheDes;
 }
 
