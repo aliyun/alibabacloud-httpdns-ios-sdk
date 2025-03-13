@@ -10,7 +10,7 @@
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsUtil.h"
-#import "HttpdnsConstants.h"
+#import "HttpdnsInternalConstant.h"
 #import <CFNetwork/CFNetwork.h>
 
 typedef struct {

@@ -23,7 +23,7 @@
 #import "CommonCrypto/CommonCrypto.h"
 #import "arpa/inet.h"
 #import "HttpdnsService_Internal.h"
-#import "HttpdnsConstants.h"
+#import "HttpdnsInternalConstant.h"
 #import "HttpdnsHostResolver.h"
 #import "HttpdnsIPv6Manager.h"
 #import "HttpdnsPublicConstant.h"

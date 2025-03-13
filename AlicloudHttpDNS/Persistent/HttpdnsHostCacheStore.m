@@ -12,7 +12,6 @@
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsDatabaseMigrator.h"
 #import "HttpdnsHostCacheStoreSQL.h"
-#import "HttpdnsConstants.h"
 #import "HttpdnsIPCacheStore.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsIPRecord.h"
