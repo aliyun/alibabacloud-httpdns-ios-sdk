@@ -360,7 +360,7 @@ typedef struct {
                                                                            ip:ip
                                                                          port:port
                                                                      callback:^(NSString * _Nonnull cacheKey, NSString * _Nonnull ip, NSInteger costTime) {
-            [self->_hostObjectInMemoryCache updateQualityForCacheKey:cacheKey forIp:ip withDetectRT:costTime];
+            [self->_hostObjectInMemoryCache updateQualityForCacheKey:cacheKey forIp:ip withConnectedRT:costTime];
         }];
     }
 }
@@ -522,7 +522,7 @@ typedef struct {
 
             [_hostObjectInMemoryCache setHostObject:hostObject forCacheKey:host];
 
-            // 因为当前持久化缓存为区分cachekey和host(实际是cachekey)
+            // 因为当前持久化缓存未区分cachekey和host(实际是cachekey)
             // 持久化缓存里的host实际上是cachekey
             // 因此这里取出来，如果cachekey和host不一致的情况，这个IP优选会因为查不到datasource而实际不生效
             [self initiateQualityDetectionForV4IP:ipv4StrArr forHost:host cacheKey:host];

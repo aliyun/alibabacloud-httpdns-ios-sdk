@@ -31,7 +31,7 @@
 
 - (instancetype)init {
     if (self = [super init]) {
-        // 初始化detectRT为最大整数值
+        // 初始化connectedRT为最大整数值
         self.connectedRT = NSIntegerMax;
     }
     return self;
@@ -40,14 +40,14 @@
 - (id)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super init]) {
         self.ip = [aDecoder decodeObjectForKey:@"ip"];
-        self.connectedRT = [aDecoder decodeIntegerForKey:@"detectRT"];
+        self.connectedRT = [aDecoder decodeIntegerForKey:@"connectedRT"];
     }
     return self;
 }
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     [aCoder encodeObject:self.ip forKey:@"ip"];
-    [aCoder encodeInteger:self.connectedRT forKey:@"detectRT"];
+    [aCoder encodeInteger:self.connectedRT forKey:@"connectedRT"];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
@@ -234,7 +234,7 @@
         return NO;
     }
 
-    // 查找匹配的IP对象并更新detectRT
+    // 查找匹配的IP对象并更新connectedRT
     BOOL found = NO;
     NSMutableArray<HttpdnsIpObject *> *mutableIpObjects = [ipObjects mutableCopy];
 
@@ -250,17 +250,17 @@
         return NO;
     }
 
-    // 根据detectRT值对IP列表进行排序，-1值放在最后
+    // 根据connectedRT值对IP列表进行排序，-1值放在最后
     [mutableIpObjects sortUsingComparator:^NSComparisonResult(HttpdnsIpObject *obj1, HttpdnsIpObject *obj2) {
-        // 如果obj1的detectRT为-1，将其排在后面
+        // 如果obj1的connectedRT为-1，将其排在后面
         if (obj1.connectedRT == -1) {
             return NSOrderedDescending;
         }
-        // 如果obj2的detectRT为-1，将其排在后面
+        // 如果obj2的connectedRT为-1，将其排在后面
         if (obj2.connectedRT == -1) {
             return NSOrderedAscending;
         }
-        // 否则按照detectRT值从小到大排序
+        // 否则按照connectedRT值从小到大排序
         return obj1.connectedRT > obj2.connectedRT ? NSOrderedDescending : (obj1.connectedRT < obj2.connectedRT ? NSOrderedAscending : NSOrderedSame);
     }];
 
