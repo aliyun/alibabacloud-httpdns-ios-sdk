@@ -37,6 +37,11 @@
 @property (nonatomic, strong) NSLock *pendingTasksLock;
 @property (nonatomic, assign) BOOL isProcessingPendingTasks;
 
+/**
+ * 最大并发检测数量，默认为10
+ */
+@property (nonatomic, assign) NSUInteger maxConcurrentDetections;
+
 @end
 
 @implementation HttpdnsIPQualityDetector
@@ -63,15 +68,6 @@
     return self;
 }
 
-- (void)setMaxConcurrentDetections:(NSUInteger)maxConcurrentDetections {
-    if (_maxConcurrentDetections != maxConcurrentDetections) {
-        // 重新创建信号量
-        _maxConcurrentDetections = maxConcurrentDetections;
-        _concurrencySemaphore = dispatch_semaphore_create(_maxConcurrentDetections);
-        HttpdnsLogDebug("IPQualityDetector max concurrent detections updated to: %lu", (unsigned long)_maxConcurrentDetections);
-    }
-}
-
 - (void)scheduleIPQualityDetection:(NSString *)cacheKey
                                 ip:(NSString *)ip
                               port:(NSNumber *)port
@@ -80,8 +76,6 @@
         HttpdnsLogDebug("IPQualityDetector invalid parameters for detection: cacheKey=%@, ip=%@", cacheKey, ip);
         return;
     }
-
-    HttpdnsLogDebug("IPQualityDetector scheduling detection for %@:%@", ip, port ? [port stringValue] : @"80");
 
     // 尝试获取信号量，如果获取不到，说明已达到最大并发数
     if (dispatch_semaphore_wait(_concurrencySemaphore, DISPATCH_TIME_NOW) != 0) {
@@ -110,6 +104,13 @@
 
     // 如果没有正在处理等待队列，则开始处理
     [self processPendingTasksIfNeeded];
+}
+
+- (NSUInteger)pendingTasksCount {
+    [_pendingTasksLock lock];
+    NSUInteger count = _pendingTasks.count;
+    [_pendingTasksLock unlock];
+    return count;
 }
 
 - (void)processPendingTasksIfNeeded {
@@ -183,12 +184,16 @@
 }
 
 - (NSInteger)tcpConnectToIP:(NSString *)ip port:(int)port {
+    if (!ip || port <= 0) {
+        return -1;
+    }
     int socketFd;
     struct sockaddr_in serverAddr;
     struct sockaddr_in6 serverAddr6;
     void *serverAddrPtr;
     socklen_t serverAddrLen;
     BOOL isIPv6 = [HttpdnsIPv6Adapter isIPv6Address:ip];
+    BOOL isIpv4 = [HttpdnsIPv6Adapter isIPv4Address:ip];
 
     // 创建socket
     if (isIPv6) {
@@ -205,7 +210,7 @@
 
         serverAddrPtr = &serverAddr6;
         serverAddrLen = sizeof(serverAddr6);
-    } else {
+    } else if (isIpv4) {
         socketFd = socket(AF_INET, SOCK_STREAM, 0);
         if (socketFd < 0) {
             HttpdnsLogDebug("IPQualityDetector failed to create IPv4 socket: %s", strerror(errno));
@@ -219,6 +224,8 @@
 
         serverAddrPtr = &serverAddr;
         serverAddrLen = sizeof(serverAddr);
+    } else {
+        return -1;
     }
 
     // 设置非阻塞模式
