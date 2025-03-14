@@ -82,7 +82,7 @@ NSArray *ipv6HostArray = nil;
 }
 
 - (int64_t)httpdnsHost:(NSString *)host ipType:(AlicloudHttpDNS_IPType)ipType ttl:(int64_t)ttl {
-    return 2;
+    return 60;
 }
 
 - (IBAction)onHost1:(id)sender {

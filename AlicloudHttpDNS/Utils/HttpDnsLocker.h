@@ -10,7 +10,7 @@
 #define HttpDnsLocker_h
 
 #import <Foundation/Foundation.h>
-#import "HttpdnsIPv6Manager.h"
+#import "HttpdnsRequest.h"
 
 @interface HttpDnsLocker : NSObject
 

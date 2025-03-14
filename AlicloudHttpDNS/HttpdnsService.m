@@ -27,7 +27,6 @@
 #import "HttpdnsLog_Internal.h"
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsHostCacheStore.h"
-#import "HttpdnsIPv6Manager.h"
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsNetworkInfoHelper.h"
 #import "HttpdnsPublicConstant.h"
@@ -226,7 +225,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)setIPv6Enabled:(BOOL)enable {
-    [[HttpdnsIPv6Manager sharedInstance] setIPv6ResultEnable:enable];
+    // 默认都支持
 }
 
 - (void)enableNetworkInfo:(BOOL)enable {
@@ -354,11 +353,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 - (HttpdnsQueryIPType)determineLegitQueryIpType:(HttpdnsQueryIPType)specifiedQueryIpType {
     // 自动选择，需要判断当前网络环境来决定
     if (specifiedQueryIpType == HttpdnsQueryIPTypeAuto) {
-        // 如果全局没打开ipv6，那auto的情况下只请求ipv4
-        if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-            return HttpdnsQueryIPTypeIpv4;
-        }
-
         HttpdnsIPv6Adapter *ipv6Adapter = [HttpdnsIPv6Adapter sharedInstance];
         AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
         switch (stackType) {
@@ -633,9 +627,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (NSString *)getIPv6ByHostAsync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
     NSArray *ips = [self getIPv6sByHostAsync:host];
     NSString *ip = nil;
     if (ips != nil && ips.count > 0) {
@@ -645,9 +636,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (NSString *)getIPv6ForHostAsync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
     NSArray *ips = [self getIPv6ListForHostAsync:host];
     NSString *ip = nil;
     if (ips != nil && ips.count > 0) {
@@ -657,10 +645,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (NSArray *)getIPv6sByHostAsync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
-
     if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -697,10 +681,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (NSArray *)getIPv6ListForHostAsync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
-
     if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -737,10 +717,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (NSArray *)getIPv6ListForHostSync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
-
     if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -796,10 +772,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (NSDictionary<NSString *,NSArray *> *)getIPv4_v6ByHostAsync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
-
     if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -846,10 +818,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (NSDictionary <NSString *, NSArray *>*)getHttpDnsResultHostAsync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
-
     if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -895,10 +863,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (NSDictionary <NSString *, NSArray *>*)getHttpDnsResultHostSync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
-
     if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }

@@ -31,7 +31,6 @@
 #import "HttpdnsIPRecord.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsNetworkInfoHelper.h"
-#import "HttpdnsIPv6Manager.h"
 #import "HttpdnsIPv6Adapter.h"
 #import "HttpDnsLocker.h"
 #import "HttpdnsRequest_Internal.h"
@@ -329,8 +328,6 @@ typedef struct {
 
     HttpdnsLogDebug("Updated hostObject to cached, cacheKey: %@, host: %@", cacheKey, host);
 
-    NSArray *ipv4StrArray = [cachedHostObject getIP4Strings];
-
     // 由于从缓存中读取到的是拷贝出来的新对象，字段赋值不会影响缓存中的值对象，因此这里无论如何都要放回缓存
     [_hostObjectInMemoryCache setHostObject:cachedHostObject forCacheKey:cacheKey];
 
@@ -340,19 +337,26 @@ typedef struct {
         [self cacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:ip4Strings IP6s:ip6Strings TTL:ttl];
     }
 
-    // 目前只处理ipv4地址
-    [self initiateQualityDetectionForV4IP:ipv4StrArray forHost:host cacheKey:cacheKey];
+    NSArray *ipv4StrArray = [cachedHostObject getIP4Strings];
+    if ([HttpdnsUtil isNotEmptyArray:ipv4StrArray]) {
+        [self initiateQualityDetectionForIP:ipv4StrArray forHost:host cacheKey:cacheKey];
+    }
+
+    NSArray *ipv6StrArray = [cachedHostObject getIP6Strings];
+    if ([HttpdnsUtil isNotEmptyArray:ipv6StrArray]) {
+        [self initiateQualityDetectionForIP:ipv6StrArray forHost:host cacheKey:cacheKey];
+    }
     return cachedHostObject;
 }
 
-- (void)initiateQualityDetectionForV4IP:(NSArray *)ipv4StrArray forHost:(NSString *)host cacheKey:(NSString *)cacheKey {
+- (void)initiateQualityDetectionForIP:(NSArray *)ipArray forHost:(NSString *)host cacheKey:(NSString *)cacheKey {
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
     NSDictionary<NSString *, NSNumber *> *dataSource = [sharedService getIPRankingDatasource];
     if (!dataSource || ![dataSource objectForKey:host]) {
         return;
     }
     NSNumber *port = [dataSource objectForKey:host];
-    for (NSString *ip in ipv4StrArray) {
+    for (NSString *ip in ipArray) {
         [[HttpdnsIPQualityDetector sharedInstance] scheduleIPQualityDetection:cacheKey
                                                                            ip:ip
                                                                          port:port
@@ -519,7 +523,7 @@ typedef struct {
             // 因为当前持久化缓存未区分cachekey和host(实际是cachekey)
             // 持久化缓存里的host实际上是cachekey
             // 因此这里取出来，如果cachekey和host不一致的情况，这个IP优选会因为查不到datasource而实际不生效
-            [self initiateQualityDetectionForV4IP:ipv4StrArr forHost:host cacheKey:host];
+            [self initiateQualityDetectionForIP:ipv4StrArr forHost:host cacheKey:host];
         }
     });
 }

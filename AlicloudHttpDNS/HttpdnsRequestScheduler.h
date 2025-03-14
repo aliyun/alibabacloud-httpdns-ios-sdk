@@ -19,7 +19,6 @@
 
 #import <Foundation/Foundation.h>
 #import "HttpdnsRequest.h"
-#import "HttpdnsIPv6Manager.h"
 
 //V6版本默认只保留一个IP
 FOUNDATION_EXTERN bool ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE ;

@@ -18,7 +18,7 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "HttpdnsIPv6Manager.h"
+#import "HttpdnsRequest.h"
 
 @class HttpdnsHostRecord;
 @class HttpdnsIPRecord;

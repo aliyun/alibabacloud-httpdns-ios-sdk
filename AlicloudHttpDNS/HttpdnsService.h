@@ -170,8 +170,9 @@
 
 
 /// 设置是否 开启 IPv6 结果解析。只有开启状态下，对域名的解析才会尝试解析v6记录并返回v6的结果
+/// 已弃用。默认支持IPv6。如果不需要IPv6类型的结果，只需在请求时指定`queryIpType`为`HttpdnsQueryIPTypeIpv4`
 /// @param enable YES: 开启 NO: 关闭
-- (void)setIPv6Enabled:(BOOL)enable;
+- (void)setIPv6Enabled:(BOOL)enable ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. If ipv6 is unnecessary, you can set the `queryIpType` as HttpdnsQueryIPTypeIpv4 when resolving domain.");
 
 
 /// 是否允许通过 CNCopyCurrentNetworkInfo 获取wifi ssid bssid
