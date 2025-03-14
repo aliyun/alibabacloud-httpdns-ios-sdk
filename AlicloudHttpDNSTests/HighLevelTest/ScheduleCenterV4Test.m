@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import <OCMock/OCMock.h>
-#import <AlicloudUtils/AlicloudUtils.h>
 #import "TestBase.h"
 #import "HttpdnsHostObject.h"
 #import "HttpdnsHostResolver.h"
