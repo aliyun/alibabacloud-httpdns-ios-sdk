@@ -70,7 +70,11 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"ip: %@", self.ip];
+    if (self.connectedRT == NSIntegerMax) {
+        return [NSString stringWithFormat:@"ip: %@", self.ip];
+    } else {
+        return [NSString stringWithFormat:@"ip: %@, connectedRT: %ld", self.ip, self.connectedRT];
+    }
 }
 
 @end

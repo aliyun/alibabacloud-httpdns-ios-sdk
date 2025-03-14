@@ -51,9 +51,6 @@ typedef struct {
 
 @interface HttpdnsRequestScheduler()
 
-/**
- * disable 状态置位的逻辑会在 `-mergeLookupResultToManager` 中执行。
- */
 @property (nonatomic, strong) dispatch_queue_t cacheQueue;
 @property (nonatomic, assign) BOOL persistentCacheIpEnabled;
 @property (atomic, assign) NSTimeInterval lastNetworkChangeTimestamp;
@@ -91,10 +88,10 @@ typedef struct {
         _isExpiredIPEnabled = NO;
         _isPreResolveAfterNetworkChangedEnabled = NO;
         _hostObjectInMemoryCache = [[HttpdnsHostObjectInMemoryCache alloc] init];
-        [HttpdnsIPv6Adapter sharedInstance];
+        [[HttpdnsIPv6Adapter sharedInstance] currentIpStackType];
 
         _lastNetworkStatus = reachability.currentReachabilityStatus;
-        _lastNetworkChangeTimestamp = 0;
+        _lastNetworkChangeTimestamp = [NSDate date].timeIntervalSince1970;
         reachability.reachabilityBlock = ^(HttpdnsReachability * reachability, SCNetworkConnectionFlags flags) {
             [self networkChanged];
         };
@@ -420,12 +417,9 @@ typedef struct {
     }
 
     // 仅在以下情况下响应网络变化去尝试更新缓存:
-    // 1. 首次事件（lastNetworkChangeTimestamp为0），或
-    // 2. 距离上次处理事件至少过去了1分钟（60秒），或
-    // 3. 网络状态发生变化且至少过去了5秒
-    if (_lastNetworkChangeTimestamp == 0 ||
-        elapsedTime >= 60 ||
-        (statusChanged && elapsedTime >= 5)) {
+    // - 距离上次处理事件至少过去了1分钟（60秒），或
+    // - 网络状态发生变化且至少过去了5秒
+    if (elapsedTime >= 60 || (statusChanged && elapsedTime >= 5)) {
 
         HttpdnsLogDebug("Processing network change: oldStatus: %ld, newStatus: %ld(%@), elapsedTime=%.2f seconds",
                         _lastNetworkStatus, currentStatus, currentStatusString, elapsedTime);
