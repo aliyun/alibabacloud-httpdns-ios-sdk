@@ -161,18 +161,15 @@
 
 - (void)executeDetection:(NSString *)cacheKey ip:(NSString *)ip port:(NSNumber *)port callback:(HttpdnsIPQualityCallback)callback {
     // 创建强引用以确保在异步操作期间对象不会被释放
-    NSString *strongCacheKey = [cacheKey copy];
-    NSString *strongIp = [ip copy];
-    NSNumber *strongPort = port;
     HttpdnsIPQualityCallback strongCallback = [callback copy];
 
     // 使用后台队列进行检测，避免阻塞主线程
     dispatch_async(self.detectQueue, ^{
-        NSInteger costTime = [self tcpConnectToIP:strongIp port:strongPort ? [strongPort intValue] : 80];
+        NSInteger costTime = [self tcpConnectToIP:ip port:port ? [port intValue] : 80];
 
-        // 在主线程回调结果
-        dispatch_async(dispatch_get_main_queue(), ^{
-            strongCallback(strongCacheKey, strongIp, costTime);
+        // 在后台线程回调结果
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            strongCallback(cacheKey, ip, costTime);
 
             // 释放信号量，允许执行下一个任务
             dispatch_semaphore_signal(self->_concurrencySemaphore);
