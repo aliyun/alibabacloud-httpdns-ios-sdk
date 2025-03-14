@@ -31,7 +31,6 @@
 
     HttpDnsService *httpdns = [[HttpDnsService alloc] initWithAccountID:100000];
     [httpdns setLogEnabled:YES];
-    [httpdns setIPv6Enabled:YES];
 }
 
 + (void)tearDown {

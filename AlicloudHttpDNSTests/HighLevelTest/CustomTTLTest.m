@@ -27,7 +27,6 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
 
     self.httpdns = [[HttpDnsService alloc] initWithAccountID:100000];
     [self.httpdns setLogEnabled:YES];
-    [self.httpdns setIPv6Enabled:YES];
 
     [self.httpdns setTtlDelegate:self];
     [self.httpdns setLogHandler:self];

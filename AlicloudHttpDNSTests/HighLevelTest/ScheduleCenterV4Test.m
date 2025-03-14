@@ -49,7 +49,6 @@
     });
 
     [self.httpdns setLogEnabled:YES];
-    [self.httpdns setIPv6Enabled:YES];
     [self.httpdns setReuseExpiredIPEnabled:NO];
 
     [self.httpdns setLogHandler:self];
@@ -126,7 +125,6 @@
     [request setAsBlockingRequest];
 
     HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
-    id mockScheduler = OCMPartialMock(scheduler);
 
     [scheduler executeRequest:request retryCount:1];
 

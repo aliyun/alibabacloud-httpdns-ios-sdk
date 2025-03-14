@@ -30,7 +30,6 @@ static int ttlForTest = 3;
     });
 
     [self.httpdns setLogEnabled:YES];
-    [self.httpdns setIPv6Enabled:YES];
 
     [self.httpdns setReuseExpiredIPEnabled:YES];
 

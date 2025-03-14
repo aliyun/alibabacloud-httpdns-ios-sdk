@@ -624,7 +624,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (NSString *)getIPv6ByHostAsync:(NSString *)host {
     NSArray *ips = [self getIPv6sByHostAsync:host];
-    NSString *ip = nil;
     if ([HttpdnsUtil isNotEmptyArray:ips]) {
         return ips[0];
     }
@@ -633,7 +632,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (NSString *)getIPv6ForHostAsync:(NSString *)host {
     NSArray *ips = [self getIPv6ListForHostAsync:host];
-    NSString *ip = nil;
     if ([HttpdnsUtil isNotEmptyArray:ips]) {
         return ips[0];
     }
