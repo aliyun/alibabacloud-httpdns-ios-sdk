@@ -97,8 +97,8 @@ static NSURLSession *_scheduleCenterSession = nil;
                                       [NSString stringWithFormat:@"%ld", (long)statusCode], @"ResponseCode", nil];
                 errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10002 userInfo:dict];
             } else {
-                NSString *errCode = @"";
-                errCode = [HttpdnsUtil safeObjectForKey:@"code" dict:result];
+                NSString *errCode = @"Not200Response";
+                errCode = [result objectForKey:@"code"];
                 NSDictionary *dict = nil;
                 if ([HttpdnsUtil isNotEmptyString:errCode]) {
                     dict = [[NSDictionary alloc] initWithObjectsAndKeys:

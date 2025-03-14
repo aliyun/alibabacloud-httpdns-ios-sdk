@@ -473,20 +473,16 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (NSString *)getIpByHostAsync:(NSString *)host {
     NSArray *ips = [self getIpsByHostAsync:host];
-    if (ips != nil && ips.count > 0) {
-        NSString *ip;
-        ip = [HttpdnsUtil safeOjectAtIndex:0 array:ips];
-        return ip;
+    if ([HttpdnsUtil isNotEmptyArray:ips]) {
+        return ips[0];
     }
     return nil;
 }
 
 - (NSString *)getIPv4ForHostAsync:(NSString *)host {
     NSArray *ips = [self getIPv4ListForHostAsync:host];
-    if (ips != nil && ips.count > 0) {
-        NSString *ip;
-        ip = [HttpdnsUtil safeOjectAtIndex:0 array:ips];
-        return ip;
+    if ([HttpdnsUtil isNotEmptyArray:ips]) {
+        return ips[0];
     }
     return nil;
 }
@@ -629,19 +625,19 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 - (NSString *)getIPv6ByHostAsync:(NSString *)host {
     NSArray *ips = [self getIPv6sByHostAsync:host];
     NSString *ip = nil;
-    if (ips != nil && ips.count > 0) {
-        ip = [HttpdnsUtil safeOjectAtIndex:0 array:ips];
+    if ([HttpdnsUtil isNotEmptyArray:ips]) {
+        return ips[0];
     }
-    return ip;
+    return nil;
 }
 
 - (NSString *)getIPv6ForHostAsync:(NSString *)host {
     NSArray *ips = [self getIPv6ListForHostAsync:host];
     NSString *ip = nil;
-    if (ips != nil && ips.count > 0) {
-        ip = [HttpdnsUtil safeOjectAtIndex:0 array:ips];
+    if ([HttpdnsUtil isNotEmptyArray:ips]) {
+        return ips[0];
     }
-    return ip;
+    return nil;
 }
 
 - (NSArray *)getIPv6sByHostAsync:(NSString *)host {
@@ -1100,10 +1096,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (NSString *)getIpByHost:(NSString *)host {
     NSArray *ips = [self getIpsByHost:host];
-    if (ips != nil && ips.count > 0) {
-        NSString *ip;
-        ip = [HttpdnsUtil safeOjectAtIndex:0 array:ips];
-        return ip;
+    if ([HttpdnsUtil isNotEmptyArray:ips]) {
+        return ips[0];
     }
     return nil;
 }
@@ -1131,7 +1125,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
         if ([HttpdnsUtil isNotEmptyArray:ipsObject]) {
             for (HttpdnsIpObject *ipObject in ipsObject) {
-                [HttpdnsUtil safeAddObject:[ipObject getIpString] toArray:ipsArray];
+                [ipsArray addObject:[ipObject getIpString]];
             }
             return ipsArray;
         }
