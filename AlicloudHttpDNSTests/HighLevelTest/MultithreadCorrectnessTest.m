@@ -26,8 +26,8 @@
 
     self.httpdns = [[HttpDnsService alloc] initWithAccountID:100000];
     [self.httpdns setLogEnabled:YES];
-    [self.httpdns setIPv6Enabled:YES];
     [self.httpdns setLogHandler:self];
+    [self.httpdns setTimeoutInterval:2];
 
     self.currentTimeStamp = [[NSDate date] timeIntervalSince1970];
 }
@@ -79,7 +79,7 @@
     OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
-            [NSThread sleepForTimeInterval:3];
+            [NSThread sleepForTimeInterval:2];
         });
     [mockedScheduler cleanAllHostMemoryCache];
 
@@ -88,6 +88,34 @@
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         [self.httpdns resolveHostSync:ipv4OnlyHost byIpType:HttpdnsQueryIPTypeIpv4];
+        dispatch_semaphore_signal(semaphore);
+    });
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+
+    NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSince1970] - startTime;
+    XCTAssert(elapsedTime >= 2, @"elapsedTime should be more than 2s, but is %f", elapsedTime);
+}
+
+// 非主线程中调用阻塞接口，应当阻塞
+- (void)testBlockingMethodShouldBlockIfInBackgroundThreadWithSpecifiedMaxWaitTime {
+    HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
+    HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
+    OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0])
+        .ignoringNonObjectArgs()
+        .andDo(^(NSInvocation *invocation) {
+            [NSThread sleepForTimeInterval:3];
+        });
+    [mockedScheduler cleanAllHostMemoryCache];
+
+    NSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];
+
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        HttpdnsRequest *request = [HttpdnsRequest new];
+        request.host = ipv4OnlyHost;
+        request.queryIpType = HttpdnsQueryIPTypeIpv4;
+        request.resolveTimeoutInSecond = 3;
+        [self.httpdns resolveHostSync:request];
         dispatch_semaphore_signal(semaphore);
     });
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
@@ -103,8 +131,8 @@
     OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
-            // 第一次调用，阻塞5秒
-            [NSThread sleepForTimeInterval:5];
+            // 第一次调用，阻塞1.5秒
+            [NSThread sleepForTimeInterval:1.5];
             [invocation setReturnValue:&ipv4HostObject];
         });
 
@@ -118,7 +146,7 @@
     });
 
     // 确保第一个请求已经开始
-    [NSThread sleepForTimeInterval:1];
+    [NSThread sleepForTimeInterval:0.5];
 
     NSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];
 
@@ -127,7 +155,7 @@
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         // 第二次请求，由于是同一个域名，所以它应该等待第一个请求的返回
         // 第一个请求返回后，第二个请求不应该再次请求，而是直接从缓存中读取到结果，返回
-        // 所以它的等待时间接近4秒
+        // 所以它的等待时间接近1秒
         HttpdnsResult *result = [self.httpdns resolveHostSync:ipv4OnlyHost byIpType:HttpdnsQueryIPTypeIpv4];
         XCTAssertNotNil(result);
         XCTAssertTrue([result.host isEqualToString:ipv4OnlyHost]);
@@ -139,7 +167,8 @@
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
 
     NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSince1970] - startTime;
-    XCTAssert(elapsedTime >= 3.9, @"elapsedTime should be more than 3.9s, but is %f", elapsedTime);
+    XCTAssert(elapsedTime >= 1, @"elapsedTime should be more than 1s, but is %f", elapsedTime);
+    XCTAssert(elapsedTime <= 1.5, @"elapsedTime should not be more than 1.5s, but is %f", elapsedTime);
 
     // TODO 这里暂时无法跑过，因为现在锁的机制，会导致第二个请求也要去请求
     // XCTAssert(elapsedTime < 4.1, @"elapsedTime should be less than 4.1s, but is %f", elapsedTime);
@@ -156,12 +185,12 @@
             int localCount = atomic_fetch_add(&count, 1) + 1;
 
             if (localCount == 1) {
-                [NSThread sleepForTimeInterval:3];
+                [NSThread sleepForTimeInterval:0.4];
                 // 第一次调用，返回异常
                 @throw [NSException exceptionWithName:@"TestException" reason:@"TestException" userInfo:nil];
             } else {
                 // 第二次调用
-                [NSThread sleepForTimeInterval:3];
+                [NSThread sleepForTimeInterval:0.4];
                 [invocation setReturnValue:&ipv4HostObject];
             }
         });
@@ -176,7 +205,7 @@
     });
 
     // 确保第一个请求已经开始
-    [NSThread sleepForTimeInterval:1];
+    [NSThread sleepForTimeInterval:0.2];
 
     NSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];
 
@@ -197,8 +226,8 @@
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
 
     NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSince1970] - startTime;
-    XCTAssert(elapsedTime >= 4.9, @"elapsedTime should be more than 3.9s, but is %f", elapsedTime);
-    XCTAssert(elapsedTime < 5.1, @"elapsedTime should be less than 4.1s, but is %f", elapsedTime);
+    XCTAssert(elapsedTime >= 0.6, @"elapsedTime should be more than 0.6s, but is %f", elapsedTime);
+    XCTAssert(elapsedTime < 0.8, @"elapsedTime should be less than 0.8s, but is %f", elapsedTime);
 }
 
 // 同步接口设置最大等待时间

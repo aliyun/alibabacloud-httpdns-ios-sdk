@@ -14,7 +14,6 @@
 
 @end
 
-static int ttlForTest = 120;
 static NSString *sdnsHost = @"sdns1.onlyforhttpdnstest.run.place";
 
 @implementation CacheKeyFunctionTest
@@ -32,7 +31,6 @@ static NSString *sdnsHost = @"sdns1.onlyforhttpdnstest.run.place";
     });
 
     [self.httpdns setLogEnabled:YES];
-    [self.httpdns setIPv6Enabled:YES];
     [self.httpdns setPersistentCacheIPEnabled:YES];
     [self.httpdns setReuseExpiredIPEnabled:NO];
 

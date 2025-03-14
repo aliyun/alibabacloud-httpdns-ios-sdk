@@ -46,7 +46,6 @@
     });
 
     [self.httpdns setLogEnabled:YES];
-    [self.httpdns setIPv6Enabled:YES];
     [self.httpdns setReuseExpiredIPEnabled:NO];
 
     [self.httpdns setLogHandler:self];

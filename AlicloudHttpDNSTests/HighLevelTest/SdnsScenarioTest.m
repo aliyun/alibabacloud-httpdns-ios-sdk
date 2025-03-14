@@ -32,7 +32,6 @@ static NSString *sdnsHost = @"sdns1.onlyforhttpdnstest.run.place";
     });
 
     [self.httpdns setLogEnabled:YES];
-    [self.httpdns setIPv6Enabled:YES];
 
     [self.httpdns setReuseExpiredIPEnabled:NO];
 
