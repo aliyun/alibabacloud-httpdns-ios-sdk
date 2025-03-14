@@ -418,16 +418,14 @@
 				9AA0FC591EB9843A00E242DD /* Utils */,
 				9AA0FC411EB97D1E00E242DD /* ThirdParty */,
 				2197CAB11BC7B3D400BDB65B /* AlicloudHttpDNS.h */,
-				94C369562D82C705005ADDD7 /* HttpdnsIPQualityDetector.h */,
-				94C369572D82C705005ADDD7 /* HttpdnsIPQualityDetector.m */,
+				94A0146F2BF38F410018B096 /* HttpdnsService_Internal.h */,
+				94A0146E2BF38F410018B096 /* HttpdnsService.h */,
+				94A0146D2BF38F410018B096 /* HttpdnsService.m */,
 				2197CAB81BC7B3D400BDB65B /* HttpdnsHostResolver.h */,
 				2197CAB91BC7B3D400BDB65B /* HttpdnsHostResolver.m */,
 				2197CABA1BC7B3D400BDB65B /* HttpdnsRequestScheduler.h */,
 				9AF899261E8B5CF600D9CA8E /* HttpdnsRequestScheduler_Internal.h */,
 				2197CABB1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m */,
-				94A0146F2BF38F410018B096 /* HttpdnsService_Internal.h */,
-				94A0146E2BF38F410018B096 /* HttpdnsService.h */,
-				94A0146D2BF38F410018B096 /* HttpdnsService.m */,
 				9A5914801EA0815D00A7ED28 /* HttpdnsPersistenceUtils.h */,
 				9A5914811EA0815D00A7ED28 /* HttpdnsPersistenceUtils.m */,
 				9A4D181B1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.h */,
@@ -436,8 +434,6 @@
 				9A5D5E271E9CB4D400CAC3A6 /* HttpdnsScheduleCenterRequest.h */,
 				9A5D5E281E9CB4D400CAC3A6 /* HttpdnsScheduleCenterRequest.m */,
 				942376A51C572AD300736E50 /* HttpdnsDegradationDelegate.h */,
-				CB1E4EE62A8CBAD700F01EAC /* HttpDnsLocker.h */,
-				CB1E4EE72A8CBD1B00F01EAC /* HttpDnsLocker.m */,
 				2197CA3C1BC79A4500BDB65B /* Info.plist */,
 			);
 			path = AlicloudHttpDNS;
@@ -610,6 +606,10 @@
 		9AA0FC591EB9843A00E242DD /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				94C369562D82C705005ADDD7 /* HttpdnsIPQualityDetector.h */,
+				94C369572D82C705005ADDD7 /* HttpdnsIPQualityDetector.m */,
+				CB1E4EE62A8CBAD700F01EAC /* HttpDnsLocker.h */,
+				CB1E4EE72A8CBD1B00F01EAC /* HttpDnsLocker.m */,
 				948541092D7DA5B90013CC3B /* HttpdnsReachability.h */,
 				9485410A2D7DA5B90013CC3B /* HttpdnsReachability.m */,
 				9AA0FC5E1EB9846D00E242DD /* HttpdnsDatabaseCommon.h */,
