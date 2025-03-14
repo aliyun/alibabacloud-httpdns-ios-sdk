@@ -25,7 +25,6 @@
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsInternalConstant.h"
 #import "HttpdnsHostResolver.h"
-#import "HttpdnsIPv6Manager.h"
 #import "HttpdnsPublicConstant.h"
 #import "httpdnsReachability.h"
 

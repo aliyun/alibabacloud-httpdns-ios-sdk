@@ -29,7 +29,6 @@
 #import "HttpdnsScheduleCenter.h"
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsNetworkInfoHelper.h"
-#import "HttpdnsIPv6Manager.h"
 #import "HttpdnsIPv6Adapter.h"
 #import "HttpdnsInternalConstant.h"
 #import "HttpdnsRequestScheduler.h"
@@ -121,15 +120,13 @@ static NSURLSession *_resolveHostSession = nil;
 
     // 处理IPv6解析结果
     NSMutableArray *ip6Array = [NSMutableArray array];
-    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        for (NSString *ipv6 in ip6s) {
-            if ([HttpdnsUtil isEmptyString:ipv6]) {
-                continue;
-            }
-            HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
-            [ipObject setIp:ipv6];
-            [ip6Array addObject:ipObject];
+    for (NSString *ipv6 in ip6s) {
+        if ([HttpdnsUtil isEmptyString:ipv6]) {
+            continue;
         }
+        HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
+        [ipObject setIp:ipv6];
+        [ip6Array addObject:ipObject];
     }
 
     // 返回 额外返回一个extra字段
@@ -171,11 +168,7 @@ static NSURLSession *_resolveHostSession = nil;
     }
 
     [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
-    if (![HttpdnsUtil isNotEmptyArray:ip6Array]) {
-        HttpdnsLogDebug("Parsed host: %@ ttl: %lld ipsCount: %ld", [hostObject getHostName], [hostObject getTTL], [ipArray count]);
-    } else {
-        HttpdnsLogDebug("Parsed host: %@ ttl: %lld ips: %@ ip6sCount: %ld", [hostObject getHostName], [hostObject getTTL], ipArray, [ip6Array count]);
-    }
+
     return hostObject;
 }
 
@@ -224,6 +217,16 @@ static NSURLSession *_resolveHostSession = nil;
     }];
 
     return [arr componentsJoinedByString:@"&"];
+}
+
+- (NSString *)appendQueryTypeToURL:(NSString *)originURL queryType:(HttpdnsQueryIPType)queryType {
+    if (queryType & HttpdnsQueryIPTypeIpv4 && queryType & HttpdnsQueryIPTypeIpv6) {
+        return [NSString stringWithFormat:@"%@&query=%@", originURL, [HttpdnsUtil URLEncodedString:@"4,6"]];
+    } else if (queryType & HttpdnsQueryIPTypeIpv6) {
+        return [NSString stringWithFormat:@"%@&query=%@", originURL, @"6"];
+    } else {
+        return originURL;
+    }
 }
 
 - (NSString *)constructHttpdnsResolvingUrl:(HttpdnsRequest *)request forV4Net:(BOOL)isV4 {
@@ -278,10 +281,8 @@ static NSURLSession *_resolveHostSession = nil;
         url = [NSString stringWithFormat:@"%@&net=%@", url, netType];
     }
 
-    // 开启IPv6解析结果后，URL处理
-    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        url = [[HttpdnsIPv6Manager sharedInstance] appendQueryTypeToURL:url queryType:request.queryIpType];
-    }
+    // 添加查询类型
+    url = [self appendQueryTypeToURL:url queryType:request.queryIpType];
 
     return url;
 }

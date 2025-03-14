@@ -207,23 +207,21 @@
 }
 
 - (NSArray<NSString *> *)getIP4Strings {
-    NSArray<HttpdnsIpObject *> *ipRecords = [self getIps];
-    NSMutableArray<NSString *> *ips = [NSMutableArray arrayWithCapacity:ipRecords.count];
-    for (HttpdnsIpObject *IPObject in ipRecords) {
-        [HttpdnsUtil safeAddObject:IPObject.ip toArray:ips];
+    NSArray<HttpdnsIpObject *> *ipv4Records = [self getIps];
+    NSMutableArray<NSString *> *ipv4Strings = [NSMutableArray arrayWithCapacity:ipv4Records.count];
+    for (HttpdnsIpObject *IPObject in ipv4Records) {
+        [HttpdnsUtil safeAddObject:[IPObject getIpString] toArray:ipv4Strings];
     }
-    return [ips copy];
+    return [ipv4Strings copy];
 }
 
 - (NSArray<NSString *> *)getIP6Strings {
-    NSArray<HttpdnsIpObject *> *ip6Records = [self getIp6s];
-    NSMutableArray<NSString *> *ips = [NSMutableArray arrayWithCapacity:ip6Records.count];
-    if ([[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        for (HttpdnsIpObject *ipObject in ip6Records) {
-            [HttpdnsUtil safeAddObject:ipObject.ip toArray:ips];
-        }
+    NSArray<HttpdnsIpObject *> *ipv6Records = [self getIp6s];
+    NSMutableArray<NSString *> *ip6sString = [NSMutableArray arrayWithCapacity:ipv6Records.count];
+    for (HttpdnsIpObject *ipObject in ipv6Records) {
+        [HttpdnsUtil safeAddObject:[ipObject getIpString] toArray:ip6sString];
     }
-    return [ips copy];
+    return [ip6sString copy];
 }
 
 - (BOOL)updateConnectedRT:(NSInteger)connectedRT forIP:(NSString *)ip {

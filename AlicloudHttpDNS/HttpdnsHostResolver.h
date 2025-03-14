@@ -20,7 +20,6 @@
 #import <Foundation/Foundation.h>
 #import "HttpdnsHostObject.h"
 #import "HttpdnsRequest.h"
-#import "HttpdnsIPv6Manager.h"
 
 @interface HttpdnsHostResolver : NSObject
 
