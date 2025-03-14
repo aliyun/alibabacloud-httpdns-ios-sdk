@@ -92,15 +92,15 @@ static NSURLSession *_resolveHostSession = nil;
     }
     NSDictionary *extra;
     if ([[json allKeys] containsObject:@"extra"]) {
-        extra = [self htmlEntityDecode:[HttpdnsUtil safeObjectForKey:@"extra" dict:json]];
+        extra = [self htmlEntityDecode:[json objectForKey:@"extra"]];
     }
 
-    NSArray *ip4s = [HttpdnsUtil safeObjectForKey:@"ips" dict:json];
+    NSArray *ip4s = [json objectForKey:@"ips"];
     if (!ip4s) {
         ip4s = @[];
     }
 
-    NSArray *ip6s = [HttpdnsUtil safeObjectForKey:@"ipsv6" dict:json];
+    NSArray *ip6s = [json objectForKey:@"ipsv6"];
     if (!ip6s) {
         ip6s = @[];
     }

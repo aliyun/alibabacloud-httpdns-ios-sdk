@@ -28,15 +28,6 @@
 #import "HttpdnsPublicConstant.h"
 #import "httpdnsReachability.h"
 
-#define HTTPDNSUTIL_SuppressPerformSelectorLeakWarning(code) \
-do { \
-_Pragma("clang diagnostic push") \
-_Pragma("clang diagnostic ignored \"-Warc-performSelector-leaks\"") \
-code; \
-_Pragma("clang diagnostic pop") \
-} while (0)
-
-
 @implementation HttpdnsUtil
 
 + (int64_t)currentEpochTimeInSecond {
@@ -256,105 +247,6 @@ _Pragma("clang diagnostic pop") \
     NSString *userAgent = [NSString stringWithFormat:@"HttpdnsSDK/%@ (%@; iOS %@; %@)", HTTPDNS_IOS_SDK_VERSION, model, systemVersion, systemName];
 
     return userAgent;
-}
-
-+ (void)safeAddObject:(id)object toArray:(NSMutableArray *)mutableArray {
-    @try {
-        @synchronized(self) {
-            [mutableArray addObject:object];
-        }
-    } @catch (NSException *exception) {
-        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
-    }
-}
-
-+ (void)safeAddValue:(id)value key:(NSString *)key toDict:(NSMutableDictionary *)dict {
-    @try {
-        @synchronized (self) {
-            [dict setObject:value forKey:key];
-        }
-    } @catch (NSException *exception) {
-        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
-    }
-}
-
-
-+ (void)safeRemoveObjectForKey:(NSString *)key toDict:(NSMutableDictionary *)dict {
-    @try {
-        @synchronized (self) {
-            [dict removeObjectForKey:key];
-        }
-    } @catch (NSException *exception) {
-        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
-    }
-}
-
-+ (void)safeRemoveAllObjectsFromDict:(NSMutableDictionary *)dict {
-    @try {
-        @synchronized (self) {
-            [dict removeAllObjects];
-        }
-    } @catch (NSException *exception) {
-        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
-    }
-}
-
-+ (id)safeAllKeysFromDict:(NSDictionary *)dict {
-    NSArray *keysArray;
-    @synchronized (self) {
-        keysArray = [dict allKeys];
-    }
-    return keysArray;
-}
-
-+ (NSInteger)safeCountFromDict:(NSDictionary *)dict {
-    NSInteger dictCount;
-    @synchronized (self) {
-        dictCount = [dict count];
-    }
-    return dictCount;
-}
-
-+ (id)safeObjectForKey:(NSString *)key dict:(NSDictionary *)dict {
-    id object;
-    @try {
-        @synchronized (self) {
-            object = [dict objectForKey:key];
-        }
-    } @catch (NSException *exception) {
-        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
-    }
-    return object;
-}
-
-+ (id)safeOjectAtIndex:(int)index array:(NSArray *)array {
-    id object;
-    @try {
-        @synchronized (self) {
-            object = array[index];
-        }
-    } @catch (NSException *exception) {
-        NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
-    }
-    return object;
-}
-
-+ (id)safeObjectAtIndexOrTheFirst:(int)index array:(NSArray *)array defaultValue:(id)defaultValue {
-    id object = defaultValue;
-    @try {
-        @synchronized (self) {
-            object = array[index];
-        }
-    } @catch (NSException *exception) {
-        @try {
-            @synchronized (self) {
-                object = array[0];
-            }
-        } @catch (NSException *exception) {
-            NSLog(@"🔴类名与方法名：%@（在第%@行）, 描述：%@", @(__PRETTY_FUNCTION__), @(__LINE__), exception);
-        }
-    }
-    return object;
 }
 
 @end

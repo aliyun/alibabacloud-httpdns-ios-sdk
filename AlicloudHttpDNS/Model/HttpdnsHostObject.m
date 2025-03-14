@@ -210,18 +210,18 @@
     NSArray<HttpdnsIpObject *> *ipv4Records = [self getIps];
     NSMutableArray<NSString *> *ipv4Strings = [NSMutableArray arrayWithCapacity:ipv4Records.count];
     for (HttpdnsIpObject *IPObject in ipv4Records) {
-        [HttpdnsUtil safeAddObject:[IPObject getIpString] toArray:ipv4Strings];
+        [ipv4Strings addObject:[IPObject getIpString]];
     }
     return [ipv4Strings copy];
 }
 
 - (NSArray<NSString *> *)getIP6Strings {
     NSArray<HttpdnsIpObject *> *ipv6Records = [self getIp6s];
-    NSMutableArray<NSString *> *ip6sString = [NSMutableArray arrayWithCapacity:ipv6Records.count];
+    NSMutableArray<NSString *> *ipv6sString = [NSMutableArray arrayWithCapacity:ipv6Records.count];
     for (HttpdnsIpObject *ipObject in ipv6Records) {
-        [HttpdnsUtil safeAddObject:[ipObject getIpString] toArray:ip6sString];
+        [ipv6sString addObject:[ipObject getIpString]];
     }
-    return [ip6sString copy];
+    return [ipv6sString copy];
 }
 
 - (BOOL)updateConnectedRT:(NSInteger)connectedRT forIP:(NSString *)ip {

@@ -57,22 +57,4 @@
 
 + (NSString *)generateUserAgent;
 
-+ (void)safeAddObject:(id)object toArray:(NSMutableArray *)mutableArray;
-
-+ (void)safeAddValue:(id)value key:(NSString *)key toDict:(NSMutableDictionary* )dict;
-
-+ (void)safeRemoveObjectForKey:(NSString *)key toDict:(NSMutableDictionary *)dict;
-
-+ (void)safeRemoveAllObjectsFromDict:(NSMutableDictionary *)dict;
-
-+ (id)safeObjectForKey:(NSString *)key dict:(NSDictionary *)dict;
-
-+ (id)safeOjectAtIndex:(int)index array:(NSArray *)array;
-
-+ (id)safeObjectAtIndexOrTheFirst:(int)index array:(NSArray *)array defaultValue:(id)defaultValue;
-
-+ (id)safeAllKeysFromDict:(NSDictionary *)dict;
-
-+ (NSInteger)safeCountFromDict:(NSDictionary *)dict;
-
 @end

@@ -192,8 +192,8 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 }
 
 - (void)updateRegionConfig:(NSDictionary *)scheduleCenterResult {
-    NSArray *v4Result = [HttpdnsUtil safeObjectForKey:kAlicloudHttpdnsRegionConfigV4HostKey dict:scheduleCenterResult];
-    NSArray *v6Result = [HttpdnsUtil safeObjectForKey:kAlicloudHttpdnsRegionConfigV6HostKey dict:scheduleCenterResult];
+    NSArray *v4Result = [scheduleCenterResult objectForKey:kAlicloudHttpdnsRegionConfigV4HostKey];
+    NSArray *v6Result = [scheduleCenterResult objectForKey:kAlicloudHttpdnsRegionConfigV6HostKey];
 
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
         HttpdnsRegionConfigLoader *regionConfigLoader = [HttpdnsRegionConfigLoader sharedInstance];
