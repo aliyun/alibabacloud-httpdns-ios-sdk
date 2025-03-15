@@ -21,32 +21,8 @@
 
 @interface HttpdnsPersistenceUtils : NSObject
 
-+ (NSString *)disableStatusPath;
-+ (NSString *)activatedIPIndexPath;
-+ (NSString *)scheduleCenterResultPath;
-+ (NSString *)needFetchFromScheduleCenterStatusPatch;
-
-+ (NSTimeInterval)timeSinceCreateForPath:(NSString *)patch;
++ (NSString *)scheduleCenterResultDirectory;
 + (BOOL)saveJSON:(id)JSON toPath:(NSString *)path;
 + (id)getJSONFromPath:(NSString *)path;
-+ (id)getJSONFromDirectory:(NSString *)directory fileName:(NSString *)fileName;
-+ (id)getJSONFromDirectory:(NSString *)directory fileName:(NSString *)fileName timeout:(NSTimeInterval)timeoutInterval;
-
-+ (BOOL)removeFile:(NSString *)path;
-+ (BOOL)fileExist:(NSString *)path;
-+ (BOOL)createFile:(NSString *)path;
-
-/*!
- * 请勿直接使用文件名调用该接口，应该使用文件所在文件夹
- */
-+ (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanDays:(NSInteger)numberOfDays;
-+ (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanHours:(NSInteger)numberOfHours;
-+ (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanTimeInterval:(NSTimeInterval)timeInterval;
-
-+ (BOOL)deleteAllCacheFiles;
-
-// ~/Library/Caches/HTTPDNS/HostCache/databaseName
-+ (NSString *)hostCacheDatabasePathWithName:(NSString *)name;
-+ (NSString *)keyValueDatabasePath;
 
 @end

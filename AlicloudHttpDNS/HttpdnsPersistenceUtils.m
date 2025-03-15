@@ -87,20 +87,6 @@ static dispatch_queue_t _fileCacheQueue = 0;
     return JSON;
 }
 
-+ (id)getJSONFromDirectory:(NSString *)directory fileName:(NSString *)fileName {
-    NSString *fullPath = [directory stringByAppendingPathComponent:fileName];
-    BOOL isfileExist = [HttpdnsPersistenceUtils fileExist:fullPath];
-    if (!isfileExist) {
-        return nil;
-    }
-    return [self getJSONFromPath:fullPath];
-}
-
-+ (id)getJSONFromDirectory:(NSString *)directory fileName:(NSString *)fileName timeout:(NSTimeInterval)timeoutInterval {
-    [HttpdnsPersistenceUtils deleteFilesInDirectory:directory moreThanTimeInterval:timeoutInterval];
-    return [self getJSONFromDirectory:directory fileName:fileName];
-}
-
 + (BOOL)removeFile:(NSString *)path {
     if (![HttpdnsUtil isNotEmptyString:path]) {
         return NO;
@@ -110,21 +96,6 @@ static dispatch_queue_t _fileCacheQueue = 0;
     dispatch_sync(_fileCacheQueue, ^{
         ret = [[NSFileManager defaultManager] removeItemAtPath:path error:&error];
     });
-    return ret;
-}
-
-+ (BOOL)fileExist:(NSString *)path {
-    if (![HttpdnsUtil isNotEmptyString:path]) {
-        return NO;
-    }
-    return [[NSFileManager defaultManager] fileExistsAtPath:path];
-}
-
-+ (BOOL)createFile:(NSString *)path {
-    if (![HttpdnsUtil isNotEmptyString:path]) {
-        return NO;
-    }
-    BOOL ret = [[NSFileManager defaultManager] createFileAtPath:path contents:[NSData data] attributes:nil];
     return ret;
 }
 
@@ -140,63 +111,6 @@ static dispatch_queue_t _fileCacheQueue = 0;
                                                             error:NULL];
         }
     });
-}
-
-+ (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanDays:(NSInteger)numberOfDays {
-    return [self deleteFilesInDirectory:dirPath moreThanTimeInterval:(numberOfDays * 24 * 3600)];
-}
-
-+ (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanHours:(NSInteger)numberOfHours {
-    return [self deleteFilesInDirectory:dirPath moreThanTimeInterval:(numberOfHours * 3600)];
-}
-
-+ (BOOL)deleteFilesInDirectory:(NSString *)dirPath moreThanTimeInterval:(NSTimeInterval)timeInterval {
-    BOOL success = NO;
-    NSFileManager *fileMgr = [[NSFileManager alloc] init];
-    __block NSError *error = nil;
-    NSArray *directoryContents = [fileMgr contentsOfDirectoryAtPath:dirPath error:&error];
-    if (!error) {
-        success = YES;
-        for (NSString *path in directoryContents) {
-            NSString *fullPath = [dirPath stringByAppendingPathComponent:path];
-            NSTimeInterval timeSinceCreate = [self timeSinceCreateForPath:fullPath];
-            if (timeSinceCreate < timeInterval)
-                continue;
-            __block BOOL removeSuccess = NO;
-            dispatch_sync(_fileCacheQueue, ^{
-                removeSuccess = [fileMgr removeItemAtPath:fullPath error:&error];
-            });
-            if (!removeSuccess) {
-                 NSLog(@"remove error happened %@", error.description);
-                success = NO;
-            }
-        }
-    } else {
-        NSLog(@"remove error happened %@", error.description);
-        success = NO;
-    }
-    return success;
-}
-
-+ (BOOL)deleteAllCacheFiles {
-   return [self deleteFilesInDirectory:[self privateDocumentsDirectory] moreThanTimeInterval:0];
-}
-
-+ (NSDate *)lastModified:(NSString *)fullPath {
-    NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:fullPath error:NULL];
-   NSDate *lastModified = [fileAttributes fileModificationDate];
-    // assume the file is exist
-    if (!lastModified) {
-        lastModified = [NSDate distantFuture];
-    }
-    return lastModified;
-}
-
-+ (NSTimeInterval)timeSinceCreateForPath:(NSString *)patch {
-    NSDate *nowDate = [NSDate date];
-    NSDate *lastModified = [self lastModified:patch];
-    NSTimeInterval timeSinceCreate = [nowDate timeIntervalSinceDate:lastModified];
-    return timeSinceCreate;
 }
 
 #pragma mark - ~/Libraray/Private Documents
@@ -224,47 +138,11 @@ static dispatch_queue_t _fileCacheQueue = 0;
     return ret;
 }
 
-//Library/Private Documents/HTTPDNS/disableStatus
-+ (NSString *)disableStatusPath {
-    NSString *ret = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:@"disableStatus"];
-    [self createDirectoryIfNeeded:ret];
-    return ret;
-}
-
-//Library/Private Documents/HTTPDNS/activatedIPIndex
-+ (NSString *)activatedIPIndexPath {
-    NSString *ret = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:@"activatedIPIndex"];
-    [self createDirectoryIfNeeded:ret];
-    return ret;
-}
-
 //Library/Private Documents/HTTPDNS/scheduleCenterResult
-+ (NSString *)scheduleCenterResultPath {
-    NSString *ret = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:@"scheduleCenterResult"];
-    [self createDirectoryIfNeeded:ret];
-    return ret;
-}
-
-//Library/Private Documents/keyvalue
-+ (NSString *)keyValueDatabasePath {
-    NSString *ret = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:@"keyvalue"];
-    [self createDirectoryIfNeeded:ret];
-    return ret;
-}
-
-//Library/Private Documents/HTTPDNS/HostCache
-+ (NSString *)hostCachePatch {
-    NSString *ret = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:ALICLOUD_HTTPDNS_HOST_CACHE_DIR_NAME];
-    [self createDirectoryIfNeeded:ret];
-    return ret;
-}
-
-//Library/Private Documents/HTTPDNS/HostCache/databaseName
-+ (NSString *)hostCacheDatabasePathWithName:(NSString *)name {
-    if ([HttpdnsUtil isNotEmptyString:name]) {
-        return [[self hostCachePatch] stringByAppendingPathComponent:name];
-    }
-    return nil;
++ (NSString *)scheduleCenterResultDirectory {
+    NSString *directoryPath = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:@"scheduleCenterResult"];
+    [self createDirectoryIfNeeded:directoryPath];
+    return directoryPath;
 }
 
 @end
