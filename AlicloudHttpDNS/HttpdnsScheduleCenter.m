@@ -78,7 +78,8 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
         _currentActiveUpdateHostIndex = 0;
         _currentActiveServiceHostIndex = 0;
 
-        _scheduleCenterResultPath = [[HttpdnsPersistenceUtils scheduleCenterResultPath] stringByAppendingPathComponent:kScheduleRegionConfigLocalCacheFileName];
+        _scheduleCenterResultPath = [[HttpdnsPersistenceUtils scheduleCenterResultDirectory]
+                                     stringByAppendingPathComponent:kScheduleRegionConfigLocalCacheFileName];
 
         // 上次更新日期默认设置为1天前，这样如果缓存没有记录，就会立即更新
         _lastScheduleCenterConnectDate = [NSDate dateWithTimeIntervalSinceNow:(- 24 * 60 * 60)];
