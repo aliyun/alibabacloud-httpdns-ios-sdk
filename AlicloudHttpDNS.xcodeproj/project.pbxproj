@@ -334,8 +334,6 @@
 				2197CABA1BC7B3D400BDB65B /* HttpdnsRequestScheduler.h */,
 				9AF899261E8B5CF600D9CA8E /* HttpdnsRequestScheduler_Internal.h */,
 				2197CABB1BC7B3D400BDB65B /* HttpdnsRequestScheduler.m */,
-				9A5914801EA0815D00A7ED28 /* HttpdnsPersistenceUtils.h */,
-				9A5914811EA0815D00A7ED28 /* HttpdnsPersistenceUtils.m */,
 				9A4D181B1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.h */,
 				947C4BF12C1F45330095A302 /* HttpdnsScheduleCenter_Internal.h */,
 				9A4D181C1E8FAF9B001E45B4 /* HttpdnsScheduleCenter.m */,
@@ -451,6 +449,8 @@
 			children = (
 				940585122D85AC9C001FEB15 /* HttpdnsDB.h */,
 				940585132D85AC9C001FEB15 /* HttpdnsDB.m */,
+				9A5914801EA0815D00A7ED28 /* HttpdnsPersistenceUtils.h */,
+				9A5914811EA0815D00A7ED28 /* HttpdnsPersistenceUtils.m */,
 			);
 			name = Persistent;
 			path = AlicloudHttpDNS/Persistent;
