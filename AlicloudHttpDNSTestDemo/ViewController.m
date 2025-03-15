@@ -11,7 +11,6 @@
 #import "HttpdnsUtil.h"
 #import "MyLoggerHandler.h"
 #import "HttpdnsScheduleCenter.h"
-#import "TestIPv6ViewController.h"
 #import "HttpdnsIPv6Adapter.h"
 
 NSArray *ipv4HostArray = nil;
@@ -120,8 +119,6 @@ NSArray *ipv6HostArray = nil;
 }
 
 - (IBAction)onIPv6Test:(id)sender {
-    TestIPv6ViewController *vc = [[TestIPv6ViewController alloc] init];
-    [self presentViewController:vc animated:YES completion:nil];
 }
 
 // IPv6 Stack检测

@@ -35,14 +35,15 @@
 
 @interface HttpdnsHostObject : NSObject<NSCoding, NSCopying>
 
+@property (nonatomic, copy, setter=setCacheKey:, getter=getCacheKey) NSString *cacheKey;
 @property (nonatomic, copy, setter=setHostName:, getter=getHostName) NSString *hostName;
-@property (nonatomic, strong, setter=setIps:, getter=getIps) NSArray<HttpdnsIpObject *> *ips;
-@property (nonatomic, strong, setter=setIp6s:, getter=getIp6s) NSArray<HttpdnsIpObject *> *ip6s;
 
-// ttl，httpdns最早的接口设计里，不区分v4、v6解析结果的ttl
-@property (nonatomic, setter=setTTL:, getter=getTTL) int64_t ttl;
-@property (nonatomic, getter=getLastLookupTime, setter=setLastLookupTime:) int64_t lastLookupTime;
+@property (nonatomic, copy, setter=setClientIp:, getter=getClientIp) NSString *clientIp;
 
+@property (nonatomic, strong, setter=setV4Ips:, getter=getV4Ips) NSArray<HttpdnsIpObject *> *v4Ips;
+@property (nonatomic, strong, setter=setV6Ips:, getter=getV6Ips) NSArray<HttpdnsIpObject *> *v6Ips;
+
+// 虽然当前后端接口的设计里ttl并没有区分v4、v6，但原则是应该要分开
 // v4 ttl
 @property (nonatomic, setter=setV4TTL:, getter=getV4TTL) int64_t v4ttl;
 @property (nonatomic, assign) int64_t lastIPv4LookupTime;
@@ -67,11 +68,17 @@
 
 - (BOOL)isExpiredUnderQueryIpType:(HttpdnsQueryIPType)queryIPType;
 
-+ (instancetype)hostObjectWithHostRecord:(HttpdnsHostRecord *)IPRecord;
++ (instancetype)fromDBRecord:(HttpdnsHostRecord *)IPRecord;
 
-- (NSArray<NSString *> *)getIP4Strings;
+/**
+ * 将当前对象转换为数据库记录对象
+ * @return 数据库记录对象
+ */
+- (HttpdnsHostRecord *)toDBRecord;
 
-- (NSArray<NSString *> *)getIP6Strings;
+- (NSArray<NSString *> *)getV4IpStrings;
+
+- (NSArray<NSString *> *)getV6IpStrings;
 
 /**
  * 更新指定IP的connectedRT值并重新排序IP列表

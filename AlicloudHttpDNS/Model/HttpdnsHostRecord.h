@@ -7,142 +7,47 @@
 //
 
 #import <Foundation/Foundation.h>
-//#import "HttpdnsIPRecord.h"
 
-/**
- * 返回值：
- {  host: "www.fake.com",
-    ips:[],
-    ttl: 300
- }
- */
 @interface HttpdnsHostRecord : NSObject
 
-/*!
- * 自增id，对应于 HostRecord 数据库表内的同名字段。
- */
-@property (nonatomic, assign, readonly) NSUInteger hostRecordId;
+@property (nonatomic, assign, readonly) NSUInteger id;
 
-/*!
- * 域名，对应于 HostRecord 数据库表内的同名字段。
- */
-@property (nonatomic, copy, readonly) NSString *host;
+@property (nonatomic, copy, readonly) NSString *cacheKey;
 
-/*!
- * 运营商，对应于 HostRecord 数据库表内的同名字段。
- */
-@property (nonatomic, copy, readonly) NSString *carrier;
+@property (nonatomic, copy, readonly) NSString *hostName;
 
-/*!
- * 查询时间，单位是秒，对应于 HostRecord 数据库表内的同名字段。
- */
 @property (nonatomic, strong, readonly) NSDate *createAt;
 
-/*!
- * 过期时间，对应于 HostRecord 数据库表内的同名字段。
- */
-@property (nonatomic, strong, readonly) NSDate *expireAt;
+@property (nonatomic, strong, readonly) NSDate *modifyAt;
 
-/*!
- * IP列表，非数据库字段，仅为兼容HttpdnsHostObject进行数据传递。
- */
-@property (nonatomic, copy, readonly) NSArray<NSString *> *IPs;
+@property (nonatomic, copy, readonly) NSString *clientIp;
 
-/*!
- * IPv6列表，非数据库字段，仅为兼容HttpdnsHostObject进行数据传递。
- */
-@property (nonatomic, copy, readonly) NSArray<NSString *> *IP6s;
+@property (nonatomic, copy, readonly) NSArray<NSString *> *v4ips;
 
-/*!
- * TTL，非数据库字段，仅为兼容HttpdnsHostObject进行数据传递。
- */
-@property (nonatomic, assign, readonly) int64_t TTL;
+@property (nonatomic, assign, readonly) int64_t v4ttl;
 
-/*!
- * extra，非数据库字段，仅为兼容HttpdnsHostObject进行数据传递。
- */
+@property (nonatomic, assign, readonly) int64_t v4LookupTime;
+
+@property (nonatomic, copy, readonly) NSArray<NSString *> *v6ips;
+
+@property (nonatomic, assign, readonly) int64_t v6ttl;
+
+@property (nonatomic, assign, readonly) int64_t v6LookupTime;
+
 @property (nonatomic, copy, readonly) NSDictionary *extra;
 
-/*!
- * ipRegion 数据库字段 当次解析ipv4服务IP region
- */
-@property (nonatomic, copy, readonly) NSString *ipRegion;
-
-/*!
- * ip6Region 数据库字段 当次解析ipv6服务IP region
- */
-@property (nonatomic, copy, readonly) NSString *ip6Region;
-
-
-/*!
- * 从数据库读取数据后，初始化
- */
-- (instancetype)initWithId:(NSUInteger)hostRecordId
-                      host:(NSString *)host
-                   carrier:(NSString *)carrier
-                       IPs:(NSArray<NSString *> *)IPs
-                      IP6s:(NSArray<NSString *> *)IP6s
-                       TTL:(int64_t)TTL
-                  createAt:(NSDate *)createAt
-                  expireAt:(NSDate *)expireAt
-                  ipRegion:(NSString *)ipRegion
-                 ip6Region:(NSString *)ip6Region;
-
-/*!
- * 从数据库读取数据后，初始化
- */
-+ (instancetype)hostRecordWithId:(NSUInteger)hostRecordId
-                            host:(NSString *)host
-                         carrier:(NSString *)carrier
-                             IPs:(NSArray<NSString *> *)IPs
-                            IP6s:(NSArray<NSString *> *)IP6s
-                             TTL:(int64_t)TTL
-                        createAt:(NSDate *)createAt
-                        expireAt:(NSDate *)expireAt
-                        ipRegion:(NSString *)ipRegion
-                       ip6Region:(NSString *)ip6Region;
-/*!
- * 从网络初始化
- */
-- (instancetype)initWithHost:(NSString *)host
-                         IPs:(NSArray<NSString *> *)IPs
-                        IP6s:(NSArray<NSString *> *)IP6s
-                         TTL:(int64_t)TTL
-                    ipRegion:(NSString *)ipRegion
-                   ip6Region:(NSString *)ip6Region;
-
-/*!
- * 从网络初始化
- */
-+ (instancetype)hostRecordWithHost:(NSString *)host
-                               IPs:(NSArray<NSString *> *)IPs
-                              IP6s:(NSArray<NSString *> *)IP6s
-                               TTL:(int64_t)TTL
-                          ipRegion:(NSString *)ipRegion
-                         ip6Region:(NSString *)ip6Region;
-
-/*!
- * 从网络初始化
- */
-- (instancetype)initWithHostSdns:(NSString *)host
-                         IPs:(NSArray<NSString *> *)IPs
-                        IP6s:(NSArray<NSString *> *)IP6s
-                         TTL:(int64_t)TTL
-                       Extra:(NSDictionary *)extra
-                        ipRegion:(NSString *)ipRegion
-                       ip6Region:(NSString *)ip6Region;
-/*!
- * 从网络初始化
- */
-+ (instancetype)sdnsHostRecordWithHost:(NSString *)host
-                               IPs:(NSArray<NSString *> *)IPs
-                              IP6s:(NSArray<NSString *> *)IP6s
-                               TTL:(int64_t)TTL
-                             Extra:(NSDictionary *)extra
-                              ipRegion:(NSString *)ipRegion
-                             ip6Region:(NSString *)ip6Region;
-
-
-
+- (instancetype)initWithId:(NSUInteger)id
+                    cacheKey:(NSString *)cacheKey
+                    hostName:(NSString *)hostName
+                    createAt:(NSDate *)createAt
+                    modifyAt:(NSDate *)modifyAt
+                    clientIp:(NSString *)clientIp
+                    v4ips:(NSArray<NSString *> *)v4ips
+                    v4ttl:(int64_t)v4ttl
+                    v4LookupTime:(int64_t)v4LookupTime
+                    v6ips:(NSArray<NSString *> *)v6ips
+                    v6ttl:(int64_t)v6ttl
+                    v6LookupTime:(int64_t)v6LookupTime
+                    extra:(NSDictionary *)extra;
 
 @end
