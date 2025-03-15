@@ -21,7 +21,9 @@
 
 @interface HttpdnsPersistenceUtils : NSObject
 
++ (NSString *)httpdnsDataDirectory;
 + (NSString *)scheduleCenterResultDirectory;
+
 + (BOOL)saveJSON:(id)JSON toPath:(NSString *)path;
 + (id)getJSONFromPath:(NSString *)path;
 

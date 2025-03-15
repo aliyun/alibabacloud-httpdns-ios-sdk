@@ -7,6 +7,7 @@
 //
 
 #import "HttpdnsDB.h"
+#import "HttpdnsPersistenceUtils.h"
 #import <sqlite3.h>
 
 // 表名
@@ -41,16 +42,7 @@ static NSString *const kColumnExtra = @"extra";
     self = [super init];
     if (self) {
         // 创建数据库目录
-        NSString *dbDir = [NSHomeDirectory() stringByAppendingPathComponent:@"httpdns"];
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        if (![fileManager fileExistsAtPath:dbDir]) {
-            NSError *error = nil;
-            [fileManager createDirectoryAtPath:dbDir withIntermediateDirectories:YES attributes:nil error:&error];
-            if (error) {
-                NSLog(@"Failed to create database directory: %@", error);
-                return nil;
-            }
-        }
+        NSString *dbDir = [HttpdnsPersistenceUtils httpdnsDataDirectory];
 
         // 设置数据库路径
         _dbPath = [dbDir stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.db", (long)accountId]];

@@ -129,20 +129,18 @@ static dispatch_queue_t _fileCacheQueue = 0;
     return path;
 }
 
-#pragma mark -  Private Documents Concrete Path
-
 // ~/Library/Private Documents/HTTPDNS
-+ (NSString *)privateDocumentsDirectory {
-    NSString *ret = [[HttpdnsPersistenceUtils libraryDirectory] stringByAppendingPathComponent:@"Private Documents/HTTPDNS"];
-    [self createDirectoryIfNeeded:ret];
-    return ret;
++ (NSString *)httpdnsDataDirectory {
+    NSString *directory = [[HttpdnsPersistenceUtils libraryDirectory] stringByAppendingPathComponent:@"Private Documents/HTTPDNS"];
+    [self createDirectoryIfNeeded:directory];
+    return directory;
 }
 
 //Library/Private Documents/HTTPDNS/scheduleCenterResult
 + (NSString *)scheduleCenterResultDirectory {
-    NSString *directoryPath = [[HttpdnsPersistenceUtils privateDocumentsDirectory] stringByAppendingPathComponent:@"scheduleCenterResult"];
-    [self createDirectoryIfNeeded:directoryPath];
-    return directoryPath;
+    NSString *directory = [[HttpdnsPersistenceUtils httpdnsDataDirectory] stringByAppendingPathComponent:@"scheduleCenterResult"];
+    [self createDirectoryIfNeeded:directory];
+    return directory;
 }
 
 @end
