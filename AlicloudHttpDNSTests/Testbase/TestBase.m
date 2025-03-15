@@ -46,7 +46,7 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
     [ip1 setIp:ipv41];
     HttpdnsIpObject *ip2 = [[HttpdnsIpObject alloc] init];
     [ip2 setIp:ipv42];
-    hostObject.ips = @[ip1, ip2];
+    hostObject.v4Ips = @[ip1, ip2];
     hostObject.lastIPv4LookupTime = self.currentTimeStamp;
     return hostObject;
 }
@@ -60,7 +60,7 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
     [ip1 setIp:@"2001:4860:4860::8888"];
     HttpdnsIpObject *ip2 = [[HttpdnsIpObject alloc] init];
     [ip2 setIp:@"2001:4860:4860::8844"];
-    hostObject.ip6s = @[ip1, ip2];
+    hostObject.v6Ips = @[ip1, ip2];
     hostObject.lastIPv6LookupTime = self.currentTimeStamp;
     return hostObject;
 }
@@ -74,7 +74,7 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
     [ip1 setIp:ipv41];
     HttpdnsIpObject *ip2 = [[HttpdnsIpObject alloc] init];
     [ip2 setIp:ipv42];
-    hostObject.ips = @[ip1, ip2];
+    hostObject.v4Ips = @[ip1, ip2];
     hostObject.lastIPv4LookupTime = self.currentTimeStamp;
 
     hostObject.v6ttl = 60;
@@ -82,7 +82,7 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
     [ip3 setIp:ipv61];
     HttpdnsIpObject *ip4 = [[HttpdnsIpObject alloc] init];
     [ip4 setIp:ipv62];
-    hostObject.ip6s = @[ip3, ip4];
+    hostObject.v6Ips = @[ip3, ip4];
     hostObject.lastIPv6LookupTime = self.currentTimeStamp;
     return hostObject;
 }

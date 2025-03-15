@@ -31,7 +31,7 @@ FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP;
 
 @interface HttpdnsRequestScheduler : NSObject
 
-+ (instancetype)sharedInstance;
+- (instancetype)initWithAccountId:(NSInteger)accountId;
 
 - (void)addPreResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType;
 

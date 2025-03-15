@@ -26,9 +26,7 @@
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsScheduleCenter.h"
-#import "HttpdnsHostCacheStore.h"
 #import "HttpdnsHostRecord.h"
-#import "HttpdnsIPRecord.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsNetworkInfoHelper.h"
 #import "HttpdnsIPv6Adapter.h"
@@ -36,6 +34,7 @@
 #import "HttpdnsRequest_Internal.h"
 #import "HttpdnsHostObjectInMemoryCache.h"
 #import "HttpdnsIPQualityDetector.h"
+#import "HttpdnsDB.h"
 
 
 NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP = @"203.107.1.1";
@@ -61,32 +60,24 @@ typedef struct {
     BOOL _isExpiredIPEnabled;
     BOOL _isPreResolveAfterNetworkChangedEnabled;
     HttpdnsHostObjectInMemoryCache *_hostObjectInMemoryCache;
+    HttpdnsDB *_httpdnsDB;
 }
 
 + (void)initialize {
     static dispatch_once_t onceToken;
-
     dispatch_once(&onceToken, ^{
         _persistentCacheConcurrentQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.persistentCacheOperationQueue", DISPATCH_QUEUE_CONCURRENT);
         _asyncResolveHostQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.asyncResolveHostQueue", DISPATCH_QUEUE_CONCURRENT);
     });
 }
 
-+ (instancetype)sharedInstance {
-    static HttpdnsRequestScheduler *sharedInstance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[HttpdnsRequestScheduler alloc] init];
-    });
-    return sharedInstance;
-}
-
-- (instancetype)init {
+- (instancetype)initWithAccountId:(NSInteger)accountId {
     if (self = [super init]) {
         HttpdnsReachability *reachability = [HttpdnsReachability sharedInstance];
         _isExpiredIPEnabled = NO;
         _isPreResolveAfterNetworkChangedEnabled = NO;
         _hostObjectInMemoryCache = [[HttpdnsHostObjectInMemoryCache alloc] init];
+        _httpdnsDB = [[HttpdnsDB alloc] initWithAccountId:accountId];
         [[HttpdnsIPv6Adapter sharedInstance] currentIpStackType];
 
         _lastNetworkStatus = reachability.currentReachabilityStatus;
@@ -140,8 +131,8 @@ typedef struct {
         HttpdnsLogDebug("No cache for cacheKey: %@", cacheKey);
         HttpdnsHostObject *newObject = [HttpdnsHostObject new];
         newObject.hostName = host;
-        newObject.ips = @[];
-        newObject.ip6s = @[];
+        newObject.v4Ips = @[];
+        newObject.v6Ips = @[];
         newObject.extra = @{};
         return newObject;
     }];
@@ -280,20 +271,16 @@ typedef struct {
         return nil;
     }
 
-    int64_t ttl = [result getTTL];
-    int64_t lastLookupTime = [result getLastLookupTime];
-    NSArray<NSString *> *ip4Strings = [result getIP4Strings];
-    NSArray<NSString *> *ip6Strings = [result getIP6Strings];
-    NSArray<HttpdnsIpObject *> *ip4Objects = [result getIps];
-    NSArray<HttpdnsIpObject *> *ip6Objects = [result getIp6s];
+    NSArray<HttpdnsIpObject *> *v4IpObjects = [result getV4Ips];
+    NSArray<HttpdnsIpObject *> *v6IpObjects = [result getV6Ips];
     NSDictionary* extra = [result getExtra];
 
     BOOL hasNoIpv4Record = NO;
     BOOL hasNoIpv6Record = NO;
-    if (queryIpType & HttpdnsQueryIPTypeIpv4 && [HttpdnsUtil isEmptyArray:ip4Objects]) {
+    if (queryIpType & HttpdnsQueryIPTypeIpv4 && [HttpdnsUtil isEmptyArray:v4IpObjects]) {
         hasNoIpv4Record = YES;
     }
-    if (queryIpType & HttpdnsQueryIPTypeIpv6 && [HttpdnsUtil isEmptyArray:ip6Objects]) {
+    if (queryIpType & HttpdnsQueryIPTypeIpv6 && [HttpdnsUtil isEmptyArray:v6IpObjects]) {
         hasNoIpv6Record = YES;
     }
 
@@ -303,21 +290,22 @@ typedef struct {
         cachedHostObject = [[HttpdnsHostObject alloc] init];
     }
 
+    [cachedHostObject setCacheKey:cacheKey];
+    [cachedHostObject setClientIp:result.clientIp];
+
     [cachedHostObject setHostName:host];
-    [cachedHostObject setTTL:ttl];
-    [cachedHostObject setLastLookupTime:lastLookupTime];
     [cachedHostObject setIsLoadFromDB:NO];
     [cachedHostObject setHasNoIpv4Record:hasNoIpv4Record];
     [cachedHostObject setHasNoIpv6Record:hasNoIpv6Record];
 
-    if ([HttpdnsUtil isNotEmptyArray:ip4Objects]) {
-        [cachedHostObject setIps:ip4Objects];
+    if ([HttpdnsUtil isNotEmptyArray:v4IpObjects]) {
+        [cachedHostObject setV4Ips:v4IpObjects];
         [cachedHostObject setV4TTL:result.getV4TTL];
         [cachedHostObject setLastIPv4LookupTime:result.lastIPv4LookupTime];
     }
 
-    if ([HttpdnsUtil isNotEmptyArray:ip6Objects]) {
-        [cachedHostObject setIp6s:ip6Objects];
+    if ([HttpdnsUtil isNotEmptyArray:v6IpObjects]) {
+        [cachedHostObject setV6Ips:v6IpObjects];
         [cachedHostObject setV6TTL:result.getV6TTL];
         [cachedHostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
     }
@@ -331,18 +319,14 @@ typedef struct {
     // 由于从缓存中读取到的是拷贝出来的新对象，字段赋值不会影响缓存中的值对象，因此这里无论如何都要放回缓存
     [_hostObjectInMemoryCache setHostObject:cachedHostObject forCacheKey:cacheKey];
 
-    if([HttpdnsUtil isNotEmptyDictionary:extra]) {
-        [self sdnsCacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:ip4Strings IP6s:ip6Strings TTL:ttl withExtra:extra];
-    } else {
-        [self cacheHostRecordAsyncIfNeededWithHost:cacheKey IPs:ip4Strings IP6s:ip6Strings TTL:ttl];
-    }
+    [self persistToDB:cacheKey hostObject:cachedHostObject];
 
-    NSArray *ipv4StrArray = [cachedHostObject getIP4Strings];
+    NSArray *ipv4StrArray = [cachedHostObject getV4IpStrings];
     if ([HttpdnsUtil isNotEmptyArray:ipv4StrArray]) {
         [self initiateQualityDetectionForIP:ipv4StrArray forHost:host cacheKey:cacheKey];
     }
 
-    NSArray *ipv6StrArray = [cachedHostObject getIP6Strings];
+    NSArray *ipv6StrArray = [cachedHostObject getV6IpStrings];
     if ([HttpdnsUtil isNotEmptyArray:ipv6StrArray]) {
         [self initiateQualityDetectionForIP:ipv6StrArray forHost:host cacheKey:cacheKey];
     }
@@ -481,7 +465,7 @@ typedef struct {
 
     // 清空数据库数据
     dispatch_async(_persistentCacheConcurrentQueue, ^{
-        [[HttpdnsHostCacheStore sharedInstance] cleanDbOfHosts:hostArray];
+        [self->_httpdnsDB deleteByHostNameArr:hostArray];
     });
 }
 
@@ -490,7 +474,7 @@ typedef struct {
 
     // 清空数据库数据
     dispatch_async(_persistentCacheConcurrentQueue, ^{
-        [[HttpdnsHostCacheStore sharedInstance] cleanDbOfAllHosts];
+        [self->_httpdnsDB deleteAll];
     });
 }
 
@@ -500,53 +484,43 @@ typedef struct {
             return;
         }
 
-        HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
-
-        NSArray<HttpdnsHostRecord *> *hostRecords = [hostCacheStore getAllHostRecords];
+        NSArray<HttpdnsHostRecord *> *hostRecords = [_httpdnsDB getAllRecords];
 
         if (![HttpdnsUtil isNotEmptyArray:hostRecords]) {
             return;
         }
 
         for (HttpdnsHostRecord *hostRecord in hostRecords) {
-            NSString *host = hostRecord.host;
+            NSString *hostName = hostRecord.hostName;
+            NSString *cacheKey = hostRecord.cacheKey;
 
-            HttpdnsHostObject *hostObject = [HttpdnsHostObject hostObjectWithHostRecord:hostRecord];
+            HttpdnsHostObject *hostObject = [HttpdnsHostObject fromDBRecord:hostRecord];
 
             // 从DB缓存中加载到内存里的数据，更新其查询时间为当前，使得它可以有一个TTL的可用期
-            [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
+            hostObject.lastIPv4LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
+            hostObject.lastIPv6LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
 
-            NSArray *ipv4StrArr = [hostObject getIP4Strings];
+            [_hostObjectInMemoryCache setHostObject:hostObject forCacheKey:hostName];
 
-            [_hostObjectInMemoryCache setHostObject:hostObject forCacheKey:host];
-
-            // 因为当前持久化缓存未区分cachekey和host(实际是cachekey)
-            // 持久化缓存里的host实际上是cachekey
-            // 因此这里取出来，如果cachekey和host不一致的情况，这个IP优选会因为查不到datasource而实际不生效
-            [self initiateQualityDetectionForIP:ipv4StrArr forHost:host cacheKey:host];
+            NSArray *v4IpStrArr = [hostObject getV4IpStrings];
+            if ([HttpdnsUtil isNotEmptyArray:v4IpStrArr]) {
+                [self initiateQualityDetectionForIP:v4IpStrArr forHost:hostName cacheKey:cacheKey];
+            }
+            NSArray *v6IpStrArr = [hostObject getV6IpStrings];
+            if ([HttpdnsUtil isNotEmptyArray:v6IpStrArr]) {
+                [self initiateQualityDetectionForIP:v6IpStrArr forHost:hostName cacheKey:cacheKey];
+            }
         }
     });
 }
 
-- (void)cacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL {
+- (void)persistToDB:(NSString *)cacheKey hostObject:(HttpdnsHostObject *)hostObject {
     if (!_persistentCacheIpEnabled) {
         return;
     }
     dispatch_async(_persistentCacheConcurrentQueue, ^{
-        HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord hostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL ipRegion:@"" ip6Region:@""];
-        HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
-        [hostCacheStore insertHostRecords:@[hostRecord]];
-    });
-}
-
-- (void)sdnsCacheHostRecordAsyncIfNeededWithHost:(NSString *)host IPs:(NSArray<NSString *> *)IPs IP6s:(NSArray<NSString *> *)IP6s TTL:(int64_t)TTL withExtra:(NSDictionary *)extra {
-    if (!_persistentCacheIpEnabled) {
-        return;
-    }
-    dispatch_async(_persistentCacheConcurrentQueue, ^{
-        HttpdnsHostRecord *hostRecord = [HttpdnsHostRecord sdnsHostRecordWithHost:host IPs:IPs IP6s:IP6s TTL:TTL Extra:extra ipRegion:@"" ip6Region:@""];
-        HttpdnsHostCacheStore *hostCacheStore = [HttpdnsHostCacheStore sharedInstance];
-        [hostCacheStore insertHostRecords:@[hostRecord]];
+        HttpdnsHostRecord *hostRecord = [hostObject toDBRecord];
+        [self->_httpdnsDB createOrUpdate:hostRecord];
     });
 }
 
@@ -555,7 +529,7 @@ typedef struct {
         return;
     }
     dispatch_async(_persistentCacheConcurrentQueue, ^{
-        [[HttpdnsHostCacheStore sharedInstance] cleanHostRecordsAlreadyExpiredAt:specifiedTime];
+        [self->_httpdnsDB cleanRecordAlreadExpiredAt:specifiedTime];
     });
 }
 

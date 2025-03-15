@@ -49,7 +49,7 @@
 
 @interface HttpDnsService: NSObject
 
-@property (nonatomic, assign, readonly) int accountID;
+@property (nonatomic, assign, readonly) NSInteger accountID;
 
 @property (nonatomic, copy, readonly) NSString *secretKey;
 
@@ -59,7 +59,7 @@
 
 + (instancetype)sharedInstance;
 
-- (instancetype)initWithAccountID:(int)accountID;
+- (instancetype)initWithAccountID:(NSInteger)accountID;
 
 /*!
  * @brief 启用鉴权功能的初始化接口
@@ -69,7 +69,7 @@
  * @param accountID 您的 HTTPDNS Account ID
  * @param secretKey 鉴权对应的 secretKey
  */
-- (instancetype)initWithAccountID:(int)accountID secretKey:(NSString *)secretKey;
+- (instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString *)secretKey;
 
 
 /// 开启鉴权功能后，鉴权的签名计算默认读取设备当前时间。若担心设备时间不准确导致签名不准确，可以使用此接口校正 APP 内鉴权计算使用的时间值

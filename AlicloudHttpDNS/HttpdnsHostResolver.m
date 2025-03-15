@@ -90,10 +90,6 @@ static NSURLSession *_resolveHostSession = nil;
     if (!json) {
         return nil;
     }
-    NSDictionary *extra;
-    if ([[json allKeys] containsObject:@"extra"]) {
-        extra = [self htmlEntityDecode:[json objectForKey:@"extra"]];
-    }
 
     NSArray *ip4s = [json objectForKey:@"ips"];
     if (!ip4s) {
@@ -129,13 +125,19 @@ static NSURLSession *_resolveHostSession = nil;
         [ip6Array addObject:ipObject];
     }
 
-    // 返回 额外返回一个extra字段
+    // SDNS场景额外返回一个extra字段
     if ([[json allKeys] containsObject:@"extra"]) {
+        NSDictionary *extra = [self htmlEntityDecode:[json objectForKey:@"extra"]];
         [hostObject setExtra:extra];
     }
     [hostObject setHostName:host];
-    [hostObject setIps:ipArray];
-    [hostObject setIp6s:ip6Array];
+    [hostObject setV4Ips:ipArray];
+    [hostObject setV6Ips:ip6Array];
+
+    if ([[json allKeys] containsObject:@"client_ip"]) {
+        NSString *clientIp = [json objectForKey:@"client_ip"];
+        [hostObject setClientIp:clientIp];
+    }
 
     int64_t ttlInSecond = [[json objectForKey:@"ttl"] longLongValue];
 
@@ -154,20 +156,15 @@ static NSURLSession *_resolveHostSession = nil;
         ttlInSecond = [dnsService.ttlDelegate httpdnsHost:host ipType:ipType ttl:ttlInSecond];
     }
 
-    // 原ttl字段，实际会从外部接口返回的，只有下面的v4ttl和v6ttl
-    [hostObject setTTL:ttlInSecond];
-
     // 分别设置 v4ttl v6ttl
     if ([HttpdnsUtil isNotEmptyArray:ipArray]) {
-        [hostObject setV4TTL:ttlInSecond];
+        hostObject.v4ttl = ttlInSecond;
         hostObject.lastIPv4LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
     }
     if ([HttpdnsUtil isNotEmptyArray:ip6Array]) {
-        [hostObject setV6TTL:ttlInSecond];
+        hostObject.v6ttl = ttlInSecond;
         hostObject.lastIPv6LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
     }
-
-    [hostObject setLastLookupTime:[HttpdnsUtil currentEpochTimeInSecond]];
 
     return hostObject;
 }
