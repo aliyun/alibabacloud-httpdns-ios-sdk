@@ -21,15 +21,12 @@
 #import "HttpdnsRequest.h"
 
 //V6版本默认只保留一个IP
-FOUNDATION_EXTERN bool ALICLOUD_HTTPDNS_JUDGE_SERVER_IP_CACHE ;
-FOUNDATION_EXTERN NSString * ALICLOUD_HTTPDNS_SERVER_IP_ACTIVATED;
-FOUNDATION_EXTERN NSString * ALICLOUD_HTTPDNS_SERVER_IPV6_ACTIVATED;
 
 FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP;
 
 @class HttpdnsHostObject;
 
-@interface HttpdnsRequestScheduler : NSObject
+@interface HttpdnsRequestManager : NSObject
 
 - (instancetype)initWithAccountId:(NSInteger)accountId;
 

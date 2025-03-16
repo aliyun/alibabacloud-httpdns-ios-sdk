@@ -63,12 +63,12 @@
 - (void)testUpdateFailureWillMoveToNextUpdateServer {
     [self presetNetworkEnvAsIpv4];
 
-    HttpdnsScheduleCenterRequest *realRequest = [HttpdnsScheduleCenterRequest new];
+    HttpdnsScheduleRequest *realRequest = [HttpdnsScheduleRequest new];
     id mockRequest = OCMPartialMock(realRequest);
     OCMStub([mockRequest fetchRegionConfigFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .andReturn(nil);
 
-    id mockRequestClass = OCMClassMock([HttpdnsScheduleCenterRequest class]);
+    id mockRequestClass = OCMClassMock([HttpdnsScheduleRequest class]);
     OCMStub([mockRequestClass new]).andReturn(mockRequest);
 
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
@@ -124,9 +124,9 @@
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:@"mock" queryIpType:HttpdnsQueryIPTypeAuto];
     [request setAsBlockingRequest];
 
-    HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
+    HttpdnsRequestManager *requestManager = self.httpdns.requestManager;
 
-    [scheduler executeRequest:request retryCount:1];
+    [requestManager executeRequest:request retryCount:1];
 
     int secondIndex = [scheduleCenter currentActiveServiceServerHostIndex];
 

@@ -54,7 +54,7 @@
     [self.httpdns cleanAllHostCache];
 
     HttpdnsHostObject *hostObject = [self constructSimpleIpv4AndIpv6HostObject];
-    [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject host:ipv4AndIpv6Host cacheKey:ipv4AndIpv6Host underQueryIpType:HttpdnsQueryIPTypeBoth];
+    [self.httpdns.requestManager mergeLookupResultToManager:hostObject host:ipv4AndIpv6Host cacheKey:ipv4AndIpv6Host underQueryIpType:HttpdnsQueryIPTypeBoth];
 
     // 请求类型为ipv4，拿到ipv4结果
     HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeIpv4];
@@ -96,7 +96,7 @@
     [self.httpdns cleanAllHostCache];
 
     HttpdnsHostObject *hostObject = [self constructSimpleIpv4AndIpv6HostObject];
-    [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject host:ipv4AndIpv6Host cacheKey:ipv4AndIpv6Host underQueryIpType:HttpdnsQueryIPTypeBoth];
+    [self.httpdns.requestManager mergeLookupResultToManager:hostObject host:ipv4AndIpv6Host cacheKey:ipv4AndIpv6Host underQueryIpType:HttpdnsQueryIPTypeBoth];
 
     // 请求类型为ipv4，拿到ipv4结果
     HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeIpv4];
@@ -142,7 +142,7 @@
 
     // 存入ipv4和ipv6的地址
     HttpdnsHostObject *hostObject = [self constructSimpleIpv4AndIpv6HostObject];
-    [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject host:ipv4AndIpv6Host cacheKey:ipv4AndIpv6Host underQueryIpType:HttpdnsQueryIPTypeBoth];
+    [self.httpdns.requestManager mergeLookupResultToManager:hostObject host:ipv4AndIpv6Host cacheKey:ipv4AndIpv6Host underQueryIpType:HttpdnsQueryIPTypeBoth];
 
     // 只请求ipv4
     HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeIpv4];
@@ -199,7 +199,7 @@
     hostObject1.lastIPv6LookupTime = currentTimestamp - 2;
 
     // 第一次设置缓存
-    [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject1 host:ipv4AndIpv6Host cacheKey:ipv4AndIpv6Host underQueryIpType:HttpdnsQueryIPTypeBoth];
+    [self.httpdns.requestManager mergeLookupResultToManager:hostObject1 host:ipv4AndIpv6Host cacheKey:ipv4AndIpv6Host underQueryIpType:HttpdnsQueryIPTypeBoth];
 
     // auto在当前环境下即请求ipv4和ipv6
     HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeAuto];
@@ -215,7 +215,7 @@
     hostObject2.lastIPv4LookupTime = currentTimestamp - 10;
 
     // 单独在缓存更新ipv4地址的相关信息
-    [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject2 host:ipv4AndIpv6Host cacheKey:ipv4AndIpv6Host underQueryIpType:HttpdnsQueryIPTypeIpv4];
+    [self.httpdns.requestManager mergeLookupResultToManager:hostObject2 host:ipv4AndIpv6Host cacheKey:ipv4AndIpv6Host underQueryIpType:HttpdnsQueryIPTypeIpv4];
 
     // v4的信息发生变化，v6的信息保持不变
     result = [self.httpdns resolveHostSyncNonBlocking:ipv4AndIpv6Host byIpType:HttpdnsQueryIPTypeAuto];
@@ -233,7 +233,7 @@
     HttpdnsHostObject *hostObject = [self constructSimpleIpv4HostObject];
 
     // 双栈下解析结果仅有ipv4，合并时会标记该host无ipv6
-    [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject host:ipv4OnlyHost cacheKey:ipv4OnlyHost underQueryIpType:HttpdnsQueryIPTypeBoth];
+    [self.httpdns.requestManager mergeLookupResultToManager:hostObject host:ipv4OnlyHost cacheKey:ipv4OnlyHost underQueryIpType:HttpdnsQueryIPTypeBoth];
 
     [self shouldNotHaveCallNetworkRequestWhenResolving:^{
         dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
@@ -264,7 +264,7 @@
     [self presetNetworkEnvAsIpv4AndIpv6];
 
     HttpdnsHostObject *hostObject = [self constructSimpleIpv4HostObject];
-    [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject host:ipv4OnlyHost cacheKey:ipv4OnlyHost underQueryIpType:HttpdnsQueryIPTypeIpv4];
+    [self.httpdns.requestManager mergeLookupResultToManager:hostObject host:ipv4OnlyHost cacheKey:ipv4OnlyHost underQueryIpType:HttpdnsQueryIPTypeIpv4];
 
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
 
@@ -286,7 +286,7 @@
     [self presetNetworkEnvAsIpv4AndIpv6];
 
     HttpdnsHostObject *hostObject = [self constructSimpleIpv6HostObject];
-    [self.httpdns.requestScheduler mergeLookupResultToManager:hostObject host:ipv6OnlyHost cacheKey:ipv6OnlyHost underQueryIpType:HttpdnsQueryIPTypeIpv6];
+    [self.httpdns.requestManager mergeLookupResultToManager:hostObject host:ipv6OnlyHost cacheKey:ipv6OnlyHost underQueryIpType:HttpdnsQueryIPTypeIpv6];
 
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
 

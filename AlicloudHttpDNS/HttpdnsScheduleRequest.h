@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface HttpdnsScheduleCenterRequest : NSObject
+@interface HttpdnsScheduleRequest : NSObject
 
 - (NSDictionary *)fetchRegionConfigFromServer:(NSString *)updateHost error:(NSError **)pError;
 

@@ -21,15 +21,16 @@
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsInternalConstant.h"
-#import "HttpdnsRequestScheduler_Internal.h"
+#import "HttpdnsRequestManager_Internal.h"
 #import "HttpdnsService_Internal.h"
-#import "HttpdnsScheduleCenterRequest.h"
+#import "HttpdnsScheduleRequest.h"
 #import "HttpdnsHostResolver.h"
 #import "HttpdnsScheduleCenter_Internal.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsPublicConstant.h"
 #import "HttpdnsRegionConfigLoader.h"
 #import "HttpdnsIPv6Adapter.h"
+#import "HttpdnsIpStackDetector.h"
 
 static NSString *const kLastUpdateUnixTimestampKey = @"last_update_unix_timestamp";
 static NSString *const kScheduleRegionConfigLocalCacheFileName = @"schedule_center_result";
@@ -163,7 +164,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
     }
 
     dispatch_async(_scheduleFetchConfigAsyncQueue, ^(void) {
-        HttpdnsScheduleCenterRequest *scheduleCenterRequest = [HttpdnsScheduleCenterRequest new];
+        HttpdnsScheduleRequest *scheduleCenterRequest = [HttpdnsScheduleRequest new];
 
         NSError *error = nil;
         NSString *updateHost = [self getActiveUpdateServerHost];
@@ -221,12 +222,10 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 }
 
 - (NSString *)getActiveUpdateServerHost {
-    HttpdnsIPv6Adapter *adapter = [HttpdnsIPv6Adapter sharedInstance];
-    AlicloudIPStackType currentStack = [adapter currentIpStackType];
-
-    if (currentStack == kAlicloudIPv6only) {
+    HttpdnsIPStackType currentStack = [[HttpdnsIpStackDetector sharedInstance] currentIpStack];
+    if (currentStack == kHttpdnsIpv6Only) {
         NSString *v6Host = [self currentActiveUpdateServerV6Host];
-        if ([HttpdnsIPv6Adapter isIPv6Address:v6Host]) {
+        if ([HttpdnsUtil isIPv6Address:v6Host]) {
             return [NSString stringWithFormat:@"[%@]", v6Host];
         }
         return v6Host;
@@ -329,7 +328,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
         host = self.ipv6ServiceServerHostList[index];
     });
 
-    if ([HttpdnsIPv6Adapter isIPv6Address:host]) {
+    if ([HttpdnsUtil isIPv6Address:host]) {
         host = [NSString stringWithFormat:@"[%@]", host];
     }
     return host;

@@ -38,18 +38,31 @@
     return [NSString stringWithFormat:@"%lld", [HttpdnsUtil currentEpochTimeInSecond]];
 }
 
-+ (BOOL)isAnIP:(NSString *)candidate {
-    const char *utf8 = [candidate UTF8String];
 
-    // Check valid IPv4.
-    struct in_addr dst;
-    int success = inet_pton(AF_INET, utf8, &(dst.s_addr));
-    if (success != 1) {
-        // Check valid IPv6.
-        struct in6_addr dst6;
-        success = inet_pton(AF_INET6, utf8, &dst6);
++ (BOOL)isIPv4Address:(NSString *)addr {
+    if (!addr) {
+        return NO;
     }
-    return (success == 1);
+    struct in_addr dst;
+    return inet_pton(AF_INET, [addr UTF8String], &(dst.s_addr)) == 1;
+}
+
++ (BOOL)isIPv6Address:(NSString *)addr {
+    if (!addr) {
+        return NO;
+    }
+    struct in6_addr dst6;
+    return inet_pton(AF_INET6, [addr UTF8String], &dst6) == 1;
+}
+
++ (BOOL)isAnIP:(NSString *)candidate {
+    if ([self isIPv4Address:candidate]) {
+        return YES;
+    }
+    if ([self isIPv6Address:candidate]) {
+        return YES;
+    }
+    return NO;
 }
 
 + (BOOL)isAHost:(NSString *)host {

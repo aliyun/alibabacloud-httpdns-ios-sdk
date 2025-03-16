@@ -6,8 +6,8 @@
 //  Copyright © 2018年 alibaba-inc.com. All rights reserved.
 //
 
-#import "HttpdnsLoggerDelegate.h"
 #import "HttpdnsLog.h"
+#import "HttpdnsLoggerDelegate.h"
 #import <pthread/pthread.h>
 
 // logHandler输出日志，不受日志开关影响

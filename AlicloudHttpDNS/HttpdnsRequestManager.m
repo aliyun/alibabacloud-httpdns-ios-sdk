@@ -17,7 +17,7 @@
  * under the License.
  */
 
-#import "HttpdnsRequestScheduler_Internal.h"
+#import "HttpdnsRequestManager_Internal.h"
 #import "HttpdnsHostObject.h"
 #import "HttpdnsHostResolver.h"
 #import "HttpdnsInternalConstant.h"
@@ -26,14 +26,15 @@
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsScheduleCenter.h"
+#import "HttpdnsReachability.h"
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsUtil.h"
-#import "HttpdnsNetworkInfoHelper.h"
 #import "HttpdnsIPv6Adapter.h"
 #import "HttpDnsLocker.h"
 #import "HttpdnsRequest_Internal.h"
 #import "HttpdnsHostObjectInMemoryCache.h"
 #import "HttpdnsIPQualityDetector.h"
+#import "HttpdnsIpStackDetector.h"
 #import "HttpdnsDB.h"
 
 
@@ -47,7 +48,7 @@ typedef struct {
     BOOL isResolvingRequired;
 } HostObjectExamingResult;
 
-@interface HttpdnsRequestScheduler()
+@interface HttpdnsRequestManager()
 
 @property (nonatomic, strong) dispatch_queue_t cacheQueue;
 @property (nonatomic, assign) BOOL persistentCacheIpEnabled;
@@ -56,7 +57,7 @@ typedef struct {
 
 @end
 
-@implementation HttpdnsRequestScheduler {
+@implementation HttpdnsRequestManager {
     BOOL _isExpiredIPEnabled;
     BOOL _isPreResolveAfterNetworkChangedEnabled;
     HttpdnsHostObjectInMemoryCache *_hostObjectInMemoryCache;
@@ -78,7 +79,7 @@ typedef struct {
         _isPreResolveAfterNetworkChangedEnabled = NO;
         _hostObjectInMemoryCache = [[HttpdnsHostObjectInMemoryCache alloc] init];
         _httpdnsDB = [[HttpdnsDB alloc] initWithAccountId:accountId];
-        [[HttpdnsIPv6Adapter sharedInstance] currentIpStackType];
+        [[HttpdnsIpStackDetector sharedInstance] redetectIpStack];
 
         _lastNetworkStatus = reachability.currentReachabilityStatus;
         _lastNetworkChangeTimestamp = [NSDate date].timeIntervalSince1970;
@@ -379,10 +380,6 @@ typedef struct {
     _persistentCacheIpEnabled = enable;
 }
 
-- (BOOL)getPersistentCacheIpEnabled {
-    return _persistentCacheIpEnabled;
-}
-
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable {
     _isPreResolveAfterNetworkChangedEnabled = enable;
 }
@@ -390,7 +387,12 @@ typedef struct {
 - (void)networkChanged {
     HttpdnsNetworkStatus currentStatus = [[HttpdnsReachability sharedInstance] currentReachabilityStatus];
     NSString *currentStatusString = [[HttpdnsReachability sharedInstance] currentReachabilityString];
-    [HttpdnsNetworkInfoHelper updateNetworkStatusString:currentStatusString];
+
+    // 重新检测协议栈代价小，所以只要网络切换就发起检测
+    // 但考虑到网络切换后不稳定，还是延迟0.5秒才发起
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [[HttpdnsIpStackDetector sharedInstance] redetectIpStack];
+    });
 
     NSTimeInterval currentTimestamp = [NSDate date].timeIntervalSince1970;
     NSTimeInterval elapsedTime = currentTimestamp - _lastNetworkChangeTimestamp;
@@ -398,7 +400,8 @@ typedef struct {
 
     if (elapsedTime >= 5) {
         // 更新调度列表代价小，可以激进些
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), _asyncResolveHostQueue, ^{
+        // 比如切换VPN的场景，网络类型不会变化，但此时也应该更新调度列表
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), _asyncResolveHostQueue, ^{
             HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
             [scheduleCenter asyncUpdateRegionScheduleConfig];
         });
@@ -408,13 +411,8 @@ typedef struct {
     // - 距离上次处理事件至少过去了1分钟（60秒），或
     // - 网络状态发生变化且至少过去了5秒
     if (elapsedTime >= 60 || (statusChanged && elapsedTime >= 5)) {
-
         HttpdnsLogDebug("Processing network change: oldStatus: %ld, newStatus: %ld(%@), elapsedTime=%.2f seconds",
                         _lastNetworkStatus, currentStatus, currentStatusString, elapsedTime);
-
-        // 更新时间戳和状态
-        _lastNetworkChangeTimestamp = currentTimestamp;
-        _lastNetworkStatus = currentStatus;
 
         NSArray *hostArray = [_hostObjectInMemoryCache allCacheKeys];
 
@@ -431,6 +429,10 @@ typedef struct {
         HttpdnsLogDebug("Ignoring network change event: oldStatus: %ld, newStatus: %ld(%@), elapsedTime=%.2f seconds",
                         _lastNetworkStatus, currentStatus, currentStatusString, elapsedTime);
     }
+
+    // 更新时间戳和状态
+    _lastNetworkChangeTimestamp = currentTimestamp;
+    _lastNetworkStatus = currentStatus;
 }
 
 #pragma mark -

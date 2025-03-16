@@ -11,7 +11,7 @@
 #import "TestBase.h"
 #import "HttpdnsHostObject.h"
 #import "HttpdnsRequestScheduler_Internal.h"
-#import "HttpdnsScheduleCenterRequest.h"
+#import "HttpdnsScheduleRequest.h"
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsScheduleCenter_Internal.h"
 #import "HttpdnsService.h"
@@ -60,12 +60,12 @@
 - (void)testUpdateFailureWillMoveToNextUpdateServer {
     [self presetNetworkEnvAsIpv6];
 
-    HttpdnsScheduleCenterRequest *realRequest = [HttpdnsScheduleCenterRequest new];
+    HttpdnsScheduleRequest *realRequest = [HttpdnsScheduleRequest new];
     id mockRequest = OCMPartialMock(realRequest);
     OCMStub([mockRequest fetchRegionConfigFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .andReturn(nil);
 
-    id mockRequestClass = OCMClassMock([HttpdnsScheduleCenterRequest class]);
+    id mockRequestClass = OCMClassMock([HttpdnsScheduleRequest class]);
     OCMStub([mockRequestClass new]).andReturn(mockRequest);
 
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];

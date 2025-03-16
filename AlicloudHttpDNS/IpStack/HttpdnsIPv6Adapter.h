@@ -1,16 +1,16 @@
 //
-//  AlicloudIPv6PrefixResolver.h
-//  AlicloudUtils
+//  HttpdnsIPv6Adapter.h
+//  AlicloudHttpDNS
 //
 //  Created by lingkun on 16/5/16.
 //  Copyright © 2016年 Ali. All rights reserved.
 //
 
-#ifndef AlicloudIPv6PrefixResolver_h
-#define AlicloudIPv6PrefixResolver_h
+#ifndef HttpdnsIPv6Adapter_h
+#define HttpdnsIPv6Adapter_h
 #import <Foundation/Foundation.h>
 
-@interface HttpdnsIPv6PrefixResolver : NSObject
+@interface HttpdnsIPv6Adapter : NSObject
 
 + (instancetype)getInstance;
 
@@ -25,4 +25,4 @@
 
 @end
 
-#endif /* AlicloudIPv6PrefixResolver_h */
+#endif /* HttpdnsIPv6Adapter_h */

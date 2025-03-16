@@ -69,7 +69,7 @@ static NSString *sdnsHost = @"sdns1.onlyforhttpdnstest.run.place";
 }
 
 - (void)testSdnsScenarioUsingCustomCacheKey {
-    [self.httpdns.requestScheduler cleanAllHostMemoryCache];
+    [self.httpdns.requestManager cleanAllHostMemoryCache];
 
     NSDictionary *extras = @{
         @"testKey": @"testValue",

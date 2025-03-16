@@ -116,8 +116,8 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 - (void)shouldNotHaveCallNetworkRequestWhenResolving:(void (^)(void))resolvingBlock {
     HttpDnsService *httpdns = [HttpDnsService sharedInstance];
-    HttpdnsRequestScheduler *scheduler = httpdns.requestScheduler;
-    HttpdnsRequestScheduler *mockScheduler = OCMPartialMock(scheduler);
+    HttpdnsRequestManager *requestManager = httpdns.requestManager;
+    HttpdnsRequestManager *mockScheduler = OCMPartialMock(requestManager);
     OCMReject([mockScheduler executeRequest:[OCMArg any] retryCount:0]);
     resolvingBlock();
     OCMVerifyAll(mockScheduler);
@@ -125,8 +125,8 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 - (void)shouldHaveCalledRequestWhenResolving:(void (^)(void))resolvingBlock {
     HttpDnsService *httpdns = [HttpDnsService sharedInstance];
-    HttpdnsRequestScheduler *scheduler = httpdns.requestScheduler;
-    HttpdnsRequestScheduler *mockScheduler = OCMPartialMock(scheduler);
+    HttpdnsRequestManager *requestManager = httpdns.requestManager;
+    HttpdnsRequestManager *mockScheduler = OCMPartialMock(requestManager);
     OCMExpect([mockScheduler executeRequest:[OCMArg any] retryCount:0]).andReturn(nil);
     resolvingBlock();
     OCMVerifyAll(mockScheduler);

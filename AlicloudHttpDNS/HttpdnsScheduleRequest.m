@@ -6,23 +6,24 @@
 //  Copyright © 2017年 alibaba-inc.com. All rights reserved.
 //
 
-#import "HttpdnsScheduleCenterRequest.h"
+#import "HttpdnsScheduleRequest.h"
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsInternalConstant.h"
 #import "HttpdnsUtil.h"
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsScheduleCenter.h"
-#import "HttpdnsNetworkInfoHelper.h"
 #import "HttpdnsHostObject.h"
+#import "HttpdnsReachability.h"
+
 
 static NSURLSession *_scheduleCenterSession = nil;
 
-@interface HttpdnsScheduleCenterRequest()<NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
+@interface HttpdnsScheduleRequest()<NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
 
 @end
 
-@implementation HttpdnsScheduleCenterRequest
+@implementation HttpdnsScheduleRequest
 
 - (instancetype)init {
     if (!(self = [super init])) {
@@ -44,7 +45,7 @@ static NSURLSession *_scheduleCenterSession = nil;
  */
 - (NSString *)constructRequestURLWithUpdateHost:(NSString *)updateHost {
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    NSString *urlPath = [NSString stringWithFormat:@"%d/ss?region=global&platform=ios&sdk_version=%@", sharedService.accountID, HTTPDNS_IOS_SDK_VERSION];
+    NSString *urlPath = [NSString stringWithFormat:@"%ld/ss?region=global&platform=ios&sdk_version=%@", sharedService.accountID, HTTPDNS_IOS_SDK_VERSION];
     urlPath = [self urlFormatSidNetBssid:urlPath];
     urlPath = [urlPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet characterSetWithCharactersInString:@"`#%^{}\"[]|\\<> "].invertedSet];
     return [NSString stringWithFormat:@"https://%@/%@", updateHost, urlPath];
@@ -57,7 +58,7 @@ static NSURLSession *_scheduleCenterSession = nil;
         url = [NSString stringWithFormat:@"%@&sid=%@", url, sessionId];
     }
 
-    NSString *netType = [HttpdnsNetworkInfoHelper getNetworkType];
+    NSString *netType = [[HttpdnsReachability sharedInstance] currentReachabilityString];
     if ([HttpdnsUtil isNotEmptyString:netType]) {
         url = [NSString stringWithFormat:@"%@&net=%@", url, netType];
     }
