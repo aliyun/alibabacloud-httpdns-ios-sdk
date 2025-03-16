@@ -20,6 +20,7 @@
 #import <Foundation/Foundation.h>
 
 #import <Foundation/Foundation.h>
+#import "HttpdnsLog.h"
 #import "HttpdnsPublicConstant.h"
 #import "HttpdnsService.h"
 #import "HttpdnsRequest.h"

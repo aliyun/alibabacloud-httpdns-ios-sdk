@@ -7,7 +7,6 @@
 //
 
 #import "HttpdnsIPQualityDetector.h"
-#import "HttpdnsIpv6Adapter.h"
 #import <sys/socket.h>
 #import <netinet/in.h>
 #import <arpa/inet.h>
@@ -17,6 +16,7 @@
 #import <fcntl.h>
 #import <errno.h>
 #import "HttpdnsLog_Internal.h"
+#import "HttpdnsUtil.h"
 
 // 定义任务类，替代之前的结构体，确保正确的内存管理
 @interface HttpdnsDetectionTask : NSObject
@@ -189,8 +189,8 @@
     struct sockaddr_in6 serverAddr6;
     void *serverAddrPtr;
     socklen_t serverAddrLen;
-    BOOL isIPv6 = [HttpdnsIPv6Adapter isIPv6Address:ip];
-    BOOL isIpv4 = [HttpdnsIPv6Adapter isIPv4Address:ip];
+    BOOL isIPv6 = [HttpdnsUtil isIPv6Address:ip];
+    BOOL isIpv4 = [HttpdnsUtil isIPv4Address:ip];
 
     // 创建socket
     if (isIPv6) {

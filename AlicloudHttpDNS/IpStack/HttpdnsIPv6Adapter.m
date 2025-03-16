@@ -1,6 +1,6 @@
 //
-//  AlicloudIPv6PrefixResolver.m
-//  AlicloudUtils
+//  HttpdnsIPv6Adapter.m
+//  AlicloudHttpDNS
 //
 //  Created by lingkun on 16/5/16.
 //  Edited by lingkun on 17/7/26.
@@ -15,7 +15,9 @@
 #include <sys/socket.h>
 
 #import "HttpdnsLog_Internal.h"
-#import "HttpdnsIPv6PrefixResolver.h"
+#import "HttpdnsUtil.h"
+#import "HttpdnsIpStackDetector.h"
+#import "HttpdnsIPv6Adapter.h"
 
 #define IPV6_PREFIX_32       32
 #define IPV6_PREFIX_40       40
@@ -53,7 +55,7 @@ typedef enum {
     IPv6PrefixResolved
 } IPv6PrefixResolveStatus;
 
-@implementation HttpdnsIPv6PrefixResolver
+@implementation HttpdnsIPv6Adapter
 {
     IPv6PrefixResolveStatus ipv6PrefixResolveStatus;
     __uint8_t ipv6Prefix[16];
@@ -98,6 +100,28 @@ typedef enum {
         ipv6PrefixResolveStatus = IPv6PrefixUnResolved;
         [self resolveIPv6Prefix:ipv6Prefix];
     }
+}
+
+
+- (NSString *)adaptV4IpInCurrentIpStack:(NSString *)addr {
+    if (!addr || ![HttpdnsUtil isIPv4Address:addr]) {
+        return addr;
+    }
+
+    NSString *convertedAddr;
+    if ([[HttpdnsIpStackDetector sharedInstance] isIpv6OnlyNetwork]) {
+HttpdnsLogDebug("[HttpdnsIPv6Adapter]: In IPv6-Only network status, convert IP address.");
+        convertedAddr = [[HttpdnsIPv6Adapter getInstance] convertIPv4toIPv6:addr];
+    } else  {
+        HttpdnsLogDebug("[AliCloudIPv6Adapter]: Not in IPv6-Only network status, return.");
+        convertedAddr = addr;
+    }
+
+    // return valid addr
+    if ([HttpdnsUtil isIPv4Address:convertedAddr] || [HttpdnsUtil isIPv6Address:convertedAddr]) {
+        return convertedAddr;
+    }
+    return addr;
 }
 
 /**
@@ -184,7 +208,6 @@ typedef enum {
 }
 
 - (__uint8_t)resolveIPv6Prefix:(__uint8_t *)prefix {
-
     if (!prefix) {
         return 0;
     }

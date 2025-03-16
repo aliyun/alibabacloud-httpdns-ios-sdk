@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 #import "HttpdnsService.h"
 #import "HttpdnsHostObject.h"
 #import "HttpdnsHostResolver.h"
@@ -25,14 +24,15 @@
 #import "HttpdnsInternalConstant.h"
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsService_Internal.h"
-#import "HttpdnsRequestScheduler_Internal.h"
+#import "HttpdnsRequestManager_Internal.h"
 #import "HttpdnsScheduleCenter.h"
 #import "AlicloudHttpDNS.h"
-#import "HttpdnsNetworkInfoHelper.h"
+#import "HttpdnsReachability.h"
 #import "HttpdnsIPv6Adapter.h"
 #import "HttpdnsInternalConstant.h"
-#import "HttpdnsRequestScheduler.h"
+#import "HttpdnsRequestManager.h"
 #import "HttpdnsCFHttpWrapper.h"
+#import "HttpdnsIpStackDetector.h"
 
 
 static dispatch_queue_t _streamOperateSyncQueue = 0;
@@ -139,30 +139,30 @@ static NSURLSession *_resolveHostSession = nil;
         [hostObject setClientIp:clientIp];
     }
 
-    int64_t ttlInSecond = [[json objectForKey:@"ttl"] longLongValue];
+    int64_t returnedTTL = [[json objectForKey:@"ttl"] longLongValue];
+    int64_t v4TTL = returnedTTL;
+    int64_t v6TTL = returnedTTL;
 
     // 自定义ttl
     HttpDnsService *dnsService = [HttpDnsService sharedInstance];
     if (dnsService.ttlDelegate && [dnsService.ttlDelegate respondsToSelector:@selector(httpdnsHost:ipType:ttl:)]) {
-        AlicloudHttpDNS_IPType ipType;
-        if (queryIpType & HttpdnsQueryIPTypeIpv4 && queryIpType & HttpdnsQueryIPTypeIpv6) {
-            ipType = AlicloudHttpDNS_IPTypeV64;
-        } else if (queryIpType & HttpdnsQueryIPTypeIpv6) {
-            ipType = AlicloudHttpDNS_IPTypeV6;
+        int64_t customTTL = [dnsService.ttlDelegate httpdnsHost:host ipType:AlicloudHttpDNS_IPTypeV64 ttl:returnedTTL];
+        if (customTTL > 0) {
+            v4TTL = customTTL;
+            v6TTL = customTTL;
         } else {
-            ipType = AlicloudHttpDNS_IPTypeV4;
+            v4TTL = [dnsService.ttlDelegate httpdnsHost:host ipType:AlicloudHttpDNS_IPTypeV4 ttl:returnedTTL];
+            v6TTL = [dnsService.ttlDelegate httpdnsHost:host ipType:AlicloudHttpDNS_IPTypeV6 ttl:returnedTTL];
         }
-
-        ttlInSecond = [dnsService.ttlDelegate httpdnsHost:host ipType:ipType ttl:ttlInSecond];
     }
 
     // 分别设置 v4ttl v6ttl
     if ([HttpdnsUtil isNotEmptyArray:ipArray]) {
-        hostObject.v4ttl = ttlInSecond;
+        hostObject.v4ttl = v4TTL;
         hostObject.lastIPv4LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
     }
     if ([HttpdnsUtil isNotEmptyArray:ip6Array]) {
-        hostObject.v6ttl = ttlInSecond;
+        hostObject.v6ttl = v6TTL;
         hostObject.lastIPv6LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
     }
 
@@ -233,9 +233,9 @@ static NSURLSession *_resolveHostSession = nil;
 
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
 
-    int accountId = sharedService.accountID;
+    NSInteger accountId = sharedService.accountID;
 
-    NSString *url = [NSString stringWithFormat:@"%@/%d/d?host=%@", serverIp, accountId, request.host];
+    NSString *url = [NSString stringWithFormat:@"%@/%ld/d?host=%@", serverIp, accountId, request.host];
 
     // signature
     NSString *secretKey = sharedService.secretKey;
@@ -253,7 +253,7 @@ static NSURLSession *_resolveHostSession = nil;
         NSString *sign = [HttpdnsUtil getMD5StringFrom:signOriginString];
         NSString *signatureRequestString = [NSString stringWithFormat:@"t=%@&s=%@", expiredTimestampString, sign];
 
-        url = [NSString stringWithFormat:@"%@/%d/sign_d?host=%@&%@", serverIp, accountId, request.host, signatureRequestString];
+        url = [NSString stringWithFormat:@"%@/%ld/sign_d?host=%@&%@", serverIp, accountId, request.host, signatureRequestString];
     }
 
     // version
@@ -272,8 +272,8 @@ static NSURLSession *_resolveHostSession = nil;
         url = [NSString stringWithFormat:@"%@&%@", url, sdnsParamStr];
     }
 
-    // 添加net和bssid(wifi)
-    NSString *netType = [HttpdnsNetworkInfoHelper getNetworkType];
+    // 添加net
+    NSString *netType = [[HttpdnsReachability sharedInstance] currentReachabilityString];
     if ([HttpdnsUtil isNotEmptyString:netType]) {
         url = [NSString stringWithFormat:@"%@&net=%@", url, netType];
     }
@@ -299,11 +299,9 @@ static NSURLSession *_resolveHostSession = nil;
     }
 
     @try {
-        HttpdnsIPv6Adapter *ipv6Adapter = [HttpdnsIPv6Adapter sharedInstance];
-        AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
-
+        HttpdnsIPStackType stackType = [[HttpdnsIpStackDetector sharedInstance] currentIpStack];
         // 由于上面默认只用ipv4请求，这里判断如果是ipv6-only环境，那就用v6的ip再试一次
-        if (stackType == kAlicloudIPv6only) {
+        if (stackType == kHttpdnsIpv6Only) {
             url = [self constructHttpdnsResolvingUrl:request forV4Net:NO];
             HttpdnsLogDebug("lookupHostFromServer by ipv4 server failed, construct ipv6 backup url: %@", url);
             return [self sendRequest:url host:host queryIpType:queryIPType error:error];
@@ -416,9 +414,9 @@ static NSURLSession *_resolveHostSession = nil;
     return [self parseHostInfoFromHttpResponse:json withHostStr:host withQueryIpType:queryIpType];
 }
 
-- (HttpdnsRequestScheduler *)requestScheduler {
+- (HttpdnsRequestManager *)requestManager {
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    return sharedService.requestScheduler;
+    return sharedService.requestManager;
 }
 
 #pragma mark - NSURLSessionTaskDelegate

@@ -52,7 +52,7 @@ static int ttlForTest = 3;
 
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         // 清空缓存
-        [self.httpdns.requestScheduler cleanAllHostMemoryCache];
+        [self.httpdns.requestManager cleanAllHostMemoryCache];
 
         // 首次解析
         HttpdnsResult *result = [self.httpdns resolveHostSync:host byIpType:HttpdnsQueryIPTypeIpv4];

@@ -25,6 +25,10 @@
 
 + (NSString *)currentEpochTimeInSecondString;
 
++ (BOOL)isIPv4Address:(NSString *)addr;
+
++ (BOOL)isIPv6Address:(NSString *)addr;
+
 + (BOOL)isAnIP:(NSString *)candidate;
 
 + (BOOL)isAHost:(NSString *)host;

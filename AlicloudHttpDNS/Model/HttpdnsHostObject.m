@@ -249,7 +249,7 @@
         return NO;
     }
 
-    BOOL isIPv6 = [HttpdnsIPv6Adapter isIPv6Address:ip];
+    BOOL isIPv6 = [HttpdnsUtil isIPv6Address:ip];
 
     NSArray<HttpdnsIpObject *> *ipObjects = isIPv6 ? [self getV6Ips] : [self getV4Ips];
     if ([HttpdnsUtil isEmptyArray:ipObjects]) {

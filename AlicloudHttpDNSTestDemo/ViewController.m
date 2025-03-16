@@ -12,6 +12,7 @@
 #import "MyLoggerHandler.h"
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsIPv6Adapter.h"
+#import "HttpdnsLog.h"
 
 NSArray *ipv4HostArray = nil;
 NSArray *ipv6HostArray = nil;
@@ -62,6 +63,7 @@ NSArray *ipv6HostArray = nil;
                       @"ipv6.sjtu.edu.cn"
                       ];
 
+    [HttpdnsLog enableLog];
 
     // ams_test账号139450
     _service = [[HttpDnsService alloc] initWithAccountID:139450];
@@ -71,7 +73,6 @@ NSArray *ipv6HostArray = nil;
     [_service setPersistentCacheIPEnabled:YES];
     [_service setReuseExpiredIPEnabled:YES];
     [_service setHTTPSRequestEnabled:YES];
-    [_service setIPv6Enabled:YES];
 
     NSString *sessionId = [[HttpDnsService sharedInstance] getSessionId];
     NSLog(@"Print sessionId: %@", sessionId);

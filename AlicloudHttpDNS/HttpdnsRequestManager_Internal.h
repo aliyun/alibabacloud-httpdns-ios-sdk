@@ -17,14 +17,9 @@
  * under the License.
  */
 
-#import "HttpdnsRequestScheduler.h"
+#import "HttpdnsRequestManager.h"
 
-FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_1;
-FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_2;
-FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_3;
-FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_4;
-
-@interface HttpdnsRequestScheduler ()
+@interface HttpdnsRequestManager ()
 
 - (NSString *)showMemoryCache;
 
@@ -34,13 +29,12 @@ FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_SERVER_IP_4;
 
 // 内部缓存开关，不触发加载DB到内存的操作
 - (void)setPersistentCacheIpEnabled:(BOOL)enable;
-- (BOOL)getPersistentCacheIpEnabled;
 
 - (void)syncReloadCacheFromDbToMemory;
 
 - (void)cleanAllHostMemoryCache;
 
-- (void)cleanMemoryAndPersistentCacheOfHostArray:(NSArray <NSString *>*)hostArray;
+- (void)cleanMemoryAndPersistentCacheOfHostArray:(NSArray<NSString *> *)hostArray;
 
 - (void)cleanMemoryAndPersistentCacheOfAllHosts;
 

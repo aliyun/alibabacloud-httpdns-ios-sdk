@@ -38,8 +38,8 @@
 
 // 非阻塞接口不能阻塞调用线程
 - (void)testNoneBlockingMethodShouldNotBlock {
-    HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
-    HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
+    HttpdnsRequestManager *requestManager = self.httpdns.requestManager;
+    HttpdnsRequestManager *mockedScheduler = OCMPartialMock(requestManager);
     OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
@@ -57,8 +57,8 @@
 
 // 阻塞接口在主线程调用时也不会阻塞，内部做了机制自动切换到异步线程
 - (void)testBlockingMethodShouldNotBlockIfInMainThread {
-    HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
-    HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
+    HttpdnsRequestManager *requestManager = self.httpdns.requestManager;
+    HttpdnsRequestManager *mockedScheduler = OCMPartialMock(requestManager);
     OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
@@ -74,8 +74,8 @@
 
 // 非主线程中调用阻塞接口，应当阻塞
 - (void)testBlockingMethodShouldBlockIfInBackgroundThread {
-    HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
-    HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
+    HttpdnsRequestManager *requestManager = self.httpdns.requestManager;
+    HttpdnsRequestManager *mockedScheduler = OCMPartialMock(requestManager);
     OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
@@ -98,8 +98,8 @@
 
 // 非主线程中调用阻塞接口，应当阻塞
 - (void)testBlockingMethodShouldBlockIfInBackgroundThreadWithSpecifiedMaxWaitTime {
-    HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
-    HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
+    HttpdnsRequestManager *requestManager = self.httpdns.requestManager;
+    HttpdnsRequestManager *mockedScheduler = OCMPartialMock(requestManager);
     OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
@@ -139,7 +139,7 @@
     id mockResolverClass = OCMClassMock([HttpdnsHostResolver class]);
     OCMStub([mockResolverClass new]).andReturn(mockResolver);
 
-    [self.httpdns.requestScheduler cleanAllHostMemoryCache];
+    [self.httpdns.requestManager cleanAllHostMemoryCache];
 
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         [self.httpdns resolveHostSync:ipv4OnlyHost byIpType:HttpdnsQueryIPTypeIpv4];
@@ -198,7 +198,7 @@
     id mockResolverClass = OCMClassMock([HttpdnsHostResolver class]);
     OCMStub([mockResolverClass new]).andReturn(mockResolver);
 
-    [self.httpdns.requestScheduler cleanAllHostMemoryCache];
+    [self.httpdns.requestManager cleanAllHostMemoryCache];
 
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         [self.httpdns resolveHostSync:ipv4OnlyHost byIpType:HttpdnsQueryIPTypeIpv4];
@@ -232,10 +232,10 @@
 
 // 同步接口设置最大等待时间
 - (void)testSyncMethodSetBlockTimeout {
-    HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
+    HttpdnsRequestManager *requestManager = self.httpdns.requestManager;
     [self.httpdns cleanAllHostCache];
 
-    HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
+    HttpdnsRequestManager *mockedScheduler = OCMPartialMock(requestManager);
     OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
@@ -285,10 +285,10 @@
 
 // 设置异步回调接口的最大回调等待时间
 - (void)testAsyncMethodSetBlockTimeout {
-    HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
+    HttpdnsRequestManager *requestManager = self.httpdns.requestManager;
     [self.httpdns cleanAllHostCache];
 
-    HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
+    HttpdnsRequestManager *mockedScheduler = OCMPartialMock(requestManager);
     OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
@@ -318,10 +318,10 @@
 
 // 多线程状态下每个线程的等待时间
 - (void)testMultiThreadSyncMethodMaxBlockingTime {
-    HttpdnsRequestScheduler *scheduler = self.httpdns.requestScheduler;
+    HttpdnsRequestManager *requestManager = self.httpdns.requestManager;
     [self.httpdns cleanAllHostCache];
 
-    HttpdnsRequestScheduler *mockedScheduler = OCMPartialMock(scheduler);
+    HttpdnsRequestManager *mockedScheduler = OCMPartialMock(requestManager);
     OCMStub([mockedScheduler executeRequest:[OCMArg any] retryCount:0])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
