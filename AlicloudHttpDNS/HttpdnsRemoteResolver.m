@@ -18,13 +18,12 @@
  */
 #import "HttpdnsService.h"
 #import "HttpdnsHostObject.h"
-#import "HttpdnsHostResolver.h"
+#import "HttpdnsRemoteResolver.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsInternalConstant.h"
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsService_Internal.h"
-#import "HttpdnsRequestManager_Internal.h"
 #import "HttpdnsScheduleCenter.h"
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsReachability.h"
@@ -38,7 +37,7 @@ static dispatch_queue_t _streamOperateSyncQueue = 0;
 
 static NSURLSession *_resolveHostSession = nil;
 
-@interface HttpdnsHostResolver () <NSStreamDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
+@interface HttpdnsRemoteResolver () <NSStreamDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
 
 @property (nonatomic, strong) NSRunLoop *runloop;
 @property (nonatomic, strong) NSError *networkError;
@@ -46,7 +45,7 @@ static NSURLSession *_resolveHostSession = nil;
 @end
 
 
-@implementation HttpdnsHostResolver {
+@implementation HttpdnsRemoteResolver {
     NSMutableData *_resultData;
     dispatch_semaphore_t _sem;
     NSInputStream *_inputStream;

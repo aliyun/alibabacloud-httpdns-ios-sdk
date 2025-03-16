@@ -1,12 +1,12 @@
 //
-//  HttpdnsScheduleCenterRequest.m
+//  HttpdnsScheduleExecutor.m
 //  AlicloudHttpDNS
 //
 //  Created by ElonChan（地风） on 2017/4/11.
 //  Copyright © 2017年 alibaba-inc.com. All rights reserved.
 //
 
-#import "HttpdnsScheduleRequest.h"
+#import "HttpdnsScheduleExecutor.h"
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsInternalConstant.h"
@@ -19,11 +19,11 @@
 
 static NSURLSession *_scheduleCenterSession = nil;
 
-@interface HttpdnsScheduleRequest()<NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
+@interface HttpdnsScheduleExecutor()<NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
 
 @end
 
-@implementation HttpdnsScheduleRequest
+@implementation HttpdnsScheduleExecutor
 
 - (instancetype)init {
     if (!(self = [super init])) {
@@ -41,7 +41,7 @@ static NSURLSession *_scheduleCenterSession = nil;
 /**
  * 拼接 URL
  * 2024.6.12今天起，调度服务由后端就近调度，不再需要传入region参数，但为了兼容不传region默认就是国内region的逻辑，默认都传入region=global
- * https://203.107.1.1/100000/ss?region=global&platform=ios&sdk_version=1.6.1&sid=LpmJIA2CUoi4&net=unknown&bssid=
+ * https://203.107.1.1/100000/ss?region=global&platform=ios&sdk_version=3.1.7&sid=LpmJIA2CUoi4&net=wifi
  */
 - (NSString *)constructRequestURLWithUpdateHost:(NSString *)updateHost {
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
@@ -51,7 +51,7 @@ static NSURLSession *_scheduleCenterSession = nil;
     return [NSString stringWithFormat:@"https://%@/%@", updateHost, urlPath];
 }
 
-// url 添加 sid net 和 bssid
+// url 添加 sid net
 - (NSString *)urlFormatSidNetBssid:(NSString *)url {
     NSString *sessionId = [HttpdnsUtil generateSessionID];
     if ([HttpdnsUtil isNotEmptyString:sessionId]) {

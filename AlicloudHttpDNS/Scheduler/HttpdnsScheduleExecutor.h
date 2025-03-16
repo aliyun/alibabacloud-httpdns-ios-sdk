@@ -1,5 +1,5 @@
 //
-//  HttpdnsScheduleCenterRequest.h
+//  HttpdnsScheduleExecutor.h
 //  AlicloudHttpDNS
 //
 //  Created by ElonChan（地风） on 2017/4/11.
@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface HttpdnsScheduleRequest : NSObject
+@interface HttpdnsScheduleExecutor : NSObject
 
 - (NSDictionary *)fetchRegionConfigFromServer:(NSString *)updateHost error:(NSError **)pError;
 

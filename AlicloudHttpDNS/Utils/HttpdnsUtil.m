@@ -24,7 +24,7 @@
 #import "arpa/inet.h"
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsInternalConstant.h"
-#import "HttpdnsHostResolver.h"
+#import "HttpdnsRemoteResolver.h"
 #import "HttpdnsPublicConstant.h"
 #import "httpdnsReachability.h"
 

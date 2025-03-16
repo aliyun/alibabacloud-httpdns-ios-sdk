@@ -17,9 +17,26 @@
  * under the License.
  */
 
-#import "HttpdnsScheduleCenter.h"
+#import <Foundation/Foundation.h>
 
-@interface HttpdnsScheduleCenter (ForTestOnly)
+@interface HttpdnsScheduleCenter : NSObject
+
++ (instancetype)sharedInstance;
+
+- (void)initRegion:(NSString *)region;
+
+- (void)resetRegion:(NSString *)region;
+
+- (void)asyncUpdateRegionScheduleConfig;
+
+- (void)moveToNextServiceServerHost;
+
+- (NSString *)currentActiveServiceServerV4Host;
+
+- (NSString *)currentActiveServiceServerV6Host;
+
+
+#pragma mark - Expose to Testcases
 
 - (void)asyncUpdateRegionScheduleConfigAtRetry:(int)retryCount;
 
@@ -37,6 +54,4 @@
 
 - (int)currentActiveServiceServerHostIndex;
 
-
 @end
-

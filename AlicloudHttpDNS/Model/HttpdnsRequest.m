@@ -49,11 +49,11 @@ static double const RESOLVE_HOST_MAX_TIMEOUT_IN_SEC = 5;
     return self;
 }
 
-- (void)setAsBlockingRequest {
+- (void)becomeBlockingRequest {
     _isBlockingRequest = YES;
 }
 
-- (void)setAsNonBlockingRequest {
+- (void)becomeNonBlockingRequest {
     _isBlockingRequest = NO;
 }
 

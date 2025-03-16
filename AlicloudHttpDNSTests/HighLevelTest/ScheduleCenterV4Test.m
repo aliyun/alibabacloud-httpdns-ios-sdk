@@ -103,7 +103,7 @@
 - (void)testResolveFailureWillMoveToNextServiceServer {
     [self presetNetworkEnvAsIpv4];
 
-    id mockResolver = OCMPartialMock([HttpdnsHostResolver new]);
+    id mockResolver = OCMPartialMock([HttpdnsRemoteResolver new]);
     OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
     .andDo(^(NSInvocation *invocation) {
         NSError *mockError = [NSError errorWithDomain:@"com.example.error" code:123 userInfo:@{NSLocalizedDescriptionKey: @"Mock error"}];
@@ -114,7 +114,7 @@
         }
     });
 
-    id mockResolverClass = OCMClassMock([HttpdnsHostResolver class]);
+    id mockResolverClass = OCMClassMock([HttpdnsRemoteResolver class]);
     OCMStub([mockResolverClass new]).andReturn(mockResolver);
 
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
@@ -122,7 +122,7 @@
     int serviceServerCount = (int)[scheduleCenter currentServiceServerV4HostList].count;
 
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:@"mock" queryIpType:HttpdnsQueryIPTypeAuto];
-    [request setAsBlockingRequest];
+    [request becomeBlockingRequest];
 
     HttpdnsRequestManager *requestManager = self.httpdns.requestManager;
 

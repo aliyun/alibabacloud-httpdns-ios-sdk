@@ -14,9 +14,9 @@
 
 @property (nonatomic, assign) BOOL isBlockingRequest;
 
-- (void)setAsBlockingRequest;
+- (void)becomeBlockingRequest;
 
-- (void)setAsNonBlockingRequest;
+- (void)becomeNonBlockingRequest;
 
 - (void)ensureResolveTimeoutInReasonableRange;
 
