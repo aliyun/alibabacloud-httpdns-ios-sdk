@@ -158,7 +158,15 @@
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
 
 
-/// 设置IP俳优规则
+/// 设置当使用Httpdns解析失败时是否自动降级到本地DNS
+/// 如果打开此开关
+/// - 在Httpdns解析失败时，会自动降级到本地DNS解析，此时解析结果的TTL默认是60秒
+/// - 调用同步非阻塞接口，若Httpdns缓存中无有效值，也会自动降级到本地DNS解析
+/// @param enable YES: 开启 NO: 关闭
+- (void)setDegradeToLocalDNSEnabled:(BOOL)enable;
+
+
+/// 设置IP排优规则
 /// @param IPRankingDatasource 设置对应域名的端口号
 /// @{host: port}
 - (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource;

@@ -18,7 +18,7 @@
  */
 
 #import "HttpdnsService.h"
-#import "HttpdnsRequestManager_Internal.h"
+#import "HttpdnsRequestManager.h"
 #import "HttpdnsLog_Internal.h"
 
 

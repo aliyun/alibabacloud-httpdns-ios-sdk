@@ -80,7 +80,6 @@
     // 尝试获取信号量，如果获取不到，说明已达到最大并发数
     if (dispatch_semaphore_wait(_concurrencySemaphore, DISPATCH_TIME_NOW) != 0) {
         // 将任务加入等待队列
-        HttpdnsLogDebug("IPQualityDetector reached max concurrent limit, queueing task for %@", ip);
         [self addPendingTask:cacheKey ip:ip port:port callback:callback];
         return;
     }

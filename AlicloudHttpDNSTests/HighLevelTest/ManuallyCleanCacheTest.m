@@ -10,7 +10,7 @@
 #import <stdatomic.h>
 #import <mach/mach.h>
 #import "HttpdnsService.h"
-#import "HttpdnsHostResolver.h"
+#import "HttpdnsRemoteResolver.h"
 #import "TestBase.h"
 
 static int TEST_CUSTOM_TTL_SECOND = 3;
@@ -47,7 +47,7 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
     hostObject.ttl = 60;
     [hostObject setV4TTL:60];
 
-    HttpdnsHostResolver *resolver = [HttpdnsHostResolver new];
+    HttpdnsRemoteResolver *resolver = [HttpdnsRemoteResolver new];
     id mockResolver = OCMPartialMock(resolver);
     __block int invokeCount = 0;
     OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
@@ -56,7 +56,7 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
         })
         .andReturn(hostObject);
 
-    id mockResolverClass = OCMClassMock([HttpdnsHostResolver class]);
+    id mockResolverClass = OCMClassMock([HttpdnsRemoteResolver class]);
     OCMStub([mockResolverClass new]).andReturn(mockResolver);
 
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
@@ -105,7 +105,7 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
     hostObject.ttl = 60;
     [hostObject setV4TTL:60];
 
-    HttpdnsHostResolver *resolver = [HttpdnsHostResolver new];
+    HttpdnsRemoteResolver *resolver = [HttpdnsRemoteResolver new];
     id mockResolver = OCMPartialMock(resolver);
     __block int invokeCount = 0;
     OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
@@ -114,7 +114,7 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
         })
         .andReturn(hostObject);
 
-    id mockResolverClass = OCMClassMock([HttpdnsHostResolver class]);
+    id mockResolverClass = OCMClassMock([HttpdnsRemoteResolver class]);
     OCMStub([mockResolverClass new]).andReturn(mockResolver);
 
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);

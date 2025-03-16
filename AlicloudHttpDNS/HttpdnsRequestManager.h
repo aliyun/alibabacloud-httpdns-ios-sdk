@@ -30,12 +30,36 @@ FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP;
 
 - (instancetype)initWithAccountId:(NSInteger)accountId;
 
+- (void)setExpiredIPEnabled:(BOOL)enable;
+
+- (void)setCachedIPEnabled:(BOOL)enable discardRecordsHasExpiredFor:(NSTimeInterval)duration;
+
+- (void)setDegradeToLocalDNSEnabled:(BOOL)enable;
+
+- (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
+
 - (void)addPreResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType;
 
 - (HttpdnsHostObject *)resolveHost:(HttpdnsRequest *)request;
 
-- (void)setExpiredIPEnabled:(BOOL)enable;
-- (void)setCachedIPEnabled:(BOOL)enable discardRecordsHasExpiredFor:(NSTimeInterval)duration;
-- (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
+// 内部缓存开关，不触发加载DB到内存的操作
+- (void)setPersistentCacheIpEnabled:(BOOL)enable;
+
+- (void)cleanMemoryAndPersistentCacheOfHostArray:(NSArray<NSString *> *)hostArray;
+
+- (void)cleanMemoryAndPersistentCacheOfAllHosts;
+
+
+#pragma mark - Expose to Testcases
+
+- (HttpdnsHostObject *)mergeLookupResultToManager:(HttpdnsHostObject *)result host:host cacheKey:(NSString *)cacheKey underQueryIpType:(HttpdnsQueryIPType)queryIpType;
+
+- (HttpdnsHostObject *)executeRequest:(HttpdnsRequest *)request retryCount:(int)hasRetryedCount;
+
+- (void)syncReloadCacheFromDbToMemory;
+
+- (NSString *)showMemoryCache;
+
+- (void)cleanAllHostMemoryCache;
 
 @end

@@ -10,7 +10,7 @@
 #import <stdatomic.h>
 #import <mach/mach.h>
 #import "HttpdnsService.h"
-#import "HttpdnsHostResolver.h"
+#import "HttpdnsRemoteResolver.h"
 #import "TestBase.h"
 
 static int TEST_CUSTOM_TTL_SECOND = 3;
@@ -55,7 +55,7 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
     NSString *testHost = hostNameIpPrefixMap.allKeys.firstObject;
     NSString *expectedIpPrefix = hostNameIpPrefixMap[testHost];
 
-    HttpdnsHostResolver *resolver = [HttpdnsHostResolver new];
+    HttpdnsRemoteResolver *resolver = [HttpdnsRemoteResolver new];
     id mockResolver = OCMPartialMock(resolver);
     __block int invokeCount = 0;
     OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
@@ -64,7 +64,7 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
         })
         .andForwardToRealObject();
 
-    id mockResolverClass = OCMClassMock([HttpdnsHostResolver class]);
+    id mockResolverClass = OCMClassMock([HttpdnsRemoteResolver class]);
     OCMStub([mockResolverClass new]).andReturn(mockResolver);
 
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);

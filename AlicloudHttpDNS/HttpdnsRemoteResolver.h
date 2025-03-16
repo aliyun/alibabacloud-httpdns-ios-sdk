@@ -21,7 +21,7 @@
 #import "HttpdnsHostObject.h"
 #import "HttpdnsRequest.h"
 
-@interface HttpdnsHostResolver : NSObject
+@interface HttpdnsRemoteResolver : NSObject
 
 - (HttpdnsHostObject *)lookupHostFromServer:(HttpdnsRequest *)request error:(NSError **)error;
 

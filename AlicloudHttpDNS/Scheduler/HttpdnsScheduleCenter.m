@@ -17,15 +17,14 @@
  * under the License.
  */
 
-#import "HttpdnsScheduleCenter_Internal.h"
+#import "HttpdnsScheduleCenter.h"
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsInternalConstant.h"
-#import "HttpdnsRequestManager_Internal.h"
+#import "HttpdnsRequestManager.h"
 #import "HttpdnsService_Internal.h"
-#import "HttpdnsScheduleRequest.h"
-#import "HttpdnsHostResolver.h"
-#import "HttpdnsScheduleCenter_Internal.h"
+#import "HttpdnsScheduleExecutor.h"
+#import "HttpdnsRemoteResolver.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsPublicConstant.h"
 #import "HttpdnsRegionConfigLoader.h"
@@ -163,11 +162,11 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
     }
 
     dispatch_async(_scheduleFetchConfigAsyncQueue, ^(void) {
-        HttpdnsScheduleRequest *scheduleCenterRequest = [HttpdnsScheduleRequest new];
+        HttpdnsScheduleExecutor *scheduleCenterExecutor = [HttpdnsScheduleExecutor new];
 
         NSError *error = nil;
         NSString *updateHost = [self getActiveUpdateServerHost];
-        NSDictionary *scheduleCenterResult = [scheduleCenterRequest fetchRegionConfigFromServer:updateHost error:&error];
+        NSDictionary *scheduleCenterResult = [scheduleCenterExecutor fetchRegionConfigFromServer:updateHost error:&error];
         if (error || !scheduleCenterResult) {
             HttpdnsLogDebug("Update region config failed, error: %@", error);
 

@@ -17,9 +17,9 @@
  * under the License.
  */
 
-#import "HttpdnsRequestManager_Internal.h"
+#import "HttpdnsRequestManager.h"
 #import "HttpdnsHostObject.h"
-#import "HttpdnsHostResolver.h"
+#import "HttpdnsRemoteResolver.h"
 #import "HttpdnsInternalConstant.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
@@ -50,7 +50,10 @@ typedef struct {
 @interface HttpdnsRequestManager()
 
 @property (nonatomic, strong) dispatch_queue_t cacheQueue;
-@property (nonatomic, assign) BOOL persistentCacheIpEnabled;
+
+@property (atomic, setter=setPersistentCacheIpEnabled:, assign) BOOL persistentCacheIpEnabled;
+@property (atomic, setter=setDegradeToLocalDNSEnabled:, assign) BOOL degradeToLocalDNSEnabled;
+
 @property (atomic, assign) NSTimeInterval lastUpdateTimestamp;
 @property (atomic, assign) HttpdnsNetworkStatus lastNetworkStatus;
 
@@ -90,6 +93,27 @@ typedef struct {
     return self;
 }
 
+- (void)setExpiredIPEnabled:(BOOL)enable {
+    _isExpiredIPEnabled = enable;
+}
+
+- (void)setCachedIPEnabled:(BOOL)enable discardRecordsHasExpiredFor:(NSTimeInterval)duration {
+    // 开启允许持久化缓存
+    [self setPersistentCacheIpEnabled:enable];
+
+    if (enable) {
+        // 先清理过期时间超过阈值的缓存结果
+        [self cleanHostRecordsAlreadyExpiredAt:[[NSDate date] timeIntervalSince1970] - duration];
+
+        // 再读取持久化缓存中的历史记录，加载到内存缓存里
+        [self asyncReloadCacheFromDbToMemory];
+    }
+}
+
+- (void)setPreResolveAfterNetworkChanged:(BOOL)enable {
+    _isPreResolveAfterNetworkChangedEnabled = enable;
+}
+
 - (void)addPreResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType{
     if (![HttpdnsUtil isNotEmptyArray:hosts]) {
         return;
@@ -108,7 +132,7 @@ typedef struct {
             HttpdnsHostObject *hostObject = [strongSelf->_hostObjectInMemoryCache getHostObjectByCacheKey:hostName];
             if (!hostObject || [hostObject isExpiredUnderQueryIpType:queryType]) {
                 HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:hostName queryIpType:queryType];
-                [request setAsNonBlockingRequest];
+                [request becomeNonBlockingRequest];
                 [strongSelf resolveHost:request];
                 HttpdnsLogDebug("Pre resolve host by async lookup, host: %@", hostName);
             }
@@ -244,7 +268,7 @@ typedef struct {
 
     NSError *error = nil;
 
-    __block HttpdnsHostObject *result = [[HttpdnsHostResolver new] lookupHostFromServer:request error:&error];
+    __block HttpdnsHostObject *result = [[HttpdnsRemoteResolver new] lookupHostFromServer:request error:&error];
 
     if (error) {
         HttpdnsLogDebug("Internal request error, host: %@, error: %@", host, error);
@@ -358,31 +382,6 @@ typedef struct {
     return NO;
 }
 
-- (void)setExpiredIPEnabled:(BOOL)enable {
-    _isExpiredIPEnabled = enable;
-}
-
-- (void)setCachedIPEnabled:(BOOL)enable discardRecordsHasExpiredFor:(NSTimeInterval)duration {
-    // 开启允许持久化缓存
-    [self setPersistentCacheIpEnabled:enable];
-
-    if (enable) {
-        // 先清理过期时间超过阈值的缓存结果
-        [self cleanHostRecordsAlreadyExpiredAt:[[NSDate date] timeIntervalSince1970] - duration];
-
-        // 再读取持久化缓存中的历史记录，加载到内存缓存里
-        [self asyncReloadCacheFromDbToMemory];
-    }
-}
-
-- (void)setPersistentCacheIpEnabled:(BOOL)enable {
-    _persistentCacheIpEnabled = enable;
-}
-
-- (void)setPreResolveAfterNetworkChanged:(BOOL)enable {
-    _isPreResolveAfterNetworkChangedEnabled = enable;
-}
-
 - (void)networkChanged {
     HttpdnsNetworkStatus currentStatus = [[HttpdnsReachability sharedInstance] currentReachabilityStatus];
     NSString *currentStatusString = [[HttpdnsReachability sharedInstance] currentReachabilityString];
@@ -466,7 +465,7 @@ typedef struct {
 }
 
 - (void)cleanMemoryAndPersistentCacheOfAllHosts {
-    [self cleanAllHostMemoryCache];
+    [_hostObjectInMemoryCache removeAllHostObjects];
 
     // 清空数据库数据
     dispatch_async(_persistentCacheConcurrentQueue, ^{
@@ -536,6 +535,10 @@ typedef struct {
     NSString *cacheDes;
     cacheDes = [NSString stringWithFormat:@"%@", _hostObjectInMemoryCache];
     return cacheDes;
+}
+
+- (void)cleanAllHostMemoryCache {
+    [_hostObjectInMemoryCache removeAllHostObjects];
 }
 
 @end

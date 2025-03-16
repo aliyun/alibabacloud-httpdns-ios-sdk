@@ -10,7 +10,7 @@
 #import <stdatomic.h>
 #import <mach/mach.h>
 #import "HttpdnsService.h"
-#import "HttpdnsHostResolver.h"
+#import "HttpdnsRemoteResolver.h"
 #import "TestBase.h"
 
 @interface ResolvingEffectiveHostTest : TestBase<HttpdnsTTLDelegate>

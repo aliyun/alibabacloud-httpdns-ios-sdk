@@ -10,7 +10,7 @@
 #import <stdatomic.h>
 #import <mach/mach.h>
 #import "HttpdnsService.h"
-#import "HttpdnsHostResolver.h"
+#import "HttpdnsRemoteResolver.h"
 #import "HttpdnsRequest_Internal.h"
 #import "TestBase.h"
 
@@ -126,7 +126,7 @@
 
 - (void)testResolveSameHostShouldWaitForTheFirstOne {
     __block HttpdnsHostObject *ipv4HostObject = [self constructSimpleIpv4HostObject];
-    HttpdnsHostResolver *realResolver = [HttpdnsHostResolver new];
+    HttpdnsRemoteResolver *realResolver = [HttpdnsRemoteResolver new];
     id mockResolver = OCMPartialMock(realResolver);
     OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .ignoringNonObjectArgs()
@@ -136,7 +136,7 @@
             [invocation setReturnValue:&ipv4HostObject];
         });
 
-    id mockResolverClass = OCMClassMock([HttpdnsHostResolver class]);
+    id mockResolverClass = OCMClassMock([HttpdnsRemoteResolver class]);
     OCMStub([mockResolverClass new]).andReturn(mockResolver);
 
     [self.httpdns.requestManager cleanAllHostMemoryCache];
@@ -176,7 +176,7 @@
 
 - (void)testResolveSameHostShouldRequestAgainAfterFirstFailed {
     __block HttpdnsHostObject *ipv4HostObject = [self constructSimpleIpv4HostObject];
-    HttpdnsHostResolver *realResolver = [HttpdnsHostResolver new];
+    HttpdnsRemoteResolver *realResolver = [HttpdnsRemoteResolver new];
     id mockResolver = OCMPartialMock(realResolver);
     __block atomic_int count = 0;
     OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
@@ -195,7 +195,7 @@
             }
         });
 
-    id mockResolverClass = OCMClassMock([HttpdnsHostResolver class]);
+    id mockResolverClass = OCMClassMock([HttpdnsRemoteResolver class]);
     OCMStub([mockResolverClass new]).andReturn(mockResolver);
 
     [self.httpdns.requestManager cleanAllHostMemoryCache];
