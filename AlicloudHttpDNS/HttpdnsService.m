@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#import "HttpdnsIPv6Adapter.h"
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsHostResolver.h"
 #import "HttpdnsInternalConstant.h"

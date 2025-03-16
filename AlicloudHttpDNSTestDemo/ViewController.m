@@ -11,7 +11,6 @@
 #import "HttpdnsUtil.h"
 #import "MyLoggerHandler.h"
 #import "HttpdnsScheduleCenter.h"
-#import "HttpdnsIPv6Adapter.h"
 #import "HttpdnsLog.h"
 
 NSArray *ipv4HostArray = nil;
