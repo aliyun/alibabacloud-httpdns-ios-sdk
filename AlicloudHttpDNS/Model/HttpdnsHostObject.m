@@ -23,7 +23,6 @@
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsIPQualityDetector.h"
-#import "HttpdnsIpv6Adapter.h"
 
 
 @implementation HttpdnsIpObject

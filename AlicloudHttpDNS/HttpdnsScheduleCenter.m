@@ -29,7 +29,6 @@
 #import "HttpdnsUtil.h"
 #import "HttpdnsPublicConstant.h"
 #import "HttpdnsRegionConfigLoader.h"
-#import "HttpdnsIPv6Adapter.h"
 #import "HttpdnsIpStackDetector.h"
 
 static NSString *const kLastUpdateUnixTimestampKey = @"last_update_unix_timestamp";

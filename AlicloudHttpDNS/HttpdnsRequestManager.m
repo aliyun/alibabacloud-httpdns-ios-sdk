@@ -29,7 +29,6 @@
 #import "HttpdnsReachability.h"
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsUtil.h"
-#import "HttpdnsIPv6Adapter.h"
 #import "HttpDnsLocker.h"
 #import "HttpdnsRequest_Internal.h"
 #import "HttpdnsHostObjectInMemoryCache.h"
