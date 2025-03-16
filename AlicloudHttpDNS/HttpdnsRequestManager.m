@@ -51,7 +51,7 @@ typedef struct {
 
 @property (nonatomic, strong) dispatch_queue_t cacheQueue;
 @property (nonatomic, assign) BOOL persistentCacheIpEnabled;
-@property (atomic, assign) NSTimeInterval lastNetworkChangeTimestamp;
+@property (atomic, assign) NSTimeInterval lastUpdateTimestamp;
 @property (atomic, assign) HttpdnsNetworkStatus lastNetworkStatus;
 
 @end
@@ -81,7 +81,7 @@ typedef struct {
         [[HttpdnsIpStackDetector sharedInstance] redetectIpStack];
 
         _lastNetworkStatus = reachability.currentReachabilityStatus;
-        _lastNetworkChangeTimestamp = [NSDate date].timeIntervalSince1970;
+        _lastUpdateTimestamp = [NSDate date].timeIntervalSince1970;
         reachability.reachabilityBlock = ^(HttpdnsReachability * reachability, SCNetworkConnectionFlags flags) {
             [self networkChanged];
         };
@@ -388,50 +388,49 @@ typedef struct {
     NSString *currentStatusString = [[HttpdnsReachability sharedInstance] currentReachabilityString];
 
     // 重新检测协议栈代价小，所以只要网络切换就发起检测
-    // 但考虑到网络切换后不稳定，还是延迟0.5秒才发起
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    // 但考虑到网络切换后不稳定，还是延迟1秒才发起
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
         [[HttpdnsIpStackDetector sharedInstance] redetectIpStack];
     });
 
     NSTimeInterval currentTimestamp = [NSDate date].timeIntervalSince1970;
-    NSTimeInterval elapsedTime = currentTimestamp - _lastNetworkChangeTimestamp;
     BOOL statusChanged = (_lastNetworkStatus != currentStatus);
 
-    if (elapsedTime >= 5) {
-        // 更新调度列表代价小，可以激进些
-        // 比如切换VPN的场景，网络类型不会变化，但此时也应该更新调度列表
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), _asyncResolveHostQueue, ^{
-            HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-            [scheduleCenter asyncUpdateRegionScheduleConfig];
-        });
-    }
-
     // 仅在以下情况下响应网络变化去尝试更新缓存:
-    // - 距离上次处理事件至少过去了1分钟（60秒），或
-    // - 网络状态发生变化且至少过去了5秒
-    if (elapsedTime >= 60 || (statusChanged && elapsedTime >= 5)) {
+    // - 距离上次处理事件至少过去了较长时间，或
+    // - 网络状态发生变化且至少过去了较短时间
+    NSTimeInterval elapsedTime = currentTimestamp - _lastUpdateTimestamp;
+    if (elapsedTime >= 5 || (statusChanged && elapsedTime >= 1)) {
         HttpdnsLogDebug("Processing network change: oldStatus: %ld, newStatus: %ld(%@), elapsedTime=%.2f seconds",
                         _lastNetworkStatus, currentStatus, currentStatusString, elapsedTime);
 
+        // 更新调度
+        // 网络在切换过程中可能不稳定，所以发送请求前等待2秒
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
+            HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+            [scheduleCenter asyncUpdateRegionScheduleConfig];
+        });
+
         NSArray *hostArray = [_hostObjectInMemoryCache allCacheKeys];
 
+        // 预解析
         // 网络在切换过程中可能不稳定，所以在清理缓存和发送请求前等待3秒
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), _asyncResolveHostQueue, ^{
-            [self cleanAllHostMemoryCache];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
+            [self->_hostObjectInMemoryCache removeAllHostObjects];
 
             if (self->_isPreResolveAfterNetworkChangedEnabled) {
                 HttpdnsLogDebug("Network changed, pre resolve for hosts: %@", hostArray);
                 [self addPreResolveHosts:hostArray queryType:HttpdnsQueryIPTypeAuto];
             }
         });
+
+        // 更新时间戳和状态
+        _lastNetworkStatus = currentStatus;
+        _lastUpdateTimestamp = currentTimestamp;
     } else {
         HttpdnsLogDebug("Ignoring network change event: oldStatus: %ld, newStatus: %ld(%@), elapsedTime=%.2f seconds",
                         _lastNetworkStatus, currentStatus, currentStatusString, elapsedTime);
     }
-
-    // 更新时间戳和状态
-    _lastNetworkChangeTimestamp = currentTimestamp;
-    _lastNetworkStatus = currentStatus;
 }
 
 #pragma mark -
@@ -451,10 +450,6 @@ typedef struct {
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         [self syncReloadCacheFromDbToMemory];
     });
-}
-
-- (void)cleanAllHostMemoryCache {
-    [_hostObjectInMemoryCache removeAllHostObjects];
 }
 
 - (void)cleanMemoryAndPersistentCacheOfHostArray:(NSArray<NSString *> *)hostArray {
@@ -498,8 +493,8 @@ typedef struct {
             HttpdnsHostObject *hostObject = [HttpdnsHostObject fromDBRecord:hostRecord];
 
             // 从DB缓存中加载到内存里的数据，更新其查询时间为当前，使得它可以有一个TTL的可用期
-            hostObject.lastIPv4LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
-            hostObject.lastIPv6LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
+            hostObject.lastIPv4LookupTime = [NSDate date].timeIntervalSince1970;
+            hostObject.lastIPv6LookupTime = [NSDate date].timeIntervalSince1970;
 
             [_hostObjectInMemoryCache setHostObject:hostObject forCacheKey:hostName];
 

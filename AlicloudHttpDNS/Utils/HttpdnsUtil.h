@@ -21,10 +21,6 @@
 
 @interface HttpdnsUtil : NSObject
 
-+ (int64_t)currentEpochTimeInSecond;
-
-+ (NSString *)currentEpochTimeInSecondString;
-
 + (BOOL)isIPv4Address:(NSString *)addr;
 
 + (BOOL)isIPv6Address:(NSString *)addr;

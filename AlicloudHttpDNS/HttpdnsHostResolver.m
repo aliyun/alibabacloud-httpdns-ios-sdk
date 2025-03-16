@@ -158,11 +158,11 @@ static NSURLSession *_resolveHostSession = nil;
     // 分别设置 v4ttl v6ttl
     if ([HttpdnsUtil isNotEmptyArray:ipArray]) {
         hostObject.v4ttl = v4TTL;
-        hostObject.lastIPv4LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
+        hostObject.lastIPv4LookupTime = [NSDate date].timeIntervalSince1970;
     }
     if ([HttpdnsUtil isNotEmptyArray:ip6Array]) {
         hostObject.v6ttl = v6TTL;
-        hostObject.lastIPv6LookupTime = [HttpdnsUtil currentEpochTimeInSecond];
+        hostObject.lastIPv6LookupTime = [NSDate date].timeIntervalSince1970;
     }
 
     return hostObject;

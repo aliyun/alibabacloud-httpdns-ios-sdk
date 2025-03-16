@@ -30,15 +30,6 @@
 
 @implementation HttpdnsUtil
 
-+ (int64_t)currentEpochTimeInSecond {
-    return (int64_t)[[[NSDate alloc] init] timeIntervalSince1970];
-}
-
-+ (NSString *)currentEpochTimeInSecondString {
-    return [NSString stringWithFormat:@"%lld", [HttpdnsUtil currentEpochTimeInSecond]];
-}
-
-
 + (BOOL)isIPv4Address:(NSString *)addr {
     if (!addr) {
         return NO;
