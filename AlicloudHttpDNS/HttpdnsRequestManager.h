@@ -56,8 +56,6 @@ FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP;
 
 - (HttpdnsHostObject *)executeRequest:(HttpdnsRequest *)request retryCount:(int)hasRetryedCount;
 
-- (void)syncReloadCacheFromDbToMemory;
-
 - (NSString *)showMemoryCache;
 
 - (void)cleanAllHostMemoryCache;

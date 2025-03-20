@@ -102,11 +102,13 @@ typedef struct {
     [self setPersistentCacheIpEnabled:enable];
 
     if (enable) {
-        // 先清理过期时间超过阈值的缓存结果
-        [self cleanHostRecordsAlreadyExpiredAt:[[NSDate date] timeIntervalSince1970] - duration];
+        dispatch_async(_persistentCacheConcurrentQueue, ^{
+            // 先清理过期时间超过阈值的缓存结果
+            [self->_httpdnsDB cleanRecordAlreadExpiredAt:[[NSDate date] timeIntervalSince1970] - duration];
 
-        // 再读取持久化缓存中的历史记录，加载到内存缓存里
-        [self asyncReloadCacheFromDbToMemory];
+            // 再读取持久化缓存中的历史记录，加载到内存缓存里
+            [self reloadCacheFromDbToMemory];
+        });
     }
 }
 
@@ -445,10 +447,34 @@ typedef struct {
 #pragma mark -
 #pragma mark - Flag for Disable and Sniffer Method
 
-- (void)asyncReloadCacheFromDbToMemory {
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [self syncReloadCacheFromDbToMemory];
-    });
+- (void)reloadCacheFromDbToMemory {
+    NSArray<HttpdnsHostRecord *> *hostRecords = [self->_httpdnsDB getAllRecords];
+
+    if ([HttpdnsUtil isEmptyArray:hostRecords]) {
+        return;
+    }
+
+    for (HttpdnsHostRecord *hostRecord in hostRecords) {
+        NSString *hostName = hostRecord.hostName;
+        NSString *cacheKey = hostRecord.cacheKey;
+
+        HttpdnsHostObject *hostObject = [HttpdnsHostObject fromDBRecord:hostRecord];
+
+        // 从DB缓存中加载到内存里的数据，更新其查询时间为当前，使得它可以有一个TTL的可用期
+        hostObject.lastIPv4LookupTime = [NSDate date].timeIntervalSince1970;
+        hostObject.lastIPv6LookupTime = [NSDate date].timeIntervalSince1970;
+
+        [self->_hostObjectInMemoryCache setHostObject:hostObject forCacheKey:hostName];
+
+        NSArray *v4IpStrArr = [hostObject getV4IpStrings];
+        if ([HttpdnsUtil isNotEmptyArray:v4IpStrArr]) {
+            [self initiateQualityDetectionForIP:v4IpStrArr forHost:hostName cacheKey:cacheKey];
+        }
+        NSArray *v6IpStrArr = [hostObject getV6IpStrings];
+        if ([HttpdnsUtil isNotEmptyArray:v6IpStrArr]) {
+            [self initiateQualityDetectionForIP:v6IpStrArr forHost:hostName cacheKey:cacheKey];
+        }
+    }
 }
 
 - (void)cleanMemoryAndPersistentCacheOfHostArray:(NSArray<NSString *> *)hostArray {
@@ -473,42 +499,6 @@ typedef struct {
     });
 }
 
-- (void)syncReloadCacheFromDbToMemory {
-    dispatch_sync(_persistentCacheConcurrentQueue, ^{
-        if (!_persistentCacheIpEnabled) {
-            return;
-        }
-
-        NSArray<HttpdnsHostRecord *> *hostRecords = [_httpdnsDB getAllRecords];
-
-        if (![HttpdnsUtil isNotEmptyArray:hostRecords]) {
-            return;
-        }
-
-        for (HttpdnsHostRecord *hostRecord in hostRecords) {
-            NSString *hostName = hostRecord.hostName;
-            NSString *cacheKey = hostRecord.cacheKey;
-
-            HttpdnsHostObject *hostObject = [HttpdnsHostObject fromDBRecord:hostRecord];
-
-            // 从DB缓存中加载到内存里的数据，更新其查询时间为当前，使得它可以有一个TTL的可用期
-            hostObject.lastIPv4LookupTime = [NSDate date].timeIntervalSince1970;
-            hostObject.lastIPv6LookupTime = [NSDate date].timeIntervalSince1970;
-
-            [_hostObjectInMemoryCache setHostObject:hostObject forCacheKey:hostName];
-
-            NSArray *v4IpStrArr = [hostObject getV4IpStrings];
-            if ([HttpdnsUtil isNotEmptyArray:v4IpStrArr]) {
-                [self initiateQualityDetectionForIP:v4IpStrArr forHost:hostName cacheKey:cacheKey];
-            }
-            NSArray *v6IpStrArr = [hostObject getV6IpStrings];
-            if ([HttpdnsUtil isNotEmptyArray:v6IpStrArr]) {
-                [self initiateQualityDetectionForIP:v6IpStrArr forHost:hostName cacheKey:cacheKey];
-            }
-        }
-    });
-}
-
 - (void)persistToDB:(NSString *)cacheKey hostObject:(HttpdnsHostObject *)hostObject {
     if (!_persistentCacheIpEnabled) {
         return;
@@ -520,12 +510,6 @@ typedef struct {
 }
 
 - (void)cleanHostRecordsAlreadyExpiredAt:(NSTimeInterval)specifiedTime {
-    if (!_persistentCacheIpEnabled) {
-        return;
-    }
-    dispatch_async(_persistentCacheConcurrentQueue, ^{
-        [self->_httpdnsDB cleanRecordAlreadExpiredAt:specifiedTime];
-    });
 }
 
 #pragma mark -
