@@ -509,9 +509,6 @@ typedef struct {
     });
 }
 
-- (void)cleanHostRecordsAlreadyExpiredAt:(NSTimeInterval)specifiedTime {
-}
-
 #pragma mark -
 #pragma mark - 以下函数仅用于测试目的
 
