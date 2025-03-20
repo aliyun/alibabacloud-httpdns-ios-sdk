@@ -25,5 +25,6 @@
 #import "HttpdnsService.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsResult.h"
-#import "HttpdnsLoggerDelegate.h"
+#import "HttpdnsLoggerProtocol.h"
 #import "HttpdnsDegradationDelegate.h"
+#import "HttpdnsIpStackDetector.h"

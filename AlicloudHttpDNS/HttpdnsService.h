@@ -21,7 +21,7 @@
 #import "HttpdnsRequest.h"
 #import "HttpdnsResult.h"
 #import "HttpdnsDegradationDelegate.h"
-#import "HttpdnsLoggerDelegate.h"
+#import "HttpdnsLoggerProtocol.h"
 
 #define ALICLOUD_HTTPDNS_DEPRECATED(explain) __attribute__((deprecated(explain)))
 
@@ -43,7 +43,7 @@
 /// @param host 域名
 /// @param ipType 当前查询的IP类型
 /// @param ttl 当次域名解析返回的TTL
-- (int64_t)httpdnsHost:(NSString *)host ipType:(AlicloudHttpDNS_IPType)ipType ttl:(int64_t)ttl;
+- (int64_t)httpdnsHost:(NSString * _Nonnull)host ipType:(AlicloudHttpDNS_IPType)ipType ttl:(int64_t)ttl;
 
 @end
 

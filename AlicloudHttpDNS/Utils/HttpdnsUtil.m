@@ -22,9 +22,6 @@
 #import "HttpdnsLog_Internal.h"
 #import "CommonCrypto/CommonCrypto.h"
 #import "arpa/inet.h"
-#import "HttpdnsService_Internal.h"
-#import "HttpdnsInternalConstant.h"
-#import "HttpdnsRemoteResolver.h"
 #import "HttpdnsPublicConstant.h"
 #import "httpdnsReachability.h"
 

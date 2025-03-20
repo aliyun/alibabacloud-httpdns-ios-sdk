@@ -243,16 +243,16 @@
     return [ipv6sString copy];
 }
 
-- (BOOL)updateConnectedRT:(NSInteger)connectedRT forIP:(NSString *)ip {
+- (void)updateConnectedRT:(NSInteger)connectedRT forIP:(NSString *)ip {
     if ([HttpdnsUtil isEmptyString:ip]) {
-        return NO;
+        return;
     }
 
     BOOL isIPv6 = [HttpdnsUtil isIPv6Address:ip];
 
     NSArray<HttpdnsIpObject *> *ipObjects = isIPv6 ? [self getV6Ips] : [self getV4Ips];
     if ([HttpdnsUtil isEmptyArray:ipObjects]) {
-        return NO;
+        return;
     }
 
     // 查找匹配的IP对象并更新connectedRT
@@ -268,7 +268,7 @@
     }
 
     if (!found) {
-        return NO;
+        return;
     }
 
     // 根据connectedRT值对IP列表进行排序，-1值放在最后
@@ -291,8 +291,6 @@
     } else {
         [self setV4Ips:[mutableIpObjects copy]];
     }
-
-    return YES;
 }
 
 - (NSString *)description {

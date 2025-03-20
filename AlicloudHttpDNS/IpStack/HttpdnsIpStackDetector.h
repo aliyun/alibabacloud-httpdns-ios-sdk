@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
  * IP 协议栈类型
  */
 typedef enum {
-    kHttpdnsIpUnknown     = 0,    // 未知协议栈
+    kHttpdnsIpUnknown     = 0,   // 未知协议栈
     kHttpdnsIpv4Only     = 1,    // IPv4-only
     kHttpdnsIpv6Only     = 2,    // IPv6-only
     kHttpdnsIpDual       = 3     // 双栈
@@ -34,13 +34,17 @@ typedef enum {
  */
 - (HttpdnsIPStackType)currentIpStack;
 
+/**
+ * 返回当前是否是IPv6-only网络
+ * @return BOOL
+ */
 - (BOOL)isIpv6OnlyNetwork;
 
 /**
  * 强制重新检测IP协议栈类型
  * @return HttpdnsIPStackType - 新检测到的IP协议栈类型
  */
-- (HttpdnsIPStackType)redetectIpStack;
+- (void)redetectIpStack;
 
 @end
 
