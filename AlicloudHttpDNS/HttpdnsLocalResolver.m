@@ -10,4 +10,18 @@
 
 @implementation HttpdnsLocalResolver
 
++ (instancetype)sharedInstance {
+    static HttpdnsLocalResolver *instance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        instance = [[HttpdnsLocalResolver alloc] init];
+    });
+    return instance;
+}
+
+- (HttpdnsHostObject *)resolve:(HttpdnsRequest *)request {
+    // TODO
+    return nil;
+}
+
 @end
