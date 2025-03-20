@@ -51,15 +51,15 @@
 
 @property (nonatomic, assign, readonly) NSInteger accountID;
 
-@property (nonatomic, copy, readonly) NSString *secretKey;
+@property (nonatomic, copy, readonly, nullable) NSString *secretKey;
 
 @property (nonatomic, weak, setter=setDelegateForDegradationFilter:) id<HttpDNSDegradationDelegate> delegate ALICLOUD_HTTPDNS_DEPRECATED("不再建议通过设置此回调实现降级逻辑，而是自行在调用HTTPDNS解析域名前做判断");
 
 @property (nonatomic, weak) id<HttpdnsTTLDelegate> ttlDelegate;
 
-+ (instancetype)sharedInstance;
++ (nonnull instancetype)sharedInstance;
 
-- (instancetype)initWithAccountID:(NSInteger)accountID;
+- (nonnull instancetype)initWithAccountID:(NSInteger)accountID;
 
 /*!
  * @brief 启用鉴权功能的初始化接口
@@ -69,7 +69,7 @@
  * @param accountID 您的 HTTPDNS Account ID
  * @param secretKey 鉴权对应的 secretKey
  */
-- (instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString *)secretKey;
+- (nonnull instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString * _Nullable)secretKey;
 
 
 /// 开启鉴权功能后，鉴权的签名计算默认读取设备当前时间。若担心设备时间不准确导致签名不准确，可以使用此接口校正 APP 内鉴权计算使用的时间值

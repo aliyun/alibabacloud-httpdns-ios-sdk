@@ -84,7 +84,6 @@
  * 更新指定IP的connectedRT值并重新排序IP列表
  * @param ip 需要更新的IP地址
  * @param connectedRT 检测到的RT值，-1表示不可达
- * @return 是否成功更新
  */
 - (void)updateConnectedRT:(NSInteger)connectedRT forIP:(NSString *)ip;
 

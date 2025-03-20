@@ -17,7 +17,7 @@ typedef enum {
 } AlicloudHttpDNS_IPType;
 
 typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
-    HttpdnsQueryIPTypeAuto = 0 << 0,
+    HttpdnsQueryIPTypeAuto NS_SWIFT_NAME(auto) = 0,
     HttpdnsQueryIPTypeIpv4 = 1 << 0,
     HttpdnsQueryIPTypeIpv6 = 1 << 1,
     HttpdnsQueryIPTypeBoth = HttpdnsQueryIPTypeIpv4 | HttpdnsQueryIPTypeIpv6,

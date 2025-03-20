@@ -60,7 +60,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 #pragma mark ---------- singleton
 
 
-+ (instancetype)sharedInstance {
++ (nonnull instancetype)sharedInstance {
     static HttpDnsService * _sharedInstance;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -69,11 +69,11 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     return _sharedInstance;
 }
 
-- (instancetype)initWithAccountID:(NSInteger)accountID {
+- (nonnull instancetype)initWithAccountID:(NSInteger)accountID {
     return [self initWithAccountID:accountID secretKey:nil];
 }
 
-- (instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString *)secretKey {
+- (nonnull instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString *)secretKey {
     HttpDnsService *sharedInstance = [HttpDnsService sharedInstance];;
 
     sharedInstance.accountID = accountID;
