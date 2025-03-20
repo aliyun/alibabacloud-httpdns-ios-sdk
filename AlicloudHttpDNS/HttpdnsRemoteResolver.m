@@ -17,7 +17,6 @@
  * under the License.
  */
 #import "HttpdnsService.h"
-#import "HttpdnsHostObject.h"
 #import "HttpdnsRemoteResolver.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
@@ -27,7 +26,6 @@
 #import "HttpdnsScheduleCenter.h"
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsReachability.h"
-#import "HttpdnsInternalConstant.h"
 #import "HttpdnsRequestManager.h"
 #import "HttpdnsCFHttpWrapper.h"
 #import "HttpdnsIpStackDetector.h"

@@ -86,6 +86,6 @@
  * @param connectedRT 检测到的RT值，-1表示不可达
  * @return 是否成功更新
  */
-- (BOOL)updateConnectedRT:(NSInteger)connectedRT forIP:(NSString *)ip;
+- (void)updateConnectedRT:(NSInteger)connectedRT forIP:(NSString *)ip;
 
 @end

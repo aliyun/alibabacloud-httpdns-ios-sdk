@@ -20,7 +20,6 @@
 #import "HttpdnsRemoteResolver.h"
 #import "HttpdnsInternalConstant.h"
 #import "HttpdnsHostObject.h"
-#import "HttpdnsRequest.h"
 #import "HttpdnsRequest_Internal.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
@@ -990,7 +989,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)cleanHostCache:(NSArray<NSString *> *)hostArray {
-    if (!hostArray) {
+    if ([HttpdnsUtil isEmptyArray:hostArray]) {
         [self cleanAllHostCache];
         return;
     }

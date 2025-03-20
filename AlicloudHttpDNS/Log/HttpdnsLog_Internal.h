@@ -7,7 +7,7 @@
 //
 
 #import "HttpdnsLog.h"
-#import "HttpdnsLoggerDelegate.h"
+#import "HttpdnsLoggerProtocol.h"
 #import <pthread/pthread.h>
 
 // logHandler输出日志，不受日志开关影响

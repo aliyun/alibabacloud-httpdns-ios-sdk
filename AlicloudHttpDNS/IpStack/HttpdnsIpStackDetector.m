@@ -149,7 +149,7 @@ static HttpdnsIPStackType detectIpStack(void) {
     return [self currentIpStack] == kHttpdnsIpv6Only;
 }
 
-- (HttpdnsIPStackType)redetectIpStack {
+- (void)redetectIpStack {
     // 完全异步执行，将检查逻辑放在串行队列中
     dispatch_async(_detectSerialQueue, ^{
         // 如果已经在检测中，直接返回
@@ -184,9 +184,6 @@ static HttpdnsIPStackType detectIpStack(void) {
             });
         });
     });
-
-    // 立即返回当前值，异步更新后的值将在下次调用currentIpStack时返回
-    return [self currentIpStack];
 }
 
 @end
