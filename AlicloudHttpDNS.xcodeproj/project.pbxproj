@@ -30,7 +30,7 @@
 		940585172D85AC9C001FEB15 /* HttpdnsDB.m in Sources */ = {isa = PBXBuildFile; fileRef = 940585132D85AC9C001FEB15 /* HttpdnsDB.m */; };
 		9405851A2D85C023001FEB15 /* DBTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 940585192D85C023001FEB15 /* DBTest.m */; };
 		9405851E2D86695C001FEB15 /* HttpdnsIpStackDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = 9405851D2D86695C001FEB15 /* HttpdnsIpStackDetector.m */; };
-		9405851F2D86695C001FEB15 /* HttpdnsIpStackDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 9405851C2D86695C001FEB15 /* HttpdnsIpStackDetector.h */; };
+		9405851F2D86695C001FEB15 /* HttpdnsIpStackDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 9405851C2D86695C001FEB15 /* HttpdnsIpStackDetector.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		940585202D86695C001FEB15 /* HttpdnsIpStackDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = 9405851D2D86695C001FEB15 /* HttpdnsIpStackDetector.m */; };
 		940585212D86695C001FEB15 /* HttpdnsIpStackDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 9405851C2D86695C001FEB15 /* HttpdnsIpStackDetector.h */; };
 		940585282D868B24001FEB15 /* HttpdnsLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 2197CAB41BC7B3D400BDB65B /* HttpdnsLog.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -109,7 +109,7 @@
 		94C369582D82C705005ADDD7 /* HttpdnsIPQualityDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = 94C369572D82C705005ADDD7 /* HttpdnsIPQualityDetector.m */; };
 		94C369592D82C705005ADDD7 /* HttpdnsIPQualityDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 94C369562D82C705005ADDD7 /* HttpdnsIPQualityDetector.h */; };
 		94C3695A2D82C705005ADDD7 /* HttpdnsIPQualityDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = 94C369572D82C705005ADDD7 /* HttpdnsIPQualityDetector.m */; };
-		94C3695B2D82C705005ADDD7 /* HttpdnsIPQualityDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 94C369562D82C705005ADDD7 /* HttpdnsIPQualityDetector.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		94C3695B2D82C705005ADDD7 /* HttpdnsIPQualityDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 94C369562D82C705005ADDD7 /* HttpdnsIPQualityDetector.h */; };
 		94C3695E2D8345A5005ADDD7 /* IpDetectorTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 94C3695D2D8345A5005ADDD7 /* IpDetectorTest.m */; };
 		94C3F8AE2C05D23F00A4A9B8 /* ResolvingEffectiveHostTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 94C3F8AD2C05D23F00A4A9B8 /* ResolvingEffectiveHostTest.m */; };
 		94C3F8B02C05D4FD00A4A9B8 /* EnableReuseExpiredIpTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 94C3F8AF2C05D4FD00A4A9B8 /* EnableReuseExpiredIpTest.m */; };
@@ -551,15 +551,15 @@
 				940585282D868B24001FEB15 /* HttpdnsLog.h in Headers */,
 				948DA4DE2C1E7E5F00D81682 /* HttpdnsPublicConstant.h in Headers */,
 				943FA4262BFA44F30006F169 /* HttpdnsResult.h in Headers */,
+				9405851F2D86695C001FEB15 /* HttpdnsIpStackDetector.h in Headers */,
 				4A36B63821C9EE9C00B1D008 /* HttpdnsLoggerProtocol.h in Headers */,
-				94C3695B2D82C705005ADDD7 /* HttpdnsIPQualityDetector.h in Headers */,
 				940585312D872C84001FEB15 /* HttpdnsLocalResolver.h in Headers */,
 				9A5D5E291E9CB4D400CAC3A6 /* HttpdnsScheduleExecutor.h in Headers */,
 				94B60FED2C21EAD700DCA078 /* HttpdnsRequest_Internal.h in Headers */,
 				94A014742BF38F410018B096 /* HttpdnsService_Internal.h in Headers */,
 				9485410E2D7DA5B90013CC3B /* HttpdnsReachability.h in Headers */,
+				94C3695B2D82C705005ADDD7 /* HttpdnsIPQualityDetector.h in Headers */,
 				9A5914821EA0815D00A7ED28 /* HttpdnsPersistenceUtils.h in Headers */,
-				9405851F2D86695C001FEB15 /* HttpdnsIpStackDetector.h in Headers */,
 				948DA4E42C1EAA8200D81682 /* HttpdnsRegionConfigLoader.h in Headers */,
 				2197CAC31BC7B3D400BDB65B /* AlicloudHttpDNS.h in Headers */,
 				942376DE1C5764CF00736E50 /* HttpdnsDegradationDelegate.h in Headers */,
