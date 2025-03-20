@@ -128,26 +128,18 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
     });
 }
 
-- (void)asyncUpdateRegionConfigAfterAtLeastOneDay {
+// 根据指定的时间间隔检查是否需要更新
+- (void)asyncUpdateRegionConfigAfterAtLeast:(NSTimeInterval)interval {
     __block BOOL shouldUpdate = NO;
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
         NSDate *now = [NSDate date];
-        if ([now timeIntervalSinceDate:self->_lastScheduleCenterConnectDate] > 24 * 60 * 60) {
+        if ([now timeIntervalSinceDate:self->_lastScheduleCenterConnectDate] > interval) {
             self->_lastScheduleCenterConnectDate = now;
             shouldUpdate = YES;
         }
     });
 
     if (shouldUpdate) {
-        [self asyncUpdateRegionScheduleConfig];
-    }
-}
-
-- (void)asyncUpdateRegionConfigAfterAtLeast30Seconds {
-    NSDate *now = [NSDate date];
-    if ([now timeIntervalSinceDate:self->_lastScheduleCenterConnectDate] > 30) {
-        self->_lastScheduleCenterConnectDate = [NSDate date];
-
         [self asyncUpdateRegionScheduleConfig];
     }
 }
@@ -258,7 +250,8 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
     });
 
     if (timeToUpdate) {
-        [self asyncUpdateRegionConfigAfterAtLeast30Seconds];
+        // 每次服务server列表轮转之后，尝试1个至少间隔30秒的更新
+        [self asyncUpdateRegionConfigAfterAtLeast:30];
     }
 }
 
@@ -283,7 +276,9 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 }
 
 - (NSString *)currentActiveServiceServerV4Host {
-    [self asyncUpdateRegionConfigAfterAtLeastOneDay];
+    // 每次读取时都检查是否需要更新，相当于实现一个懒加载的机制
+    // 因为当前httpdns的初始化方式，没有一个统一的初始化入口，所以需要这样处理
+    [self asyncUpdateRegionConfigAfterAtLeast:(24 * 60 * 60)];
 
     __block NSString *host = nil;
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
@@ -313,7 +308,8 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 }
 
 - (NSString *)currentActiveServiceServerV6Host {
-    [self asyncUpdateRegionConfigAfterAtLeastOneDay];
+    // 同上
+    [self asyncUpdateRegionConfigAfterAtLeast:(24 * 60 * 60)];
 
     __block NSString *host = nil;
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
