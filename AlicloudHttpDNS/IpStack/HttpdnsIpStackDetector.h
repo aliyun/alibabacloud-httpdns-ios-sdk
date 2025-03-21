@@ -42,7 +42,6 @@ typedef enum {
 
 /**
  * 强制重新检测IP协议栈类型
- * @return HttpdnsIPStackType - 新检测到的IP协议栈类型
  */
 - (void)redetectIpStack;
 
