@@ -280,6 +280,13 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
     // 因为当前httpdns的初始化方式，没有一个统一的初始化入口，所以需要这样处理
     [self asyncUpdateRegionConfigAfterAtLeast:(24 * 60 * 60)];
 
+    // 检查是否存在HTTPDNS_DEBUG_V4_SERVICE_IP环境变量
+    NSString *debugV4ServiceIP = [[[NSProcessInfo processInfo] environment] objectForKey:@"HTTPDNS_DEBUG_V4_SERVICE_IP"];
+    if ([HttpdnsUtil isNotEmptyString:debugV4ServiceIP]) {
+        HttpdnsLogDebug("Using debug v4 service IP from environment: %@", debugV4ServiceIP);
+        return debugV4ServiceIP;
+    }
+
     __block NSString *host = nil;
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
         int count = (int)self.ipv4ServiceServerHostList.count;
@@ -310,6 +317,13 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 - (NSString *)currentActiveServiceServerV6Host {
     // 同上
     [self asyncUpdateRegionConfigAfterAtLeast:(24 * 60 * 60)];
+
+    // 检查是否存在HTTPDNS_DEBUG_V6_SERVICE_IP环境变量
+    NSString *debugV6ServiceIP = [[[NSProcessInfo processInfo] environment] objectForKey:@"HTTPDNS_DEBUG_V6_SERVICE_IP"];
+    if ([HttpdnsUtil isNotEmptyString:debugV6ServiceIP]) {
+        HttpdnsLogDebug("Using debug v6 service IP from environment: %@", debugV6ServiceIP);
+        return debugV6ServiceIP;
+    }
 
     __block NSString *host = nil;
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
