@@ -89,6 +89,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     sharedInstance.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
     sharedInstance.enableHttpsRequest = NO;
     sharedInstance.hasAllowedArbitraryLoadsInATS = NO;
+    sharedInstance.enableDegradeToLocalDNS = NO;
 
     sharedInstance.requestManager = [[HttpdnsRequestManager alloc] initWithAccountId:accountID];
 
@@ -224,6 +225,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)setDegradeToLocalDNSEnabled:(BOOL)enable {
+    _enableDegradeToLocalDNS = enable;
 }
 
 - (void)enableIPv6:(BOOL)enable {
