@@ -36,6 +36,8 @@
 
 @property (nonatomic, assign) BOOL hasAllowedArbitraryLoadsInATS;
 
+@property (nonatomic, assign) BOOL enableDegradeToLocalDNS;
+
 - (NSString *)getIpByHost:(NSString *)host;
 
 - (NSArray *)getIpsByHost:(NSString *)host;

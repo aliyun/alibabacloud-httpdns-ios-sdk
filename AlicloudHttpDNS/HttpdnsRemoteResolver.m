@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#import "HttpdnsService.h"
+#import "HttpdnsRequest.h"
 #import "HttpdnsRemoteResolver.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"

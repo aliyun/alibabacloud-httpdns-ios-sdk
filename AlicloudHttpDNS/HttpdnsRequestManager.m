@@ -20,6 +20,7 @@
 #import "HttpdnsRequestManager.h"
 #import "HttpdnsHostObject.h"
 #import "HttpdnsRemoteResolver.h"
+#import "HttpdnsLocalResolver.h"
 #import "HttpdnsInternalConstant.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
@@ -260,32 +261,46 @@ typedef struct {
     NSString *host = request.host;
     NSString *cacheKey = request.cacheKey;
     HttpdnsQueryIPType queryIPType = request.queryIpType;
+    HttpdnsHostObject *result = nil;
 
-    if (hasRetryedCount > HTTPDNS_MAX_REQUEST_RETRY_TIME) {
-        HttpdnsLogDebug("Internal request retry count exceed limit, host: %@", host);
-        return nil;
+    BOOL isDegradationResult = NO;
+
+    if (hasRetryedCount <= HTTPDNS_MAX_REQUEST_RETRY_TIME) {
+        HttpdnsLogDebug("Internal request starts, host: %@, request: %@", host, request);
+
+        NSError *error = nil;
+        result = [[HttpdnsRemoteResolver new] lookupHostFromServer:request error:&error];
+
+        if (error) {
+            HttpdnsLogDebug("Internal request error, host: %@, error: %@", host, error);
+
+            HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+            [scheduleCenter moveToNextServiceServerHost];
+
+            // 确保一定的重试间隔
+            hasRetryedCount++;
+            [NSThread sleepForTimeInterval:hasRetryedCount * 0.25];
+
+            return [self executeRequest:request retryCount:hasRetryedCount];
+        }
+    } else {
+        if (![HttpDnsService sharedInstance].enableDegradeToLocalDNS) {
+            HttpdnsLogDebug("Internal remote request retry count exceed limit, host: %@", host);
+            return nil;
+        }
+
+        result = [[HttpdnsLocalResolver sharedInstance] resolve:request];
+        if (!result) {
+            HttpdnsLogDebug("Fallback to local dns resolver, but still get no result, host: %@", host);
+            return nil;
+        }
+
+        isDegradationResult = YES;
     }
 
-    HttpdnsLogDebug("Internal request starts, host: %@, request: %@", host, request);
+    HttpdnsLogDebug("Internal request finished, host: %@, cacheKey: %@, isDegradationResult: %d, result: %@ ",
+                    host, cacheKey, isDegradationResult, result);
 
-    NSError *error = nil;
-
-    __block HttpdnsHostObject *result = [[HttpdnsRemoteResolver new] lookupHostFromServer:request error:&error];
-
-    if (error) {
-        HttpdnsLogDebug("Internal request error, host: %@, error: %@", host, error);
-
-        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-        [scheduleCenter moveToNextServiceServerHost];
-
-        // 确保一定的重试间隔
-        hasRetryedCount++;
-        [NSThread sleepForTimeInterval:hasRetryedCount * 0.25];
-
-        return [self executeRequest:request retryCount:hasRetryedCount];
-    }
-
-    HttpdnsLogDebug("Internal request finished, host: %@, cacheKey: %@, result: %@", host, cacheKey, result);
     // merge之后，返回的应当是存储在缓存中的实际对象，而非请求过程中构造出来的对象
     HttpdnsHostObject *lookupResult = [self mergeLookupResultToManager:result host:host cacheKey:cacheKey underQueryIpType:queryIPType];
     // 返回一个快照，避免进行中的一些缓存调整影响返回去的结果

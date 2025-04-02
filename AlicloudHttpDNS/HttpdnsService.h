@@ -177,11 +177,11 @@
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
 
 
-/// 设置当使用Httpdns解析失败时是否自动降级到本地DNS
-/// 如果打开此开关
-/// - 在Httpdns解析失败时，会自动降级到本地DNS解析，此时解析结果的TTL默认是60秒
-/// - 调用同步非阻塞接口，若Httpdns缓存中无有效值，也会自动降级到本地DNS解析
-/// @param enable YES: 开启 NO: 关闭
+/// 设置当httpdns解析失败时是否降级到localDNS尝试解析
+/// 降级生效时，SDNS参数不生效，降级逻辑只解析域名，返回的结果默认使用60秒(若未指定该域名自定义TTL)作为TTL值
+/// 降级请求也不会再对ip进行优先排序
+/// 默认关闭，不会自动降级
+/// @param enable YES：自动降级 NO：不自动降级
 - (void)setDegradeToLocalDNSEnabled:(BOOL)enable;
 
 
