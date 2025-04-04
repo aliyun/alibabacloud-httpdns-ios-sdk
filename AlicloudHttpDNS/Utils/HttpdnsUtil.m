@@ -316,4 +316,74 @@
     return resultData;
 }
 
++ (NSString *)hexStringFromData:(NSData *)data {
+    if (!data || data.length == 0) {
+        return nil;
+    }
+
+    NSMutableString *hexString = [NSMutableString stringWithCapacity:data.length * 2];
+    const unsigned char *bytes = data.bytes;
+
+    for (NSInteger i = 0; i < data.length; i++) {
+        [hexString appendFormat:@"%02x", bytes[i]];
+    }
+
+    return [hexString copy];
+}
+
++ (NSData *)dataFromHexString:(NSString *)hexString {
+    if (!hexString || hexString.length == 0) {
+        return nil;
+    }
+
+    // 移除可能存在的空格
+    NSString *cleanedString = [hexString stringByReplacingOccurrencesOfString:@" " withString:@""];
+
+    // 确保字符串长度为偶数
+    if (cleanedString.length % 2 != 0) {
+        return nil;
+    }
+
+    NSMutableData *data = [NSMutableData dataWithCapacity:cleanedString.length / 2];
+    for (NSUInteger i = 0; i < cleanedString.length; i += 2) {
+        NSString *byteString = [cleanedString substringWithRange:NSMakeRange(i, 2)];
+        NSScanner *scanner = [NSScanner scannerWithString:byteString];
+
+        unsigned int byteValue;
+        if (![scanner scanHexInt:&byteValue]) {
+            return nil;
+        }
+
+        uint8_t byte = (uint8_t)byteValue;
+        [data appendBytes:&byte length:1];
+    }
+
+    return data;
+}
+
++ (NSString *)hmacSha256:(NSString *)data key:(NSString *)key {
+    if (!data || !key) {
+        return nil;
+    }
+
+    // 将十六进制密钥转换为NSData
+    NSData *keyData = [self dataFromHexString:key];
+    if (!keyData) {
+        return nil;
+    }
+
+    // 数据转换
+    NSData *dataToSign = [data dataUsingEncoding:NSUTF8StringEncoding];
+
+    // 计算HMAC
+    uint8_t digestBytes[CC_SHA256_DIGEST_LENGTH];
+    CCHmac(kCCHmacAlgSHA256, keyData.bytes, keyData.length, dataToSign.bytes, dataToSign.length, digestBytes);
+
+    // 创建结果数据
+    NSData *hmacData = [NSData dataWithBytes:digestBytes length:CC_SHA256_DIGEST_LENGTH];
+
+    // 转换为十六进制字符串
+    return [self hexStringFromData:hmacData];
+}
+
 @end
