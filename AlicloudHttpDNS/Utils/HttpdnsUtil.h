@@ -57,4 +57,8 @@
 
 + (NSString *)generateUserAgent;
 
++ (NSData *)encryptDataAESCBC:(NSData *)plaintext
+                      withKey:(NSData *)key
+                        error:(NSError **)error;
+
 @end

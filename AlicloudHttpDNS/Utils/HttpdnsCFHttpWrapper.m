@@ -67,7 +67,9 @@ typedef struct {
     } else {
         HttpdnsLogDebug("Failed to open read stream for request %@", url);
         [self cancelRequest:context];
-        completion(nil, [NSError errorWithDomain:@"HttpdnsCFHttpWrapperError" code:-1 userInfo:@{NSLocalizedDescriptionKey: @"Failed to open read stream"}]);
+        completion(nil, [NSError errorWithDomain:ALICLOUD_HTTPDNS_ERROR_DOMAIN
+                                           code:ALICLOUD_HTTPDNS_HTTP_OPEN_STREAM_ERROR_CODE
+                                       userInfo:@{NSLocalizedDescriptionKey: @"Failed to open read stream"}]);
     }
 
     CFRelease(request);
@@ -101,7 +103,9 @@ typedef struct {
         HttpdnsLogDebug("Request timed out for request: %@", [context->url absoluteString]);
 
         if (context->completionHandler) {
-            context->completionHandler(nil, [NSError errorWithDomain:@"HttpdnsHttpAgentError" code:ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE userInfo:@{NSLocalizedDescriptionKey: @"Request Timeout"}]);
+            context->completionHandler(nil, [NSError errorWithDomain:ALICLOUD_HTTPDNS_ERROR_DOMAIN
+                                                                code:ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE
+                                                            userInfo:@{NSLocalizedDescriptionKey: @"Request Timeout"}]);
             context->completionHandler = nil;
         }
 
@@ -130,7 +134,7 @@ typedef struct {
                         [context->responseData appendBytes:buffer length:bytesRead];
                     }
                 } else {
-                    NSError *error = [NSError errorWithDomain:@"HttpdnsHttpClientWrapperError"
+                    NSError *error = [NSError errorWithDomain:ALICLOUD_HTTPDNS_ERROR_DOMAIN
                                                          code:statusCode
                                                      userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"HTTPStatusError: %ld", (long)statusCode]}];
                     if (context->completionHandler) {

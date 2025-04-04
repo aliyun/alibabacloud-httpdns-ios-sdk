@@ -15,6 +15,8 @@
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsHostObject.h"
 #import "HttpdnsReachability.h"
+#import "HttpdnsPublicConstant.h"
+#import "HttpdnsInternalConstant.h"
 
 
 static NSURLSession *_scheduleCenterSession = nil;
@@ -96,7 +98,7 @@ static NSURLSession *_scheduleCenterSession = nil;
                 NSDictionary *dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                                       @"Response code not 200, and parse response message error", @"ErrorMessage",
                                       [NSString stringWithFormat:@"%ld", (long)statusCode], @"ResponseCode", nil];
-                errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10002 userInfo:dict];
+                errorStrong = [NSError errorWithDomain:ALICLOUD_HTTPDNS_ERROR_DOMAIN code:ALICLOUD_HTTPDNS_HTTPS_NO_DATA_ERROR_CODE userInfo:dict];
             } else {
                 NSString *errCode = @"Not200Response";
                 errCode = [result objectForKey:@"code"];
@@ -105,7 +107,7 @@ static NSURLSession *_scheduleCenterSession = nil;
                     dict = [[NSDictionary alloc] initWithObjectsAndKeys:
                             errCode, ALICLOUD_HTTPDNS_ERROR_MESSAGE_KEY, nil];
                 }
-                errorStrong = [NSError errorWithDomain:@"httpdns.request.lookupAllHostsFromServer-HTTPS" code:10003 userInfo:dict];
+                errorStrong = [NSError errorWithDomain:ALICLOUD_HTTPDNS_ERROR_DOMAIN code:ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE userInfo:dict];
             }
 
             dispatch_semaphore_signal(_sem);
