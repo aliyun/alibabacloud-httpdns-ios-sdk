@@ -24,6 +24,7 @@
 #import "arpa/inet.h"
 #import "HttpdnsPublicConstant.h"
 #import "httpdnsReachability.h"
+#import "HttpdnsInternalConstant.h"
 
 @implementation HttpdnsUtil
 
@@ -248,6 +249,71 @@
     NSString *userAgent = [NSString stringWithFormat:@"HttpdnsSDK/%@ (%@; iOS %@; %@)", HTTPDNS_IOS_SDK_VERSION, model, systemVersion, systemName];
 
     return userAgent;
+}
+
++ (NSData *)encryptDataAESCBC:(NSData *)plaintext
+                      withKey:(NSData *)key
+                        error:(NSError **)error {
+    // 检查输入参数
+    if (plaintext == nil || [plaintext length] == 0 || key == nil || [key length] != kCCKeySizeAES128) {
+        if (error) {
+            *error = [NSError errorWithDomain:ALICLOUD_HTTPDNS_ERROR_DOMAIN
+                                         code:ALICLOUD_HTTPDNS_ENCRYPT_INVALID_PARAMS_ERROR_CODE
+                                     userInfo:@{NSLocalizedDescriptionKey: @"Invalid input parameters"}];
+        }
+        return nil;
+    }
+
+    // 为CBC模式生成128bit(16字节)的随机IV
+    NSMutableData *iv = [NSMutableData dataWithLength:kCCBlockSizeAES128];
+    int result = SecRandomCopyBytes(kSecRandomDefault, kCCBlockSizeAES128, iv.mutableBytes);
+    if (result != 0) {
+        if (error) {
+            *error = [NSError errorWithDomain:ALICLOUD_HTTPDNS_ERROR_DOMAIN
+                                         code:ALICLOUD_HTTPDNS_ENCRYPT_RANDOM_IV_ERROR_CODE
+                                     userInfo:@{NSLocalizedDescriptionKey: @"Failed to generate random IV"}];
+        }
+        return nil;
+    }
+
+    // 计算加密后的数据长度 (可能需要填充)
+    size_t bufferSize = [plaintext length] + kCCBlockSizeAES128;
+    size_t encryptedSize = 0;
+
+    // 创建输出缓冲区
+    NSMutableData *cipherData = [NSMutableData dataWithLength:bufferSize];
+
+    // 执行加密
+    // AES中PKCS5Padding与PKCS7Padding相同
+    CCCryptorStatus cryptStatus = CCCrypt(kCCEncrypt,
+                                         kCCAlgorithmAES,
+                                         kCCOptionPKCS7Padding,
+                                         [key bytes],
+                                         [key length],
+                                         [iv bytes],
+                                         [plaintext bytes],
+                                         [plaintext length],
+                                         [cipherData mutableBytes],
+                                         [cipherData length],
+                                         &encryptedSize);
+
+    if (cryptStatus != kCCSuccess) {
+        if (error) {
+            *error = [NSError errorWithDomain:ALICLOUD_HTTPDNS_ERROR_DOMAIN
+                                         code:ALICLOUD_HTTPDNS_ENCRYPT_FAILED_ERROR_CODE
+                                     userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"Encryption failed with status: %d", cryptStatus]}];
+        }
+        return nil;
+    }
+
+    // 调整加密数据的长度，只保留实际加密内容
+    [cipherData setLength:encryptedSize];
+
+    // 将IV和加密数据合并在一起
+    NSMutableData *resultData = [NSMutableData dataWithData:iv];
+    [resultData appendData:cipherData];
+
+    return resultData;
 }
 
 @end
