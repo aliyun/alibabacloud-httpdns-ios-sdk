@@ -61,4 +61,10 @@
                       withKey:(NSData *)key
                         error:(NSError **)error;
 
++ (NSString *)hexStringFromData:(NSData *)data;
+
++ (NSData *)dataFromHexString:(NSString *)hexString;
+
++ (NSString *)hmacSha256:(NSString *)data key:(NSString *)key;
+
 @end
