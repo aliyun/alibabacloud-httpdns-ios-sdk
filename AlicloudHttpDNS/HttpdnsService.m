@@ -37,6 +37,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 @property (nonatomic, assign) NSInteger accountID;
 @property (nonatomic, copy) NSString *secretKey;
+@property (nonatomic, copy) NSString *aesSecretKey;
 
  // 每次访问的签名有效期，SDK内部定死，当前不暴露设置接口，有效期定为10分钟。
 @property (nonatomic, assign) NSUInteger authTimeoutInterval;
@@ -74,10 +75,15 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (nonnull instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString *)secretKey {
+    return [self initWithAccountID:accountID secretKey:secretKey aesSecretKey:nil];
+}
+
+- (nonnull instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString *)secretKey aesSecretKey:(NSString *)aesSecretKey {
     HttpDnsService *sharedInstance = [HttpDnsService sharedInstance];;
 
     sharedInstance.accountID = accountID;
     sharedInstance.secretKey = secretKey;
+    sharedInstance.aesSecretKey = aesSecretKey;
 
     sharedInstance.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
     sharedInstance.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
