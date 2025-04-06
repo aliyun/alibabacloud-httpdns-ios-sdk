@@ -53,6 +53,8 @@
 
 @property (nonatomic, copy, readonly, nullable) NSString *secretKey;
 
+@property (nonatomic, copy, readonly, nullable) NSString *aesSecretKey;
+
 @property (nonatomic, weak, setter=setDelegateForDegradationFilter:) id<HttpDNSDegradationDelegate> delegate ALICLOUD_HTTPDNS_DEPRECATED("不再建议通过设置此回调实现降级逻辑，而是自行在调用HTTPDNS解析域名前做判断");
 
 @property (nonatomic, weak) id<HttpdnsTTLDelegate> ttlDelegate;
