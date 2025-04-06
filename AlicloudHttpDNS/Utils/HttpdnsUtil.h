@@ -19,6 +19,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class HttpdnsHostObject;
+
 @interface HttpdnsUtil : NSObject
 
 + (BOOL)isIPv4Address:(NSString *)addr;
@@ -70,5 +72,7 @@
 + (NSData *)dataFromHexString:(NSString *)hexString;
 
 + (NSString *)hmacSha256:(NSString *)data key:(NSString *)key;
+
++ (void)processCustomTTL:(HttpdnsHostObject *)hostObject forHost:(NSString *)host;
 
 @end
