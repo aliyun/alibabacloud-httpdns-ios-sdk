@@ -224,60 +224,156 @@ static NSURLSession *_resolveHostSession = nil;
 
 - (NSString *)constructHttpdnsResolvingUrl:(HttpdnsRequest *)request forV4Net:(BOOL)isV4 {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-
     NSString *serverIp = isV4 ? [scheduleCenter currentActiveServiceServerV4Host] : [scheduleCenter currentActiveServiceServerV6Host];
-
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-
     NSInteger accountId = sharedService.accountID;
-
-    NSString *url = [NSString stringWithFormat:@"%@/%ld/d?host=%@", serverIp, accountId, request.host];
-
-    // signature
     NSString *secretKey = sharedService.secretKey;
-    if ([HttpdnsUtil isNotEmptyString:secretKey]) {
-        // 签名时间值需要使用10位整数秒值，因此这里需要转换
-        long localTimestampOffset = (long)sharedService.authTimeOffset;
-        long localTimestamp = (long)[[NSDate date] timeIntervalSince1970] ;
-        if (localTimestampOffset != 0) {
-            localTimestamp = localTimestamp + localTimestampOffset;
-        }
-        long expiredTimestamp = localTimestamp + HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
-        NSString *expiredTimestampString = [NSString stringWithFormat:@"%@", @(expiredTimestamp)];
-        NSString *signOriginString = [NSString stringWithFormat:@"%@-%@-%@", request.host, secretKey, expiredTimestampString];
 
-        NSString *sign = [HttpdnsUtil getMD5StringFrom:signOriginString];
-        NSString *signatureRequestString = [NSString stringWithFormat:@"t=%@&s=%@", expiredTimestampString, sign];
+    // 构建参与签名的参数字典
+    NSMutableDictionary *paramsToSign = [NSMutableDictionary dictionary];
 
-        url = [NSString stringWithFormat:@"%@/%ld/sign_d?host=%@&%@", serverIp, accountId, request.host, signatureRequestString];
+    // 构建需要加密的参数字典
+    NSMutableDictionary *paramsToEncrypt = [NSMutableDictionary dictionary];
+
+    // 账号ID，参与签名但不加密
+    [paramsToSign setObject:[NSString stringWithFormat:@"%ld", accountId] forKey:@"id"];
+
+    // 决定加密模式
+    BOOL useEncryption = [HttpdnsUtil isNotEmptyString:sharedService.aesSecretKey];
+    NSString *mode = useEncryption ? @"1" : @"0"; // 0: 明文模式, 1: AES-CBC加密模式
+    [paramsToSign setObject:mode forKey:@"m"];
+
+    // 版本号，参与签名但不加密
+    [paramsToSign setObject:@"1.0" forKey:@"v"];
+
+    // 域名参数，参与签名并加密
+    [paramsToEncrypt setObject:request.host forKey:@"dn"];
+
+    // 查询类型，参与签名并加密
+    NSString *queryTypeStr = @"4";
+    if (request.queryIpType & HttpdnsQueryIPTypeBoth) {
+        queryTypeStr = @"4,6";
+    } else if (request.queryIpType & HttpdnsQueryIPTypeIpv6) {
+        queryTypeStr = @"6";
+    }
+    [paramsToEncrypt setObject:queryTypeStr forKey:@"q"];
+
+    // SDNS参数，参与签名并加密
+    if ([HttpdnsUtil isNotEmptyDictionary:request.sdnsParams]) {
+        [request.sdnsParams enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
+            NSString *sdnsKey = [NSString stringWithFormat:@"sdns-%@", key];
+            [paramsToEncrypt setObject:obj forKey:sdnsKey];
+        }];
     }
 
-    // version
-    NSString *versionInfo = [NSString stringWithFormat:@"ios_%@", HTTPDNS_IOS_SDK_VERSION];
-    url = [NSString stringWithFormat:@"%@&sdk=%@", url, versionInfo];
+    // 签名过期时间，参与签名但不加密
+    long localTimestampOffset = (long)sharedService.authTimeOffset;
+    long localTimestamp = (long)[[NSDate date] timeIntervalSince1970];
+    if (localTimestampOffset != 0) {
+        localTimestamp = localTimestamp + localTimestampOffset;
+    }
+    long expiredTimestamp = localTimestamp + HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
+    NSString *expiredTimestampString = [NSString stringWithFormat:@"%ld", expiredTimestamp];
+    [paramsToSign setObject:expiredTimestampString forKey:@"exp"];
 
+    // 处理加密
+    if (useEncryption) {
+        NSError *error = nil;
+
+        // 将待加密参数转为JSON
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:paramsToEncrypt options:0 error:&error];
+        if (error) {
+            HttpdnsLogDebug("Failed to serialize params to JSON: %@", error);
+            return nil;
+        }
+
+        // 从secretKey转换为二进制密钥
+        NSData *keyData = [HttpdnsUtil dataFromHexString:sharedService.aesSecretKey];
+        if (!keyData) {
+            HttpdnsLogDebug("Invalid AES key format");
+            return nil;
+        }
+
+        // AES-CBC加密
+        NSData *encryptedData = [HttpdnsUtil encryptDataAESCBC:jsonData withKey:keyData error:&error];
+        if (error) {
+            HttpdnsLogDebug("Failed to encrypt data: %@", error);
+            return nil;
+        }
+
+        // 将加密结果转为十六进制字符串
+        NSString *encryptedHexString = [HttpdnsUtil hexStringFromData:encryptedData];
+        [paramsToSign setObject:encryptedHexString forKey:@"enc"];
+    } else {
+        // 明文模式下，加密参数也放入签名参数中
+        [paramsToSign addEntriesFromDictionary:paramsToEncrypt];
+    }
+
+    // 按照签名要求对参数进行排序并生成签名内容
+    NSArray *sortedKeys = [[paramsToSign allKeys] sortedArrayUsingSelector:@selector(compare:)];
+    NSMutableArray *signParts = [NSMutableArray array];
+
+    for (NSString *key in sortedKeys) {
+        [signParts addObject:[NSString stringWithFormat:@"%@=%@", key, [paramsToSign objectForKey:key]]];
+    }
+
+    // 组合签名字符串
+    NSString *signContent = [signParts componentsJoinedByString:@"&"];
+
+    // 计算HMAC-SHA256签名
+    NSString *signature = nil;
+    if ([HttpdnsUtil isNotEmptyString:secretKey]) {
+        signature = [HttpdnsUtil hmacSha256:signContent key:secretKey];
+    }
+
+    // 构建基础URL
+    NSString *url = [NSString stringWithFormat:@"%@/v2/d", serverIp];
+
+    // 构建最终URL
+    NSMutableString *finalUrl = [NSMutableString stringWithString:url];
+    [finalUrl appendString:@"?"];
+
+    // 首先添加必要参数
+    [finalUrl appendFormat:@"id=%ld", accountId];
+    [finalUrl appendFormat:@"&m=%@", mode];
+    [finalUrl appendFormat:@"&exp=%@", expiredTimestampString];
+    [finalUrl appendFormat:@"&v=%@", @"1.0"];
+
+    if (useEncryption) {
+        // 加密模式下，添加enc参数
+        [finalUrl appendFormat:@"&enc=%@", [paramsToSign objectForKey:@"enc"]];
+    } else {
+        // 明文模式下，添加所有加密参数
+        for (NSString *key in paramsToEncrypt) {
+            NSString *value = [paramsToEncrypt objectForKey:key];
+            [finalUrl appendFormat:@"&%@=%@", [HttpdnsUtil URLEncodedString:key], [HttpdnsUtil URLEncodedString:value]];
+        }
+    }
+
+    // 添加签名（如果有）
+    if ([HttpdnsUtil isNotEmptyString:signature]) {
+        [finalUrl appendFormat:@"&s=%@", signature];
+    }
+
+    // 添加不参与签名的其他历史参数
     // sessionId
     NSString *sessionId = [HttpdnsUtil generateSessionID];
     if ([HttpdnsUtil isNotEmptyString:sessionId]) {
-        url = [NSString stringWithFormat:@"%@&sid=%@", url, sessionId];
+        [finalUrl appendFormat:@"&sid=%@", sessionId];
     }
 
-    // sdns extra
-    if ([HttpdnsUtil isNotEmptyDictionary:request.sdnsParams]) {
-        NSString *sdnsParamStr = [self constructParamStr:request.sdnsParams];
-        url = [NSString stringWithFormat:@"%@&%@", url, sdnsParamStr];
-    }
-
-    // 添加net
+    // 网络类型
     NSString *netType = [[HttpdnsReachability sharedInstance] currentReachabilityString];
     if ([HttpdnsUtil isNotEmptyString:netType]) {
-        url = [NSString stringWithFormat:@"%@&net=%@", url, netType];
+        [finalUrl appendFormat:@"&net=%@", netType];
     }
 
-    // 添加查询类型
-    url = [self appendQueryTypeToURL:url queryType:request.queryIpType];
+    // SDK版本
+    NSString *versionInfo = [NSString stringWithFormat:@"ios_%@", HTTPDNS_IOS_SDK_VERSION];
+    [finalUrl appendFormat:@"&sdk=%@", versionInfo];
 
-    return url;
+    HttpdnsLogDebug("Constructed v2 API URL: %@", finalUrl);
+    return finalUrl;
 }
 
 - (HttpdnsHostObject *)lookupHostFromServer:(HttpdnsRequest *)request error:(NSError **)error {

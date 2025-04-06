@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "HttpdnsLoggerDelegate.h"
+#import "HttpdnsLoggerProtocol.h"
 
 @interface MyLoggerHandler : NSObject <HttpdnsLoggerProtocol>
 

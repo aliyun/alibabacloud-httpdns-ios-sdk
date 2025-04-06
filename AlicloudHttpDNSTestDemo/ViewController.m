@@ -66,8 +66,8 @@ NSArray *ipv6HostArray = nil;
 
     // ams_test账号139450
     _service = [[HttpDnsService alloc] initWithAccountID:139450
-                                               secretKey:@"807a19762f8eaefa8563489baf198535"];
-                                            // aesSecretKey:@"82c0af0d0cb2d69c4f87bb25c2e23929"];
+                                               secretKey:@"807a19762f8eaefa8563489baf198535"
+                                            aesSecretKey:@"82c0af0d0cb2d69c4f87bb25c2e23929"];
     [_service setTtlDelegate:self];
     [_service setLogEnabled:YES];
     // [_service setHasAllowedArbitraryLoadsInATS:YES];
