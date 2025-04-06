@@ -386,4 +386,56 @@
     return [self hexStringFromData:hmacData];
 }
 
++ (NSData *)decryptDataAESCBC:(NSData *)ciphertext
+                      withKey:(NSData *)key
+                        error:(NSError **)error {
+    // 检查输入参数
+    if (ciphertext == nil || [ciphertext length] <= kCCBlockSizeAES128 || key == nil || [key length] != kCCKeySizeAES128) {
+        if (error) {
+            *error = [NSError errorWithDomain:ALICLOUD_HTTPDNS_ERROR_DOMAIN
+                                         code:ALICLOUD_HTTPDNS_ENCRYPT_INVALID_PARAMS_ERROR_CODE
+                                     userInfo:@{NSLocalizedDescriptionKey: @"Invalid input parameters for decryption"}];
+        }
+        return nil;
+    }
+
+    // 提取IV（前16字节）和实际的密文
+    NSData *iv = [ciphertext subdataWithRange:NSMakeRange(0, kCCBlockSizeAES128)];
+    NSData *actualCiphertext = [ciphertext subdataWithRange:NSMakeRange(kCCBlockSizeAES128, ciphertext.length - kCCBlockSizeAES128)];
+
+    // 计算解密后可能的缓冲区大小
+    size_t bufferSize = actualCiphertext.length + kCCBlockSizeAES128;
+    size_t decryptedSize = 0;
+
+    // 创建输出缓冲区
+    NSMutableData *decryptedData = [NSMutableData dataWithLength:bufferSize];
+
+    // 执行解密
+    CCCryptorStatus cryptStatus = CCCrypt(kCCDecrypt,
+                                         kCCAlgorithmAES,
+                                         kCCOptionPKCS7Padding,
+                                         [key bytes],
+                                         [key length],
+                                         [iv bytes],
+                                         [actualCiphertext bytes],
+                                         [actualCiphertext length],
+                                         [decryptedData mutableBytes],
+                                         [decryptedData length],
+                                         &decryptedSize);
+
+    if (cryptStatus != kCCSuccess) {
+        if (error) {
+            *error = [NSError errorWithDomain:ALICLOUD_HTTPDNS_ERROR_DOMAIN
+                                         code:ALICLOUD_HTTPDNS_ENCRYPT_FAILED_ERROR_CODE
+                                     userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"Decryption failed with status: %d", cryptStatus]}];
+        }
+        return nil;
+    }
+
+    // 调整解密数据的长度，只保留实际解密内容
+    [decryptedData setLength:decryptedSize];
+
+    return decryptedData;
+}
+
 @end
