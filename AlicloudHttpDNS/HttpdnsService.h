@@ -59,17 +59,36 @@
 
 + (nonnull instancetype)sharedInstance;
 
-- (nonnull instancetype)initWithAccountID:(NSInteger)accountID;
+/*!
+ * @brief 无需鉴权功能的初始化接口
+ * @details 初始化，设置 HTTPDNS 服务 Account ID。使用本接口初始化，请求将无任何签名保护，请谨慎使用。
+ *          您可以从控制台获取您的 Account ID 。
+ *          此方法会初始化为单例。
+ *          注意：本接口从3.2.1起废弃，后续将进行移除。
+ * @param accountID 您的 HTTPDNS Account ID
+ */
+- (nonnull instancetype)initWithAccountID:(NSInteger)accountID ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. This method will be removed in the future. Use -[HttpDnsService initWithAccountID:secretKey:] instead.");
 
 /*!
  * @brief 启用鉴权功能的初始化接口
  * @details 初始化、开启鉴权功能，并设置 HTTPDNS 服务 Account ID，鉴权功能对应的 secretKey。
- *          您可以从控制台获取您的 Account ID 、secretKey 信息。
+ *          您可以从控制台获取您的 Account ID 、secretKey信息。
  *          此方法会初始化为单例。
  * @param accountID 您的 HTTPDNS Account ID
  * @param secretKey 鉴权对应的 secretKey
  */
-- (nonnull instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString * _Nullable)secretKey;
+- (nonnull instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString * _Nonnull)secretKey;
+
+/*!
+ * @brief 启用鉴权功能、加密功能的初始化接口
+ * @details 初始化、开启鉴权功能、开启AES加密，并设置 HTTPDNS 服务 Account ID，鉴权功能对应的 secretKey，加密功能对应的 aesSecretKey。
+ *          您可以从控制台获取您的 Account ID 、secretKey、aesSecretKey 信息。
+ *          此方法会初始化为单例。
+ * @param accountID 您的 HTTPDNS Account ID
+ * @param secretKey 鉴权对应的 secretKey
+ * @param aesSecretKey 加密功能对应的 aesSecretKey
+ */
+- (nonnull instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString * _Nonnull)secretKey aesSecretKey:(NSString * _Nullable)aesSecretKey;
 
 
 /// 开启鉴权功能后，鉴权的签名计算默认读取设备当前时间。若担心设备时间不准确导致签名不准确，可以使用此接口校正 APP 内鉴权计算使用的时间值
