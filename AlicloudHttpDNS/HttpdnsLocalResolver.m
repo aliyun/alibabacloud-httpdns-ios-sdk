@@ -12,6 +12,8 @@
 #import <ifaddrs.h>
 #import <sys/socket.h>
 
+#import "HttpdnsService.h"
+#import "HttpdnsUtil.h"
 #import "HttpdnsHostObject.h"
 
 @implementation HttpdnsLocalResolver
@@ -128,6 +130,9 @@
     // IPv4和IPv6的默认TTL为60秒
     [hostObject setV4TTL:60];
     [hostObject setV6TTL:60];
+
+    // 自定义ttl
+    [HttpdnsUtil processCustomTTL:hostObject forHost:host];
 
     // 当前时间(自1970年以来的秒数)
     int64_t now = (int64_t)[[NSDate date] timeIntervalSince1970];

@@ -274,22 +274,7 @@ static NSURLSession *_resolveHostSession = nil;
     }
 
     // 自定义ttl
-    HttpDnsService *dnsService = [HttpDnsService sharedInstance];
-    if (dnsService.ttlDelegate && [dnsService.ttlDelegate respondsToSelector:@selector(httpdnsHost:ipType:ttl:)]) {
-        if ([HttpdnsUtil isNotEmptyArray:[hostObject getV4Ips]]) {
-            int64_t customV4TTL = [dnsService.ttlDelegate httpdnsHost:host ipType:AlicloudHttpDNS_IPTypeV4 ttl:hostObject.v4ttl];
-            if (customV4TTL > 0) {
-                hostObject.v4ttl = customV4TTL;
-            }
-        }
-
-        if ([HttpdnsUtil isNotEmptyArray:[hostObject getV6Ips]]) {
-            int64_t customV6TTL = [dnsService.ttlDelegate httpdnsHost:host ipType:AlicloudHttpDNS_IPTypeV6 ttl:hostObject.v6ttl];
-            if (customV6TTL > 0) {
-                hostObject.v6ttl = customV6TTL;
-            }
-        }
-    }
+    [HttpdnsUtil processCustomTTL:hostObject forHost:host];
 
     // 设置客户端IP
     NSString *clientIp = [data objectForKey:@"cip"];
