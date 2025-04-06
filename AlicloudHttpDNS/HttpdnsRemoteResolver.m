@@ -87,79 +87,208 @@ static NSURLSession *_resolveHostSession = nil;
         return nil;
     }
 
-    NSArray *ip4s = [json objectForKey:@"ips"];
-    if (!ip4s) {
-        ip4s = @[];
+    // 解密处理
+    NSString *code = [json objectForKey:@"code"];
+    if (![code isEqualToString:@"success"]) {
+        HttpdnsLogDebug("Response code is not success: %@", code);
+        return nil;
     }
 
-    NSArray *ip6s = [json objectForKey:@"ipsv6"];
-    if (!ip6s) {
-        ip6s = @[];
+    // 获取mode，判断是否需要解密
+    NSInteger mode = [[json objectForKey:@"mode"] integerValue];
+    id data = [json objectForKey:@"data"];
+
+    if (mode == 1) {  // 只处理AES-CBC模式
+        // 需要解密
+        HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+        NSString *aesSecretKey = sharedService.aesSecretKey;
+
+        if (![HttpdnsUtil isNotEmptyString:aesSecretKey]) {
+            HttpdnsLogDebug("Response is encrypted but no AES key is provided");
+            return nil;
+        }
+
+        if (![data isKindOfClass:[NSString class]]) {
+            HttpdnsLogDebug("Encrypted data is not a string");
+            return nil;
+        }
+
+        // 将Base64字符串转为NSData
+        NSData *encryptedData = [[NSData alloc] initWithBase64EncodedString:data options:0];
+        if (!encryptedData || encryptedData.length <= 16) {
+            HttpdnsLogDebug("Invalid encrypted data");
+            return nil;
+        }
+
+        // 从secretKey转换为二进制密钥
+        NSData *keyData = [HttpdnsUtil dataFromHexString:aesSecretKey];
+        if (!keyData) {
+            HttpdnsLogDebug("Invalid AES key format");
+            return nil;
+        }
+
+        // 使用工具类解密
+        NSError *decryptError = nil;
+        NSData *decryptedData = [HttpdnsUtil decryptDataAESCBC:encryptedData withKey:keyData error:&decryptError];
+
+        if (decryptError || !decryptedData) {
+            HttpdnsLogDebug("Failed to decrypt data: %@", decryptError);
+            return nil;
+        }
+
+        // 将解密后的JSON数据解析为字典
+        NSError *jsonError;
+        data = [NSJSONSerialization JSONObjectWithData:decryptedData options:0 error:&jsonError];
+
+        if (jsonError) {
+            HttpdnsLogDebug("Failed to parse decrypted JSON: %@", jsonError);
+            return nil;
+        }
+    } else if (mode != 0) {
+        // 不支持的加密模式（如AES-GCM）
+        HttpdnsLogDebug("Unsupported encryption mode: %ld", (long)mode);
+        return nil;
     }
 
+    if (![data isKindOfClass:[NSDictionary class]]) {
+        HttpdnsLogDebug("Data is not a dictionary");
+        return nil;
+    }
+
+    // 从data中获取answers数组
+    NSArray *answers = [data objectForKey:@"answers"];
+    if (![answers isKindOfClass:[NSArray class]] || answers.count == 0) {
+        HttpdnsLogDebug("No answers in response");
+        return nil;
+    }
+
+    // 查找与请求的host匹配的答案
+    NSDictionary *targetAnswer = nil;
+    for (NSDictionary *answer in answers) {
+        NSString *dn = [answer objectForKey:@"dn"];
+        if ([dn isEqualToString:host]) {
+            targetAnswer = answer;
+            break;
+        }
+    }
+
+    if (!targetAnswer) {
+        HttpdnsLogDebug("No answer found for host: %@", host);
+        return nil;
+    }
+
+    // 创建并填充HostObject
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
-
-    // 处理ipv4
-    NSMutableArray *ipArray = [NSMutableArray array];
-    for (NSString *ip in ip4s) {
-        if ([HttpdnsUtil isEmptyString:ip]) {
-            continue;
-        }
-        HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
-        [ipObject setIp:ip];
-        [ipArray addObject:ipObject];
-    }
-
-    // 处理IPv6解析结果
-    NSMutableArray *ip6Array = [NSMutableArray array];
-    for (NSString *ipv6 in ip6s) {
-        if ([HttpdnsUtil isEmptyString:ipv6]) {
-            continue;
-        }
-        HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
-        [ipObject setIp:ipv6];
-        [ip6Array addObject:ipObject];
-    }
-
-    // SDNS场景额外返回一个extra字段
-    if ([[json allKeys] containsObject:@"extra"]) {
-        NSDictionary *extra = [self htmlEntityDecode:[json objectForKey:@"extra"]];
-        [hostObject setExtra:extra];
-    }
     [hostObject setHostName:host];
-    [hostObject setV4Ips:ipArray];
-    [hostObject setV6Ips:ip6Array];
 
-    if ([[json allKeys] containsObject:@"client_ip"]) {
-        NSString *clientIp = [json objectForKey:@"client_ip"];
-        [hostObject setClientIp:clientIp];
+    // 获取IPv4信息
+    NSDictionary *v4Data = [targetAnswer objectForKey:@"v4"];
+    if ([v4Data isKindOfClass:[NSDictionary class]]) {
+        NSArray *ip4s = [v4Data objectForKey:@"ips"];
+        if ([ip4s isKindOfClass:[NSArray class]] && ip4s.count > 0) {
+            // 处理ipv4
+            NSMutableArray *ipArray = [NSMutableArray array];
+            for (NSString *ip in ip4s) {
+                if ([HttpdnsUtil isEmptyString:ip]) {
+                    continue;
+                }
+                HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
+                [ipObject setIp:ip];
+                [ipArray addObject:ipObject];
+            }
+            [hostObject setV4Ips:ipArray];
+
+            // 设置IPv4的TTL
+            NSNumber *ttl = [v4Data objectForKey:@"ttl"];
+            if (ttl) {
+                hostObject.v4ttl = [ttl longLongValue];
+                hostObject.lastIPv4LookupTime = [NSDate date].timeIntervalSince1970;
+            } else {
+                hostObject.v4ttl = 0;
+            }
+
+            // 处理v4的extra字段，优先使用
+            id v4Extra = [v4Data objectForKey:@"extra"];
+            if (v4Extra) {
+                [hostObject setExtra:v4Extra];
+            }
+
+            // 检查是否有no_ip_code字段，表示无IPv4记录
+            if ([[v4Data objectForKey:@"no_ip_code"] isKindOfClass:[NSString class]]) {
+                hostObject.hasNoIpv4Record = YES;
+            }
+        } else {
+            // 没有IPv4地址但有v4节点，可能是无记录
+            hostObject.hasNoIpv4Record = YES;
+        }
     }
 
-    int64_t returnedTTL = [[json objectForKey:@"ttl"] longLongValue];
-    int64_t v4TTL = returnedTTL;
-    int64_t v6TTL = returnedTTL;
+    // 获取IPv6信息
+    NSDictionary *v6Data = [targetAnswer objectForKey:@"v6"];
+    if ([v6Data isKindOfClass:[NSDictionary class]]) {
+        NSArray *ip6s = [v6Data objectForKey:@"ips"];
+        if ([ip6s isKindOfClass:[NSArray class]] && ip6s.count > 0) {
+            // 处理ipv6
+            NSMutableArray *ip6Array = [NSMutableArray array];
+            for (NSString *ipv6 in ip6s) {
+                if ([HttpdnsUtil isEmptyString:ipv6]) {
+                    continue;
+                }
+                HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
+                [ipObject setIp:ipv6];
+                [ip6Array addObject:ipObject];
+            }
+            [hostObject setV6Ips:ip6Array];
+
+            // 设置IPv6的TTL
+            NSNumber *ttl = [v6Data objectForKey:@"ttl"];
+            if (ttl) {
+                hostObject.v6ttl = [ttl longLongValue];
+                hostObject.lastIPv6LookupTime = [NSDate date].timeIntervalSince1970;
+            } else {
+                hostObject.v6ttl = 0;
+            }
+
+            // 只有在没有v4 extra的情况下才使用v6的extra
+            if (![hostObject getExtra]) {
+                id v6Extra = [v6Data objectForKey:@"extra"];
+                if (v6Extra) {
+                    [hostObject setExtra:v6Extra];
+                }
+            }
+
+            // 检查是否有no_ip_code字段，表示无IPv6记录
+            if ([[v6Data objectForKey:@"no_ip_code"] isKindOfClass:[NSString class]]) {
+                hostObject.hasNoIpv6Record = YES;
+            }
+        } else {
+            // 没有IPv6地址但有v6节点，可能是无记录
+            hostObject.hasNoIpv6Record = YES;
+        }
+    }
 
     // 自定义ttl
     HttpDnsService *dnsService = [HttpDnsService sharedInstance];
     if (dnsService.ttlDelegate && [dnsService.ttlDelegate respondsToSelector:@selector(httpdnsHost:ipType:ttl:)]) {
-        int64_t customTTL = [dnsService.ttlDelegate httpdnsHost:host ipType:AlicloudHttpDNS_IPTypeV64 ttl:returnedTTL];
-        if (customTTL > 0) {
-            v4TTL = customTTL;
-            v6TTL = customTTL;
-        } else {
-            v4TTL = [dnsService.ttlDelegate httpdnsHost:host ipType:AlicloudHttpDNS_IPTypeV4 ttl:returnedTTL];
-            v6TTL = [dnsService.ttlDelegate httpdnsHost:host ipType:AlicloudHttpDNS_IPTypeV6 ttl:returnedTTL];
+        if ([HttpdnsUtil isNotEmptyArray:[hostObject getV4Ips]]) {
+            int64_t customV4TTL = [dnsService.ttlDelegate httpdnsHost:host ipType:AlicloudHttpDNS_IPTypeV4 ttl:hostObject.v4ttl];
+            if (customV4TTL > 0) {
+                hostObject.v4ttl = customV4TTL;
+            }
+        }
+
+        if ([HttpdnsUtil isNotEmptyArray:[hostObject getV6Ips]]) {
+            int64_t customV6TTL = [dnsService.ttlDelegate httpdnsHost:host ipType:AlicloudHttpDNS_IPTypeV6 ttl:hostObject.v6ttl];
+            if (customV6TTL > 0) {
+                hostObject.v6ttl = customV6TTL;
+            }
         }
     }
 
-    // 分别设置 v4ttl v6ttl
-    if ([HttpdnsUtil isNotEmptyArray:ipArray]) {
-        hostObject.v4ttl = v4TTL;
-        hostObject.lastIPv4LookupTime = [NSDate date].timeIntervalSince1970;
-    }
-    if ([HttpdnsUtil isNotEmptyArray:ip6Array]) {
-        hostObject.v6ttl = v6TTL;
-        hostObject.lastIPv6LookupTime = [NSDate date].timeIntervalSince1970;
+    // 设置客户端IP
+    NSString *clientIp = [data objectForKey:@"cip"];
+    if ([HttpdnsUtil isNotEmptyString:clientIp]) {
+        [hostObject setClientIp:clientIp];
     }
 
     return hostObject;

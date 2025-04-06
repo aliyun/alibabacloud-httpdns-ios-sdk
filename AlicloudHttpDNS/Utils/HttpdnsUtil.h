@@ -61,6 +61,10 @@
                       withKey:(NSData *)key
                         error:(NSError **)error;
 
++ (NSData *)decryptDataAESCBC:(NSData *)ciphertext
+                      withKey:(NSData *)key
+                        error:(NSError **)error;
+
 + (NSString *)hexStringFromData:(NSData *)data;
 
 + (NSData *)dataFromHexString:(NSString *)hexString;
