@@ -160,7 +160,6 @@ typedef struct {
         newObject.hostName = host;
         newObject.v4Ips = @[];
         newObject.v6Ips = @[];
-        newObject.extra = @{};
         return newObject;
     }];
 

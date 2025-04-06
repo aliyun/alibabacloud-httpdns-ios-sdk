@@ -45,7 +45,7 @@ static NSString *const kColumnExtra = @"extra";
         NSString *dbDir = [HttpdnsPersistenceUtils httpdnsDataDirectory];
 
         // 设置数据库路径
-        _dbPath = [dbDir stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.db", (long)accountId]];
+        _dbPath = [dbDir stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld_v20250406.db", (long)accountId]];
 
         // 创建专用队列确保线程安全
         _dbQueue = dispatch_queue_create("com.aliyun.httpdns.db", DISPATCH_QUEUE_SERIAL);
@@ -538,15 +538,8 @@ static NSString *const kColumnExtra = @"extra";
     sqlite3_bind_int64(stmt, index++, record.v6LookupTime);
 
     // 绑定extra
-    if (record.extra.count > 0) {
-        NSError *error = nil;
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:record.extra options:0 error:&error];
-        if (!error && jsonData) {
-            NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-            sqlite3_bind_text(stmt, index++, [jsonString UTF8String], -1, SQLITE_TRANSIENT);
-        } else {
-            sqlite3_bind_null(stmt, index++);
-        }
+    if (record.extra) {
+        sqlite3_bind_text(stmt, index++, [record.extra UTF8String], -1, SQLITE_TRANSIENT);
     } else {
         sqlite3_bind_null(stmt, index++);
     }
@@ -640,22 +633,10 @@ static NSString *const kColumnExtra = @"extra";
     int64_t v6LookupTime = sqlite3_column_int64(stmt, 11);
 
     // 获取extra
-    NSDictionary *extra = nil;
+    NSString *extra = nil;
     const char *extraChars = (const char *)sqlite3_column_text(stmt, 12);
     if (extraChars) {
-        NSString *extraStr = [NSString stringWithUTF8String:extraChars];
-        NSData *jsonData = [extraStr dataUsingEncoding:NSUTF8StringEncoding];
-        if (jsonData) {
-            NSError *error = nil;
-            id jsonObj = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
-            if (!error && [jsonObj isKindOfClass:[NSDictionary class]]) {
-                extra = (NSDictionary *)jsonObj;
-            }
-        }
-    }
-
-    if (!extra) {
-        extra = @{};
+        extra = [NSString stringWithUTF8String:extraChars];
     }
 
     // 创建记录对象

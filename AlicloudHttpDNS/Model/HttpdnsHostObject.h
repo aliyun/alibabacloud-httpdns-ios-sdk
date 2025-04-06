@@ -57,7 +57,7 @@
 @property (nonatomic, assign) BOOL hasNoIpv4Record;
 @property (nonatomic, assign) BOOL hasNoIpv6Record;
 
-@property (nonatomic, strong, setter=setExtra:, getter=getExtra) NSDictionary *extra;
+@property (nonatomic, strong, setter=setExtra:, getter=getExtra) NSString *extra;
 
 // 标识是否从持久化缓存加载
 @property (nonatomic, assign, setter=setIsLoadFromDB:, getter=isLoadFromDB) BOOL isLoadFromDB;

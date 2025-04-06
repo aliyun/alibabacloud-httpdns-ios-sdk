@@ -210,7 +210,10 @@ static NSURLSession *_resolveHostSession = nil;
             // 处理v4的extra字段，优先使用
             id v4Extra = [v4Data objectForKey:@"extra"];
             if (v4Extra) {
-                [hostObject setExtra:v4Extra];
+                NSString *convertedExtra = [self convertExtraToString:v4Extra];
+                if (convertedExtra) {
+                    [hostObject setExtra:convertedExtra];
+                }
             }
 
             // 检查是否有no_ip_code字段，表示无IPv4记录
@@ -253,7 +256,10 @@ static NSURLSession *_resolveHostSession = nil;
             if (![hostObject getExtra]) {
                 id v6Extra = [v6Data objectForKey:@"extra"];
                 if (v6Extra) {
-                    [hostObject setExtra:v6Extra];
+                    NSString *convertedExtra = [self convertExtraToString:v6Extra];
+                    if (convertedExtra) {
+                        [hostObject setExtra:convertedExtra];
+                    }
                 }
             }
 
@@ -678,6 +684,29 @@ static NSURLSession *_resolveHostSession = nil;
         SecTrustEvaluate(serverTrust, &result);
     }
     return (result == kSecTrustResultUnspecified || result == kSecTrustResultProceed);
+}
+
+// 将extra字段转换为NSString类型
+- (NSString *)convertExtraToString:(id)extra {
+    if (!extra) {
+        return nil;
+    }
+
+    if ([extra isKindOfClass:[NSString class]]) {
+        // 已经是字符串，直接返回
+        return extra;
+    } else {
+        // 非字符串，尝试转换为JSON字符串
+        NSError *error = nil;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:extra options:0 error:&error];
+        if (!error && jsonData) {
+            NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+            return jsonString;
+        } else {
+            HttpdnsLogDebug("Failed to convert extra to JSON string: %@", error);
+            return nil;
+        }
+    }
 }
 
 @end
