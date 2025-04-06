@@ -34,7 +34,7 @@
 
 @property (nonatomic, assign, readonly) int64_t v6LookupTime;
 
-@property (nonatomic, copy, readonly) NSDictionary *extra;
+@property (nonatomic, copy, readonly) NSString *extra;
 
 - (instancetype)initWithId:(NSUInteger)id
                     cacheKey:(NSString *)cacheKey
@@ -48,6 +48,6 @@
                     v6ips:(NSArray<NSString *> *)v6ips
                     v6ttl:(int64_t)v6ttl
                     v6LookupTime:(int64_t)v6LookupTime
-                    extra:(NSDictionary *)extra;
+                    extra:(NSString *)extra;
 
 @end

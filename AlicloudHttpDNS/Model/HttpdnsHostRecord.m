@@ -35,7 +35,7 @@
 
 @property (nonatomic, assign) int64_t v6LookupTime;
 
-@property (nonatomic, copy) NSDictionary *extra;
+@property (nonatomic, copy) NSString *extra;
 
 @end
 
@@ -54,7 +54,7 @@
                      v6ips:(NSArray<NSString *> *)v6ips
                      v6ttl:(int64_t)v6ttl
               v6LookupTime:(int64_t)v6LookupTime
-                     extra:(NSDictionary *)extra {
+                     extra:(NSString *)extra {
     self = [super init];
     if (self) {
         _id = id;
@@ -69,7 +69,7 @@
         _v6ips = [v6ips copy] ?: @[];
         _v6ttl = v6ttl;
         _v6LookupTime = v6LookupTime;
-        _extra = [extra copy] ?: @{};
+        _extra = [extra copy];
     }
     return self;
 }

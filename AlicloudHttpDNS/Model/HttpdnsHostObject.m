@@ -157,7 +157,7 @@
         copy.lastIPv6LookupTime = self.lastIPv6LookupTime;
         copy.hasNoIpv4Record = self.hasNoIpv4Record;
         copy.hasNoIpv6Record = self.hasNoIpv6Record;
-        copy.extra = [[NSDictionary allocWithZone:zone] initWithDictionary:self.extra copyItems:YES];
+        copy.extra = [self.extra copyWithZone:zone];
         copy.isLoadFromDB = self.isLoadFromDB;
     }
     return copy;
