@@ -95,7 +95,7 @@
 
 /// 开启鉴权功能后，鉴权的签名计算默认读取设备当前时间。若担心设备时间不准确导致签名不准确，可以使用此接口校正 APP 内鉴权计算使用的时间值
 /// 注意，校正操作在 APP 的一个生命周期内生效，APP 重启后需要重新设置才能重新生效
-/// @param currentTime 用于校正的时间戳，单位为秒
+/// @param authCurrentTime 用于校正的时间戳，单位为秒
 - (void)setAuthCurrentTime:(NSUInteger)authCurrentTime ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService setInternalAuthTimeBaseBySpecifyingCurrentTime:] instead.");
 
 

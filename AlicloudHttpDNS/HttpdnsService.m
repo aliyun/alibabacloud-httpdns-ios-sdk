@@ -1048,7 +1048,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
         NSMutableDictionary * ipsDictionary = [[NSMutableDictionary alloc] init];
         [ipsDictionary setObject:host forKey:@"host"];
-        if ([HttpdnsUtil isNotEmptyDictionary:hostObject.extra]) {
+        if ([HttpdnsUtil isNotEmptyString:hostObject.extra]) {
             [ipsDictionary setObject:hostObject.extra forKey:@"extra"];
         }
         if ([HttpdnsUtil isNotEmptyArray:ipsObject]) {
