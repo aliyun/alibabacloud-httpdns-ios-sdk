@@ -313,7 +313,7 @@ typedef struct {
 
     NSArray<HttpdnsIpObject *> *v4IpObjects = [result getV4Ips];
     NSArray<HttpdnsIpObject *> *v6IpObjects = [result getV6Ips];
-    NSDictionary* extra = [result getExtra];
+    NSString* extra = [result getExtra];
 
     BOOL hasNoIpv4Record = NO;
     BOOL hasNoIpv6Record = NO;
@@ -350,7 +350,7 @@ typedef struct {
         [cachedHostObject setLastIPv6LookupTime:result.lastIPv6LookupTime];
     }
 
-    if ([HttpdnsUtil isNotEmptyDictionary:extra]) {
+    if ([HttpdnsUtil isNotEmptyString:extra]) {
         [cachedHostObject setExtra:extra];
     }
 
