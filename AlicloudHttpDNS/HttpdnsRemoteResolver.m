@@ -285,63 +285,6 @@ static NSURLSession *_resolveHostSession = nil;
     return hostObject;
 }
 
-- (NSDictionary *)htmlEntityDecode:(NSString *)string {
-    string = [string stringByReplacingOccurrencesOfString:@"&quot;" withString:@"\""];
-    string = [string stringByReplacingOccurrencesOfString:@"&apos;" withString:@"'"];
-    string = [string stringByReplacingOccurrencesOfString:@"&lt;" withString:@"<"];
-    string = [string stringByReplacingOccurrencesOfString:@"&gt;" withString:@">"];
-    string = [string stringByReplacingOccurrencesOfString:@"&amp;" withString:@"&"];
-    string = [string stringByReplacingOccurrencesOfString:@"&nbsp" withString:@" "];
-    string = [string stringByReplacingOccurrencesOfString:@"&mdash" withString:@"—"];
-    string = [string stringByReplacingOccurrencesOfString:@"&hellip" withString:@"..."];
-    string = [string stringByReplacingOccurrencesOfString:@"&rdquo" withString:@"”"];
-    string = [string stringByReplacingOccurrencesOfString:@"&lsquo" withString:@"‘"];
-    string = [string stringByReplacingOccurrencesOfString:@"&rsquo" withString:@"’"];
-    string = [string stringByReplacingOccurrencesOfString:@"&ldquo" withString:@"“"];
-    string = [string stringByReplacingOccurrencesOfString:@"&darr" withString:@"↓"];
-    string = [string stringByReplacingOccurrencesOfString:@"&middot" withString:@"·"];
-    NSData *jsonData = [string dataUsingEncoding:NSUTF8StringEncoding];
-    NSError *err;
-    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&err];
-    if (err) {
-        return nil;
-    }
-    return dic;
-}
-
-- (NSString *)constructParamStr:(NSDictionary<NSString *, NSString *> *)params {
-    NSString *str = @"^[A-Za-z0-9-_]+";
-    NSPredicate *keyVerifyRegex = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", str];
-
-    NSMutableArray *arr = [[NSMutableArray alloc] initWithCapacity:0];
-    [params enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
-        if (![keyVerifyRegex evaluateWithObject:key]) {
-            HttpdnsLogDebug("key string varification not passed, key: %@", key);
-            return ;
-        } else {
-            NSString *str = [NSString stringWithFormat:@"%@%@", key, obj];
-            if ([str lengthOfBytesUsingEncoding:NSUnicodeStringEncoding] > 1000) {
-                HttpdnsLogDebug("sdns param key-value pair exceed length limitation, key: %@", key);
-                return;
-            } else {
-                [arr addObject:[NSString stringWithFormat:@"sdns-%@=%@", key,obj]];
-            }
-        }
-    }];
-
-    return [arr componentsJoinedByString:@"&"];
-}
-
-- (NSString *)appendQueryTypeToURL:(NSString *)originURL queryType:(HttpdnsQueryIPType)queryType {
-    if (queryType & HttpdnsQueryIPTypeIpv4 && queryType & HttpdnsQueryIPTypeIpv6) {
-        return [NSString stringWithFormat:@"%@&query=%@", originURL, [HttpdnsUtil URLEncodedString:@"4,6"]];
-    } else if (queryType & HttpdnsQueryIPTypeIpv6) {
-        return [NSString stringWithFormat:@"%@&query=%@", originURL, @"6"];
-    } else {
-        return originURL;
-    }
-}
-
 - (NSString *)constructHttpdnsResolvingUrl:(HttpdnsRequest *)request forV4Net:(BOOL)isV4 {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSString *serverIp = isV4 ? [scheduleCenter currentActiveServiceServerV4Host] : [scheduleCenter currentActiveServiceServerV6Host];
@@ -626,11 +569,6 @@ static NSURLSession *_resolveHostSession = nil;
     return [self parseHostInfoFromHttpResponse:json withHostStr:host withQueryIpType:queryIpType];
 }
 
-- (HttpdnsRequestManager *)requestManager {
-    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    return sharedService.requestManager;
-}
-
 #pragma mark - NSURLSessionTaskDelegate
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *_Nullable))completionHandler {
     if (!challenge) {
@@ -671,6 +609,8 @@ static NSURLSession *_resolveHostSession = nil;
     return (result == kSecTrustResultUnspecified || result == kSecTrustResultProceed);
 }
 
+
+#pragma mark - Helper Functions
 // 将extra字段转换为NSString类型
 - (NSString *)convertExtraToString:(id)extra {
     if (!extra) {
