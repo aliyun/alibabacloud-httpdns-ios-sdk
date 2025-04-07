@@ -18,15 +18,6 @@
 
 @implementation HttpdnsLocalResolver
 
-+ (instancetype)sharedInstance {
-    static HttpdnsLocalResolver *instance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        instance = [[HttpdnsLocalResolver alloc] init];
-    });
-    return instance;
-}
-
 - (HttpdnsHostObject *)resolve:(HttpdnsRequest *)request {
     // 1. 验证输入参数
     NSString *host = request.host;

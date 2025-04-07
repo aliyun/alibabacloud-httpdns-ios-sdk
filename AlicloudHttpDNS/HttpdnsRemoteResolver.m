@@ -82,7 +82,7 @@ static NSURLSession *_resolveHostSession = nil;
 
 #pragma mark LookupIpAction
 
-- (HttpdnsHostObject *)parseHostInfoFromHttpResponse:(NSDictionary *)json withHostStr:(NSString *)host withQueryIpType:(HttpdnsQueryIPType)queryIpType {
+- (NSArray<HttpdnsHostObject *> *)parseHttpdnsResponse:(NSDictionary *)json withQueryIpType:(HttpdnsQueryIPType)queryIpType {
     if (!json) {
         return nil;
     }
@@ -98,14 +98,22 @@ static NSURLSession *_resolveHostSession = nil;
         return nil;
     }
 
-    // 如果无法找到匹配的答案，返回nil
-    NSDictionary *targetAnswer = [self findTargetAnswerForHost:host inData:data];
-    if (!targetAnswer) {
+    // 获取所有答案
+    NSArray *answers = [self getAnswersFromData:data];
+    if (!answers) {
         return nil;
     }
 
-    // 创建并填充主机对象
-    return [self createHostObjectFromAnswer:targetAnswer withHost:host];
+    // 创建主机对象数组
+    NSMutableArray<HttpdnsHostObject *> *hostObjects = [NSMutableArray array];
+    for (NSDictionary *answer in answers) {
+        HttpdnsHostObject *hostObject = [self createHostObjectFromAnswer:answer];
+        if (hostObject) {
+            [hostObjects addObject:hostObject];
+        }
+    }
+
+    return hostObjects;
 }
 
 // 验证响应码
@@ -191,29 +199,25 @@ static NSURLSession *_resolveHostSession = nil;
     return decodedData;
 }
 
-// 在数据中查找目标主机的答案
-- (NSDictionary *)findTargetAnswerForHost:(NSString *)host inData:(NSDictionary *)data {
-    // 从data中获取answers数组
+// 从数据中获取答案数组
+- (NSArray *)getAnswersFromData:(NSDictionary *)data {
     NSArray *answers = [data objectForKey:@"answers"];
     if (![answers isKindOfClass:[NSArray class]] || answers.count == 0) {
         HttpdnsLogDebug("No answers in response");
         return nil;
     }
-
-    // 查找与请求的host匹配的答案
-    for (NSDictionary *answer in answers) {
-        NSString *dn = [answer objectForKey:@"dn"];
-        if ([dn isEqualToString:host]) {
-            return answer;
-        }
-    }
-
-    HttpdnsLogDebug("No answer found for host: %@", host);
-    return nil;
+    return answers;
 }
 
 // 从答案创建主机对象
-- (HttpdnsHostObject *)createHostObjectFromAnswer:(NSDictionary *)answer withHost:(NSString *)host {
+- (HttpdnsHostObject *)createHostObjectFromAnswer:(NSDictionary *)answer {
+    // 获取域名
+    NSString *host = [answer objectForKey:@"dn"];
+    if (![HttpdnsUtil isNotEmptyString:host]) {
+        HttpdnsLogDebug("Missing domain name in answer");
+        return nil;
+    }
+
     // 创建并填充HostObject
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
     [hostObject setHostName:host];
@@ -583,7 +587,7 @@ static NSURLSession *_resolveHostSession = nil;
     [url appendFormat:@"&sdk=%@", versionInfo];
 }
 
-- (HttpdnsHostObject *)lookupHostFromServer:(HttpdnsRequest *)request error:(NSError **)error {
+- (NSArray<HttpdnsHostObject *> *)resolve:(HttpdnsRequest *)request error:(NSError **)error {
     HttpdnsLogDebug("lookupHostFromServer, request: %@", request);
 
     NSString *url = [self constructHttpdnsResolvingUrl:request forV4Net:YES];
@@ -591,10 +595,10 @@ static NSURLSession *_resolveHostSession = nil;
     HttpdnsQueryIPType queryIPType = request.queryIpType;
     NSString *host = request.host;
 
-    HttpdnsHostObject *hostObject = [self sendRequest:url host:host queryIpType:queryIPType error:error];
+    NSArray<HttpdnsHostObject *> *hostObjects = [self sendRequest:url queryIpType:queryIPType error:error];
 
     if (!(*error)) {
-        return hostObject;
+        return hostObjects;
     }
 
     @try {
@@ -603,30 +607,34 @@ static NSURLSession *_resolveHostSession = nil;
         if (stackType == kHttpdnsIpv6Only) {
             url = [self constructHttpdnsResolvingUrl:request forV4Net:NO];
             HttpdnsLogDebug("lookupHostFromServer by ipv4 server failed, construct ipv6 backup url: %@", url);
-            return [self sendRequest:url host:host queryIpType:queryIPType error:error];
+            hostObjects = [self sendRequest:url queryIpType:queryIPType error:error];
+
+            if (!(*error)) {
+                return hostObjects;
+            }
         }
     } @catch (NSException *exception) {
         HttpdnsLogDebug("lookupHostFromServer failed again by ipv6 server, exception: %@", exception.reason);
     }
-    return hostObject;
+    return nil;
 }
 
-- (HttpdnsHostObject *)sendRequest:(NSString *)urlStr host:(NSString *)host queryIpType:(HttpdnsQueryIPType)queryIPType error:(NSError **)error {
+- (NSArray<HttpdnsHostObject *> *)sendRequest:(NSString *)urlStr queryIpType:(HttpdnsQueryIPType)queryIPType error:(NSError **)error {
     HttpDnsService *httpdnsService = [HttpDnsService sharedInstance];
     if (httpdnsService.enableHttpsRequest || httpdnsService.hasAllowedArbitraryLoadsInATS) {
         NSString *fullUrlStr = httpdnsService.enableHttpsRequest
             ? [NSString stringWithFormat:@"https://%@", urlStr]
             : [NSString stringWithFormat:@"http://%@", urlStr];
 
-        return [self sendURLSessionRequest:fullUrlStr host:host error:error queryIpType:queryIPType];
+        return [self sendURLSessionRequest:fullUrlStr error:error queryIpType:queryIPType];
     } else {
         // 为了走HTTP时不强依赖用户的ATS配置，这里走使用CFHTTP实现的网络请求方式
         NSString *fullUrlStr = [NSString stringWithFormat:@"http://%@", urlStr];
-        return [self sendCFHTTPRequest:fullUrlStr host:host error:error queryIpType:queryIPType];
+        return [self sendCFHTTPRequest:fullUrlStr error:error queryIpType:queryIPType];
     }
 }
 
-- (HttpdnsHostObject *)sendURLSessionRequest:(NSString *)urlStr host:(NSString *)host error:(NSError **)pError queryIpType:(HttpdnsQueryIPType)queryIpType {
+- (NSArray<HttpdnsHostObject *> *)sendURLSessionRequest:(NSString *)urlStr error:(NSError **)pError queryIpType:(HttpdnsQueryIPType)queryIpType {
     HttpdnsLogDebug("Send URLSession request URL: %@", urlStr);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:urlStr]
                                                            cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
@@ -641,7 +649,7 @@ static NSURLSession *_resolveHostSession = nil;
     NSURLSessionTask *task = [_resolveHostSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (error) {
-            HttpdnsLogDebug("URLSession request network error, host: %@, error: %@", host, error);
+            HttpdnsLogDebug("URLSession request network error, url: %@, error: %@", urlStr, error);
             blockError = error;
         } else {
             NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
@@ -672,10 +680,10 @@ static NSURLSession *_resolveHostSession = nil;
         return nil;
     }
 
-    return [self parseHostInfoFromHttpResponse:json withHostStr:host withQueryIpType:queryIpType];
+    return [self parseHttpdnsResponse:json withQueryIpType:queryIpType];
 }
 
-- (HttpdnsHostObject *)sendCFHTTPRequest:(NSString *)urlStr host:(NSString *)host error:(NSError **)pError queryIpType:(HttpdnsQueryIPType)queryIpType {
+- (NSArray<HttpdnsHostObject *> *)sendCFHTTPRequest:(NSString *)urlStr error:(NSError **)pError queryIpType:(HttpdnsQueryIPType)queryIpType {
     HttpdnsLogDebug("Send CFHTTP request URL: %@", urlStr);
     NSURL *url = [NSURL URLWithString:urlStr];
 
@@ -686,7 +694,7 @@ static NSURLSession *_resolveHostSession = nil;
     [[HttpdnsCFHttpWrapper new] sendHTTPRequestWithURL:url completion:^(NSData * _Nullable data, NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (error) {
-            HttpdnsLogDebug("CFHTTP request network error, host: %@, error: %@", host, error);
+            HttpdnsLogDebug("CFHTTP request network error, urlStr: %@, error: %@", urlStr, error);
             blockError = error;
         } else {
             id jsonValue = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&blockError];
@@ -710,7 +718,7 @@ static NSURLSession *_resolveHostSession = nil;
         return nil;
     }
 
-    return [self parseHostInfoFromHttpResponse:json withHostStr:host withQueryIpType:queryIpType];
+    return [self parseHttpdnsResponse:json withQueryIpType:queryIpType];
 }
 
 #pragma mark - NSURLSessionTaskDelegate

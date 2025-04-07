@@ -14,8 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface HttpdnsLocalResolver : NSObject
 
-+ (instancetype)sharedInstance;
-
 - (HttpdnsHostObject *)resolve:(HttpdnsRequest *)request;
 
 @end

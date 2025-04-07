@@ -268,7 +268,7 @@ typedef struct {
         HttpdnsLogDebug("Internal request starts, host: %@, request: %@", host, request);
 
         NSError *error = nil;
-        result = [[HttpdnsRemoteResolver new] lookupHostFromServer:request error:&error];
+        NSArray<HttpdnsHostObject *> *resultArray = [[HttpdnsRemoteResolver new] resolve:request error:&error];
 
         if (error) {
             HttpdnsLogDebug("Internal request error, host: %@, error: %@", host, error);
@@ -282,13 +282,21 @@ typedef struct {
 
             return [self executeRequest:request retryCount:hasRetryedCount];
         }
+
+        if ([HttpdnsUtil isEmptyArray:resultArray]) {
+            HttpdnsLogDebug("Internal request get empty result array, host: %@", host);
+            return nil;
+        }
+
+        // 这个路径里，host只会有一个，所以直接取第一个处理就行
+        result = resultArray.firstObject;
     } else {
         if (![HttpDnsService sharedInstance].enableDegradeToLocalDNS) {
             HttpdnsLogDebug("Internal remote request retry count exceed limit, host: %@", host);
             return nil;
         }
 
-        result = [[HttpdnsLocalResolver sharedInstance] resolve:request];
+        result = [[HttpdnsLocalResolver new] resolve:request];
         if (!result) {
             HttpdnsLogDebug("Fallback to local dns resolver, but still get no result, host: %@", host);
             return nil;
