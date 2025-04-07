@@ -87,63 +87,46 @@ static NSURLSession *_resolveHostSession = nil;
         return nil;
     }
 
-    // 解密处理
-    NSString *code = [json objectForKey:@"code"];
-    if (![code isEqualToString:@"success"]) {
-        HttpdnsLogDebug("Response code is not success: %@", code);
+    // 验证响应码
+    if (![self validateResponseCode:json]) {
         return nil;
     }
 
+    // 获取数据内容
+    id data = [self extractDataContent:json];
+    if (!data) {
+        return nil;
+    }
+
+    // 如果无法找到匹配的答案，返回nil
+    NSDictionary *targetAnswer = [self findTargetAnswerForHost:host inData:data];
+    if (!targetAnswer) {
+        return nil;
+    }
+
+    // 创建并填充主机对象
+    return [self createHostObjectFromAnswer:targetAnswer withHost:host];
+}
+
+// 验证响应码
+- (BOOL)validateResponseCode:(NSDictionary *)json {
+    NSString *code = [json objectForKey:@"code"];
+    if (![code isEqualToString:@"success"]) {
+        HttpdnsLogDebug("Response code is not success: %@", code);
+        return NO;
+    }
+    return YES;
+}
+
+// 获取并处理解密数据内容
+- (id)extractDataContent:(NSDictionary *)json {
     // 获取mode，判断是否需要解密
     NSInteger mode = [[json objectForKey:@"mode"] integerValue];
     id data = [json objectForKey:@"data"];
 
     if (mode == 1) {  // 只处理AES-CBC模式
         // 需要解密
-        HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-        NSString *aesSecretKey = sharedService.aesSecretKey;
-
-        if (![HttpdnsUtil isNotEmptyString:aesSecretKey]) {
-            HttpdnsLogDebug("Response is encrypted but no AES key is provided");
-            return nil;
-        }
-
-        if (![data isKindOfClass:[NSString class]]) {
-            HttpdnsLogDebug("Encrypted data is not a string");
-            return nil;
-        }
-
-        // 将Base64字符串转为NSData
-        NSData *encryptedData = [[NSData alloc] initWithBase64EncodedString:data options:0];
-        if (!encryptedData || encryptedData.length <= 16) {
-            HttpdnsLogDebug("Invalid encrypted data");
-            return nil;
-        }
-
-        // 从secretKey转换为二进制密钥
-        NSData *keyData = [HttpdnsUtil dataFromHexString:aesSecretKey];
-        if (!keyData) {
-            HttpdnsLogDebug("Invalid AES key format");
-            return nil;
-        }
-
-        // 使用工具类解密
-        NSError *decryptError = nil;
-        NSData *decryptedData = [HttpdnsUtil decryptDataAESCBC:encryptedData withKey:keyData error:&decryptError];
-
-        if (decryptError || !decryptedData) {
-            HttpdnsLogDebug("Failed to decrypt data: %@", decryptError);
-            return nil;
-        }
-
-        // 将解密后的JSON数据解析为字典
-        NSError *jsonError;
-        data = [NSJSONSerialization JSONObjectWithData:decryptedData options:0 error:&jsonError];
-
-        if (jsonError) {
-            HttpdnsLogDebug("Failed to parse decrypted JSON: %@", jsonError);
-            return nil;
-        }
+        data = [self decryptData:data withMode:mode];
     } else if (mode != 0) {
         // 不支持的加密模式（如AES-GCM）
         HttpdnsLogDebug("Unsupported encryption mode: %ld", (long)mode);
@@ -155,6 +138,61 @@ static NSURLSession *_resolveHostSession = nil;
         return nil;
     }
 
+    return data;
+}
+
+// 解密数据
+- (id)decryptData:(id)data withMode:(NSInteger)mode {
+    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+    NSString *aesSecretKey = sharedService.aesSecretKey;
+
+    if (![HttpdnsUtil isNotEmptyString:aesSecretKey]) {
+        HttpdnsLogDebug("Response is encrypted but no AES key is provided");
+        return nil;
+    }
+
+    if (![data isKindOfClass:[NSString class]]) {
+        HttpdnsLogDebug("Encrypted data is not a string");
+        return nil;
+    }
+
+    // 将Base64字符串转为NSData
+    NSData *encryptedData = [[NSData alloc] initWithBase64EncodedString:data options:0];
+    if (!encryptedData || encryptedData.length <= 16) {
+        HttpdnsLogDebug("Invalid encrypted data");
+        return nil;
+    }
+
+    // 从secretKey转换为二进制密钥
+    NSData *keyData = [HttpdnsUtil dataFromHexString:aesSecretKey];
+    if (!keyData) {
+        HttpdnsLogDebug("Invalid AES key format");
+        return nil;
+    }
+
+    // 使用工具类解密
+    NSError *decryptError = nil;
+    NSData *decryptedData = [HttpdnsUtil decryptDataAESCBC:encryptedData withKey:keyData error:&decryptError];
+
+    if (decryptError || !decryptedData) {
+        HttpdnsLogDebug("Failed to decrypt data: %@", decryptError);
+        return nil;
+    }
+
+    // 将解密后的JSON数据解析为字典
+    NSError *jsonError;
+    id decodedData = [NSJSONSerialization JSONObjectWithData:decryptedData options:0 error:&jsonError];
+
+    if (jsonError) {
+        HttpdnsLogDebug("Failed to parse decrypted JSON: %@", jsonError);
+        return nil;
+    }
+
+    return decodedData;
+}
+
+// 在数据中查找目标主机的答案
+- (NSDictionary *)findTargetAnswerForHost:(NSString *)host inData:(NSDictionary *)data {
     // 从data中获取answers数组
     NSArray *answers = [data objectForKey:@"answers"];
     if (![answers isKindOfClass:[NSArray class]] || answers.count == 0) {
@@ -163,121 +201,34 @@ static NSURLSession *_resolveHostSession = nil;
     }
 
     // 查找与请求的host匹配的答案
-    NSDictionary *targetAnswer = nil;
     for (NSDictionary *answer in answers) {
         NSString *dn = [answer objectForKey:@"dn"];
         if ([dn isEqualToString:host]) {
-            targetAnswer = answer;
-            break;
+            return answer;
         }
     }
 
-    if (!targetAnswer) {
-        HttpdnsLogDebug("No answer found for host: %@", host);
-        return nil;
-    }
+    HttpdnsLogDebug("No answer found for host: %@", host);
+    return nil;
+}
 
+// 从答案创建主机对象
+- (HttpdnsHostObject *)createHostObjectFromAnswer:(NSDictionary *)answer withHost:(NSString *)host {
     // 创建并填充HostObject
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
     [hostObject setHostName:host];
 
-    // 获取IPv4信息
-    NSDictionary *v4Data = [targetAnswer objectForKey:@"v4"];
-    if ([v4Data isKindOfClass:[NSDictionary class]]) {
-        NSArray *ip4s = [v4Data objectForKey:@"ips"];
-        if ([ip4s isKindOfClass:[NSArray class]] && ip4s.count > 0) {
-            // 处理ipv4
-            NSMutableArray *ipArray = [NSMutableArray array];
-            for (NSString *ip in ip4s) {
-                if ([HttpdnsUtil isEmptyString:ip]) {
-                    continue;
-                }
-                HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
-                [ipObject setIp:ip];
-                [ipArray addObject:ipObject];
-            }
-            [hostObject setV4Ips:ipArray];
+    // 处理IPv4信息
+    [self processIPv4Info:answer forHostObject:hostObject];
 
-            // 设置IPv4的TTL
-            NSNumber *ttl = [v4Data objectForKey:@"ttl"];
-            if (ttl) {
-                hostObject.v4ttl = [ttl longLongValue];
-                hostObject.lastIPv4LookupTime = [NSDate date].timeIntervalSince1970;
-            } else {
-                hostObject.v4ttl = 0;
-            }
-
-            // 处理v4的extra字段，优先使用
-            id v4Extra = [v4Data objectForKey:@"extra"];
-            if (v4Extra) {
-                NSString *convertedExtra = [self convertExtraToString:v4Extra];
-                if (convertedExtra) {
-                    [hostObject setExtra:convertedExtra];
-                }
-            }
-
-            // 检查是否有no_ip_code字段，表示无IPv4记录
-            if ([[v4Data objectForKey:@"no_ip_code"] isKindOfClass:[NSString class]]) {
-                hostObject.hasNoIpv4Record = YES;
-            }
-        } else {
-            // 没有IPv4地址但有v4节点，可能是无记录
-            hostObject.hasNoIpv4Record = YES;
-        }
-    }
-
-    // 获取IPv6信息
-    NSDictionary *v6Data = [targetAnswer objectForKey:@"v6"];
-    if ([v6Data isKindOfClass:[NSDictionary class]]) {
-        NSArray *ip6s = [v6Data objectForKey:@"ips"];
-        if ([ip6s isKindOfClass:[NSArray class]] && ip6s.count > 0) {
-            // 处理ipv6
-            NSMutableArray *ip6Array = [NSMutableArray array];
-            for (NSString *ipv6 in ip6s) {
-                if ([HttpdnsUtil isEmptyString:ipv6]) {
-                    continue;
-                }
-                HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
-                [ipObject setIp:ipv6];
-                [ip6Array addObject:ipObject];
-            }
-            [hostObject setV6Ips:ip6Array];
-
-            // 设置IPv6的TTL
-            NSNumber *ttl = [v6Data objectForKey:@"ttl"];
-            if (ttl) {
-                hostObject.v6ttl = [ttl longLongValue];
-                hostObject.lastIPv6LookupTime = [NSDate date].timeIntervalSince1970;
-            } else {
-                hostObject.v6ttl = 0;
-            }
-
-            // 只有在没有v4 extra的情况下才使用v6的extra
-            if (![hostObject getExtra]) {
-                id v6Extra = [v6Data objectForKey:@"extra"];
-                if (v6Extra) {
-                    NSString *convertedExtra = [self convertExtraToString:v6Extra];
-                    if (convertedExtra) {
-                        [hostObject setExtra:convertedExtra];
-                    }
-                }
-            }
-
-            // 检查是否有no_ip_code字段，表示无IPv6记录
-            if ([[v6Data objectForKey:@"no_ip_code"] isKindOfClass:[NSString class]]) {
-                hostObject.hasNoIpv6Record = YES;
-            }
-        } else {
-            // 没有IPv6地址但有v6节点，可能是无记录
-            hostObject.hasNoIpv6Record = YES;
-        }
-    }
+    // 处理IPv6信息
+    [self processIPv6Info:answer forHostObject:hostObject];
 
     // 自定义ttl
     [HttpdnsUtil processCustomTTL:hostObject forHost:host];
 
     // 设置客户端IP
-    NSString *clientIp = [data objectForKey:@"cip"];
+    NSString *clientIp = [[answer objectForKey:@"data"] objectForKey:@"cip"];
     if ([HttpdnsUtil isNotEmptyString:clientIp]) {
         [hostObject setClientIp:clientIp];
     }
@@ -285,12 +236,156 @@ static NSURLSession *_resolveHostSession = nil;
     return hostObject;
 }
 
+// 处理IPv4信息
+- (void)processIPv4Info:(NSDictionary *)answer forHostObject:(HttpdnsHostObject *)hostObject {
+    NSDictionary *v4Data = [answer objectForKey:@"v4"];
+    if (![v4Data isKindOfClass:[NSDictionary class]]) {
+        return;
+    }
+
+    NSArray *ip4s = [v4Data objectForKey:@"ips"];
+    if ([ip4s isKindOfClass:[NSArray class]] && ip4s.count > 0) {
+        // 处理IPv4地址
+        [self setIpArrayToHostObject:hostObject fromIpsArray:ip4s forIPv6:NO];
+
+        // 设置IPv4的TTL
+        [self setTTLForHostObject:hostObject fromData:v4Data forIPv6:NO];
+
+        // 处理v4的extra字段，优先使用
+        [self processExtraInfo:v4Data forHostObject:hostObject];
+
+        // 检查是否有no_ip_code字段，表示无IPv4记录
+        if ([[v4Data objectForKey:@"no_ip_code"] isKindOfClass:[NSString class]]) {
+            hostObject.hasNoIpv4Record = YES;
+        }
+    } else {
+        // 没有IPv4地址但有v4节点，可能是无记录
+        hostObject.hasNoIpv4Record = YES;
+    }
+}
+
+// 处理IPv6信息
+- (void)processIPv6Info:(NSDictionary *)answer forHostObject:(HttpdnsHostObject *)hostObject {
+    NSDictionary *v6Data = [answer objectForKey:@"v6"];
+    if (![v6Data isKindOfClass:[NSDictionary class]]) {
+        return;
+    }
+
+    NSArray *ip6s = [v6Data objectForKey:@"ips"];
+    if ([ip6s isKindOfClass:[NSArray class]] && ip6s.count > 0) {
+        // 处理IPv6地址
+        [self setIpArrayToHostObject:hostObject fromIpsArray:ip6s forIPv6:YES];
+
+        // 设置IPv6的TTL
+        [self setTTLForHostObject:hostObject fromData:v6Data forIPv6:YES];
+
+        // 只有在没有v4 extra的情况下才使用v6的extra
+        if (![hostObject getExtra]) {
+            [self processExtraInfo:v6Data forHostObject:hostObject];
+        }
+
+        // 检查是否有no_ip_code字段，表示无IPv6记录
+        if ([[v6Data objectForKey:@"no_ip_code"] isKindOfClass:[NSString class]]) {
+            hostObject.hasNoIpv6Record = YES;
+        }
+    } else {
+        // 没有IPv6地址但有v6节点，可能是无记录
+        hostObject.hasNoIpv6Record = YES;
+    }
+}
+
+// 设置IP数组到主机对象
+- (void)setIpArrayToHostObject:(HttpdnsHostObject *)hostObject fromIpsArray:(NSArray *)ips forIPv6:(BOOL)isIPv6 {
+    NSMutableArray *ipArray = [NSMutableArray array];
+    for (NSString *ip in ips) {
+        if ([HttpdnsUtil isEmptyString:ip]) {
+            continue;
+        }
+        HttpdnsIpObject *ipObject = [[HttpdnsIpObject alloc] init];
+        [ipObject setIp:ip];
+        [ipArray addObject:ipObject];
+    }
+
+    if (isIPv6) {
+        [hostObject setV6Ips:ipArray];
+    } else {
+        [hostObject setV4Ips:ipArray];
+    }
+}
+
+// 设置TTL
+- (void)setTTLForHostObject:(HttpdnsHostObject *)hostObject fromData:(NSDictionary *)data forIPv6:(BOOL)isIPv6 {
+    NSNumber *ttl = [data objectForKey:@"ttl"];
+    if (ttl) {
+        if (isIPv6) {
+            hostObject.v6ttl = [ttl longLongValue];
+            hostObject.lastIPv6LookupTime = [NSDate date].timeIntervalSince1970;
+        } else {
+            hostObject.v4ttl = [ttl longLongValue];
+            hostObject.lastIPv4LookupTime = [NSDate date].timeIntervalSince1970;
+        }
+    } else {
+        if (isIPv6) {
+            hostObject.v6ttl = 0;
+        } else {
+            hostObject.v4ttl = 0;
+        }
+    }
+}
+
+// 处理额外信息
+- (void)processExtraInfo:(NSDictionary *)data forHostObject:(HttpdnsHostObject *)hostObject {
+    id extra = [data objectForKey:@"extra"];
+    if (extra) {
+        NSString *convertedExtra = [self convertExtraToString:extra];
+        if (convertedExtra) {
+            [hostObject setExtra:convertedExtra];
+        }
+    }
+}
+
 - (NSString *)constructHttpdnsResolvingUrl:(HttpdnsRequest *)request forV4Net:(BOOL)isV4 {
+    // 获取基础信息
+    NSString *serverIp = [self getServerIpForNetwork:isV4];
+    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+
+    // 准备签名和加密参数
+    NSDictionary *paramsToSign = [self prepareSigningParams:request forEncryption:[self shouldUseEncryption]];
+
+    // 计算签名
+    NSString *signature = [self calculateSignatureForParams:paramsToSign withSecretKey:sharedService.secretKey];
+
+    // 构建URL
+    NSString *url = [NSString stringWithFormat:@"%@/v2/d", serverIp];
+
+    // 添加所有参数并构建最终URL
+    NSString *finalUrl = [self buildFinalUrlWithBase:url
+                                              params:paramsToSign
+                                         isEncrypted:[self shouldUseEncryption]
+                                           signature:signature
+                                             request:request];
+
+    HttpdnsLogDebug("Constructed v2 API URL: %@", finalUrl);
+    return finalUrl;
+}
+
+// 获取当前应使用的服务器IP
+- (NSString *)getServerIpForNetwork:(BOOL)isV4 {
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-    NSString *serverIp = isV4 ? [scheduleCenter currentActiveServiceServerV4Host] : [scheduleCenter currentActiveServiceServerV6Host];
+    return isV4 ? [scheduleCenter currentActiveServiceServerV4Host] :
+                  [scheduleCenter currentActiveServiceServerV6Host];
+}
+
+// 检查是否应该使用加密
+- (BOOL)shouldUseEncryption {
+    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+    return [HttpdnsUtil isNotEmptyString:sharedService.aesSecretKey];
+}
+
+// 准备需要进行签名的参数
+- (NSDictionary *)prepareSigningParams:(HttpdnsRequest *)request forEncryption:(BOOL)useEncryption {
     HttpDnsService *sharedService = [HttpDnsService sharedInstance];
     NSInteger accountId = sharedService.accountID;
-    NSString *secretKey = sharedService.secretKey;
 
     // 构建参与签名的参数字典
     NSMutableDictionary *paramsToSign = [NSMutableDictionary dictionary];
@@ -302,7 +397,6 @@ static NSURLSession *_resolveHostSession = nil;
     [paramsToSign setObject:[NSString stringWithFormat:@"%ld", accountId] forKey:@"id"];
 
     // 决定加密模式
-    BOOL useEncryption = [HttpdnsUtil isNotEmptyString:sharedService.aesSecretKey];
     NSString *mode = useEncryption ? @"1" : @"0"; // 0: 明文模式, 1: AES-CBC加密模式
     [paramsToSign setObject:mode forKey:@"m"];
 
@@ -313,102 +407,148 @@ static NSURLSession *_resolveHostSession = nil;
     [paramsToEncrypt setObject:request.host forKey:@"dn"];
 
     // 查询类型，参与签名并加密
-    NSString *queryTypeStr = @"4";
-    if (request.queryIpType & HttpdnsQueryIPTypeBoth) {
-        queryTypeStr = @"4,6";
-    } else if (request.queryIpType & HttpdnsQueryIPTypeIpv6) {
-        queryTypeStr = @"6";
-    }
-    [paramsToEncrypt setObject:queryTypeStr forKey:@"q"];
+    [paramsToEncrypt setObject:[self getQueryTypeString:request.queryIpType] forKey:@"q"];
 
     // SDNS参数，参与签名并加密
-    if ([HttpdnsUtil isNotEmptyDictionary:request.sdnsParams]) {
-        [request.sdnsParams enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
-            NSString *sdnsKey = [NSString stringWithFormat:@"sdns-%@", key];
-            [paramsToEncrypt setObject:obj forKey:sdnsKey];
-        }];
-    }
+    [self addSdnsParams:request.sdnsParams toParams:paramsToEncrypt];
 
     // 签名过期时间，参与签名但不加密
-    long localTimestampOffset = (long)sharedService.authTimeOffset;
-    long localTimestamp = (long)[[NSDate date] timeIntervalSince1970];
-    if (localTimestampOffset != 0) {
-        localTimestamp = localTimestamp + localTimestampOffset;
-    }
-    long expiredTimestamp = localTimestamp + HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
+    long expiredTimestamp = [self calculateExpiredTimestamp];
     NSString *expiredTimestampString = [NSString stringWithFormat:@"%ld", expiredTimestamp];
     [paramsToSign setObject:expiredTimestampString forKey:@"exp"];
 
     // 处理加密
     if (useEncryption) {
-        NSError *error = nil;
-
-        // 将待加密参数转为JSON
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:paramsToEncrypt options:0 error:&error];
-        if (error) {
-            HttpdnsLogDebug("Failed to serialize params to JSON: %@", error);
-            return nil;
+        NSString *encryptedHexString = [self encryptParams:paramsToEncrypt];
+        if (encryptedHexString) {
+            [paramsToSign setObject:encryptedHexString forKey:@"enc"];
         }
-
-        // 从secretKey转换为二进制密钥
-        NSData *keyData = [HttpdnsUtil dataFromHexString:sharedService.aesSecretKey];
-        if (!keyData) {
-            HttpdnsLogDebug("Invalid AES key format");
-            return nil;
-        }
-
-        // AES-CBC加密
-        NSData *encryptedData = [HttpdnsUtil encryptDataAESCBC:jsonData withKey:keyData error:&error];
-        if (error) {
-            HttpdnsLogDebug("Failed to encrypt data: %@", error);
-            return nil;
-        }
-
-        // 将加密结果转为十六进制字符串
-        NSString *encryptedHexString = [HttpdnsUtil hexStringFromData:encryptedData];
-        [paramsToSign setObject:encryptedHexString forKey:@"enc"];
     } else {
         // 明文模式下，加密参数也放入签名参数中
         [paramsToSign addEntriesFromDictionary:paramsToEncrypt];
     }
 
+    return paramsToSign;
+}
+
+// 获取查询类型字符串
+- (NSString *)getQueryTypeString:(HttpdnsQueryIPType)queryIpType {
+    if (queryIpType & HttpdnsQueryIPTypeBoth) {
+        return @"4,6";
+    } else if (queryIpType & HttpdnsQueryIPTypeIpv6) {
+        return @"6";
+    }
+    return @"4";
+}
+
+// 添加SDNS参数
+- (void)addSdnsParams:(NSDictionary *)sdnsParams toParams:(NSMutableDictionary *)paramsToEncrypt {
+    if ([HttpdnsUtil isNotEmptyDictionary:sdnsParams]) {
+        [sdnsParams enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
+            NSString *sdnsKey = [NSString stringWithFormat:@"sdns-%@", key];
+            [paramsToEncrypt setObject:obj forKey:sdnsKey];
+        }];
+    }
+}
+
+// 计算过期时间戳
+- (long)calculateExpiredTimestamp {
+    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+    long localTimestampOffset = (long)sharedService.authTimeOffset;
+    long localTimestamp = (long)[[NSDate date] timeIntervalSince1970];
+    if (localTimestampOffset != 0) {
+        localTimestamp = localTimestamp + localTimestampOffset;
+    }
+    return localTimestamp + HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
+}
+
+// 加密参数
+- (NSString *)encryptParams:(NSDictionary *)paramsToEncrypt {
+    NSError *error = nil;
+    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+
+    // 将待加密参数转为JSON
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:paramsToEncrypt options:0 error:&error];
+    if (error) {
+        HttpdnsLogDebug("Failed to serialize params to JSON: %@", error);
+        return nil;
+    }
+
+    // 从secretKey转换为二进制密钥
+    NSData *keyData = [HttpdnsUtil dataFromHexString:sharedService.aesSecretKey];
+    if (!keyData) {
+        HttpdnsLogDebug("Invalid AES key format");
+        return nil;
+    }
+
+    // 目前在OC中没有比较好的实现AES-GCM的方式，因此这里选择AES-CBC加密
+    NSData *encryptedData = [HttpdnsUtil encryptDataAESCBC:jsonData withKey:keyData error:&error];
+    if (error) {
+        HttpdnsLogDebug("Failed to encrypt data: %@", error);
+        return nil;
+    }
+
+    // 将加密结果转为十六进制字符串
+    return [HttpdnsUtil hexStringFromData:encryptedData];
+}
+
+// 计算签名
+- (NSString *)calculateSignatureForParams:(NSDictionary *)params withSecretKey:(NSString *)secretKey {
+    if (![HttpdnsUtil isNotEmptyString:secretKey]) {
+        return nil;
+    }
+
     // 按照签名要求对参数进行排序并生成签名内容
-    NSArray *sortedKeys = [[paramsToSign allKeys] sortedArrayUsingSelector:@selector(compare:)];
+    NSArray *sortedKeys = [[params allKeys] sortedArrayUsingSelector:@selector(compare:)];
     NSMutableArray *signParts = [NSMutableArray array];
 
     for (NSString *key in sortedKeys) {
-        [signParts addObject:[NSString stringWithFormat:@"%@=%@", key, [paramsToSign objectForKey:key]]];
+        [signParts addObject:[NSString stringWithFormat:@"%@=%@", key, [params objectForKey:key]]];
     }
 
     // 组合签名字符串
     NSString *signContent = [signParts componentsJoinedByString:@"&"];
 
     // 计算HMAC-SHA256签名
-    NSString *signature = nil;
-    if ([HttpdnsUtil isNotEmptyString:secretKey]) {
-        signature = [HttpdnsUtil hmacSha256:signContent key:secretKey];
-    }
+    return [HttpdnsUtil hmacSha256:signContent key:secretKey];
+}
 
-    // 构建基础URL
-    NSString *url = [NSString stringWithFormat:@"%@/v2/d", serverIp];
+// 构建最终URL
+- (NSString *)buildFinalUrlWithBase:(NSString *)baseUrl
+                             params:(NSDictionary *)params
+                        isEncrypted:(BOOL)useEncryption
+                          signature:(NSString *)signature
+                            request:(HttpdnsRequest *)request {
 
-    // 构建最终URL
-    NSMutableString *finalUrl = [NSMutableString stringWithString:url];
+    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+    NSMutableString *finalUrl = [NSMutableString stringWithString:baseUrl];
     [finalUrl appendString:@"?"];
 
     // 首先添加必要参数
-    [finalUrl appendFormat:@"id=%ld", accountId];
-    [finalUrl appendFormat:@"&m=%@", mode];
-    [finalUrl appendFormat:@"&exp=%@", expiredTimestampString];
-    [finalUrl appendFormat:@"&v=%@", @"1.0"];
+    [finalUrl appendFormat:@"id=%ld", sharedService.accountID];
+    [finalUrl appendFormat:@"&m=%@", [params objectForKey:@"m"]];
+    [finalUrl appendFormat:@"&exp=%@", [params objectForKey:@"exp"]];
+    [finalUrl appendFormat:@"&v=%@", [params objectForKey:@"v"]];
 
     if (useEncryption) {
         // 加密模式下，添加enc参数
-        [finalUrl appendFormat:@"&enc=%@", [paramsToSign objectForKey:@"enc"]];
+        [finalUrl appendFormat:@"&enc=%@", [params objectForKey:@"enc"]];
     } else {
-        // 明文模式下，添加所有加密参数
-        for (NSString *key in paramsToEncrypt) {
-            NSString *value = [paramsToEncrypt objectForKey:key];
+        // 明文模式下，添加所有参数
+        NSMutableDictionary *paramsForPlainText = [NSMutableDictionary dictionaryWithDictionary:params];
+        [paramsForPlainText removeObjectForKey:@"id"];
+        [paramsForPlainText removeObjectForKey:@"m"];
+        [paramsForPlainText removeObjectForKey:@"exp"];
+        [paramsForPlainText removeObjectForKey:@"v"];
+
+        for (NSString *key in paramsForPlainText) {
+            // 跳过已添加的参数
+            if ([key isEqualToString:@"id"] || [key isEqualToString:@"m"] ||
+                [key isEqualToString:@"exp"] || [key isEqualToString:@"v"]) {
+                continue;
+            }
+
+            NSString *value = [paramsForPlainText objectForKey:key];
             [finalUrl appendFormat:@"&%@=%@", [HttpdnsUtil URLEncodedString:key], [HttpdnsUtil URLEncodedString:value]];
         }
     }
@@ -418,25 +558,29 @@ static NSURLSession *_resolveHostSession = nil;
         [finalUrl appendFormat:@"&s=%@", signature];
     }
 
-    // 添加不参与签名的其他历史参数
+    // 添加不参与签名的其他参数
+    [self appendAdditionalParams:finalUrl];
+
+    return finalUrl;
+}
+
+// 添加额外的不参与签名的参数
+- (void)appendAdditionalParams:(NSMutableString *)url {
     // sessionId
     NSString *sessionId = [HttpdnsUtil generateSessionID];
     if ([HttpdnsUtil isNotEmptyString:sessionId]) {
-        [finalUrl appendFormat:@"&sid=%@", sessionId];
+        [url appendFormat:@"&sid=%@", sessionId];
     }
 
     // 网络类型
     NSString *netType = [[HttpdnsReachability sharedInstance] currentReachabilityString];
     if ([HttpdnsUtil isNotEmptyString:netType]) {
-        [finalUrl appendFormat:@"&net=%@", netType];
+        [url appendFormat:@"&net=%@", netType];
     }
 
     // SDK版本
     NSString *versionInfo = [NSString stringWithFormat:@"ios_%@", HTTPDNS_IOS_SDK_VERSION];
-    [finalUrl appendFormat:@"&sdk=%@", versionInfo];
-
-    HttpdnsLogDebug("Constructed v2 API URL: %@", finalUrl);
-    return finalUrl;
+    [url appendFormat:@"&sdk=%@", versionInfo];
 }
 
 - (HttpdnsHostObject *)lookupHostFromServer:(HttpdnsRequest *)request error:(NSError **)error {
