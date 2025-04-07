@@ -23,6 +23,6 @@
 
 @interface HttpdnsRemoteResolver : NSObject
 
-- (HttpdnsHostObject *)lookupHostFromServer:(HttpdnsRequest *)request error:(NSError **)error;
+- (NSArray<HttpdnsHostObject *> *)resolve:(HttpdnsRequest *)request error:(NSError **)error;
 
 @end
