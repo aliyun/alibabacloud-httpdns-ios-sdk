@@ -38,7 +38,7 @@ FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP;
 
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
 
-- (void)addPreResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType;
+- (void)preResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType;
 
 - (HttpdnsHostObject *)resolveHost:(HttpdnsRequest *)request;
 
