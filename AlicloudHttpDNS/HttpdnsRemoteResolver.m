@@ -437,7 +437,7 @@ static NSURLSession *_resolveHostSession = nil;
 
 // 获取查询类型字符串
 - (NSString *)getQueryTypeString:(HttpdnsQueryIPType)queryIpType {
-    if (queryIpType & HttpdnsQueryIPTypeBoth) {
+    if ((queryIpType & HttpdnsQueryIPTypeIpv4) && (queryIpType & HttpdnsQueryIPTypeIpv6)) {
         return @"4,6";
     } else if (queryIpType & HttpdnsQueryIPTypeIpv6) {
         return @"6";
@@ -593,7 +593,6 @@ static NSURLSession *_resolveHostSession = nil;
     NSString *url = [self constructHttpdnsResolvingUrl:request forV4Net:YES];
 
     HttpdnsQueryIPType queryIPType = request.queryIpType;
-    NSString *host = request.host;
 
     NSArray<HttpdnsHostObject *> *hostObjects = [self sendRequest:url queryIpType:queryIPType error:error];
 

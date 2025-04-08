@@ -117,10 +117,13 @@ typedef struct {
     _isPreResolveAfterNetworkChangedEnabled = enable;
 }
 
-- (void)addPreResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType{
+- (void)preResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType {
     if (![HttpdnsUtil isNotEmptyArray:hosts]) {
         return;
     }
+
+    NSString *combinedHostString = [hosts componentsJoinedByString:@","];
+
     __weak typeof(self) weakSelf = self;
     dispatch_async(_asyncResolveHostQueue, ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -128,18 +131,15 @@ typedef struct {
             return;
         }
 
-        for (NSString *hostName in hosts) {
-            if ([strongSelf isHostsNumberLimitReached]) {
-                break;
-            }
-            HttpdnsHostObject *hostObject = [strongSelf->_hostObjectInMemoryCache getHostObjectByCacheKey:hostName];
-            if (!hostObject || [hostObject isExpiredUnderQueryIpType:queryType]) {
-                HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:hostName queryIpType:queryType];
-                [request becomeNonBlockingRequest];
-                [strongSelf resolveHost:request];
-                HttpdnsLogDebug("Pre resolve host by async lookup, host: %@", hostName);
-            }
+        if ([strongSelf isHostsNumberLimitReached]) {
+            return;
         }
+
+        HttpdnsLogDebug("Pre resolve host by async lookup, hosts: %@", combinedHostString);
+
+        HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:combinedHostString queryIpType:queryType];
+        [request becomeNonBlockingRequest];
+        [strongSelf executePreResolveRequest:request retryCount:0];
     });
 }
 
@@ -314,6 +314,52 @@ typedef struct {
     return [lookupResult copy];
 }
 
+- (void)executePreResolveRequest:(HttpdnsRequest *)request retryCount:(int)hasRetryedCount {
+    NSString *host = request.host;
+    HttpdnsQueryIPType queryIPType = request.queryIpType;
+
+    BOOL isDegradationResult = NO;
+
+    if (hasRetryedCount > HTTPDNS_MAX_REQUEST_RETRY_TIME) {
+        HttpdnsLogDebug("PreResolve remote request retry count exceed limit, host: %@", host);
+        return;
+    }
+
+    HttpdnsLogDebug("PreResolve request starts, host: %@, request: %@", host, request);
+
+    NSError *error = nil;
+    NSArray<HttpdnsHostObject *> *resultArray = [[HttpdnsRemoteResolver new] resolve:request error:&error];
+
+    if (error) {
+        HttpdnsLogDebug("PreResolve request error, host: %@, error: %@", host, error);
+
+        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+        [scheduleCenter moveToNextServiceServerHost];
+
+        // 确保一定的重试间隔
+        hasRetryedCount++;
+        [NSThread sleepForTimeInterval:hasRetryedCount * 0.25];
+
+        [self executeRequest:request retryCount:hasRetryedCount];
+
+        return;
+    }
+
+    if ([HttpdnsUtil isEmptyArray:resultArray]) {
+        HttpdnsLogDebug("PreResolve request get empty result array, host: %@", host);
+        return;
+    }
+
+    HttpdnsLogDebug("PreResolve request finished, host: %@, isDegradationResult: %d, result: %@ ",
+                    host, isDegradationResult, resultArray);
+
+    for (HttpdnsHostObject *result in resultArray) {
+        // merge之后，返回的应当是存储在缓存中的实际对象，而非请求过程中构造出来的对象
+        // 预解析不支持SDNS，所以cacheKey只能是单独的每一个hostName
+        [self mergeLookupResultToManager:result host:result.hostName cacheKey:result.hostName underQueryIpType:queryIPType];
+    }
+}
+
 - (HttpdnsHostObject *)mergeLookupResultToManager:(HttpdnsHostObject *)result host:host cacheKey:(NSString *)cacheKey underQueryIpType:(HttpdnsQueryIPType)queryIpType {
     if (!result) {
         return nil;
@@ -443,7 +489,7 @@ typedef struct {
 
             if (self->_isPreResolveAfterNetworkChangedEnabled) {
                 HttpdnsLogDebug("Network changed, pre resolve for hosts: %@", hostArray);
-                [self addPreResolveHosts:hostArray queryType:HttpdnsQueryIPTypeAuto];
+                [self preResolveHosts:hostArray queryType:HttpdnsQueryIPTypeAuto];
             }
         });
 
