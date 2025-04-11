@@ -71,7 +71,10 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (nonnull instancetype)initWithAccountID:(NSInteger)accountID {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
     return [self initWithAccountID:accountID secretKey:nil];
+#pragma clang diagnostic pop
 }
 
 - (nonnull instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString *)secretKey {
@@ -1081,9 +1084,12 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (BOOL)_shouldDegradeHTTPDNS:(NSString *)host {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     if (self.delegate && [self.delegate respondsToSelector:@selector(shouldDegradeHTTPDNS:)]) {
         return [self.delegate shouldDegradeHTTPDNS:host];
     }
+#pragma clang diagnostic pop
     return NO;
 }
 

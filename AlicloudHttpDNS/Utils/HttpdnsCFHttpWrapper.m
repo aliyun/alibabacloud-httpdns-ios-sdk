@@ -41,7 +41,10 @@ typedef struct {
     CFStringRef headerFieldValue = (__bridge CFStringRef)([HttpdnsUtil generateUserAgent]);
     CFHTTPMessageSetHeaderFieldValue(request, headerFieldName, headerFieldValue);
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     CFReadStreamRef readStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, request);
+#pragma clang diagnostic pop
 
     RequestContext *context = malloc(sizeof(RequestContext));
     context->url = url;
@@ -123,7 +126,10 @@ typedef struct {
 
     switch (eventType) {
         case kCFStreamEventHasBytesAvailable: {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
             CFHTTPMessageRef responseMessage = (CFHTTPMessageRef)CFReadStreamCopyProperty(stream, kCFStreamPropertyHTTPResponseHeader);
+#pragma clang diagnostic pop
             if (responseMessage) {
                 CFIndex statusCode = CFHTTPMessageGetResponseStatusCode(responseMessage);
                 if (statusCode == 200) {
