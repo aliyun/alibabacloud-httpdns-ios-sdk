@@ -590,4 +590,8 @@ typedef struct {
     [_hostObjectInMemoryCache removeAllHostObjects];
 }
 
+- (void)syncReloadCacheFromDbToMemory {
+    [self reloadCacheFromDbToMemory];
+}
+
 @end

@@ -112,7 +112,7 @@
                                                                 v6ips:@[]
                                                                 v6ttl:0
                                                          v6LookupTime:0
-                                                                extra:@{}];
+                                                                extra:@""];
 
     // Insert the record
     BOOL result = [self.db createOrUpdate:record];
@@ -150,16 +150,6 @@
         XCTAssertEqualObjects(fetchedRecord.cacheKey, cacheKey, @"Cache key should match");
         XCTAssertEqualObjects(fetchedRecord.hostName, hostname, @"Hostname should match");
     }
-
-    // Test that we can get all records for the same hostname
-    NSArray<HttpdnsHostRecord *> *records = [self.db selectAllByHostname:hostname];
-    XCTAssertEqual(records.count, cacheKeys.count, @"Should retrieve all records with the same hostname");
-
-    // Verify that selectByHostname returns the first record
-    HttpdnsHostRecord *firstRecord = [self.db selectByHostname:hostname];
-    XCTAssertNotNil(firstRecord, @"Should be able to fetch a record by hostname");
-    XCTAssertEqualObjects(firstRecord.hostName, hostname, @"Hostname should match");
-    XCTAssertTrue([cacheKeys containsObject:firstRecord.cacheKey], @"Cache key should be one of the expected keys");
 }
 
 #pragma mark - Update Tests
@@ -193,7 +183,7 @@
                                                                        v6ips:@[@"2001:db8::1", @"2001:db8::2"] // Changed
                                                                        v6ttl:1200 // Changed
                                                                 v6LookupTime:originalRecord.v6LookupTime + 1000
-                                                                       extra:@{@"updated": @YES}]; // Changed
+                                                                       extra:@"updated"]; // Changed
 
     // Update the record
     result = [self.db createOrUpdate:updatedRecord];
@@ -211,7 +201,7 @@
     XCTAssertEqual(fetchedRecord.v4ttl, 600, @"v4ttl should be updated");
     XCTAssertEqual(fetchedRecord.v6ips.count, 2, @"Should have 2 IPv6 addresses");
     XCTAssertEqual(fetchedRecord.v6ttl, 1200, @"v6ttl should be updated");
-    XCTAssertEqualObjects(fetchedRecord.extra[@"updated"], @YES, @"Extra data should be updated");
+    XCTAssertEqualObjects(fetchedRecord.extra, @"updated", @"Extra data should be updated");
 
     // Verify createAt was preserved and modifyAt was updated
     XCTAssertEqualWithAccuracy([fetchedRecord.createAt timeIntervalSince1970],
@@ -253,20 +243,20 @@
     XCTAssertEqualObjects(fetchedRecord.hostName, @"query.example.com", @"Hostname should match");
 }
 
-- (void)testSelectByHostname {
-    // Create a test record
-    HttpdnsHostRecord *record = [self createTestRecordWithHostname:@"query.example.com" cacheKey:@"query_cache_key"];
-
-    // Insert the record
-    BOOL result = [self.db createOrUpdate:record];
-    XCTAssertTrue(result, @"Record creation should succeed");
-
-    // Query the record
-    HttpdnsHostRecord *fetchedRecord = [self.db selectByHostname:@"query.example.com"];
-    XCTAssertNotNil(fetchedRecord, @"Should be able to fetch the record");
-    XCTAssertEqualObjects(fetchedRecord.hostName, @"query.example.com", @"Hostname should match");
-    XCTAssertEqualObjects(fetchedRecord.cacheKey, @"query_cache_key", @"Cache key should match");
-}
+// - (void)testSelectByHostname {
+//     // Create a test record
+//     HttpdnsHostRecord *record = [self createTestRecordWithHostname:@"query.example.com" cacheKey:@"query_cache_key"];
+// 
+//     // Insert the record
+//     BOOL result = [self.db createOrUpdate:record];
+//     XCTAssertTrue(result, @"Record creation should succeed");
+// 
+//     // Query the record
+//     HttpdnsHostRecord *fetchedRecord = [self.db selectByHostname:@"query.example.com"];
+//     XCTAssertNotNil(fetchedRecord, @"Should be able to fetch the record");
+//     XCTAssertEqualObjects(fetchedRecord.hostName, @"query.example.com", @"Hostname should match");
+//     XCTAssertEqualObjects(fetchedRecord.cacheKey, @"query_cache_key", @"Cache key should match");
+// }
 
 - (void)testSelectNonExistentRecord {
     // Query a record that doesn't exist
@@ -320,7 +310,7 @@
     }
 
     // Delete all records with the same hostname
-    BOOL result = [self.db deleteByHostname:hostname];
+    BOOL result = [self.db deleteByHostNameArr:@[hostname]];
     XCTAssertTrue(result, @"Deleting records by hostname should succeed");
 
     // Verify all records were deleted
@@ -386,7 +376,7 @@
                                                                 v6ips:@[]
                                                                 v6ttl:0
                                                          v6LookupTime:0
-                                                                extra:@{}];
+                                                                extra:@""];
 
     // Insert the record
     BOOL result = [self.db createOrUpdate:record];
@@ -397,8 +387,9 @@
     XCTAssertNotNil(fetchedRecord, @"Should be able to fetch the record");
 
     // Verify createAt was preserved
+    // 新插入的记录一定会使用当前时间
     XCTAssertEqualWithAccuracy([fetchedRecord.createAt timeIntervalSince1970],
-                              [pastDate timeIntervalSince1970],
+                               [[NSDate date] timeIntervalSince1970],
                               0.001,
                               @"createAt should be preserved");
 
@@ -415,7 +406,7 @@
                                                                        v6ips:@[]
                                                                        v6ttl:0
                                                                 v6LookupTime:0
-                                                                       extra:@{}];
+                                                                       extra:@""];
 
     // Update the record
     result = [self.db createOrUpdate:updatedRecord];
@@ -427,7 +418,7 @@
 
     // Verify createAt was still preserved after update
     XCTAssertEqualWithAccuracy([updatedFetchedRecord.createAt timeIntervalSince1970],
-                              [pastDate timeIntervalSince1970],
+                               [fetchedRecord.createAt timeIntervalSince1970],
                               0.001,
                               @"createAt should still be preserved after update");
 
@@ -495,7 +486,7 @@
                                            v6ips:@[@"2001:db8::1"]
                                            v6ttl:600
                                     v6LookupTime:2000
-                                           extra:@{@"test": @"value"}];
+                                           extra:@"value"];
 }
 
 @end

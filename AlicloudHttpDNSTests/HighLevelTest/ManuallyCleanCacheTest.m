@@ -44,13 +44,13 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
 
     NSString *testHost = ipv4OnlyHost;
     HttpdnsHostObject *hostObject = [self constructSimpleIpv4HostObject];
-    hostObject.ttl = 60;
+    // hostObject.ttl = 60;
     [hostObject setV4TTL:60];
 
     HttpdnsRemoteResolver *resolver = [HttpdnsRemoteResolver new];
     id mockResolver = OCMPartialMock(resolver);
     __block int invokeCount = 0;
-    OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
+    OCMStub([mockResolver resolve:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .andDo(^(NSInvocation *invocation) {
             invokeCount++;
         })
@@ -102,13 +102,13 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
 
     NSString *testHost = ipv4OnlyHost;
     HttpdnsHostObject *hostObject = [self constructSimpleIpv4HostObject];
-    hostObject.ttl = 60;
+    // hostObject.ttl = 60;
     [hostObject setV4TTL:60];
 
     HttpdnsRemoteResolver *resolver = [HttpdnsRemoteResolver new];
     id mockResolver = OCMPartialMock(resolver);
     __block int invokeCount = 0;
-    OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
+    OCMStub([mockResolver resolve:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .andDo(^(NSInvocation *invocation) {
             invokeCount++;
         })

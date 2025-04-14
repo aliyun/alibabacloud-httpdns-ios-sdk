@@ -60,4 +60,6 @@ FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP;
 
 - (void)cleanAllHostMemoryCache;
 
+- (void)syncReloadCacheFromDbToMemory;
+
 @end
