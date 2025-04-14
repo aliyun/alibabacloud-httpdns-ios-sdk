@@ -8,6 +8,7 @@
 
 #import "TestBase.h"
 #import <mach/mach.h>
+#import "HttpdnsIpStackDetector.h"
 
 NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
@@ -39,7 +40,7 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 - (HttpdnsHostObject *)constructSimpleIpv4HostObject {
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
-    hostObject.ttl = 60;
+    // hostObject.ttl = 60;
     hostObject.hostName = ipv4OnlyHost;
     hostObject.v4ttl = 60;
     HttpdnsIpObject *ip1 = [[HttpdnsIpObject alloc] init];
@@ -53,7 +54,7 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 - (HttpdnsHostObject *)constructSimpleIpv6HostObject {
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
-    hostObject.ttl = 60;
+    // hostObject.ttl = 60;
     hostObject.hostName = ipv4OnlyHost;
     hostObject.v6ttl = 60;
     HttpdnsIpObject *ip1 = [[HttpdnsIpObject alloc] init];
@@ -67,7 +68,7 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 - (HttpdnsHostObject *)constructSimpleIpv4AndIpv6HostObject {
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
-    hostObject.ttl = 60;
+    // hostObject.ttl = 60;
     hostObject.hostName = ipv4AndIpv6Host;
     hostObject.v4ttl = 60;
     HttpdnsIpObject *ip1 = [[HttpdnsIpObject alloc] init];
@@ -88,29 +89,29 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 }
 
 - (void)presetNetworkEnvAsIpv4 {
-    HttpdnsIPv6Adapter *mockIpv6Adapter = OCMPartialMock([HttpdnsIPv6Adapter sharedInstance]);
-    OCMStub([mockIpv6Adapter currentIpStackType]).andReturn(kAlicloudIPv4only);
-    OCMStub([mockIpv6Adapter isIPv6OnlyNetwork]).andReturn(NO);
+    HttpdnsIpStackDetector *mockIpv6Adapter = OCMPartialMock([HttpdnsIpStackDetector sharedInstance]);
+    OCMStub([mockIpv6Adapter currentIpStack]).andReturn(kHttpdnsIpv4Only);
+    OCMStub([mockIpv6Adapter isIpv6OnlyNetwork]).andReturn(NO);
 
-    id mockAdapterClass = OCMClassMock([HttpdnsIPv6Adapter class]);
+    id mockAdapterClass = OCMClassMock([HttpdnsIpStackDetector class]);
     OCMStub([mockAdapterClass sharedInstance]).andReturn(mockIpv6Adapter);
 }
 
 - (void)presetNetworkEnvAsIpv6 {
-    HttpdnsIPv6Adapter *mockIpv6Adapter = OCMPartialMock([HttpdnsIPv6Adapter sharedInstance]);
-    OCMStub([mockIpv6Adapter currentIpStackType]).andReturn(kAlicloudIPv6only);
-    OCMStub([mockIpv6Adapter isIPv6OnlyNetwork]).andReturn(YES);
+    HttpdnsIpStackDetector *mockIpv6Adapter = OCMPartialMock([HttpdnsIpStackDetector sharedInstance]);
+    OCMStub([mockIpv6Adapter currentIpStack]).andReturn(kHttpdnsIpv6Only);
+    OCMStub([mockIpv6Adapter isIpv6OnlyNetwork]).andReturn(YES);
 
-    id mockAdapterClass = OCMClassMock([HttpdnsIPv6Adapter class]);
+    id mockAdapterClass = OCMClassMock([HttpdnsIpStackDetector class]);
     OCMStub([mockAdapterClass sharedInstance]).andReturn(mockIpv6Adapter);
 }
 
 - (void)presetNetworkEnvAsIpv4AndIpv6 {
-    HttpdnsIPv6Adapter *mockIpv6Adapter = OCMPartialMock([HttpdnsIPv6Adapter sharedInstance]);
-    OCMStub([mockIpv6Adapter currentIpStackType]).andReturn(kAlicloudIPdual);
-    OCMStub([mockIpv6Adapter isIPv6OnlyNetwork]).andReturn(NO);
+    HttpdnsIpStackDetector *mockIpv6Adapter = OCMPartialMock([HttpdnsIpStackDetector sharedInstance]);
+    OCMStub([mockIpv6Adapter currentIpStack]).andReturn(kHttpdnsIpDual);
+    OCMStub([mockIpv6Adapter isIpv6OnlyNetwork]).andReturn(NO);
 
-    id mockAdapterClass = OCMClassMock([HttpdnsIPv6Adapter class]);
+    id mockAdapterClass = OCMClassMock([HttpdnsIpStackDetector class]);
     OCMStub([mockAdapterClass sharedInstance]).andReturn(mockIpv6Adapter);
 }
 

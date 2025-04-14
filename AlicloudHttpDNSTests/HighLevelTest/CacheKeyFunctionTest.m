@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "HttpdnsRequestScheduler_Internal.h"
 #import "TestBase.h"
 
 @interface CacheKeyFunctionTest : TestBase
