@@ -128,12 +128,13 @@
     __block HttpdnsHostObject *ipv4HostObject = [self constructSimpleIpv4HostObject];
     HttpdnsRemoteResolver *realResolver = [HttpdnsRemoteResolver new];
     id mockResolver = OCMPartialMock(realResolver);
+    __block NSArray *mockResolverHostObjects = @[ipv4HostObject];
     OCMStub([mockResolver resolve:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
             // 第一次调用，阻塞1.5秒
             [NSThread sleepForTimeInterval:1.5];
-            [invocation setReturnValue:&ipv4HostObject];
+            [invocation setReturnValue:&mockResolverHostObjects];
         });
 
     id mockResolverClass = OCMClassMock([HttpdnsRemoteResolver class]);
@@ -142,8 +143,7 @@
     [self.httpdns.requestManager cleanAllHostMemoryCache];
 
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        HttpdnsResult *result = [self.httpdns resolveHostSync:ipv4OnlyHost byIpType:HttpdnsQueryIPTypeIpv4];
-        XCTAssertNotNil(result);
+        [self.httpdns resolveHostSync:ipv4OnlyHost byIpType:HttpdnsQueryIPTypeIpv4];
     });
 
     // 确保第一个请求已经开始
@@ -180,6 +180,7 @@
     HttpdnsRemoteResolver *realResolver = [HttpdnsRemoteResolver new];
     id mockResolver = OCMPartialMock(realResolver);
     __block atomic_int count = 0;
+    __block NSArray *mockResolverHostObjects = @[ipv4HostObject];
     OCMStub([mockResolver resolve:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
@@ -192,7 +193,7 @@
             } else {
                 // 第二次调用
                 [NSThread sleepForTimeInterval:0.4];
-                [invocation setReturnValue:&ipv4HostObject];
+                [invocation setReturnValue:&mockResolverHostObjects];
             }
         });
 

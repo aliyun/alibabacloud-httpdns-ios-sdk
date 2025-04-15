@@ -46,7 +46,7 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
     HttpdnsHostObject *hostObject = [self constructSimpleIpv4HostObject];
     // hostObject.ttl = 60;
     [hostObject setV4TTL:60];
-
+    __block NSArray *mockResolverHostObjects = @[hostObject];
     HttpdnsRemoteResolver *resolver = [HttpdnsRemoteResolver new];
     id mockResolver = OCMPartialMock(resolver);
     __block int invokeCount = 0;
@@ -54,7 +54,7 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
         .andDo(^(NSInvocation *invocation) {
             invokeCount++;
         })
-        .andReturn(hostObject);
+        .andReturn(mockResolverHostObjects);
 
     id mockResolverClass = OCMClassMock([HttpdnsRemoteResolver class]);
     OCMStub([mockResolverClass new]).andReturn(mockResolver);
@@ -108,11 +108,12 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
     HttpdnsRemoteResolver *resolver = [HttpdnsRemoteResolver new];
     id mockResolver = OCMPartialMock(resolver);
     __block int invokeCount = 0;
+    __block NSArray *mockResolverHostObjects = @[hostObject];
     OCMStub([mockResolver resolve:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .andDo(^(NSInvocation *invocation) {
             invokeCount++;
         })
-        .andReturn(hostObject);
+        .andReturn(mockResolverHostObjects);
 
     id mockResolverClass = OCMClassMock([HttpdnsRemoteResolver class]);
     OCMStub([mockResolverClass new]).andReturn(mockResolver);
