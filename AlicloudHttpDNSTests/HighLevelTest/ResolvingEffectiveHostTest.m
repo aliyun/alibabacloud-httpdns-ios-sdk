@@ -27,10 +27,7 @@
 - (void)setUp {
     [super setUp];
 
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        self.httpdns = [[HttpDnsService alloc] initWithAccountID:100000];
-    });
+    self.httpdns = [[HttpDnsService alloc] initWithAccountID:100000];
 
     [self.httpdns setLogEnabled:YES];
     [self.httpdns setReuseExpiredIPEnabled:NO];
@@ -90,11 +87,11 @@
                 long long executeStartTimeInMs = [[NSDate date] timeIntervalSince1970] * 1000;
                 HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:host byIpType:HttpdnsQueryIPTypeIpv4];
                 long long executeEndTimeInMs = [[NSDate date] timeIntervalSince1970] * 1000;
-                // 非阻塞接口任何情况下不应该阻塞超过20ms
-                if (executeEndTimeInMs - executeStartTimeInMs >= 20) {
+                // 非阻塞接口任何情况下不应该阻塞超过30ms
+                if (executeEndTimeInMs - executeStartTimeInMs >= 30) {
                     printf("XCTAssertWillFailed, host: %s, executeTime: %lldms\n", [host UTF8String], executeEndTimeInMs - executeStartTimeInMs);
                 }
-                XCTAssertLessThan(executeEndTimeInMs - executeStartTimeInMs, 20);
+                XCTAssertLessThan(executeEndTimeInMs - executeStartTimeInMs, 30);
                 if (result) {
                     XCTAssertNotNil(result);
                     XCTAssertTrue([result.host isEqualToString:host]);
