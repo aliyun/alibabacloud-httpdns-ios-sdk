@@ -44,7 +44,6 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
 
     NSString *testHost = ipv4OnlyHost;
     HttpdnsHostObject *hostObject = [self constructSimpleIpv4HostObject];
-    // hostObject.ttl = 60;
     [hostObject setV4TTL:60];
     __block NSArray *mockResolverHostObjects = @[hostObject];
     HttpdnsRemoteResolver *resolver = [HttpdnsRemoteResolver new];
@@ -102,7 +101,6 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
 
     NSString *testHost = ipv4OnlyHost;
     HttpdnsHostObject *hostObject = [self constructSimpleIpv4HostObject];
-    // hostObject.ttl = 60;
     [hostObject setV4TTL:60];
 
     HttpdnsRemoteResolver *resolver = [HttpdnsRemoteResolver new];

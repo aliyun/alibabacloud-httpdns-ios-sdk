@@ -148,11 +148,11 @@
 
     // 确保第一个请求已经开始
     [NSThread sleepForTimeInterval:0.5];
-    
+
     NSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];
-    
+
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-    
+
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         // 第二次请求，由于是同一个域名，所以它应该等待第一个请求的返回
         // 第一个请求返回后，第二个请求不应该再次请求，而是直接从缓存中读取到结果，返回
@@ -164,13 +164,13 @@
         XCTAssertTrue([result.ips[0] isEqualToString:ipv41]);
         dispatch_semaphore_signal(semaphore);
     });
-    
+
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
 
     NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSince1970] - startTime;
     XCTAssert(elapsedTime >= 1, @"elapsedTime should be more than 1s, but is %f", elapsedTime);
     XCTAssert(elapsedTime <= 1.5, @"elapsedTime should not be more than 1.5s, but is %f", elapsedTime);
-    
+
     // TODO 这里暂时无法跑过，因为现在锁的机制，会导致第二个请求也要去请求
     // XCTAssert(elapsedTime < 4.1, @"elapsedTime should be less than 4.1s, but is %f", elapsedTime);
 }
