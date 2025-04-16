@@ -243,21 +243,6 @@
     XCTAssertEqualObjects(fetchedRecord.hostName, @"query.example.com", @"Hostname should match");
 }
 
-// - (void)testSelectByHostname {
-//     // Create a test record
-//     HttpdnsHostRecord *record = [self createTestRecordWithHostname:@"query.example.com" cacheKey:@"query_cache_key"];
-// 
-//     // Insert the record
-//     BOOL result = [self.db createOrUpdate:record];
-//     XCTAssertTrue(result, @"Record creation should succeed");
-// 
-//     // Query the record
-//     HttpdnsHostRecord *fetchedRecord = [self.db selectByHostname:@"query.example.com"];
-//     XCTAssertNotNil(fetchedRecord, @"Should be able to fetch the record");
-//     XCTAssertEqualObjects(fetchedRecord.hostName, @"query.example.com", @"Hostname should match");
-//     XCTAssertEqualObjects(fetchedRecord.cacheKey, @"query_cache_key", @"Cache key should match");
-// }
-
 - (void)testSelectNonExistentRecord {
     // Query a record that doesn't exist
     HttpdnsHostRecord *fetchedRecord = [self.db selectByCacheKey:@"nonexistent_cache_key"];

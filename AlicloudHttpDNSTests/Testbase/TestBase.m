@@ -40,7 +40,6 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 - (HttpdnsHostObject *)constructSimpleIpv4HostObject {
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
-    // hostObject.ttl = 60;
     hostObject.hostName = ipv4OnlyHost;
     hostObject.v4ttl = 60;
     HttpdnsIpObject *ip1 = [[HttpdnsIpObject alloc] init];
@@ -54,7 +53,6 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 - (HttpdnsHostObject *)constructSimpleIpv6HostObject {
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
-    // hostObject.ttl = 60;
     hostObject.hostName = ipv4OnlyHost;
     hostObject.v6ttl = 60;
     HttpdnsIpObject *ip1 = [[HttpdnsIpObject alloc] init];
@@ -68,7 +66,6 @@ NSDictionary<NSString *, NSString *> *hostNameIpPrefixMap;
 
 - (HttpdnsHostObject *)constructSimpleIpv4AndIpv6HostObject {
     HttpdnsHostObject *hostObject = [[HttpdnsHostObject alloc] init];
-    // hostObject.ttl = 60;
     hostObject.hostName = ipv4AndIpv6Host;
     hostObject.v4ttl = 60;
     HttpdnsIpObject *ip1 = [[HttpdnsIpObject alloc] init];
