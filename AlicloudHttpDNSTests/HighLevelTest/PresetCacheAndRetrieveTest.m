@@ -10,7 +10,6 @@
 #import <OCMock/OCMock.h>
 #import "TestBase.h"
 #import "HttpdnsHostObject.h"
-#import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsService.h"
 #import "HttpdnsService_Internal.h"
 
@@ -188,13 +187,11 @@
 
     // 存入ipv4和ipv6的地址
     HttpdnsHostObject *hostObject1 = [self constructSimpleIpv4AndIpv6HostObject];
-    hostObject1.ttl = 100;
     hostObject1.v4ttl = 200;
     hostObject1.v6ttl = 300;
 
     int64_t currentTimestamp = [[NSDate new] timeIntervalSince1970];
 
-    hostObject1.lastLookupTime = currentTimestamp;
     hostObject1.lastIPv4LookupTime = currentTimestamp - 1;
     hostObject1.lastIPv6LookupTime = currentTimestamp - 2;
 
@@ -210,7 +207,6 @@
 
     HttpdnsHostObject *hostObject2 = [self constructSimpleIpv4HostObject];
     hostObject2.hostName = ipv4AndIpv6Host;
-    hostObject2.ttl = 500;
     hostObject2.v4ttl = 600;
     hostObject2.lastIPv4LookupTime = currentTimestamp - 10;
 

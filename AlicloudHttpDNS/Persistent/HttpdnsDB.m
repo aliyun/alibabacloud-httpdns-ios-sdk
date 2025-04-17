@@ -138,56 +138,6 @@ static NSString *const kColumnExtra = @"extra";
     return record;
 }
 
-- (nullable HttpdnsHostRecord *)selectByHostname:(NSString *)hostname {
-    if (!hostname) {
-        return nil;
-    }
-
-    __block HttpdnsHostRecord *record = nil;
-    dispatch_sync(_dbQueue, ^{
-        // Since hostname is no longer unique, we'll return the first matching record
-        NSString *sql = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@ = ? LIMIT 1", kTableName, kColumnHostName];
-        sqlite3_stmt *stmt;
-
-        if (sqlite3_prepare_v2(_db, [sql UTF8String], -1, &stmt, NULL) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, [hostname UTF8String], -1, SQLITE_TRANSIENT);
-
-            if (sqlite3_step(stmt) == SQLITE_ROW) {
-                record = [self recordFromStatement:stmt];
-            }
-
-            sqlite3_finalize(stmt);
-        }
-    });
-
-    return record;
-}
-
-- (NSArray<HttpdnsHostRecord *> *)selectAllByHostname:(NSString *)hostname {
-    if (!hostname) {
-        return @[];
-    }
-
-    __block NSMutableArray<HttpdnsHostRecord *> *records = [NSMutableArray array];
-    dispatch_sync(_dbQueue, ^{
-        NSString *sql = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@ = ?", kTableName, kColumnHostName];
-        sqlite3_stmt *stmt;
-
-        if (sqlite3_prepare_v2(_db, [sql UTF8String], -1, &stmt, NULL) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, [hostname UTF8String], -1, SQLITE_TRANSIENT);
-
-            while (sqlite3_step(stmt) == SQLITE_ROW) {
-                HttpdnsHostRecord *record = [self recordFromStatement:stmt];
-                [records addObject:record];
-            }
-
-            sqlite3_finalize(stmt);
-        }
-    });
-
-    return [records copy];
-}
-
 - (BOOL)deleteByCacheKey:(NSString *)cacheKey {
     if (!cacheKey) {
         return NO;

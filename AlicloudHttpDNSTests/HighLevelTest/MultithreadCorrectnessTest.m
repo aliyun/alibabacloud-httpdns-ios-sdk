@@ -128,12 +128,13 @@
     __block HttpdnsHostObject *ipv4HostObject = [self constructSimpleIpv4HostObject];
     HttpdnsRemoteResolver *realResolver = [HttpdnsRemoteResolver new];
     id mockResolver = OCMPartialMock(realResolver);
-    OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
+    __block NSArray *mockResolverHostObjects = @[ipv4HostObject];
+    OCMStub([mockResolver resolve:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
             // 第一次调用，阻塞1.5秒
             [NSThread sleepForTimeInterval:1.5];
-            [invocation setReturnValue:&ipv4HostObject];
+            [invocation setReturnValue:&mockResolverHostObjects];
         });
 
     id mockResolverClass = OCMClassMock([HttpdnsRemoteResolver class]);
@@ -179,7 +180,8 @@
     HttpdnsRemoteResolver *realResolver = [HttpdnsRemoteResolver new];
     id mockResolver = OCMPartialMock(realResolver);
     __block atomic_int count = 0;
-    OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
+    __block NSArray *mockResolverHostObjects = @[ipv4HostObject];
+    OCMStub([mockResolver resolve:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .ignoringNonObjectArgs()
         .andDo(^(NSInvocation *invocation) {
             int localCount = atomic_fetch_add(&count, 1) + 1;
@@ -191,7 +193,7 @@
             } else {
                 // 第二次调用
                 [NSThread sleepForTimeInterval:0.4];
-                [invocation setReturnValue:&ipv4HostObject];
+                [invocation setReturnValue:&mockResolverHostObjects];
             }
         });
 

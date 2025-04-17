@@ -12,10 +12,8 @@
 #import "XCTestCase+AsyncTesting.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsHostObject.h"
-#import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsService.h"
 #import "HttpdnsService_Internal.h"
-#import "HttpdnsIpv6Adapter.h"
 
 
 #define NOTIFY [self notify:XCTAsyncTestCaseStatusSucceeded];
