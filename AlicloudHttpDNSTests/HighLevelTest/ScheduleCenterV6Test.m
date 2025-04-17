@@ -7,15 +7,13 @@
 //
 #import <Foundation/Foundation.h>
 #import <OCMock/OCMock.h>
-#import "HttpdnsIpv6Adapter.h"
 #import "TestBase.h"
 #import "HttpdnsHostObject.h"
-#import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsScheduleExecutor.h"
 #import "HttpdnsScheduleCenter.h"
-#import "HttpdnsScheduleCenter_Internal.h"
 #import "HttpdnsService.h"
 #import "HttpdnsService_Internal.h"
+#import "HttpdnsUtil.h"
 
 
 /**
@@ -82,7 +80,7 @@
     NSString *activeUpdateHost = [scheduleCenter getActiveUpdateServerHost];
 
     // 因为可能是域名，所以只判断一定不是ipv4
-    XCTAssertFalse([HttpdnsIPv6Adapter isIPv4Address:activeUpdateHost]);
+    XCTAssertFalse([HttpdnsUtil isIPv4Address:activeUpdateHost]);
 
     OCMVerify([mockRequest fetchRegionConfigFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]]);
 

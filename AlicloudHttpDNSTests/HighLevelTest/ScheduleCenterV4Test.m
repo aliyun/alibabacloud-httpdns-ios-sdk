@@ -10,15 +10,12 @@
 #import <OCMock/OCMock.h>
 #import "TestBase.h"
 #import "HttpdnsHostObject.h"
-#import "HttpdnsHostResolver.h"
-#import "HttpdnsRequestScheduler_Internal.h"
-#import "HttpdnsScheduleCenterRequest.h"
 #import "HttpdnsScheduleCenter.h"
-#import "HttpdnsScheduleCenter_Internal.h"
 #import "HttpdnsService.h"
-#import "HttpdnsRequestScheduler.h"
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsRequest_Internal.h"
+#import "HttpdnsScheduleExecutor.h"
+#import "HttpdnsRemoteResolver.h"
 
 
 /**
@@ -63,12 +60,12 @@
 - (void)testUpdateFailureWillMoveToNextUpdateServer {
     [self presetNetworkEnvAsIpv4];
 
-    HttpdnsScheduleRequest *realRequest = [HttpdnsScheduleRequest new];
+    HttpdnsScheduleExecutor *realRequest = [HttpdnsScheduleExecutor new];
     id mockRequest = OCMPartialMock(realRequest);
     OCMStub([mockRequest fetchRegionConfigFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .andReturn(nil);
 
-    id mockRequestClass = OCMClassMock([HttpdnsScheduleRequest class]);
+    id mockRequestClass = OCMClassMock([HttpdnsScheduleExecutor class]);
     OCMStub([mockRequestClass new]).andReturn(mockRequest);
 
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
@@ -104,7 +101,7 @@
     [self presetNetworkEnvAsIpv4];
 
     id mockResolver = OCMPartialMock([HttpdnsRemoteResolver new]);
-    OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
+    OCMStub([mockResolver resolve:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
     .andDo(^(NSInvocation *invocation) {
         NSError *mockError = [NSError errorWithDomain:@"com.example.error" code:123 userInfo:@{NSLocalizedDescriptionKey: @"Mock error"}];
         NSError *__autoreleasing *errorPtr = nil;

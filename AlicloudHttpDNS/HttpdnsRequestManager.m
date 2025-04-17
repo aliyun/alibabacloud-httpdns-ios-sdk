@@ -108,7 +108,7 @@ typedef struct {
             [self->_httpdnsDB cleanRecordAlreadExpiredAt:[[NSDate date] timeIntervalSince1970] - duration];
 
             // 再读取持久化缓存中的历史记录，加载到内存缓存里
-            [self reloadCacheFromDbToMemory];
+            [self loadCacheFromDbToMemory];
         });
     }
 }
@@ -515,7 +515,7 @@ typedef struct {
 #pragma mark -
 #pragma mark - Flag for Disable and Sniffer Method
 
-- (void)reloadCacheFromDbToMemory {
+- (void)loadCacheFromDbToMemory {
     NSArray<HttpdnsHostRecord *> *hostRecords = [self->_httpdnsDB getAllRecords];
 
     if ([HttpdnsUtil isEmptyArray:hostRecords]) {
@@ -532,7 +532,7 @@ typedef struct {
         hostObject.lastIPv4LookupTime = [NSDate date].timeIntervalSince1970;
         hostObject.lastIPv6LookupTime = [NSDate date].timeIntervalSince1970;
 
-        [self->_hostObjectInMemoryCache setHostObject:hostObject forCacheKey:hostName];
+        [self->_hostObjectInMemoryCache setHostObject:hostObject forCacheKey:cacheKey];
 
         NSArray *v4IpStrArr = [hostObject getV4IpStrings];
         if ([HttpdnsUtil isNotEmptyArray:v4IpStrArr]) {
@@ -588,6 +588,10 @@ typedef struct {
 
 - (void)cleanAllHostMemoryCache {
     [_hostObjectInMemoryCache removeAllHostObjects];
+}
+
+- (void)syncLoadCacheFromDbToMemory {
+    [self loadCacheFromDbToMemory];
 }
 
 @end
