@@ -244,8 +244,10 @@ typedef struct {
 
     if ([hostObject isExpiredUnderQueryIpType:queryType]) {
         if (_isExpiredIPEnabled || [hostObject isLoadFromDB]) {
-            // 只有允许过期缓存，和开启持久化缓存的第一次获取，才不需要等待结果
-            HttpdnsLogDebug("The ips is expired, but we accept it, host: %@, queryType: %ld", hostObject.hostName, queryType);
+            // 只有开启了允许过期缓存，和开启持久化缓存情况下启动后加载到内存中的缓存，才可以直接复用过期结果
+            HttpdnsLogDebug("The ips is expired, but we accept it, host: %@, queryType: %ld, expiredIpEnabled: %d, isLoadFromDB: %d",
+                            hostObject.hostName, queryType, _isExpiredIPEnabled, [hostObject isLoadFromDB]);
+            // 复用过期结果，同时也需要发起新的解析请求
             return (HostObjectExamingResult){YES, YES};
         }
 
@@ -528,9 +530,8 @@ typedef struct {
 
         HttpdnsHostObject *hostObject = [HttpdnsHostObject fromDBRecord:hostRecord];
 
-        // 从DB缓存中加载到内存里的数据，更新其查询时间为当前，使得它可以有一个TTL的可用期
-        hostObject.lastIPv4LookupTime = [NSDate date].timeIntervalSince1970;
-        hostObject.lastIPv6LookupTime = [NSDate date].timeIntervalSince1970;
+        // 从持久层加载到内存的缓存，需要做个标记，App启动后从缓存使用结果时，根据标记做特殊处理
+        [hostObject setIsLoadFromDB:YES];
 
         [self->_hostObjectInMemoryCache setHostObject:hostObject forCacheKey:cacheKey];
 
