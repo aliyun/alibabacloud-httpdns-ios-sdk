@@ -29,7 +29,7 @@
 
 - (void)asyncUpdateRegionScheduleConfig;
 
-- (void)moveToNextServiceServerHost;
+- (void)rotateServiceServerHost;
 
 - (NSString *)currentActiveServiceServerV4Host;
 

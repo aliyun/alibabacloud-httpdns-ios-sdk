@@ -163,7 +163,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
             HttpdnsLogDebug("Update region config failed, error: %@", error);
 
             // 只有报错了就尝试选择新的调度服务器
-            [self moveToNextUpdateServerHost];
+            [self rotateUpdateServerHost];
 
             // 3秒之后重试
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)((retryCount + 1) * NSEC_PER_SEC)), self->_scheduleFetchConfigAsyncQueue, ^{
@@ -238,7 +238,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
                                                   withArray:[regionConfigLoader getUpdateV6FallbackHostList:region]];
 }
 
-- (void)moveToNextServiceServerHost {
+- (void)rotateServiceServerHost {
     __block int timeToUpdate = NO;
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
         self.currentActiveServiceHostIndex++;
@@ -255,7 +255,7 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
     }
 }
 
-- (void)moveToNextUpdateServerHost {
+- (void)rotateUpdateServerHost {
     dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
         self.currentActiveUpdateHostIndex++;
     });

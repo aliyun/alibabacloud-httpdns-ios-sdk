@@ -276,7 +276,7 @@ typedef struct {
             HttpdnsLogDebug("Internal request error, host: %@, error: %@", host, error);
 
             HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-            [scheduleCenter moveToNextServiceServerHost];
+            [scheduleCenter rotateServiceServerHost];
 
             // 确保一定的重试间隔
             hasRetryedCount++;
@@ -336,7 +336,7 @@ typedef struct {
         HttpdnsLogDebug("PreResolve request error, host: %@, error: %@", host, error);
 
         HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-        [scheduleCenter moveToNextServiceServerHost];
+        [scheduleCenter rotateServiceServerHost];
 
         // 确保一定的重试间隔
         hasRetryedCount++;
