@@ -148,25 +148,39 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 /// 设置底层HTTPDNS网络请求超时时间，单位为秒
+/// 需要注意，这个值只决定底层解析请求的网络超时时间，而非同步解析接口、异步解析接口的最长阻塞或者等待时间
+/// 同步解析接口、异步解析接口的最长阻塞或者等待时间，需要调用接口时设置request参数中的`resolveTimeoutInSecond`决定
 /// @param timeoutInterval 超时时间，单位为秒
 - (void)setNetworkingTimeoutInterval:(NSTimeInterval)timeoutInterval;
 
 
 /// 指定region，指定后会读取该region对应配置作为初始化配置
+/// 一般情况下无需设置，SDK内部会默认路由全球范围内最近的接入点
 /// @param region 需要指定的region，缺省为中国大陆
 - (void)setRegion:(NSString *)region;
 
 
-/// 域名预解析 (ipv4)
-/// 选择性的预先向 HTTPDNS SDK 中注册您后续可能会使用到的域名，以便 SDK 提前解析，减少后续解析域名时请求的时延
+/// 域名预解析 (默认解析双栈记录)
+/// 通常用于启动后立即向SDK设置您后续可能会使用到的热点域名，以便SDK提前解析，减少后续解析域名时请求的时延
+/// 如果是在运行过程中调用，SDK也会立即解析设置的域名数组中的域名，刷新这些域名的解析结果
+///
 /// @param hosts 预解析列表数组
 - (void)setPreResolveHosts:(NSArray *)hosts;
+
+
+/// 域名预解析，可以指定预解析auto、ipv4、ipv6、both
+/// 通常用于启动后立即向SDK设置您后续可能会使用到的热点域名，以便SDK提前解析，减少后续解析域名时请求的时延
+/// 如果是在运行过程中调用，SDK也会立即解析设置的域名数组中的域名，刷新这些域名的解析结果
+///
+/// @param hosts 预解析列表数组
+/// @param ipType 指定预解析记录类型
+- (void)setPreResolveHosts:(NSArray *)hosts byIPType:(HttpdnsQueryIPType)ipType;
 
 
 /// 域名预解析
 /// @param hosts 域名
 /// @param ipType 4: ipv4; 6: ipv6; 64: ipv4+ipv6
-- (void)setPreResolveHosts:(NSArray *)hosts queryIPType:(AlicloudHttpDNS_IPType)ipType;
+- (void)setPreResolveHosts:(NSArray *)hosts queryIPType:(AlicloudHttpDNS_IPType)ipType ALICLOUD_HTTPDNS_DEPRECATED("Deprecated, this method will be removed in the future. Use -[HttpDnsService setPreResolveHosts:byIPType:] instead.");
 
 
 /// 本地日志 log 开关

@@ -29,6 +29,7 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 @property (nonatomic, copy) NSString *host;
 
 /// 解析超时时间，对于同步接口，即为最大等待时间，对于异步接口，即为最大等待回调时间
+/// 默认值2秒，取值必须在0.5秒 - 5秒之间
 @property (nonatomic, assign) double resolveTimeoutInSecond;
 
 /// 查询IP类型

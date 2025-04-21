@@ -179,7 +179,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)setPreResolveHosts:(NSArray *)hosts {
-    [self setPreResolveHosts:hosts queryIPType:AlicloudHttpDNS_IPTypeV4];
+    [self setPreResolveHosts:hosts byIPType:HttpdnsQueryIPTypeBoth];
 }
 
 
@@ -200,10 +200,14 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
             break;
     }
 
+    [self setPreResolveHosts:hosts byIPType:ipQueryType];
+}
+
+- (void)setPreResolveHosts:(NSArray *)hosts byIPType:(HttpdnsQueryIPType)ipType {
     // 初始化过程包含了region配置更新流程，region切换会导致缓存清空，立即做预解析可能是没有意义的
     // 这是sdk接口设计的历史问题，目前没有太好办法，这里0.5秒之后再发预解析请求
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), asyncTaskConcurrentQueue, ^{
-        [self->_requestManager preResolveHosts:hosts queryType:ipQueryType];
+        [self->_requestManager preResolveHosts:hosts queryType:ipType];
     });
 }
 
