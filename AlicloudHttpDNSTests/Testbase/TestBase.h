@@ -7,13 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <AlicloudUtils/AlicloudUtils.h>
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
 #import "XCTestCase+AsyncTesting.h"
 #import "HttpdnsRequest.h"
 #import "HttpdnsHostObject.h"
-#import "HttpdnsRequestScheduler_Internal.h"
 #import "HttpdnsService.h"
 #import "HttpdnsService_Internal.h"
 

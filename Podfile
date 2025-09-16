@@ -5,20 +5,7 @@ use_frameworks!
 
 platform :ios, '10.0'
 
-def shared_pods
-  pod 'AlicloudUtils', '2.0.1'
-end
-
-target 'AlicloudHttpDNS' do
-  shared_pods
-end
-
-target 'AlicloudHttpDNSTestDemo' do
-  shared_pods
-end
-
 target 'AlicloudHttpDNSTests' do
-  shared_pods
   pod 'OCMock'
 end
 

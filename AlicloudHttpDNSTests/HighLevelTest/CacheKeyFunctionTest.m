@@ -7,14 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "HttpdnsRequestScheduler_Internal.h"
 #import "TestBase.h"
 
 @interface CacheKeyFunctionTest : TestBase
 
 @end
 
-static int ttlForTest = 120;
 static NSString *sdnsHost = @"sdns1.onlyforhttpdnstest.run.place";
 
 @implementation CacheKeyFunctionTest
@@ -32,7 +30,6 @@ static NSString *sdnsHost = @"sdns1.onlyforhttpdnstest.run.place";
     });
 
     [self.httpdns setLogEnabled:YES];
-    [self.httpdns setIPv6Enabled:YES];
     [self.httpdns setPersistentCacheIPEnabled:YES];
     [self.httpdns setReuseExpiredIPEnabled:NO];
 
@@ -71,10 +68,10 @@ static NSString *sdnsHost = @"sdns1.onlyforhttpdnstest.run.place";
     [NSThread sleepForTimeInterval:3];
 
     // 清空缓存
-    [self.httpdns.requestScheduler cleanAllHostMemoryCache];
+    [self.httpdns.requestManager cleanAllHostMemoryCache];
 
     // 从db再加载到缓存中
-    [self.httpdns.requestScheduler syncReloadCacheFromDbToMemoryByIspCarrier];
+    [self.httpdns.requestManager syncLoadCacheFromDbToMemory];
 
     HttpdnsResult *result = [self.httpdns resolveHostSyncNonBlocking:testHost byIpType:HttpdnsQueryIPTypeIpv4];
     // 没有使用cacheKey，所以这里应该是nil

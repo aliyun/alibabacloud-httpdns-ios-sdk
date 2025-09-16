@@ -11,9 +11,7 @@
 #import "HttpdnsUtil.h"
 #import "MyLoggerHandler.h"
 #import "HttpdnsScheduleCenter.h"
-#import "TestIPv6ViewController.h"
-
-#import <AlicloudUtils/AlicloudIPv6Adapter.h>
+#import "HttpdnsLog.h"
 
 NSArray *ipv4HostArray = nil;
 NSArray *ipv6HostArray = nil;
@@ -64,26 +62,29 @@ NSArray *ipv6HostArray = nil;
                       @"ipv6.sjtu.edu.cn"
                       ];
 
+    [HttpdnsLog enableLog];
 
     // ams_test账号139450
-    _service = [[HttpDnsService alloc] initWithAccountID:139450];
+    _service = [[HttpDnsService alloc] initWithAccountID:139450
+                                               secretKey:@"807a19762f8eaefa8563489baf198535"
+                                            aesSecretKey:@"82c0af0d0cb2d69c4f87bb25c2e23929"];
     [_service setTtlDelegate:self];
     [_service setLogEnabled:YES];
     // [_service setHasAllowedArbitraryLoadsInATS:YES];
-    [_service setPersistentCacheIPEnabled:NO];
-    [_service setReuseExpiredIPEnabled:NO];
+    [_service setPersistentCacheIPEnabled:YES];
+    [_service setReuseExpiredIPEnabled:YES];
     [_service setHTTPSRequestEnabled:NO];
-    [_service setIPv6Enabled:YES];
+    [_service setDegradeToLocalDNSEnabled:YES];
 
     NSString *sessionId = [[HttpDnsService sharedInstance] getSessionId];
     NSLog(@"Print sessionId: %@", sessionId);
 
-    // [_service setIPRankingDatasource:@{@"only-v4.xuyecan1919.tech": @443}];
+    [_service setIPRankingDatasource:@{@"www.aliyun.com": @443}];
     // [_service setPreResolveHosts:@[@"only-v4.xuyecan1919.tech"]];
 }
 
 - (int64_t)httpdnsHost:(NSString *)host ipType:(AlicloudHttpDNS_IPType)ipType ttl:(int64_t)ttl {
-    return 2;
+    return 60;
 }
 
 - (IBAction)onHost1:(id)sender {
@@ -121,8 +122,6 @@ NSArray *ipv6HostArray = nil;
 }
 
 - (IBAction)onIPv6Test:(id)sender {
-    TestIPv6ViewController *vc = [[TestIPv6ViewController alloc] init];
-    [self presentViewController:vc animated:YES completion:nil];
 }
 
 // IPv6 Stack检测

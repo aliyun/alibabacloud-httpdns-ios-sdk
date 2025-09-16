@@ -21,13 +21,20 @@
 #import "HttpdnsRequest.h"
 #import "HttpdnsResult.h"
 #import "HttpdnsDegradationDelegate.h"
-#import "HttpdnsLoggerDelegate.h"
+#import "HttpdnsLoggerProtocol.h"
 
 #define ALICLOUD_HTTPDNS_DEPRECATED(explain) __attribute__((deprecated(explain)))
 
-extern NSString *const ALICLOUDHDNS_IPV4;
-extern NSString *const ALICLOUDHDNS_IPV6;
 
+#ifndef ALICLOUDHDNS_STACK_KEY
+#define ALICLOUDHDNS_STACK_KEY
+
+#define ALICLOUDHDNS_IPV4 @"ALICLOUDHDNS_IPV4"
+#define ALICLOUDHDNS_IPV6 @"ALICLOUDHDNS_IPV6"
+
+#endif
+
+NS_ASSUME_NONNULL_BEGIN
 
 @protocol HttpdnsTTLDelegate <NSObject>
 
@@ -37,40 +44,59 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 /// @param host 域名
 /// @param ipType 当前查询的IP类型
 /// @param ttl 当次域名解析返回的TTL
-- (int64_t)httpdnsHost:(NSString *)host ipType:(AlicloudHttpDNS_IPType)ipType ttl:(int64_t)ttl;
+- (int64_t)httpdnsHost:(NSString * _Nonnull)host ipType:(AlicloudHttpDNS_IPType)ipType ttl:(int64_t)ttl;
 
 @end
 
 @interface HttpDnsService: NSObject
 
-@property (nonatomic, assign, readonly) int accountID;
+@property (nonatomic, assign, readonly) NSInteger accountID;
 
-@property (nonatomic, copy, readonly) NSString *secretKey;
+@property (nonatomic, copy, readonly, nullable) NSString *secretKey;
+
+@property (nonatomic, copy, readonly, nullable) NSString *aesSecretKey;
 
 @property (nonatomic, weak, setter=setDelegateForDegradationFilter:) id<HttpDNSDegradationDelegate> delegate ALICLOUD_HTTPDNS_DEPRECATED("不再建议通过设置此回调实现降级逻辑，而是自行在调用HTTPDNS解析域名前做判断");
 
 @property (nonatomic, weak) id<HttpdnsTTLDelegate> ttlDelegate;
 
-+ (instancetype)sharedInstance;
++ (nonnull instancetype)sharedInstance;
 
-- (instancetype)autoInit;
-
-- (instancetype)initWithAccountID:(int)accountID;
+/*!
+ * @brief 无需鉴权功能的初始化接口
+ * @details 初始化，设置 HTTPDNS 服务 Account ID。使用本接口初始化，请求将无任何签名保护，请谨慎使用。
+ *          您可以从控制台获取您的 Account ID 。
+ *          此方法会初始化为单例。
+ *          注意：本接口从3.2.1起废弃，后续将进行移除。
+ * @param accountID 您的 HTTPDNS Account ID
+ */
+- (nonnull instancetype)initWithAccountID:(NSInteger)accountID ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. This method will be removed in the future. Use -[HttpDnsService initWithAccountID:secretKey:] instead.");
 
 /*!
  * @brief 启用鉴权功能的初始化接口
  * @details 初始化、开启鉴权功能，并设置 HTTPDNS 服务 Account ID，鉴权功能对应的 secretKey。
- *          您可以从控制台获取您的 Account ID 、secretKey 信息。
+ *          您可以从控制台获取您的 Account ID 、secretKey信息。
  *          此方法会初始化为单例。
  * @param accountID 您的 HTTPDNS Account ID
  * @param secretKey 鉴权对应的 secretKey
  */
-- (instancetype)initWithAccountID:(int)accountID secretKey:(NSString *)secretKey;
+- (nonnull instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString * _Nonnull)secretKey;
+
+/*!
+ * @brief 启用鉴权功能、加密功能的初始化接口
+ * @details 初始化、开启鉴权功能、开启AES加密，并设置 HTTPDNS 服务 Account ID，鉴权功能对应的 secretKey，加密功能对应的 aesSecretKey。
+ *          您可以从控制台获取您的 Account ID 、secretKey、aesSecretKey 信息。
+ *          此方法会初始化为单例。
+ * @param accountID 您的 HTTPDNS Account ID
+ * @param secretKey 鉴权对应的 secretKey
+ * @param aesSecretKey 加密功能对应的 aesSecretKey
+ */
+- (nonnull instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString * _Nonnull)secretKey aesSecretKey:(NSString * _Nullable)aesSecretKey;
 
 
 /// 开启鉴权功能后，鉴权的签名计算默认读取设备当前时间。若担心设备时间不准确导致签名不准确，可以使用此接口校正 APP 内鉴权计算使用的时间值
 /// 注意，校正操作在 APP 的一个生命周期内生效，APP 重启后需要重新设置才能重新生效
-/// @param currentTime 用于校正的时间戳，单位为秒
+/// @param authCurrentTime 用于校正的时间戳，单位为秒
 - (void)setAuthCurrentTime:(NSUInteger)authCurrentTime ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService setInternalAuthTimeBaseBySpecifyingCurrentTime:] instead.");
 
 
@@ -154,7 +180,15 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable;
 
 
-/// 设置IP俳优规则
+/// 设置当httpdns解析失败时是否降级到localDNS尝试解析
+/// 降级生效时，SDNS参数不生效，降级逻辑只解析域名，返回的结果默认使用60秒(若未指定该域名自定义TTL)作为TTL值
+/// 降级请求也不会再对ip进行优先排序
+/// 默认关闭，不会自动降级
+/// @param enable YES：自动降级 NO：不自动降级
+- (void)setDegradeToLocalDNSEnabled:(BOOL)enable;
+
+
+/// 设置IP排优规则
 /// @param IPRankingDatasource 设置对应域名的端口号
 /// @{host: port}
 - (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource;
@@ -166,18 +200,19 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 
 
 /// 设置是否 开启 IPv6 结果解析。只有开启状态下，对域名的解析才会尝试解析v6记录并返回v6的结果
+/// 已弃用。默认支持IPv6。如果不需要IPv6类型的结果，只需在请求时指定`queryIpType`为`HttpdnsQueryIPTypeIpv4`
 /// @param enable YES: 开启 NO: 关闭
-- (void)setIPv6Enabled:(BOOL)enable;
+- (void)setIPv6Enabled:(BOOL)enable ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. If ipv6 is unnecessary, you can set the `queryIpType` as HttpdnsQueryIPTypeIpv4 when resolving domain.");
 
 
 /// 是否允许通过 CNCopyCurrentNetworkInfo 获取wifi ssid bssid
 /// @param enable YES: 开启 NO: 关闭 ，默认关闭
-- (void)enableNetworkInfo:(BOOL)enable ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. Use -[HttpDnsService setReadNetworkInfoEnabled:] instead.");
+- (void)enableNetworkInfo:(BOOL)enable ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. We do not utilize network information anymore");
 
 
 /// 是否允许通过 CNCopyCurrentNetworkInfo 获取wifi ssid bssid
 /// @param enable YES: 开启 NO: 关闭 ，默认关闭
-- (void)setReadNetworkInfoEnabled:(BOOL)enable;
+- (void)setReadNetworkInfoEnabled:(BOOL)enable ALICLOUD_HTTPDNS_DEPRECATED("Deprecated. We do not utilize network information anymore.");
 
 
 /// 是否开启IP探测功能
@@ -240,7 +275,7 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 /// @param sdnsParams 如果域名配置了sdns自定义解析，通过此参数携带自定义参数
 /// @param cacheKey sdns自定义解析缓存key
 /// @handler 解析结果回调
-- (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *, NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey completionHandler:(void (^)(HttpdnsResult * nullable))handler;
+- (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(nullable NSDictionary<NSString *, NSString *> *)sdnsParams sdnsCacheKey:(nullable NSString *)cacheKey completionHandler:(void (^)(HttpdnsResult * nullable))handler;
 
 /// 异步解析域名，不会阻塞当前线程，会在从缓存中获取到有效结果，或从服务器拿到最新解析结果后，通过回调返回结果
 /// 如果允许复用过期的解析结果且存在过期结果的情况下，会先在回调中返回这个结果，然后启动后台线程去更新解析结果
@@ -262,7 +297,7 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 /// @param sdnsParam 如果域名配置了sdns自定义解析，通过此参数携带自定义参数
 /// @param cacheKey sdns自定义解析缓存key
 /// @return 解析结果
-- (nullable HttpdnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *, NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey;
+- (nullable HttpdnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(nullable NSDictionary<NSString *, NSString *> *)sdnsParams sdnsCacheKey:(nullable NSString *)cacheKey;
 
 /// 伪异步解析域名，不会阻塞当前线程，首次解析结果可能为空
 /// 先查询缓存，缓存中存在有效结果(未过期，或者过期但配置了可以复用过期解析结果)，则直接返回结果，如果缓存未命中，则发起异步解析请求
@@ -408,7 +443,7 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 
 /// 清除指定host缓存（内存+沙盒数据库）
 /// @param hostArray 需要清除的host域名数组。如果需要清空全部数据传nil或者空数组即可
-- (void)cleanHostCache:(NSArray<NSString *> *)hostArray;
+- (void)cleanHostCache:(nullable NSArray<NSString *> *)hostArray;
 
 /// 清除当前所有host缓存 (内存+沙盒数据库)
 - (void)cleanAllHostCache;
@@ -417,3 +452,5 @@ extern NSString *const ALICLOUDHDNS_IPV6;
 - (void)clearSdnsGlobalParams;
 
 @end
+
+NS_ASSUME_NONNULL_END

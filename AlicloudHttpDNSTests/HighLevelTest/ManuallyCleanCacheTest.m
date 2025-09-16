@@ -10,7 +10,7 @@
 #import <stdatomic.h>
 #import <mach/mach.h>
 #import "HttpdnsService.h"
-#import "HttpdnsHostResolver.h"
+#import "HttpdnsRemoteResolver.h"
 #import "TestBase.h"
 
 static int TEST_CUSTOM_TTL_SECOND = 3;
@@ -44,19 +44,18 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
 
     NSString *testHost = ipv4OnlyHost;
     HttpdnsHostObject *hostObject = [self constructSimpleIpv4HostObject];
-    hostObject.ttl = 60;
     [hostObject setV4TTL:60];
-
-    HttpdnsHostResolver *resolver = [HttpdnsHostResolver new];
+    __block NSArray *mockResolverHostObjects = @[hostObject];
+    HttpdnsRemoteResolver *resolver = [HttpdnsRemoteResolver new];
     id mockResolver = OCMPartialMock(resolver);
     __block int invokeCount = 0;
-    OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
+    OCMStub([mockResolver resolve:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .andDo(^(NSInvocation *invocation) {
             invokeCount++;
         })
-        .andReturn(hostObject);
+        .andReturn(mockResolverHostObjects);
 
-    id mockResolverClass = OCMClassMock([HttpdnsHostResolver class]);
+    id mockResolverClass = OCMClassMock([HttpdnsRemoteResolver class]);
     OCMStub([mockResolverClass new]).andReturn(mockResolver);
 
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
@@ -102,19 +101,19 @@ static int TEST_CUSTOM_TTL_SECOND = 3;
 
     NSString *testHost = ipv4OnlyHost;
     HttpdnsHostObject *hostObject = [self constructSimpleIpv4HostObject];
-    hostObject.ttl = 60;
     [hostObject setV4TTL:60];
 
-    HttpdnsHostResolver *resolver = [HttpdnsHostResolver new];
+    HttpdnsRemoteResolver *resolver = [HttpdnsRemoteResolver new];
     id mockResolver = OCMPartialMock(resolver);
     __block int invokeCount = 0;
-    OCMStub([mockResolver lookupHostFromServer:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
+    __block NSArray *mockResolverHostObjects = @[hostObject];
+    OCMStub([mockResolver resolve:[OCMArg any] error:(NSError * __autoreleasing *)[OCMArg anyPointer]])
         .andDo(^(NSInvocation *invocation) {
             invokeCount++;
         })
-        .andReturn(hostObject);
+        .andReturn(mockResolverHostObjects);
 
-    id mockResolverClass = OCMClassMock([HttpdnsHostResolver class]);
+    id mockResolverClass = OCMClassMock([HttpdnsRemoteResolver class]);
     OCMStub([mockResolverClass new]).andReturn(mockResolver);
 
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);

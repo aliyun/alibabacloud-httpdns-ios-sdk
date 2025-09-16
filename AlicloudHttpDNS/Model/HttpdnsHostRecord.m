@@ -11,179 +11,80 @@
 
 @interface HttpdnsHostRecord()
 
-@property (nonatomic, assign) NSUInteger hostRecordId;
+@property (nonatomic, assign) NSUInteger id;
 
-/*!
- * 域名
- */
-@property (nonatomic, copy) NSString *host;
+@property (nonatomic, copy) NSString *cacheKey;
 
-/*!
- * 运营商
- */
-@property (nonatomic, copy) NSString *carrier;
+@property (nonatomic, copy) NSString *hostName;
 
-/*!
- * 查询时间，单位是秒。
- */
 @property (nonatomic, strong) NSDate *createAt;
 
-@property (nonatomic, strong) NSDate *expireAt;
+@property (nonatomic, strong) NSDate *modifyAt;
 
-/*!
- * IP列表
- */
-@property (nonatomic, copy) NSArray<NSString *> *IPs;
+@property (nonatomic, copy) NSString *clientIp;
 
-/*!
- * TTL
- */
-@property (nonatomic, assign) int64_t TTL;
+@property (nonatomic, copy) NSArray<NSString *> *v4ips;
 
+@property (nonatomic, assign) int64_t v4ttl;
 
-/*!
- * ipRegion 数据库字段 当次解析ipv4服务IP region
- */
-@property (nonatomic, copy) NSString *ipRegion;
+@property (nonatomic, assign) int64_t v4LookupTime;
 
-/*!
- * ip6Region 数据库字段 当次解析ipv6服务IP region
- */
-@property (nonatomic, copy) NSString *ip6Region;
+@property (nonatomic, copy) NSArray<NSString *> *v6ips;
+
+@property (nonatomic, assign) int64_t v6ttl;
+
+@property (nonatomic, assign) int64_t v6LookupTime;
+
+@property (nonatomic, copy) NSString *extra;
 
 @end
 
+
 @implementation HttpdnsHostRecord
 
-/*!
- * 从数据库读取数据后，初始化
- */
-- (instancetype)initWithId:(NSUInteger)hostRecordId
-                      host:(NSString *)host
-                   carrier:(NSString *)carrier
-                       IPs:(NSArray<NSString *> *)IPs
-                      IP6s:(NSArray<NSString *> *)IP6s
-                       TTL:(int64_t)TTL
+- (instancetype)initWithId:(NSUInteger)id
+                  cacheKey:(NSString *)cacheKey
+                  hostName:(NSString *)hostName
                   createAt:(NSDate *)createAt
-                  expireAt:(NSDate *)expireAt
-                  ipRegion:(NSString *)ipRegion
-                 ip6Region:(NSString *)ip6Region {
-    if (self = [super init]) {
-        _hostRecordId = hostRecordId;
-        _host = [host copy];
-        _carrier = [carrier copy];
-        _IPs = [IPs copy];
-        _IP6s = [IP6s copy];
-        _TTL = TTL;
+                  modifyAt:(NSDate *)modifyAt
+                  clientIp:(NSString *)clientIp
+                     v4ips:(NSArray<NSString *> *)v4ips
+                     v4ttl:(int64_t)v4ttl
+              v4LookupTime:(int64_t)v4LookupTime
+                     v6ips:(NSArray<NSString *> *)v6ips
+                     v6ttl:(int64_t)v6ttl
+              v6LookupTime:(int64_t)v6LookupTime
+                     extra:(NSString *)extra {
+    self = [super init];
+    if (self) {
+        _id = id;
+        _cacheKey = [cacheKey copy];
+        _hostName = [hostName copy];
         _createAt = createAt;
-        _expireAt = expireAt;
-        _ipRegion = ipRegion;
-        _ip6Region = ip6Region;
+        _modifyAt = modifyAt;
+        _clientIp = [clientIp copy];
+        _v4ips = [v4ips copy] ?: @[];
+        _v4ttl = v4ttl;
+        _v4LookupTime = v4LookupTime;
+        _v6ips = [v6ips copy] ?: @[];
+        _v6ttl = v6ttl;
+        _v6LookupTime = v6LookupTime;
+        _extra = [extra copy];
     }
     return self;
 }
-
-/*!
- * 从数据库读取数据后，初始化
- */
-+ (instancetype)hostRecordWithId:(NSUInteger)hostRecordId
-                            host:(NSString *)host
-                         carrier:(NSString *)carrier
-                             IPs:(NSArray<NSString *> *)IPs
-                            IP6s:(NSArray<NSString *> *)IP6s
-                             TTL:(int64_t)TTL
-                        createAt:(NSDate *)createAt
-                        expireAt:(NSDate *)expireAt
-                        ipRegion:(NSString *)ipRegion
-                       ip6Region:(NSString *)ip6Region
-{
-    HttpdnsHostRecord *hostRecord = [[HttpdnsHostRecord alloc] initWithId:hostRecordId
-                                                                     host:host
-                                                                  carrier:carrier
-                                                                      IPs:IPs
-                                                                     IP6s:IP6s
-                                                                      TTL:TTL
-                                                                 createAt:createAt expireAt:expireAt ipRegion:ipRegion ip6Region:ip6Region];
-    return hostRecord;
-}
-
-/*!
- * 从网络初始化
- */
-- (instancetype)initWithHost:(NSString *)host
-                         IPs:(NSArray<NSString *> *)IPs
-                        IP6s:(NSArray<NSString *> *)IP6s
-                         TTL:(int64_t)TTL
-                    ipRegion:(NSString *)ipRegion
-                   ip6Region:(NSString *)ip6Region {
-    if (self = [super init]) {
-        _host = [host copy];
-        _IPs = [IPs copy];
-        _IP6s = [IP6s copy];
-        _TTL = TTL;
-        _ipRegion = ipRegion;
-        _ip6Region = ip6Region;
-    }
-    return self;
-}
-
-/*!
- * 从网络初始化
- */
-+ (instancetype)hostRecordWithHost:(NSString *)host
-                               IPs:(NSArray<NSString *> *)IPs
-                              IP6s:(NSArray<NSString *> *)IP6s
-                               TTL:(int64_t)TTL
-                          ipRegion:(NSString *)ipRegion
-                         ip6Region:(NSString *)ip6Region {
-    HttpdnsHostRecord *hostRecord = [[HttpdnsHostRecord alloc] initWithHost:host IPs:IPs IP6s:IP6s TTL:TTL ipRegion:ipRegion ip6Region:ip6Region];
-    return hostRecord;
-}
-
-/*!
- * 从网络初始化
- */
-- (instancetype)initWithHostSdns:(NSString *)host
-                             IPs:(NSArray<NSString *> *)IPs
-                            IP6s:(NSArray<NSString *> *)IP6s
-                             TTL:(int64_t)TTL
-                           Extra:(NSDictionary *)extra
-                        ipRegion:(NSString *)ipRegion
-                       ip6Region:(NSString *)ip6Region {
-    if (self = [super init]) {
-        _host = [host copy];
-        _IPs = [IPs copy];
-        _IP6s = [IP6s copy];
-        _TTL = TTL;
-        _extra = extra;
-        _ipRegion = ipRegion;
-        _ip6Region = ip6Region;
-    }
-    return self;
-}
-
-/*!
- * 从网络初始化
- */
-+ (instancetype)sdnsHostRecordWithHost:(NSString *)host
-                                   IPs:(NSArray<NSString *> *)IPs
-                                  IP6s:(NSArray<NSString *> *)IP6s
-                                   TTL:(int64_t)TTL
-                                 Extra:(NSDictionary *)extra
-                              ipRegion:(NSString *)ipRegion
-                             ip6Region:(NSString *)ip6Region{
-    HttpdnsHostRecord *hostRecord = [[HttpdnsHostRecord alloc] initWithHostSdns:host IPs:IPs IP6s:IP6s TTL:TTL Extra:extra ipRegion:ipRegion ip6Region:ipRegion];
-    return hostRecord;
-}
-
 
 - (NSString *)description {
-    if (![HttpdnsUtil isNotEmptyArray:_IP6s]) {
-        return [NSString stringWithFormat:@"hostRecordId = %@, host = %@, carrier = %@, IPs = %@ , TTL = %@---",
-               @(_hostRecordId), _host, _carrier, _IPs, @(_TTL)];
+    NSString *hostName = self.hostName;
+    if (self.cacheKey) {
+        hostName = [NSString stringWithFormat:@"%@(%@)", hostName, self.cacheKey];
+    }
+    if ([HttpdnsUtil isEmptyArray:_v6ips]) {
+        return [NSString stringWithFormat:@"hostName = %@, v4ips = %@, v4ttl = %lld v4LastLookup = %lld extra = %@",
+                hostName, _v4ips, _v4ttl, _v4LookupTime, _extra];
     } else {
-        return [NSString stringWithFormat:@"hostRecordId = %@, host = %@, carrier = %@, IPs = %@ , IP6s = %@, TTL = %@---",
-               @(_hostRecordId), _host, _carrier, _IPs, _IP6s, @(_TTL)];
+        return [NSString stringWithFormat:@"hostName = %@, v4ips = %@, v4ttl = %lld v4LastLookup = %lld v6ips = %@ v6ttl = %lld v6LastLookup = %lld extra = %@",
+                hostName, _v4ips, _v4ttl, _v4LookupTime, _v6ips, _v6ttl, _v6LookupTime, _extra];
     }
 }
 

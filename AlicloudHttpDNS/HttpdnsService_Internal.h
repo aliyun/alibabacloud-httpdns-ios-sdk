@@ -18,17 +18,17 @@
  */
 
 #import "HttpdnsService.h"
-#import "HttpdnsRequestScheduler_Internal.h"
+#import "HttpdnsRequestManager.h"
 #import "HttpdnsLog_Internal.h"
 
 
 @interface HttpDnsService()
 
-@property (nonatomic, strong) HttpdnsRequestScheduler *requestScheduler;
+@property (nonatomic, strong) HttpdnsRequestManager *requestManager;
 
 @property (nonatomic, assign) NSTimeInterval authTimeOffset;
 
-@property (nonatomic, copy) NSDictionary *IPRankingDataSource;
+@property (nonatomic, copy) NSDictionary<NSString *, NSNumber *> *IPRankingDataSource;
 
 @property (nonatomic, assign) NSTimeInterval timeoutInterval;
 
@@ -36,11 +36,15 @@
 
 @property (nonatomic, assign) BOOL hasAllowedArbitraryLoadsInATS;
 
+@property (nonatomic, assign) BOOL enableDegradeToLocalDNS;
+
 - (NSString *)getIpByHost:(NSString *)host;
 
 - (NSArray *)getIpsByHost:(NSString *)host;
 
 - (NSString *)getIpByHostInURLFormat:(NSString *)host;
+
+- (NSDictionary<NSString *, NSNumber *> *)getIPRankingDatasource;
 
 @end
 

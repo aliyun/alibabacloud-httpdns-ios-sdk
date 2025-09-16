@@ -6,24 +6,29 @@
 //  Copyright © 2018年 alibaba-inc.com. All rights reserved.
 //
 
-#import "HttpdnsLoggerDelegate.h"
 #import "HttpdnsLog.h"
+#import "HttpdnsLoggerProtocol.h"
+#import <pthread/pthread.h>
 
 // logHandler输出日志，不受日志开关影响
-#define HttpdnsLogDebug(frmt, ...)\
-if ([HttpdnsLog validLogHandler]) {\
-    @try {\
-        NSString *logFormat = [NSString stringWithFormat:@"%s", frmt];\
-        NSString *logStr = [NSString stringWithFormat:logFormat, ##__VA_ARGS__, nil];\
-        [HttpdnsLog outputToLogHandler:logStr];\
-    } @catch (NSException *exception){\
-    }\
-}\
-if ([HttpdnsLog isEnabled]) {\
-    @try {\
-        NSLog((@"%@ HTTPDNSSDKLOG - " frmt), [HttpdnsLog getFormattedDateTimeStr], ##__VA_ARGS__);\
-    } @catch (NSException *exception){\
-    }\
+#define HttpdnsLogDebug(frmt, ...) \
+if ([HttpdnsLog validLogHandler]) { \
+    @try { \
+        uint64_t tid = 0; \
+        pthread_threadid_np(NULL, &tid); \
+        NSString *logFormat = [NSString stringWithFormat:@"%s", frmt]; \
+        NSString *logStr = [NSString stringWithFormat:@"[%llu] %@", tid, [NSString stringWithFormat:logFormat, ##__VA_ARGS__, nil]]; \
+        [HttpdnsLog outputToLogHandler:logStr]; \
+    } @catch (NSException *exception){ \
+    } \
+} \
+if ([HttpdnsLog isEnabled]) { \
+    @try { \
+        uint64_t tid = 0; \
+        pthread_threadid_np(NULL, &tid); \
+        NSLog((@"%@ HTTPDNSSDKLOG [%llu] - " frmt), [HttpdnsLog getFormattedDateTimeStr], tid, ##__VA_ARGS__); \
+    } @catch (NSException *exception){ \
+    } \
 }
 
 

@@ -16,59 +16,44 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#import <AlicloudUtils/AlicloudUtils.h>
-#import <AlicloudUtils/AlicloudIPv6Adapter.h>
 #import "HttpdnsService_Internal.h"
-#import "HttpdnsHostResolver.h"
-#import "HttpdnsConfig.h"
+#import "HttpdnsRemoteResolver.h"
+#import "HttpdnsInternalConstant.h"
 #import "HttpdnsHostObject.h"
-#import "HttpdnsRequest.h"
 #import "HttpdnsRequest_Internal.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsLog_Internal.h"
 #import "AlicloudHttpDNS.h"
-#import "HttpdnsHostCacheStore.h"
-#import "HttpdnsConstants.h"
-#import "HttpdnsIPv6Manager.h"
 #import "HttpdnsScheduleCenter.h"
-#import "UIApplication+ABSHTTPDNSSetting.h"
-#import "HttpdnsgetNetworkInfoHelper.h"
 #import "HttpdnsPublicConstant.h"
 #import "HttpdnsRegionConfigLoader.h"
+#import "HttpdnsIpStackDetector.h"
 
 
-NSString *const ALICLOUDHDNS_IPV4 = @"ALICLOUDHDNS_IPV4";
-NSString *const ALICLOUDHDNS_IPV6 = @"ALICLOUDHDNS_IPV6";
 
-
-static NSDictionary *HTTPDNS_EXT_INFO = nil;
 static dispatch_queue_t asyncTaskConcurrentQueue;
 
 @interface HttpDnsService ()
 
-@property (nonatomic, assign) int accountID;
+@property (nonatomic, assign) NSInteger accountID;
 @property (nonatomic, copy) NSString *secretKey;
+@property (nonatomic, copy) NSString *aesSecretKey;
 
-/**
- * 每次访问的签名有效期，SDK内部定死，当前不暴露设置接口，有效期定为10分钟。
- */
+ // 每次访问的签名有效期，SDK内部定死，当前不暴露设置接口，有效期定为10分钟。
 @property (nonatomic, assign) NSUInteger authTimeoutInterval;
+
 @property (nonatomic, copy) NSDictionary<NSString *, NSString *> *presetSdnsParamsDict;
 
 @property (nonatomic, strong) HttpdnsScheduleCenter *scheduleCenter;
+
 @end
 
 @implementation HttpDnsService
-
-@synthesize IPRankingDataSource = _IPRankingDataSource;
 
 + (void)initialize {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         asyncTaskConcurrentQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.asyncTask", DISPATCH_QUEUE_CONCURRENT);
-
-        // 注册 UIApplication+ABSHTTPDNSSetting 中的Swizzle
-        // [[UIApplication sharedApplication] onBeforeBootingProtection];
     });
 }
 
@@ -76,7 +61,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 #pragma mark ---------- singleton
 
 
-+ (instancetype)sharedInstance {
++ (nonnull instancetype)sharedInstance {
     static HttpDnsService * _sharedInstance;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -85,50 +70,31 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     return _sharedInstance;
 }
 
-- (instancetype)autoInit {
-    NSString *sdkVersion;//= HTTPDNS_IOS_SDK_VERSION;
-    NSNumber *sdkStatus;
-    NSString *sdkId = @"httpdns";
-
-    NSString *accountID;
-    NSString *secretKey;
-
-    EMASOptions *defaultOptions = [EMASOptions defaultOptions];
-    // Get config
-    accountID = defaultOptions.httpdnsAccountId;
-    secretKey = defaultOptions.httpdnsSecretKey;
-    EMASOptionSDKServiceItem *sdkItem = [defaultOptions sdkServiceItemForSdkId:sdkId];
-    if (sdkItem) {
-        sdkVersion = sdkItem.version;
-        sdkStatus = sdkItem.status;
-    }
-    if ([HttpdnsUtil isNotEmptyString:accountID]) {
-        return [self initWithAccountID:[accountID intValue] secretKey:secretKey];
-    }
-    HttpdnsLogDebug("Auto init fail, can not get accountId / secretKey, please check the file named: AliyunEmasServices-Info.plist.");
-    return nil;
-}
-
-- (instancetype)initWithAccountID:(int)accountID {
+- (nonnull instancetype)initWithAccountID:(NSInteger)accountID {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
     return [self initWithAccountID:accountID secretKey:nil];
+#pragma clang diagnostic pop
 }
 
-- (instancetype)initWithAccountID:(int)accountID secretKey:(NSString *)secretKey {
-    HTTPDNS_EXT_INFO = @{
-        EXT_INFO_KEY_VERSION : HTTPDNS_IOS_SDK_VERSION,
-    };
+- (nonnull instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString *)secretKey {
+    return [self initWithAccountID:accountID secretKey:secretKey aesSecretKey:nil];
+}
 
+- (nonnull instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString *)secretKey aesSecretKey:(NSString *)aesSecretKey {
     HttpDnsService *sharedInstance = [HttpDnsService sharedInstance];;
 
     sharedInstance.accountID = accountID;
     sharedInstance.secretKey = secretKey;
+    sharedInstance.aesSecretKey = aesSecretKey;
 
     sharedInstance.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
     sharedInstance.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
     sharedInstance.enableHttpsRequest = NO;
     sharedInstance.hasAllowedArbitraryLoadsInATS = NO;
+    sharedInstance.enableDegradeToLocalDNS = NO;
 
-    sharedInstance.requestScheduler = [HttpdnsRequestScheduler sharedInstance];
+    sharedInstance.requestManager = [[HttpdnsRequestManager alloc] initWithAccountId:accountID];
 
     HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
     NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
@@ -156,7 +122,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)setPersistentCacheIPEnabled:(BOOL)enable {
-    [_requestScheduler setCachedIPEnabled:enable discardRecordsHasExpiredFor:0];
+    [_requestManager setCachedIPEnabled:enable discardRecordsHasExpiredFor:0];
 }
 
 - (void)setPersistentCacheIPEnabled:(BOOL)enable discardRecordsHasExpiredFor:(NSTimeInterval)duration {
@@ -166,7 +132,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     if (duration > SECONDS_OF_ONE_YEAR) {
         duration = SECONDS_OF_ONE_YEAR;
     }
-    [_requestScheduler setCachedIPEnabled:enable discardRecordsHasExpiredFor:duration];
+    [_requestManager setCachedIPEnabled:enable discardRecordsHasExpiredFor:duration];
 }
 
 - (void)setExpiredIPEnabled:(BOOL)enable {
@@ -174,7 +140,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)setReuseExpiredIPEnabled:(BOOL)enable {
-    [_requestScheduler setExpiredIPEnabled:enable];
+    [_requestManager setExpiredIPEnabled:enable];
 }
 
 - (void)setHTTPSRequestEnabled:(BOOL)enable {
@@ -235,9 +201,9 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     // 初始化过程包含了region配置更新流程，region切换会导致缓存清空，立即做预解析可能是没有意义的
-    // 这是sdk接口设计的历史问题，目前没有太好办法，这里3秒之后再发预解析请求
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self->_requestScheduler addPreResolveHosts:hosts queryType:ipQueryType];
+    // 这是sdk接口设计的历史问题，目前没有太好办法，这里0.5秒之后再发预解析请求
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), asyncTaskConcurrentQueue, ^{
+        [self->_requestManager preResolveHosts:hosts queryType:ipQueryType];
     });
 }
 
@@ -250,11 +216,19 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable {
-    [_requestScheduler setPreResolveAfterNetworkChanged:enable];
+    [_requestManager setPreResolveAfterNetworkChanged:enable];
 }
 
 - (void)setIPRankingDatasource:(NSDictionary<NSString *, NSNumber *> *)IPRankingDatasource {
     _IPRankingDataSource = IPRankingDatasource;
+}
+
+- (NSDictionary<NSString *, NSNumber *> *)getIPRankingDatasource {
+    return [_IPRankingDataSource copy];
+}
+
+- (void)setDegradeToLocalDNSEnabled:(BOOL)enable {
+    _enableDegradeToLocalDNS = enable;
 }
 
 - (void)enableIPv6:(BOOL)enable {
@@ -262,15 +236,15 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)setIPv6Enabled:(BOOL)enable {
-    [[HttpdnsIPv6Manager sharedInstance] setIPv6ResultEnable:enable];
+    // 默认都支持
 }
 
 - (void)enableNetworkInfo:(BOOL)enable {
-    [self setReadNetworkInfoEnabled:enable];
+    // 弃用此接口
 }
 
 - (void)setReadNetworkInfoEnabled:(BOOL)enable {
-    [HttpdnsgetNetworkInfoHelper setNetworkInfoEnable:enable];
+    // 弃用此接口
 }
 
 - (void)enableCustomIPRank:(BOOL)enable {
@@ -310,9 +284,9 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     [self refineResolveRequest:request];
-    [request setAsBlockingRequest];
+    [request becomeBlockingRequest];
 
-    HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
+    HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (!hostObject) {
         return nil;
     }
@@ -338,9 +312,9 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     [self refineResolveRequest:request];
-    [request setAsNonBlockingRequest];
+    [request becomeNonBlockingRequest];
 
-    HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
+    HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (!hostObject) {
         return nil;
     }
@@ -374,8 +348,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     double enqueueStart = [[NSDate date] timeIntervalSince1970] * 1000;
     dispatch_async(asyncTaskConcurrentQueue, ^{
         double executeStart = [[NSDate date] timeIntervalSince1970] * 1000;
-        [request setAsBlockingRequest];
-        HttpdnsHostObject *hostObject = [self->_requestScheduler resolveHost:request];
+        [request becomeBlockingRequest];
+        HttpdnsHostObject *hostObject = [self->_requestManager resolveHost:request];
         double innerEnd = [[NSDate date] timeIntervalSince1970] * 1000;
         HttpdnsLogDebug("resolveHostAsync done, inner cost time from enqueue: %fms, from execute: %fms", (innerEnd - enqueueStart), (innerEnd - executeStart));
 
@@ -390,23 +364,17 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 - (HttpdnsQueryIPType)determineLegitQueryIpType:(HttpdnsQueryIPType)specifiedQueryIpType {
     // 自动选择，需要判断当前网络环境来决定
     if (specifiedQueryIpType == HttpdnsQueryIPTypeAuto) {
-        // 如果全局没打开ipv6，那auto的情况下只请求ipv4
-        if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-            return HttpdnsQueryIPTypeIpv4;
-        }
-
-        AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
-        AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
+        HttpdnsIPStackType stackType = [[HttpdnsIpStackDetector sharedInstance] currentIpStack];
         switch (stackType) {
             // 双栈和ipv6only，两个类型都要请求
             // 虽然判断是ipv6only，但现实中只有实验室才会有这种情况，考虑判断网络协议栈是有误判可能的，权衡之下，还是应该请求ipv4
             // 如果用户是在明确的实验室环境中做测试，他应该直接指定请求type为ipv6
-            case kAlicloudIPdual:
-            case kAlicloudIPv6only:
+            case kHttpdnsIpDual:
+            case kHttpdnsIpv6Only:
                 return HttpdnsQueryIPTypeIpv4 | HttpdnsQueryIPTypeIpv6;
 
             // 只有ipv4only的情况，只请求ipv4
-            case kAlicloudIPv4only:
+            case kHttpdnsIpv4Only:
             default:
                 return HttpdnsQueryIPTypeIpv4;
         }
@@ -455,7 +423,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         return nil;
     }
 
-    if ([HttpdnsUtil isEmptyArray:[hostObject getIps]] && [HttpdnsUtil isEmptyArray:[hostObject getIp6s]]) {
+    if ([HttpdnsUtil isEmptyArray:[hostObject getV4Ips]] && [HttpdnsUtil isEmptyArray:[hostObject getV6Ips]]) {
         // 这里是为了兼容过去用法的行为，如果完全没有ip信息，可以对齐到过去缓存没有ip或解析不到ip的情况，直接返回nil
         return nil;
     }
@@ -465,7 +433,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     // 由于结果可能是从缓存中获得，所以还要根据实际协议栈情况再筛选下结果
     if (queryType & HttpdnsQueryIPTypeIpv4) {
-        NSArray *ipv4s = [hostObject getIps];
+        NSArray *ipv4s = [hostObject getV4Ips];
         if ([HttpdnsUtil isNotEmptyArray:ipv4s]) {
             NSMutableArray *ipv4Array = [NSMutableArray array];
             for (HttpdnsIpObject *ipObject in ipv4s) {
@@ -478,7 +446,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     if (queryType & HttpdnsQueryIPTypeIpv6) {
-        NSArray *ipv6s = [hostObject getIp6s];
+        NSArray *ipv6s = [hostObject getV6Ips];
         if ([HttpdnsUtil isNotEmptyArray:ipv6s]) {
             NSMutableArray *ipv6Array = [NSMutableArray array];
             for (HttpdnsIpObject *ipObject in ipv6s) {
@@ -498,13 +466,13 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     result.host = ip;
 
     if (queryType & HttpdnsQueryIPTypeIpv4) {
-        if ([[AlicloudIPv6Adapter getInstance] isIPv4Address:ip]) {
+        if ([HttpdnsUtil isIPv4Address:ip]) {
             result.ips = @[ip];
         }
     }
 
     if (queryType & HttpdnsQueryIPTypeIpv6) {
-        if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:ip]) {
+        if ([HttpdnsUtil isIPv6Address:ip]) {
             result.ipv6s = @[ip];
         }
     }
@@ -515,20 +483,16 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (NSString *)getIpByHostAsync:(NSString *)host {
     NSArray *ips = [self getIpsByHostAsync:host];
-    if (ips != nil && ips.count > 0) {
-        NSString *ip;
-        ip = [HttpdnsUtil safeOjectAtIndex:0 array:ips];
-        return ip;
+    if ([HttpdnsUtil isNotEmptyArray:ips]) {
+        return ips[0];
     }
     return nil;
 }
 
 - (NSString *)getIPv4ForHostAsync:(NSString *)host {
     NSArray *ips = [self getIPv4ListForHostAsync:host];
-    if (ips != nil && ips.count > 0) {
-        NSString *ip;
-        ip = [HttpdnsUtil safeOjectAtIndex:0 array:ips];
-        return ip;
+    if ([HttpdnsUtil isNotEmptyArray:ips]) {
+        return ips[0];
     }
     return nil;
 }
@@ -552,10 +516,10 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4];
-    [request setAsNonBlockingRequest];
-    HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
+    [request becomeNonBlockingRequest];
+    HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {
-        NSArray * ipsObject = [hostObject getIps];
+        NSArray * ipsObject = [hostObject getV4Ips];
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
         if ([HttpdnsUtil isNotEmptyArray:ipsObject]) {
             for (HttpdnsIpObject *ipObject in ipsObject) {
@@ -587,10 +551,10 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4];
-    [request setAsNonBlockingRequest];
-    HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
+    [request becomeNonBlockingRequest];
+    HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {
-        NSArray * ipsObject = [hostObject getIps];
+        NSArray * ipsObject = [hostObject getV4Ips];
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
         if ([HttpdnsUtil isNotEmptyArray:ipsObject]) {
             for (HttpdnsIpObject *ipObject in ipsObject) {
@@ -624,10 +588,10 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     if ([NSThread isMainThread]) {
         //如果是主线程，仍然使用异步的方式，即先查询缓存，如果没有，则发送异步请求
         HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4];
-        [request setAsNonBlockingRequest];
-        HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
+        [request becomeNonBlockingRequest];
+        HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
         if (hostObject) {
-            NSArray * ipsObject = [hostObject getIps];
+            NSArray * ipsObject = [hostObject getV4Ips];
             NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
             if ([HttpdnsUtil isNotEmptyArray:ipsObject]) {
                 for (HttpdnsIpObject *ipObject in ipsObject) {
@@ -642,13 +606,13 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         NSMutableArray *ipsArray = nil;
         double start = [[NSDate date] timeIntervalSince1970] * 1000;
         HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4];
-        [request setAsBlockingRequest];
-        __block HttpdnsHostObject *hostObject = [self->_requestScheduler resolveHost:request];
+        [request becomeBlockingRequest];
+        __block HttpdnsHostObject *hostObject = [self->_requestManager resolveHost:request];
         double end = [[NSDate date] timeIntervalSince1970] * 1000;
         HttpdnsLogDebug("###### getIPv4ListForHostSync result: %@, resolve time delta is %f ms", hostObject, (end - start));
 
         if (hostObject) {
-            NSArray * ipsObject = [hostObject getIps];
+            NSArray * ipsObject = [hostObject getV4Ips];
             ipsArray = [[NSMutableArray alloc] init];
             if ([HttpdnsUtil isNotEmptyArray:ipsObject]) {
                 for (HttpdnsIpObject *ipObject in ipsObject) {
@@ -662,41 +626,29 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (NSString *)getIpByHostAsyncInURLFormat:(NSString *)host {
     NSString *IP = [self getIpByHostAsync:host];
-    if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:IP]) {
+    if ([HttpdnsUtil isIPv6Address:IP]) {
         return [NSString stringWithFormat:@"[%@]", IP];
     }
     return IP;
 }
 
 - (NSString *)getIPv6ByHostAsync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
     NSArray *ips = [self getIPv6sByHostAsync:host];
-    NSString *ip = nil;
-    if (ips != nil && ips.count > 0) {
-        ip = [HttpdnsUtil safeOjectAtIndex:0 array:ips];
+    if ([HttpdnsUtil isNotEmptyArray:ips]) {
+        return ips[0];
     }
-    return ip;
+    return nil;
 }
 
 - (NSString *)getIPv6ForHostAsync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
     NSArray *ips = [self getIPv6ListForHostAsync:host];
-    NSString *ip = nil;
-    if (ips != nil && ips.count > 0) {
-        ip = [HttpdnsUtil safeOjectAtIndex:0 array:ips];
+    if ([HttpdnsUtil isNotEmptyArray:ips]) {
+        return ips[0];
     }
-    return ip;
+    return nil;
 }
 
 - (NSArray *)getIPv6sByHostAsync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
-
     if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -716,10 +668,10 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv6];
-    [request setAsNonBlockingRequest];
-    HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
+    [request becomeNonBlockingRequest];
+    HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {
-        NSArray *ip6sObject = [hostObject getIp6s];
+        NSArray *ip6sObject = [hostObject getV6Ips];
         NSMutableArray *ip6sArray = [[NSMutableArray alloc] init];
         if ([HttpdnsUtil isNotEmptyArray:ip6sObject]) {
             for (HttpdnsIpObject *ip6Object in ip6sObject) {
@@ -733,10 +685,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (NSArray *)getIPv6ListForHostAsync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
-
     if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -756,10 +704,10 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv6];
-    [request setAsNonBlockingRequest];
-    HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
+    [request becomeNonBlockingRequest];
+    HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {
-        NSArray *ip6sObject = [hostObject getIp6s];
+        NSArray *ip6sObject = [hostObject getV6Ips];
         NSMutableArray *ip6sArray = [[NSMutableArray alloc] init];
         if ([HttpdnsUtil isNotEmptyArray:ip6sObject]) {
             for (HttpdnsIpObject *ip6Object in ip6sObject) {
@@ -773,10 +721,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (NSArray *)getIPv6ListForHostSync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
-
     if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -798,10 +742,10 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     if ([NSThread isMainThread]) {
         // 如果是主线程，仍然使用异步的方式，即先查询缓存，如果没有，则发送异步请求
         HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv6];
-        [request setAsNonBlockingRequest];
-        HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
+        [request becomeNonBlockingRequest];
+        HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
         if (hostObject) {
-            NSArray *ipv6List = [hostObject getIp6s];
+            NSArray *ipv6List = [hostObject getV6Ips];
             NSMutableArray *ipv6Array = [[NSMutableArray alloc] init];
             if ([HttpdnsUtil isNotEmptyArray:ipv6List]) {
                 for (HttpdnsIpObject *ipv6Obj in ipv6List) {
@@ -815,11 +759,11 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     } else {
         NSMutableArray *ipv6Array = nil;
         HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv6];
-        [request setAsBlockingRequest];
-        HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
+        [request becomeBlockingRequest];
+        HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
 
         if (hostObject) {
-            NSArray * ipv6List = [hostObject getIp6s];
+            NSArray * ipv6List = [hostObject getV6Ips];
             ipv6Array = [[NSMutableArray alloc] init];
             if ([HttpdnsUtil isNotEmptyArray:ipv6List]) {
                 for (HttpdnsIpObject *ipv6Obj in ipv6List) {
@@ -832,10 +776,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (NSDictionary<NSString *,NSArray *> *)getIPv4_v6ByHostAsync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
-
     if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -846,9 +786,9 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     if ([HttpdnsUtil isAnIP:host]) {
         HttpdnsLogDebug("The host is just an IP: %@", host);
-        if ([[AlicloudIPv6Adapter getInstance] isIPv4Address:host]) {
+        if ([HttpdnsUtil isIPv4Address:host]) {
             return @{ALICLOUDHDNS_IPV4: @[host?:@""]};
-        } else if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:host]) {
+        } else if ([HttpdnsUtil isIPv6Address:host]) {
             return @{ALICLOUDHDNS_IPV6: @[host?:@""]};
         }
         return nil;
@@ -860,11 +800,11 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
-    [request setAsNonBlockingRequest];
-    HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
+    [request becomeNonBlockingRequest];
+    HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {
-        NSArray *ip4s = [hostObject getIPStrings];
-        NSArray *ip6s = [hostObject getIP6Strings];
+        NSArray *ip4s = [hostObject getV4IpStrings];
+        NSArray *ip6s = [hostObject getV6IpStrings];
         NSMutableDictionary *resultMDic = [NSMutableDictionary dictionary];
         if ([HttpdnsUtil isNotEmptyArray:ip4s]) {
             [resultMDic setObject:ip4s forKey:ALICLOUDHDNS_IPV4];
@@ -882,10 +822,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (NSDictionary <NSString *, NSArray *>*)getHttpDnsResultHostAsync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
-
     if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -896,9 +832,9 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     if ([HttpdnsUtil isAnIP:host]) {
         HttpdnsLogDebug("The host is just an IP: %@", host);
-        if ([[AlicloudIPv6Adapter getInstance] isIPv4Address:host]) {
+        if ([HttpdnsUtil isIPv4Address:host]) {
             return @{ALICLOUDHDNS_IPV4: @[host?:@""]};
-        } else if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:host]) {
+        } else if ([HttpdnsUtil isIPv6Address:host]) {
             return @{ALICLOUDHDNS_IPV6: @[host?:@""]};
         }
         return nil;
@@ -910,11 +846,11 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
-    [request setAsNonBlockingRequest];
-    HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
+    [request becomeNonBlockingRequest];
+    HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {
-        NSArray *ip4s = [hostObject getIPStrings];
-        NSArray *ip6s = [hostObject getIP6Strings];
+        NSArray *ip4s = [hostObject getV4IpStrings];
+        NSArray *ip6s = [hostObject getV6IpStrings];
         NSMutableDictionary *httpdnsResult = [NSMutableDictionary dictionary];
         NSLog(@"getHttpDnsResultHostAsync result is %@", httpdnsResult);
         if ([HttpdnsUtil isNotEmptyArray:ip4s]) {
@@ -931,10 +867,6 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (NSDictionary <NSString *, NSArray *>*)getHttpDnsResultHostSync:(NSString *)host {
-    if (![[HttpdnsIPv6Manager sharedInstance] isAbleToResolveIPv6Result]) {
-        return nil;
-    }
-
     if ([self _shouldDegradeHTTPDNS:host]) {
         return nil;
     }
@@ -945,9 +877,9 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     if ([HttpdnsUtil isAnIP:host]) {
         HttpdnsLogDebug("The host is just an IP: %@", host);
-        if ([[AlicloudIPv6Adapter getInstance] isIPv4Address:host]) {
+        if ([HttpdnsUtil isIPv4Address:host]) {
             return @{ALICLOUDHDNS_IPV4: @[host?:@""]};
-        } else if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:host]) {
+        } else if ([HttpdnsUtil isIPv6Address:host]) {
             return @{ALICLOUDHDNS_IPV6: @[host?:@""]};
         }
         return nil;
@@ -961,11 +893,11 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     if ([NSThread isMainThread]) {
         // 主线程的话仍然是走异步的逻辑
         HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
-        [request setAsNonBlockingRequest];
-        HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
+        [request becomeNonBlockingRequest];
+        HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
         if (hostObject) {
-            NSArray *ip4s = [hostObject getIPStrings];
-            NSArray *ip6s = [hostObject getIP6Strings];
+            NSArray *ip4s = [hostObject getV4IpStrings];
+            NSArray *ip6s = [hostObject getV6IpStrings];
             NSMutableDictionary *resultMDic = [NSMutableDictionary dictionary];
             NSLog(@"getIPv4_v6ByHostAsync result is %@", resultMDic);
             if ([HttpdnsUtil isNotEmptyArray:ip4s]) {
@@ -982,11 +914,11 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     } else {
         NSMutableDictionary *resultMDic = nil;
         HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
-        [request setAsBlockingRequest];
-        HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
+        [request becomeBlockingRequest];
+        HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
         if (hostObject) {
-            NSArray *ip4s = [hostObject getIPStrings];
-            NSArray *ip6s = [hostObject getIP6Strings];
+            NSArray *ip4s = [hostObject getV4IpStrings];
+            NSArray *ip6s = [hostObject getV6IpStrings];
             resultMDic = [NSMutableDictionary dictionary];
             if ([HttpdnsUtil isNotEmptyArray:ip4s]) {
                 [resultMDic setObject:ip4s forKey:ALICLOUDHDNS_IPV4];
@@ -1001,18 +933,16 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 -(NSDictionary <NSString *, NSArray *>*)autoGetIpsByHostAsync:(NSString *)host {
-    AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
-    AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
-
+    HttpdnsIPStackType stackType = [[HttpdnsIpStackDetector sharedInstance] currentIpStack];
     NSMutableDictionary *ipv4_ipv6 = [NSMutableDictionary dictionary];
-    if (stackType == kAlicloudIPdual) {
+    if (stackType == kHttpdnsIpDual) {
         ipv4_ipv6 = [[self getIPv4_v6ByHostAsync:host] mutableCopy];
-    } else if (stackType == kAlicloudIPv4only) {
+    } else if (stackType == kHttpdnsIpv4Only) {
         NSArray* ipv4Ips = [self getIpsByHostAsync:host];
         if (ipv4Ips != nil) {
             [ipv4_ipv6 setObject:ipv4Ips forKey:ALICLOUDHDNS_IPV4];
         }
-    } else if (stackType == kAlicloudIPv6only) {
+    } else if (stackType == kHttpdnsIpv6Only) {
         NSArray* ipv6Ips = [self getIPv6sByHostAsync:host];
         if (ipv6Ips != nil) {
             [ipv4_ipv6 setObject:ipv6Ips forKey:ALICLOUDHDNS_IPV6];
@@ -1023,18 +953,16 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 -(NSDictionary <NSString *, NSArray *>*)autoGetHttpDnsResultForHostAsync:(NSString *)host {
-    AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
-    AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
-
+    HttpdnsIPStackType stackType = [[HttpdnsIpStackDetector sharedInstance] currentIpStack];
     NSMutableDictionary *httpdnsResult = [NSMutableDictionary dictionary];
-    if (stackType == kAlicloudIPdual) {
+    if (stackType == kHttpdnsIpDual) {
         httpdnsResult = [[self getHttpDnsResultHostAsync:host] mutableCopy];
-    } else if (stackType == kAlicloudIPv4only) {
+    } else if (stackType == kHttpdnsIpv4Only) {
         NSArray* ipv4IpList = [self getIPv4ListForHostAsync:host];
         if (ipv4IpList) {
             [httpdnsResult setObject:ipv4IpList forKey:ALICLOUDHDNS_IPV4];
         }
-    } else if (stackType == kAlicloudIPv6only) {
+    } else if (stackType == kHttpdnsIpv6Only) {
         NSArray* ipv6List = [self getIPv6ListForHostAsync:host];
         if (ipv6List) {
             [httpdnsResult setObject:ipv6List forKey:ALICLOUDHDNS_IPV6];
@@ -1045,17 +973,16 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (NSDictionary <NSString *, NSArray *>*)autoGetHttpDnsResultForHostSync:(NSString *)host {
-    AlicloudIPv6Adapter *ipv6Adapter = [AlicloudIPv6Adapter getInstance];
-    AlicloudIPStackType stackType = [ipv6Adapter currentIpStackType];
+    HttpdnsIPStackType stackType = [[HttpdnsIpStackDetector sharedInstance] currentIpStack];
     NSMutableDictionary *httpdnsResult = [NSMutableDictionary dictionary];
-    if (stackType == kAlicloudIPv4only) {
+    if (stackType == kHttpdnsIpv4Only) {
         NSArray* ipv4IpList = [self getIPv4ListForHostSync:host];
         if (ipv4IpList) {
             [httpdnsResult setObject:ipv4IpList forKey:ALICLOUDHDNS_IPV4];
         }
-    } else if (stackType == kAlicloudIPdual) {
+    } else if (stackType == kHttpdnsIpDual) {
         httpdnsResult = [[self getHttpDnsResultHostSync:host] mutableCopy];
-    } else if (stackType == kAlicloudIPv6only) {
+    } else if (stackType == kHttpdnsIpv6Only) {
         NSArray* ipv6List = [self getIPv6ListForHostSync:host];
         if (ipv6List) {
             [httpdnsResult setObject:ipv6List forKey:ALICLOUDHDNS_IPV6];
@@ -1073,16 +1000,16 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)cleanHostCache:(NSArray<NSString *> *)hostArray {
-    if (!hostArray) {
+    if ([HttpdnsUtil isEmptyArray:hostArray]) {
         [self cleanAllHostCache];
         return;
     }
 
-    [_requestScheduler cleanMemoryAndPersistentCacheOfHostArray:hostArray];
+    [_requestManager cleanMemoryAndPersistentCacheOfHostArray:hostArray];
 }
 
 - (void)cleanAllHostCache {
-    [_requestScheduler cleanMemoryAndPersistentCacheOfAllHosts];
+    [_requestManager cleanMemoryAndPersistentCacheOfAllHosts];
 }
 
 - (void)setSdnsGlobalParams:(NSDictionary<NSString *, NSString *> *)params {
@@ -1117,14 +1044,14 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     params = [self mergeWithPresetSdnsParams:params];
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4 sdnsParams:params cacheKey:cacheKey];
-    [request setAsNonBlockingRequest];
-    HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
+    [request becomeNonBlockingRequest];
+    HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {
-        NSArray * ipsObject = [hostObject getIps];
+        NSArray * ipsObject = [hostObject getV4Ips];
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
         NSMutableDictionary * ipsDictionary = [[NSMutableDictionary alloc] init];
         [ipsDictionary setObject:host forKey:@"host"];
-        if ([HttpdnsUtil isNotEmptyDictionary:hostObject.extra]) {
+        if ([HttpdnsUtil isNotEmptyString:hostObject.extra]) {
             [ipsDictionary setObject:hostObject.extra forKey:@"extra"];
         }
         if ([HttpdnsUtil isNotEmptyArray:ipsObject]) {
@@ -1156,20 +1083,13 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     return result;
 }
 
-- (NSDictionary *)IPRankingDataSource {
-    NSDictionary *IPRankingDataSource = nil;
-    @synchronized(self) {
-        if ([HttpdnsUtil isNotEmptyDictionary:_IPRankingDataSource]) {
-            IPRankingDataSource = _IPRankingDataSource;
-        }
-    }
-    return IPRankingDataSource;
-}
-
 - (BOOL)_shouldDegradeHTTPDNS:(NSString *)host {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     if (self.delegate && [self.delegate respondsToSelector:@selector(shouldDegradeHTTPDNS:)]) {
         return [self.delegate shouldDegradeHTTPDNS:host];
     }
+#pragma clang diagnostic pop
     return NO;
 }
 
@@ -1182,10 +1102,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (NSString *)getIpByHost:(NSString *)host {
     NSArray *ips = [self getIpsByHost:host];
-    if (ips != nil && ips.count > 0) {
-        NSString *ip;
-        ip = [HttpdnsUtil safeOjectAtIndex:0 array:ips];
-        return ip;
+    if ([HttpdnsUtil isNotEmptyArray:ips]) {
+        return ips[0];
     }
     return nil;
 }
@@ -1206,14 +1124,14 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4];
-    [request setAsBlockingRequest];
-    HttpdnsHostObject *hostObject = [_requestScheduler resolveHost:request];
+    [request becomeBlockingRequest];
+    HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {
-        NSArray * ipsObject = [hostObject getIps];
+        NSArray * ipsObject = [hostObject getV4Ips];
         NSMutableArray *ipsArray = [[NSMutableArray alloc] init];
         if ([HttpdnsUtil isNotEmptyArray:ipsObject]) {
             for (HttpdnsIpObject *ipObject in ipsObject) {
-                [HttpdnsUtil safeAddObject:[ipObject getIpString] toArray:ipsArray];
+                [ipsArray addObject:[ipObject getIpString]];
             }
             return ipsArray;
         }
@@ -1223,7 +1141,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (NSString *)getIpByHostInURLFormat:(NSString *)host {
     NSString *IP = [self getIpByHost:host];
-    if ([[AlicloudIPv6Adapter getInstance] isIPv6Address:IP]) {
+    if ([HttpdnsUtil isIPv6Address:IP]) {
         return [NSString stringWithFormat:@"[%@]", IP];
     }
     return IP;
