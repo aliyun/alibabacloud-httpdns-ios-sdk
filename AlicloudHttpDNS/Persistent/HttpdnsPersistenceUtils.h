@@ -23,6 +23,8 @@
 
 + (NSString *)httpdnsDataDirectory;
 + (NSString *)scheduleCenterResultDirectory;
+/// 多账号隔离：返回指定账号的调度结果目录
++ (NSString *)scheduleCenterResultDirectoryForAccount:(NSInteger)accountId;
 
 + (BOOL)saveJSON:(id)JSON toPath:(NSString *)path;
 + (id)getJSONFromPath:(NSString *)path;

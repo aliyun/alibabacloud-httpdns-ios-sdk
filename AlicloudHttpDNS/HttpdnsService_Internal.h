@@ -20,11 +20,13 @@
 #import "HttpdnsService.h"
 #import "HttpdnsRequestManager.h"
 #import "HttpdnsLog_Internal.h"
+#import "HttpdnsScheduleCenter.h"
 
 
 @interface HttpDnsService()
 
 @property (nonatomic, strong) HttpdnsRequestManager *requestManager;
+@property (nonatomic, strong, readonly) HttpdnsScheduleCenter *scheduleCenter;
 
 @property (nonatomic, assign) NSTimeInterval authTimeOffset;
 
@@ -47,4 +49,3 @@
 - (NSDictionary<NSString *, NSNumber *> *)getIPRankingDatasource;
 
 @end
-

@@ -26,7 +26,7 @@
 #import "HttpdnsLog_Internal.h"
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsService_Internal.h"
-#import "HttpdnsScheduleCenter.h"
+#import "HttpdnsService_Internal.h"
 #import "HttpdnsReachability.h"
 #import "HttpdnsHostRecord.h"
 #import "HttpdnsUtil.h"
@@ -287,7 +287,7 @@ typedef struct {
         if (error) {
             HttpdnsLogDebug("Internal request error, host: %@, error: %@", host, error);
 
-            HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+            HttpdnsScheduleCenter *scheduleCenter = self.ownerService.scheduleCenter;
             [scheduleCenter rotateServiceServerHost];
 
             // 确保一定的重试间隔
@@ -347,7 +347,7 @@ typedef struct {
     if (error) {
         HttpdnsLogDebug("PreResolve request error, host: %@, error: %@", host, error);
 
-        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+        HttpdnsScheduleCenter *scheduleCenter = self.ownerService.scheduleCenter;
         [scheduleCenter rotateServiceServerHost];
 
         // 确保一定的重试间隔
@@ -494,7 +494,7 @@ typedef struct {
         // 更新调度
         // 网络在切换过程中可能不稳定，所以发送请求前等待2秒
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
-            HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+            HttpdnsScheduleCenter *scheduleCenter = self.ownerService.scheduleCenter;
             [scheduleCenter asyncUpdateRegionScheduleConfig];
         });
 

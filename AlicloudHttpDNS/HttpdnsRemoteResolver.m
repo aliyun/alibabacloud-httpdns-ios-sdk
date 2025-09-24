@@ -24,6 +24,7 @@
 #import "HttpdnsPersistenceUtils.h"
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsScheduleCenter.h"
+#import "HttpdnsService_Internal.h"
 #import "AlicloudHttpDNS.h"
 #import "HttpdnsReachability.h"
 #import "HttpdnsRequestManager.h"
@@ -376,9 +377,9 @@ static NSURLSession *_resolveHostSession = nil;
 
 // 获取当前应使用的服务器IP
 - (NSString *)getServerIpForNetwork:(BOOL)isV4 {
-    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-    return isV4 ? [scheduleCenter currentActiveServiceServerV4Host] :
-                  [scheduleCenter currentActiveServiceServerV6Host];
+    HttpDnsService *service = self.service ?: [HttpDnsService sharedInstance];
+    HttpdnsScheduleCenter *scheduleCenter = service.scheduleCenter ?: [HttpdnsScheduleCenter sharedInstance];
+    return isV4 ? [scheduleCenter currentActiveServiceServerV4Host] : [scheduleCenter currentActiveServiceServerV6Host];
 }
 
 // 检查是否应该使用加密

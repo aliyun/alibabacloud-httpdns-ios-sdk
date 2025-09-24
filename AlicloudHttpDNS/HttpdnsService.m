@@ -167,9 +167,11 @@ static HttpDnsService *httpdnsSharedStubInstance;
 
         self.requestManager = [[HttpdnsRequestManager alloc] initWithAccountId:accountID ownerService:self];
 
-        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
         NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
-        NSString *cachedRegion = [userDefault objectForKey:kAlicloudHttpdnsRegionKey];
+        NSString *regionKey = [NSString stringWithFormat:@"%@.%ld", kAlicloudHttpdnsRegionKey, (long)accountID];
+        NSString *cachedRegion = [userDefault objectForKey:regionKey];
+
+        HttpdnsScheduleCenter *scheduleCenter = [[HttpdnsScheduleCenter alloc] initWithAccountId:accountID];
         [scheduleCenter initRegion:cachedRegion];
         self.scheduleCenter = scheduleCenter;
 
@@ -242,17 +244,16 @@ static HttpDnsService *httpdnsSharedStubInstance;
     }
 
     NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
-    NSString *oldRegion = [userDefault objectForKey:kAlicloudHttpdnsRegionKey];
+    NSString *regionKey = [NSString stringWithFormat:@"%@.%ld", kAlicloudHttpdnsRegionKey, (long)self.accountID];
+    NSString *oldRegion = [userDefault objectForKey:regionKey];
     if (![region isEqualToString:oldRegion]) {
-        [userDefault setObject:region forKey:kAlicloudHttpdnsRegionKey];
+        [userDefault setObject:region forKey:regionKey];
 
-        // 清空所有账号的本地沙盒和内存的IP缓存
-        for (HttpDnsService *service in [HttpDnsService allRegisteredInstances]) {
-            [service cleanHostCache:nil];
-        }
+        // 仅清空本实例缓存，调度按账号隔离
+        [self cleanHostCache:nil];
 
-        // region变化后发起服务IP更新
-        [[HttpdnsScheduleCenter sharedInstance] resetRegion:region];
+        // region变化后仅更新本实例的服务IP
+        [self.scheduleCenter resetRegion:region];
     }
 }
 

@@ -143,4 +143,12 @@ static dispatch_queue_t _fileCacheQueue = 0;
     return directory;
 }
 
+//Library/Private Documents/HTTPDNS/scheduleCenterResult/<accountId>
++ (NSString *)scheduleCenterResultDirectoryForAccount:(NSInteger)accountId {
+    NSString *base = [self scheduleCenterResultDirectory];
+    NSString *directory = [base stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld", (long)accountId]];
+    [self createDirectoryIfNeeded:directory];
+    return directory;
+}
+
 @end

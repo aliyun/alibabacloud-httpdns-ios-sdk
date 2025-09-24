@@ -56,6 +56,8 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 
 @property (nonatomic, copy) NSString *currentRegion;
 
+@property (nonatomic, assign) NSInteger accountId;
+
 @end
 
 @implementation HttpdnsScheduleCenter
@@ -67,6 +69,16 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
         sharedHttpdnsScheduleCenter = [[HttpdnsScheduleCenter alloc] init];
     });
     return sharedHttpdnsScheduleCenter;
+}
+
+- (instancetype)initWithAccountId:(NSInteger)accountId {
+    if (self = [self init]) {
+        _accountId = accountId;
+        // 针对多账号隔离：根据账号ID切换本地调度结果存储路径
+        NSString *dir = [HttpdnsPersistenceUtils scheduleCenterResultDirectoryForAccount:accountId];
+        _scheduleCenterResultPath = [dir stringByAppendingPathComponent:kScheduleRegionConfigLocalCacheFileName];
+    }
+    return self;
 }
 
 - (instancetype)init {

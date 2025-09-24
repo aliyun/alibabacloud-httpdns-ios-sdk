@@ -23,6 +23,10 @@
 
 + (instancetype)sharedInstance;
 
+/// 针对多账号场景的调度中心构造方法
+/// 注意：若无需多账号隔离，可继续使用 sharedInstance
+- (instancetype)initWithAccountId:(NSInteger)accountId;
+
 - (void)initRegion:(NSString *)region;
 
 - (void)resetRegion:(NSString *)region;
