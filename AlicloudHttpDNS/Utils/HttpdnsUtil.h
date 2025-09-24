@@ -19,6 +19,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class HttpDnsService;
+
 @class HttpdnsHostObject;
 
 @interface HttpdnsUtil : NSObject
@@ -74,5 +76,6 @@
 + (NSString *)hmacSha256:(NSString *)data key:(NSString *)key;
 
 + (void)processCustomTTL:(HttpdnsHostObject *)hostObject forHost:(NSString *)host;
++ (void)processCustomTTL:(HttpdnsHostObject *)hostObject forHost:(NSString *)host service:(HttpDnsService *)service;
 
 @end

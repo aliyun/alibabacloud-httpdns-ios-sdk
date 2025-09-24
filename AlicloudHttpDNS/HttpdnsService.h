@@ -62,6 +62,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (nonnull instancetype)sharedInstance;
 
+/// 获取指定账号对应的 HttpDnsService 实例
+/// @param accountID 账号 ID
+/// @return 已初始化的实例，若账号尚未注册则返回 nil
++ (nullable instancetype)getInstanceByAccountId:(NSInteger)accountID;
+
 /*!
  * @brief 无需鉴权功能的初始化接口
  * @details 初始化，设置 HTTPDNS 服务 Account ID。使用本接口初始化，请求将无任何签名保护，请谨慎使用。

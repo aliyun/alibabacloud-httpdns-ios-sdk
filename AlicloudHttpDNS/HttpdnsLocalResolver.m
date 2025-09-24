@@ -25,6 +25,11 @@
         return nil; // 没有主机名可解析
     }
 
+    HttpDnsService *service = [HttpDnsService getInstanceByAccountId:request.accountId];
+    if (!service) {
+        service = [HttpDnsService sharedInstance];
+    }
+
     // 2. 准备DNS解析配置
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
@@ -123,7 +128,7 @@
     [hostObject setV6TTL:60];
 
     // 自定义ttl
-    [HttpdnsUtil processCustomTTL:hostObject forHost:host];
+    [HttpdnsUtil processCustomTTL:hostObject forHost:host service:service];
 
     // 当前时间(自1970年以来的秒数)
     int64_t now = (int64_t)[[NSDate date] timeIntervalSince1970];

@@ -8,7 +8,6 @@
 
 #import "HttpdnsCFHttpWrapper.h"
 #import "HttpdnsLog_Internal.h"
-#import "HttpdnsService_Internal.h"
 #import "HttpdnsUtil.h"
 #import "HttpdnsInternalConstant.h"
 #import <CFNetwork/CFNetwork.h>
@@ -33,6 +32,7 @@ typedef struct {
 @implementation HttpdnsCFHttpWrapper
 
 - (void)sendHTTPRequestWithURL:(NSURL *)url
+                timeoutInterval:(NSTimeInterval)timeoutInterval
                     completion:(void (^)(NSData *data, NSError *error))completion {
     CFURLRef cfURL = (__bridge CFURLRef)url;
     CFHTTPMessageRef request = CFHTTPMessageCreateRequest(kCFAllocatorDefault, CFSTR("GET"), cfURL, kCFHTTPVersion1_1);
@@ -61,8 +61,14 @@ typedef struct {
 
     // Create and schedule the timeout timer
     CFRunLoopTimerContext timerContext = {0, context, NULL, NULL, NULL};
-    double timeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
-    context->timer = CFRunLoopTimerCreate(kCFAllocatorDefault, CFAbsoluteTimeGetCurrent() + timeoutInterval, 0, 0, 0, &HttpdnsHttpAgent_handleTimeout, &timerContext);
+    double effectiveTimeout = timeoutInterval > 0 ? timeoutInterval : HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
+    context->timer = CFRunLoopTimerCreate(kCFAllocatorDefault,
+                                         CFAbsoluteTimeGetCurrent() + effectiveTimeout,
+                                         0,
+                                         0,
+                                         0,
+                                         &HttpdnsHttpAgent_handleTimeout,
+                                         &timerContext);
     CFRunLoopAddTimer(CFRunLoopGetCurrent(), context->timer, kCFRunLoopCommonModes);
 
     if (CFReadStreamOpen(readStream)) {

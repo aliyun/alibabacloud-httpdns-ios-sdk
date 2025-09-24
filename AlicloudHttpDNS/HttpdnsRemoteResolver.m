@@ -39,6 +39,7 @@ static NSURLSession *_resolveHostSession = nil;
 
 @property (nonatomic, strong) NSRunLoop *runloop;
 @property (nonatomic, strong) NSError *networkError;
+@property (nonatomic, weak) HttpDnsService *service;
 
 @end
 
@@ -151,8 +152,8 @@ static NSURLSession *_resolveHostSession = nil;
 
 // 解密数据
 - (id)decryptData:(id)data withMode:(NSInteger)mode {
-    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    NSString *aesSecretKey = sharedService.aesSecretKey;
+    HttpDnsService *service = self.service ?: [HttpDnsService sharedInstance];
+    NSString *aesSecretKey = service.aesSecretKey;
 
     if (![HttpdnsUtil isNotEmptyString:aesSecretKey]) {
         HttpdnsLogDebug("Response is encrypted but no AES key is provided");
@@ -229,7 +230,7 @@ static NSURLSession *_resolveHostSession = nil;
     [self processIPv6Info:answer forHostObject:hostObject];
 
     // 自定义ttl
-    [HttpdnsUtil processCustomTTL:hostObject forHost:host];
+    [HttpdnsUtil processCustomTTL:hostObject forHost:host service:self.service];
 
     // 设置客户端IP
     NSString *clientIp = [[answer objectForKey:@"data"] objectForKey:@"cip"];
@@ -351,13 +352,13 @@ static NSURLSession *_resolveHostSession = nil;
 - (NSString *)constructHttpdnsResolvingUrl:(HttpdnsRequest *)request forV4Net:(BOOL)isV4 {
     // 获取基础信息
     NSString *serverIp = [self getServerIpForNetwork:isV4];
-    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+    HttpDnsService *service = self.service ?: [HttpDnsService sharedInstance];
 
     // 准备签名和加密参数
     NSDictionary *paramsToSign = [self prepareSigningParams:request forEncryption:[self shouldUseEncryption]];
 
     // 计算签名
-    NSString *signature = [self calculateSignatureForParams:paramsToSign withSecretKey:sharedService.secretKey];
+    NSString *signature = [self calculateSignatureForParams:paramsToSign withSecretKey:service.secretKey];
 
     // 构建URL
     NSString *url = [NSString stringWithFormat:@"%@/v2/d", serverIp];
@@ -382,14 +383,14 @@ static NSURLSession *_resolveHostSession = nil;
 
 // 检查是否应该使用加密
 - (BOOL)shouldUseEncryption {
-    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    return [HttpdnsUtil isNotEmptyString:sharedService.aesSecretKey];
+    HttpDnsService *service = self.service ?: [HttpDnsService sharedInstance];
+    return [HttpdnsUtil isNotEmptyString:service.aesSecretKey];
 }
 
 // 准备需要进行签名的参数
 - (NSDictionary *)prepareSigningParams:(HttpdnsRequest *)request forEncryption:(BOOL)useEncryption {
-    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    NSInteger accountId = sharedService.accountID;
+    HttpDnsService *service = self.service ?: [HttpDnsService sharedInstance];
+    NSInteger accountId = service.accountID;
 
     // 构建参与签名的参数字典
     NSMutableDictionary *paramsToSign = [NSMutableDictionary dictionary];
@@ -457,8 +458,8 @@ static NSURLSession *_resolveHostSession = nil;
 
 // 计算过期时间戳
 - (long)calculateExpiredTimestamp {
-    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    long localTimestampOffset = (long)sharedService.authTimeOffset;
+    HttpDnsService *service = self.service ?: [HttpDnsService sharedInstance];
+    long localTimestampOffset = (long)service.authTimeOffset;
     long localTimestamp = (long)[[NSDate date] timeIntervalSince1970];
     if (localTimestampOffset != 0) {
         localTimestamp = localTimestamp + localTimestampOffset;
@@ -469,7 +470,7 @@ static NSURLSession *_resolveHostSession = nil;
 // 加密参数
 - (NSString *)encryptParams:(NSDictionary *)paramsToEncrypt {
     NSError *error = nil;
-    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+    HttpDnsService *service = self.service ?: [HttpDnsService sharedInstance];
 
     // 将待加密参数转为JSON
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:paramsToEncrypt options:0 error:&error];
@@ -479,7 +480,7 @@ static NSURLSession *_resolveHostSession = nil;
     }
 
     // 从secretKey转换为二进制密钥
-    NSData *keyData = [HttpdnsUtil dataFromHexString:sharedService.aesSecretKey];
+    NSData *keyData = [HttpdnsUtil dataFromHexString:service.aesSecretKey];
     if (!keyData) {
         HttpdnsLogDebug("Invalid AES key format");
         return nil;
@@ -524,12 +525,12 @@ static NSURLSession *_resolveHostSession = nil;
                           signature:(NSString *)signature
                             request:(HttpdnsRequest *)request {
 
-    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
+    HttpDnsService *service = self.service ?: [HttpDnsService sharedInstance];
     NSMutableString *finalUrl = [NSMutableString stringWithString:baseUrl];
     [finalUrl appendString:@"?"];
 
     // 首先添加必要参数
-    [finalUrl appendFormat:@"id=%ld", sharedService.accountID];
+    [finalUrl appendFormat:@"id=%ld", service.accountID];
     [finalUrl appendFormat:@"&m=%@", [params objectForKey:@"m"]];
     [finalUrl appendFormat:@"&exp=%@", [params objectForKey:@"exp"]];
     [finalUrl appendFormat:@"&v=%@", [params objectForKey:@"v"]];
@@ -590,6 +591,12 @@ static NSURLSession *_resolveHostSession = nil;
 - (NSArray<HttpdnsHostObject *> *)resolve:(HttpdnsRequest *)request error:(NSError **)error {
     HttpdnsLogDebug("lookupHostFromServer, request: %@", request);
 
+    HttpDnsService *service = [HttpDnsService getInstanceByAccountId:request.accountId];
+    if (!service) {
+        service = [HttpDnsService sharedInstance];
+    }
+    self.service = service;
+
     NSString *url = [self constructHttpdnsResolvingUrl:request forV4Net:YES];
 
     HttpdnsQueryIPType queryIPType = request.queryIpType;
@@ -619,7 +626,7 @@ static NSURLSession *_resolveHostSession = nil;
 }
 
 - (NSArray<HttpdnsHostObject *> *)sendRequest:(NSString *)urlStr queryIpType:(HttpdnsQueryIPType)queryIPType error:(NSError **)error {
-    HttpDnsService *httpdnsService = [HttpDnsService sharedInstance];
+    HttpDnsService *httpdnsService = self.service ?: [HttpDnsService sharedInstance];
     if (httpdnsService.enableHttpsRequest || httpdnsService.hasAllowedArbitraryLoadsInATS) {
         NSString *fullUrlStr = httpdnsService.enableHttpsRequest
             ? [NSString stringWithFormat:@"https://%@", urlStr]
@@ -635,9 +642,10 @@ static NSURLSession *_resolveHostSession = nil;
 
 - (NSArray<HttpdnsHostObject *> *)sendURLSessionRequest:(NSString *)urlStr error:(NSError **)pError queryIpType:(HttpdnsQueryIPType)queryIpType {
     HttpdnsLogDebug("Send URLSession request URL: %@", urlStr);
+    HttpDnsService *service = self.service ?: [HttpDnsService sharedInstance];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:urlStr]
                                                            cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
-                                                       timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
+                                                       timeoutInterval:service.timeoutInterval];
 
     [request addValue:[HttpdnsUtil generateUserAgent] forHTTPHeaderField:@"User-Agent"];
 
@@ -685,12 +693,15 @@ static NSURLSession *_resolveHostSession = nil;
 - (NSArray<HttpdnsHostObject *> *)sendCFHTTPRequest:(NSString *)urlStr error:(NSError **)pError queryIpType:(HttpdnsQueryIPType)queryIpType {
     HttpdnsLogDebug("Send CFHTTP request URL: %@", urlStr);
     NSURL *url = [NSURL URLWithString:urlStr];
+    HttpDnsService *service = self.service ?: [HttpDnsService sharedInstance];
 
     __block NSDictionary *json = nil;
     __block NSError *blockError = nil;
     __weak typeof(self) weakSelf = self;
 
-    [[HttpdnsCFHttpWrapper new] sendHTTPRequestWithURL:url completion:^(NSData * _Nullable data, NSError * _Nullable error) {
+    [[HttpdnsCFHttpWrapper new] sendHTTPRequestWithURL:url
+                                      timeoutInterval:service.timeoutInterval
+                                           completion:^(NSData * _Nullable data, NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (error) {
             HttpdnsLogDebug("CFHTTP request network error, urlStr: %@, error: %@", urlStr, error);
@@ -786,4 +797,3 @@ static NSURLSession *_resolveHostSession = nil;
 }
 
 @end
-

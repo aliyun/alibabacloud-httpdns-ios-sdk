@@ -32,12 +32,17 @@
 
 
 static dispatch_queue_t asyncTaskConcurrentQueue;
+static NSMutableDictionary<NSNumber *, HttpDnsService *> *httpdnsServiceInstances;
+static dispatch_queue_t httpdnsServiceInstancesQueue;
+static HttpDnsService *httpdnsFirstInitializedInstance;
+static HttpDnsService *httpdnsSharedStubInstance;
 
 @interface HttpDnsService ()
 
 @property (nonatomic, assign) NSInteger accountID;
 @property (nonatomic, copy) NSString *secretKey;
 @property (nonatomic, copy) NSString *aesSecretKey;
+@property (nonatomic, assign) BOOL hasConfiguredAccount;
 
  // 每次访问的签名有效期，SDK内部定死，当前不暴露设置接口，有效期定为10分钟。
 @property (nonatomic, assign) NSUInteger authTimeoutInterval;
@@ -54,6 +59,8 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         asyncTaskConcurrentQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.asyncTask", DISPATCH_QUEUE_CONCURRENT);
+        httpdnsServiceInstances = [NSMutableDictionary dictionary];
+        httpdnsServiceInstancesQueue = dispatch_queue_create("com.alibaba.sdk.httpdns.serviceRegistry", DISPATCH_QUEUE_SERIAL);
     });
 }
 
@@ -62,12 +69,60 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 
 + (nonnull instancetype)sharedInstance {
-    static HttpDnsService * _sharedInstance;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        _sharedInstance = [[self alloc] init];
+    __block HttpDnsService *firstInstance = nil;
+    dispatch_sync(httpdnsServiceInstancesQueue, ^{
+        firstInstance = httpdnsFirstInitializedInstance;
     });
-    return _sharedInstance;
+    if (firstInstance) {
+        return firstInstance;
+    }
+
+    static dispatch_once_t stubOnceToken;
+    dispatch_once(&stubOnceToken, ^{
+        httpdnsSharedStubInstance = [[self alloc] init];
+    });
+    return httpdnsSharedStubInstance;
+}
+
++ (nullable instancetype)getInstanceByAccountId:(NSInteger)accountID {
+    __block HttpDnsService *instance = nil;
+    dispatch_sync(httpdnsServiceInstancesQueue, ^{
+        instance = httpdnsServiceInstances[@(accountID)];
+    });
+    return instance;
+}
+
++ (NSArray<HttpDnsService *> *)allRegisteredInstances {
+    __block NSArray<HttpDnsService *> *instances = nil;
+    dispatch_sync(httpdnsServiceInstancesQueue, ^{
+        instances = [httpdnsServiceInstances allValues];
+    });
+    return instances ?: @[];
+}
+
++ (HttpDnsService *)instanceForAccountIDCreatingIfNeeded:(NSInteger)accountID {
+    __block HttpDnsService *instance = nil;
+    dispatch_sync(httpdnsServiceInstancesQueue, ^{
+        instance = httpdnsServiceInstances[@(accountID)];
+        if (instance) {
+            return;
+        }
+
+        if (!httpdnsFirstInitializedInstance) {
+            if (httpdnsSharedStubInstance) {
+                instance = httpdnsSharedStubInstance;
+            } else {
+                instance = [[self alloc] init];
+                httpdnsSharedStubInstance = instance;
+            }
+            httpdnsFirstInitializedInstance = instance;
+        } else {
+            instance = [[self alloc] init];
+        }
+
+        httpdnsServiceInstances[@(accountID)] = instance;
+    });
+    return instance;
 }
 
 - (nonnull instancetype)initWithAccountID:(NSInteger)accountID {
@@ -82,27 +137,48 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (nonnull instancetype)initWithAccountID:(NSInteger)accountID secretKey:(NSString *)secretKey aesSecretKey:(NSString *)aesSecretKey {
-    HttpDnsService *sharedInstance = [HttpDnsService sharedInstance];;
+    HttpDnsService *existing = [HttpDnsService getInstanceByAccountId:accountID];
+    if (existing) {
+        return existing;
+    }
 
-    sharedInstance.accountID = accountID;
-    sharedInstance.secretKey = secretKey;
-    sharedInstance.aesSecretKey = aesSecretKey;
+    HttpDnsService *service = [HttpDnsService instanceForAccountIDCreatingIfNeeded:accountID];
+    [service configureWithAccountID:accountID secretKey:secretKey aesSecretKey:aesSecretKey];
+    return service;
+}
 
-    sharedInstance.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
-    sharedInstance.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
-    sharedInstance.enableHttpsRequest = NO;
-    sharedInstance.hasAllowedArbitraryLoadsInATS = NO;
-    sharedInstance.enableDegradeToLocalDNS = NO;
+- (void)configureWithAccountID:(NSInteger)accountID
+                      secretKey:(NSString *)secretKey
+                   aesSecretKey:(NSString *)aesSecretKey {
+    @synchronized (self) {
+        if (self.hasConfiguredAccount) {
+            return;
+        }
 
-    sharedInstance.requestManager = [[HttpdnsRequestManager alloc] initWithAccountId:accountID];
+        self.accountID = accountID;
+        self.secretKey = [secretKey copy];
+        self.aesSecretKey = [aesSecretKey copy];
 
-    HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
-    NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
-    NSString *cachedRegion = [userDefault objectForKey:kAlicloudHttpdnsRegionKey];
-    [scheduleCenter initRegion:cachedRegion];
-    sharedInstance.scheduleCenter = scheduleCenter;
+        self.timeoutInterval = HTTPDNS_DEFAULT_REQUEST_TIMEOUT_INTERVAL;
+        self.authTimeoutInterval = HTTPDNS_DEFAULT_AUTH_TIMEOUT_INTERVAL;
+        self.enableHttpsRequest = NO;
+        self.hasAllowedArbitraryLoadsInATS = NO;
+        self.enableDegradeToLocalDNS = NO;
 
-    return sharedInstance;
+        self.requestManager = [[HttpdnsRequestManager alloc] initWithAccountId:accountID ownerService:self];
+
+        HttpdnsScheduleCenter *scheduleCenter = [HttpdnsScheduleCenter sharedInstance];
+        NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
+        NSString *cachedRegion = [userDefault objectForKey:kAlicloudHttpdnsRegionKey];
+        [scheduleCenter initRegion:cachedRegion];
+        self.scheduleCenter = scheduleCenter;
+
+        self.hasConfiguredAccount = YES;
+    }
+}
+
+- (void)attachAccountInfoToRequest:(HttpdnsRequest *)request {
+    request.accountId = self.accountID;
 }
 
 #pragma mark -
@@ -170,11 +246,13 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     if (![region isEqualToString:oldRegion]) {
         [userDefault setObject:region forKey:kAlicloudHttpdnsRegionKey];
 
-        // 清空本地沙盒和内存的IP缓存
-        [self cleanHostCache:nil];
+        // 清空所有账号的本地沙盒和内存的IP缓存
+        for (HttpDnsService *service in [HttpDnsService allRegisteredInstances]) {
+            [service cleanHostCache:nil];
+        }
 
         // region变化后发起服务IP更新
-        [self.scheduleCenter resetRegion:region];
+        [[HttpdnsScheduleCenter sharedInstance] resetRegion:region];
     }
 }
 
@@ -233,6 +311,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (void)setDegradeToLocalDNSEnabled:(BOOL)enable {
     _enableDegradeToLocalDNS = enable;
+    [_requestManager setDegradeToLocalDNSEnabled:enable];
 }
 
 - (void)enableIPv6:(BOOL)enable {
@@ -265,11 +344,13 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (nullable HttpdnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType {
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:queryIpType];
+    [self attachAccountInfoToRequest:request];
     return [self resolveHostSync:request];
 }
 
 - (nullable HttpdnsResult *)resolveHostSync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *,NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey {
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:queryIpType sdnsParams:sdnsParams cacheKey:cacheKey];
+    [self attachAccountInfoToRequest:request];
     return [self resolveHostSync:request];
 }
 
@@ -303,6 +384,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (nullable HttpdnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *,NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey {
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:queryIpType sdnsParams:sdnsParams cacheKey:cacheKey];
+    [self attachAccountInfoToRequest:request];
     return [self resolveHostSyncNonBlocking:request];
 }
 
@@ -331,6 +413,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
 - (void)resolveHostAsync:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(NSDictionary<NSString *,NSString *> *)sdnsParams sdnsCacheKey:(NSString *)cacheKey completionHandler:(void (^)(HttpdnsResult * nullable))handler {
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:queryIpType sdnsParams:sdnsParams cacheKey:cacheKey];
+    [self attachAccountInfoToRequest:request];
     [self resolveHostAsync:request completionHandler:handler];
 }
 
@@ -408,6 +491,9 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 }
 
 - (void)refineResolveRequest:(HttpdnsRequest *)request {
+    if (request.accountId == 0) {
+        request.accountId = self.accountID;
+    }
     HttpdnsQueryIPType clarifiedQueryIpType = [self determineLegitQueryIpType:request.queryIpType];
     request.queryIpType = clarifiedQueryIpType;
 
@@ -520,6 +606,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4];
+    [self attachAccountInfoToRequest:request];
     [request becomeNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {
@@ -555,6 +642,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4];
+    [self attachAccountInfoToRequest:request];
     [request becomeNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {
@@ -592,6 +680,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     if ([NSThread isMainThread]) {
         //如果是主线程，仍然使用异步的方式，即先查询缓存，如果没有，则发送异步请求
         HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4];
+        [self attachAccountInfoToRequest:request];
         [request becomeNonBlockingRequest];
         HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
         if (hostObject) {
@@ -610,6 +699,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
         NSMutableArray *ipsArray = nil;
         double start = [[NSDate date] timeIntervalSince1970] * 1000;
         HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4];
+        [self attachAccountInfoToRequest:request];
         [request becomeBlockingRequest];
         __block HttpdnsHostObject *hostObject = [self->_requestManager resolveHost:request];
         double end = [[NSDate date] timeIntervalSince1970] * 1000;
@@ -672,6 +762,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv6];
+    [self attachAccountInfoToRequest:request];
     [request becomeNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {
@@ -708,6 +799,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv6];
+    [self attachAccountInfoToRequest:request];
     [request becomeNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {
@@ -746,6 +838,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     if ([NSThread isMainThread]) {
         // 如果是主线程，仍然使用异步的方式，即先查询缓存，如果没有，则发送异步请求
         HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv6];
+        [self attachAccountInfoToRequest:request];
         [request becomeNonBlockingRequest];
         HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
         if (hostObject) {
@@ -763,6 +856,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     } else {
         NSMutableArray *ipv6Array = nil;
         HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv6];
+        [self attachAccountInfoToRequest:request];
         [request becomeBlockingRequest];
         HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
 
@@ -804,6 +898,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
+    [self attachAccountInfoToRequest:request];
     [request becomeNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {
@@ -850,6 +945,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
+    [self attachAccountInfoToRequest:request];
     [request becomeNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {
@@ -897,6 +993,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     if ([NSThread isMainThread]) {
         // 主线程的话仍然是走异步的逻辑
         HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
+        [self attachAccountInfoToRequest:request];
         [request becomeNonBlockingRequest];
         HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
         if (hostObject) {
@@ -918,6 +1015,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     } else {
         NSMutableDictionary *resultMDic = nil;
         HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4|HttpdnsQueryIPTypeIpv6];
+        [self attachAccountInfoToRequest:request];
         [request becomeBlockingRequest];
         HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
         if (hostObject) {
@@ -1048,6 +1146,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
 
     params = [self mergeWithPresetSdnsParams:params];
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4 sdnsParams:params cacheKey:cacheKey];
+    [self attachAccountInfoToRequest:request];
     [request becomeNonBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {
@@ -1128,6 +1227,7 @@ static dispatch_queue_t asyncTaskConcurrentQueue;
     }
 
     HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:host queryIpType:HttpdnsQueryIPTypeIpv4];
+    [self attachAccountInfoToRequest:request];
     [request becomeBlockingRequest];
     HttpdnsHostObject *hostObject = [_requestManager resolveHost:request];
     if (hostObject) {

@@ -441,16 +441,17 @@
 }
 
 + (void)processCustomTTL:(HttpdnsHostObject *)hostObject forHost:(NSString *)host {
+    [self processCustomTTL:hostObject forHost:host service:[HttpDnsService sharedInstance]];
+}
+
++ (void)processCustomTTL:(HttpdnsHostObject *)hostObject forHost:(NSString *)host service:(HttpDnsService *)service {
     if (!hostObject || !host) {
         return;
     }
 
-    // 获取HttpDnsService实例
-    HttpDnsService *dnsService = [HttpDnsService sharedInstance];
+    HttpDnsService *dnsService = service ?: [HttpDnsService sharedInstance];
 
-    // 检查是否设置了ttlDelegate并实现了相应方法
     if (dnsService.ttlDelegate && [dnsService.ttlDelegate respondsToSelector:@selector(httpdnsHost:ipType:ttl:)]) {
-        // 处理IPv4的TTL
         if ([self isNotEmptyArray:[hostObject getV4Ips]]) {
             int64_t customV4TTL = [dnsService.ttlDelegate httpdnsHost:host ipType:AlicloudHttpDNS_IPTypeV4 ttl:hostObject.v4ttl];
             if (customV4TTL > 0) {
@@ -458,7 +459,6 @@
             }
         }
 
-        // 处理IPv6的TTL
         if ([self isNotEmptyArray:[hostObject getV6Ips]]) {
             int64_t customV6TTL = [dnsService.ttlDelegate httpdnsHost:host ipType:AlicloudHttpDNS_IPTypeV6 ttl:hostObject.v6ttl];
             if (customV6TTL > 0) {

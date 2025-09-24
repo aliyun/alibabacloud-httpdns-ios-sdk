@@ -45,6 +45,9 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
 /// 缓存Key，针对软件自定义解析场景使用
 @property (nonatomic, copy, nullable) NSString *cacheKey;
 
+/// 请求所属的账号ID，用于在多账号场景下定位实例
+@property (nonatomic, assign) NSInteger accountId;
+
 - (instancetype)initWithHost:(NSString *)host queryIpType:(HttpdnsQueryIPType)queryIpType;
 
 - (instancetype)initWithHost:(NSString *)host queryIpType:(HttpdnsQueryIPType)queryIpType sdnsParams:(nullable NSDictionary<NSString *, NSString *> *)sdnsParams cacheKey:(nullable NSString *)cacheKey;

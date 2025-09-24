@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface HttpdnsCFHttpWrapper : NSObject
 
 - (void)sendHTTPRequestWithURL:(NSURL *)url
+                timeoutInterval:(NSTimeInterval)timeoutInterval
                     completion:(void (^)(NSData *data, NSError *error))completion;
 
 

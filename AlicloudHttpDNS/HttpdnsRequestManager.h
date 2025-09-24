@@ -20,6 +20,8 @@
 #import <Foundation/Foundation.h>
 #import "HttpdnsRequest.h"
 
+@class HttpDnsService;
+
 //V6版本默认只保留一个IP
 
 FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP;
@@ -28,7 +30,9 @@ FOUNDATION_EXTERN NSString *const ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP;
 
 @interface HttpdnsRequestManager : NSObject
 
-- (instancetype)initWithAccountId:(NSInteger)accountId;
+@property (nonatomic, assign, readonly) NSInteger accountId;
+
+- (instancetype)initWithAccountId:(NSInteger)accountId ownerService:(HttpDnsService *)service;
 
 - (void)setExpiredIPEnabled:(BOOL)enable;
 

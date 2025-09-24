@@ -51,6 +51,8 @@ typedef struct {
 @interface HttpdnsRequestManager()
 
 @property (nonatomic, strong) dispatch_queue_t cacheQueue;
+@property (nonatomic, assign, readwrite) NSInteger accountId;
+@property (nonatomic, weak) HttpDnsService *ownerService;
 
 @property (atomic, setter=setPersistentCacheIpEnabled:, assign) BOOL persistentCacheIpEnabled;
 @property (atomic, setter=setDegradeToLocalDNSEnabled:, assign) BOOL degradeToLocalDNSEnabled;
@@ -75,8 +77,11 @@ typedef struct {
     });
 }
 
-- (instancetype)initWithAccountId:(NSInteger)accountId {
+- (instancetype)initWithAccountId:(NSInteger)accountId ownerService:(HttpDnsService *)service {
     if (self = [super init]) {
+        _accountId = accountId;
+        _ownerService = service;
+
         HttpdnsReachability *reachability = [HttpdnsReachability sharedInstance];
         _isExpiredIPEnabled = NO;
         _isPreResolveAfterNetworkChangedEnabled = NO;
@@ -86,9 +91,11 @@ typedef struct {
 
         _lastNetworkStatus = reachability.currentReachabilityStatus;
         _lastUpdateTimestamp = [NSDate date].timeIntervalSince1970;
-        reachability.reachabilityBlock = ^(HttpdnsReachability * reachability, SCNetworkConnectionFlags flags) {
-            [self networkChanged];
-        };
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(handleReachabilityNotification:)
+                                                     name:kHttpdnsReachabilityChangedNotification
+                                                   object:reachability];
         [reachability startNotifier];
     }
     return self;
@@ -138,6 +145,7 @@ typedef struct {
         HttpdnsLogDebug("Pre resolve host by async lookup, hosts: %@", combinedHostString);
 
         HttpdnsRequest *request = [[HttpdnsRequest alloc] initWithHost:combinedHostString queryIpType:queryType];
+        request.accountId = strongSelf.accountId;
         [request becomeNonBlockingRequest];
         [strongSelf executePreResolveRequest:request retryCount:0];
     });
@@ -149,6 +157,10 @@ typedef struct {
 
     NSString *host = request.host;
     NSString *cacheKey = request.cacheKey;
+
+    if (request.accountId == 0 || request.accountId != self.accountId) {
+        request.accountId = self.accountId;
+    }
 
     if ([HttpdnsUtil isEmptyString:host]) {
         return nil;
@@ -293,7 +305,7 @@ typedef struct {
         // 这个路径里，host只会有一个，所以直接取第一个处理就行
         result = resultArray.firstObject;
     } else {
-        if (![HttpDnsService sharedInstance].enableDegradeToLocalDNS) {
+        if (!self.degradeToLocalDNSEnabled) {
             HttpdnsLogDebug("Internal remote request retry count exceed limit, host: %@", host);
             return nil;
         }
@@ -430,8 +442,8 @@ typedef struct {
 }
 
 - (void)initiateQualityDetectionForIP:(NSArray *)ipArray forHost:(NSString *)host cacheKey:(NSString *)cacheKey {
-    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    NSDictionary<NSString *, NSNumber *> *dataSource = [sharedService getIPRankingDatasource];
+    HttpDnsService *service = self.ownerService ?: [HttpDnsService sharedInstance];
+    NSDictionary<NSString *, NSNumber *> *dataSource = [service getIPRankingDatasource];
     if (!dataSource || ![dataSource objectForKey:host]) {
         return;
     }
@@ -452,6 +464,10 @@ typedef struct {
         return YES;
     }
     return NO;
+}
+
+- (void)handleReachabilityNotification:(NSNotification *)notification {
+    [self networkChanged];
 }
 
 - (void)networkChanged {
@@ -593,6 +609,10 @@ typedef struct {
 
 - (void)syncLoadCacheFromDbToMemory {
     [self loadCacheFromDbToMemory];
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 @end
