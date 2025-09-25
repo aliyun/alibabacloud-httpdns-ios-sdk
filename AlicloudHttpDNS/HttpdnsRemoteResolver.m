@@ -353,7 +353,10 @@ static NSURLSession *_resolveHostSession = nil;
 - (NSString *)constructHttpdnsResolvingUrl:(HttpdnsRequest *)request forV4Net:(BOOL)isV4 {
     // 获取基础信息
     NSString *serverIp = [self getServerIpForNetwork:isV4];
-    HttpDnsService *service = self.service ?: [HttpDnsService sharedInstance];
+    HttpDnsService *service = self.service;
+    if (![HttpdnsUtil isNotEmptyString:serverIp]) {
+        return nil;
+    }
 
     // 准备签名和加密参数
     NSDictionary *paramsToSign = [self prepareSigningParams:request forEncryption:[self shouldUseEncryption]];
@@ -377,8 +380,10 @@ static NSURLSession *_resolveHostSession = nil;
 
 // 获取当前应使用的服务器IP
 - (NSString *)getServerIpForNetwork:(BOOL)isV4 {
-    HttpDnsService *service = self.service ?: [HttpDnsService sharedInstance];
-    HttpdnsScheduleCenter *scheduleCenter = service.scheduleCenter ?: [HttpdnsScheduleCenter sharedInstance];
+    HttpdnsScheduleCenter *scheduleCenter = self.service.scheduleCenter;
+    if (!scheduleCenter) {
+        return nil;
+    }
     return isV4 ? [scheduleCenter currentActiveServiceServerV4Host] : [scheduleCenter currentActiveServiceServerV6Host];
 }
 
@@ -594,7 +599,11 @@ static NSURLSession *_resolveHostSession = nil;
 
     HttpDnsService *service = [HttpDnsService getInstanceByAccountId:request.accountId];
     if (!service) {
-        service = [HttpDnsService sharedInstance];
+        HttpdnsLogDebug("Missing service for accountId: %ld; ensure request.accountId is set and service initialized", (long)request.accountId);
+        if (error) {
+            *error = [NSError errorWithDomain:ALICLOUD_HTTPDNS_ERROR_DOMAIN code:ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE userInfo:@{NSLocalizedDescriptionKey: @"HttpDnsService not found for accountId"}];
+        }
+        return nil;
     }
     self.service = service;
 
@@ -627,7 +636,13 @@ static NSURLSession *_resolveHostSession = nil;
 }
 
 - (NSArray<HttpdnsHostObject *> *)sendRequest:(NSString *)urlStr queryIpType:(HttpdnsQueryIPType)queryIPType error:(NSError **)error {
-    HttpDnsService *httpdnsService = self.service ?: [HttpDnsService sharedInstance];
+    if (![HttpdnsUtil isNotEmptyString:urlStr]) {
+        if (error) {
+            *error = [NSError errorWithDomain:ALICLOUD_HTTPDNS_ERROR_DOMAIN code:ALICLOUD_HTTPDNS_HTTPS_COMMON_ERROR_CODE userInfo:@{NSLocalizedDescriptionKey: @"Empty resolve URL due to missing scheduler"}];
+        }
+        return nil;
+    }
+    HttpDnsService *httpdnsService = self.service;
     if (httpdnsService.enableHttpsRequest || httpdnsService.hasAllowedArbitraryLoadsInATS) {
         NSString *fullUrlStr = httpdnsService.enableHttpsRequest
             ? [NSString stringWithFormat:@"https://%@", urlStr]

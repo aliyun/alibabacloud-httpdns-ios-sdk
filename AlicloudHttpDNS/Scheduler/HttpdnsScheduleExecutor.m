@@ -25,7 +25,10 @@ static NSURLSession *_scheduleCenterSession = nil;
 
 @end
 
-@implementation HttpdnsScheduleExecutor
+@implementation HttpdnsScheduleExecutor {
+    NSInteger _accountId;
+    NSTimeInterval _timeoutInterval;
+}
 
 - (instancetype)init {
     if (!(self = [super init])) {
@@ -36,7 +39,18 @@ static NSURLSession *_scheduleCenterSession = nil;
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
         _scheduleCenterSession = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
     });
+    // 兼容旧路径：使用全局单例读取，但多账号场景下建议使用新init接口
+    _accountId = [HttpDnsService sharedInstance].accountID;
+    _timeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
+    return self;
+}
 
+- (instancetype)initWithAccountId:(NSInteger)accountId timeout:(NSTimeInterval)timeoutInterval {
+    if (!(self = [self init])) {
+        return nil;
+    }
+    _accountId = accountId;
+    _timeoutInterval = timeoutInterval;
     return self;
 }
 
@@ -46,8 +60,7 @@ static NSURLSession *_scheduleCenterSession = nil;
  * https://203.107.1.1/100000/ss?region=global&platform=ios&sdk_version=3.1.7&sid=LpmJIA2CUoi4&net=wifi
  */
 - (NSString *)constructRequestURLWithUpdateHost:(NSString *)updateHost {
-    HttpDnsService *sharedService = [HttpDnsService sharedInstance];
-    NSString *urlPath = [NSString stringWithFormat:@"%ld/ss?region=global&platform=ios&sdk_version=%@", sharedService.accountID, HTTPDNS_IOS_SDK_VERSION];
+    NSString *urlPath = [NSString stringWithFormat:@"%ld/ss?region=global&platform=ios&sdk_version=%@", (long)_accountId, HTTPDNS_IOS_SDK_VERSION];
     urlPath = [self urlFormatSidNetBssid:urlPath];
     urlPath = [urlPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet characterSetWithCharactersInString:@"`#%^{}\"[]|\\<> "].invertedSet];
     return [NSString stringWithFormat:@"https://%@/%@", updateHost, urlPath];
@@ -72,7 +85,7 @@ static NSURLSession *_scheduleCenterSession = nil;
     HttpdnsLogDebug("ScRequest URL: %@", fullUrlStr);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL alloc] initWithString:fullUrlStr]
                                                               cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
-                                                          timeoutInterval:[HttpDnsService sharedInstance].timeoutInterval];
+                                                          timeoutInterval:_timeoutInterval];
 
     [request addValue:[HttpdnsUtil generateUserAgent] forHTTPHeaderField:@"User-Agent"];
 

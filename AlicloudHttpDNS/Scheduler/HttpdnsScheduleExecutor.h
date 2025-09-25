@@ -12,4 +12,7 @@
 
 - (NSDictionary *)fetchRegionConfigFromServer:(NSString *)updateHost error:(NSError **)pError;
 
+// 多账号隔离：允许携带账号与超时初始化，避免依赖全局单例
+- (instancetype)initWithAccountId:(NSInteger)accountId timeout:(NSTimeInterval)timeoutInterval;
+
 @end

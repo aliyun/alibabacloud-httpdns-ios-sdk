@@ -62,15 +62,6 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 
 @implementation HttpdnsScheduleCenter
 
-+ (instancetype)sharedInstance {
-    static HttpdnsScheduleCenter *sharedHttpdnsScheduleCenter = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        sharedHttpdnsScheduleCenter = [[HttpdnsScheduleCenter alloc] init];
-    });
-    return sharedHttpdnsScheduleCenter;
-}
-
 - (instancetype)initWithAccountId:(NSInteger)accountId {
     if (self = [self init]) {
         _accountId = accountId;
@@ -166,7 +157,8 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
     }
 
     dispatch_async(_scheduleFetchConfigAsyncQueue, ^(void) {
-        HttpdnsScheduleExecutor *scheduleCenterExecutor = [HttpdnsScheduleExecutor new];
+        NSTimeInterval timeout = [HttpDnsService getInstanceByAccountId:self.accountId].timeoutInterval;
+        HttpdnsScheduleExecutor *scheduleCenterExecutor = [[HttpdnsScheduleExecutor alloc] initWithAccountId:self.accountId timeout:timeout];
 
         NSError *error = nil;
         NSString *updateHost = [self getActiveUpdateServerHost];
