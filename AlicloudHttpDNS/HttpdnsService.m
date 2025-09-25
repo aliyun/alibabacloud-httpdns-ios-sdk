@@ -49,7 +49,7 @@ static HttpDnsService *httpdnsSharedStubInstance;
 
 @property (nonatomic, copy) NSDictionary<NSString *, NSString *> *presetSdnsParamsDict;
 
-@property (nonatomic, strong) HttpdnsScheduleCenter *scheduleCenter;
+// scheduleCenter 已在 HttpdnsService_Internal.h 暴露，避免重复声明
 
 @end
 

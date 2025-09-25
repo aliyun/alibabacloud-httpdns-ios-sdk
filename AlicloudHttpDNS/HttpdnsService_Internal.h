@@ -20,13 +20,13 @@
 #import "HttpdnsService.h"
 #import "HttpdnsRequestManager.h"
 #import "HttpdnsLog_Internal.h"
-#import "HttpdnsScheduleCenter.h"
+@class HttpdnsScheduleCenter;
 
 
 @interface HttpDnsService()
 
 @property (nonatomic, strong) HttpdnsRequestManager *requestManager;
-@property (nonatomic, strong, readonly) HttpdnsScheduleCenter *scheduleCenter;
+@property (nonatomic, strong) HttpdnsScheduleCenter *scheduleCenter;
 
 @property (nonatomic, assign) NSTimeInterval authTimeOffset;
 
