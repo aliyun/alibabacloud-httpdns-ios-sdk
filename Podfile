@@ -9,6 +9,10 @@ target 'AlicloudHttpDNSTests' do
   pod 'OCMock'
 end
 
+target 'AlicloudHttpDNSTestDemo' do
+  pod 'AlicloudHTTPDNS', :path => './AlicloudHTTPDNS.podspec'
+end
+
 post_install do |installer|
     installer.pods_project.targets.each do |target|
         target.build_configurations.each do |config|

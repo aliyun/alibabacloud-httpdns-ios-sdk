@@ -11,7 +11,6 @@
 #import "HttpdnsService_Internal.h"
 #import "HttpdnsInternalConstant.h"
 #import "HttpdnsUtil.h"
-#import "AlicloudHttpDNS.h"
 #import "HttpdnsScheduleCenter.h"
 #import "HttpdnsHostObject.h"
 #import "HttpdnsReachability.h"

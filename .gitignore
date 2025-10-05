@@ -54,3 +54,4 @@ Scripts/jenkins.py
 Scripts/ocunit2junit
 .idea/
 .cursor/
+.claude/
