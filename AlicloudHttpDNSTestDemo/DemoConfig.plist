@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>accountID</key>
+	<integer>139450</integer>
+	<key>secretKey</key>
+	<string>807a19762f8eaefa8563489baf198535</string>
+	<key>aesSecretKey</key>
+	<string>82c0af0d0cb2d69c4f87bb25c2e23929</string>
+</dict>
+</plist>

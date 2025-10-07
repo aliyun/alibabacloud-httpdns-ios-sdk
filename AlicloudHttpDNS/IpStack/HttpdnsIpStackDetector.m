@@ -10,7 +10,6 @@
 #import "HttpdnsLog_Internal.h"
 #include <strings.h>
 #include <errno.h>
-#include <endian.h>
 #include <unistd.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
