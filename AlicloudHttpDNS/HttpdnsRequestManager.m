@@ -500,15 +500,33 @@ typedef struct {
             [scheduleCenter asyncUpdateRegionScheduleConfig];
         });
 
-        NSArray *hostArray = [_hostObjectInMemoryCache allCacheKeys];
+        // 复杂逻辑（仅注释关键点，避免冗余）：
+        // 网络切换后只预解析“cacheKey 等于 hostName”的条目，
+        // 这些条目代表标准域名缓存；SDNS 等使用自定义 cacheKey 的记录不在此批次处理。
+        NSArray *allKeys = [_hostObjectInMemoryCache allCacheKeys];
+        NSMutableArray<NSString *> *hostArray = [NSMutableArray array];
+        for (NSString *key in allKeys) {
+            HttpdnsHostObject *obj = [self->_hostObjectInMemoryCache getHostObjectByCacheKey:key];
+            if (!obj) {
+                continue;
+            }
+            NSString *cacheKey = [obj getCacheKey];
+            NSString *hostName = [obj getHostName];
+            if (cacheKey && hostName && [cacheKey isEqualToString:hostName]) {
+                [hostArray addObject:hostName];
+            }
+        }
 
         // 预解析
         // 网络在切换过程中可能不稳定，所以在清理缓存和发送请求前等待3秒
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
-            [self->_hostObjectInMemoryCache removeAllHostObjects];
+            // 仅清理“hostName 键”的缓存，保留 SDNS 等自定义 cacheKey 的记录
+            for (NSString *host in hostArray) {
+                [self->_hostObjectInMemoryCache removeHostObjectByCacheKey:host];
+            }
 
-            if (self->_isPreResolveAfterNetworkChangedEnabled) {
-                HttpdnsLogDebug("Network changed, pre resolve for hosts: %@", hostArray);
+            if (self->_isPreResolveAfterNetworkChangedEnabled && hostArray.count > 0) {
+                HttpdnsLogDebug("Network changed, pre resolve for host-key entries: %@", hostArray);
                 [self preResolveHosts:hostArray queryType:HttpdnsQueryIPTypeAuto];
             }
         });
