@@ -355,7 +355,8 @@ typedef struct {
         hasRetryedCount++;
         [NSThread sleepForTimeInterval:hasRetryedCount * 0.25];
 
-        [self executeRequest:request retryCount:hasRetryedCount];
+        // 预解析重试需保持“多域名预解析”的语义，不能误用单域名执行路径
+        [self executePreResolveRequest:request retryCount:hasRetryedCount];
 
         return;
     }
