@@ -19,11 +19,11 @@
 
 #import <Foundation/Foundation.h>
 
-#include <AlicloudHttpDNS/Log/HttpdnsLog.h>
-#include <AlicloudHttpDNS/Config/HttpdnsPublicConstant.h>
-#include <AlicloudHttpDNS/HttpdnsService.h>
-#include <AlicloudHttpDNS/Model/HttpdnsRequest.h>
-#include <AlicloudHttpDNS/Model/HttpDnsResult.h>
-#include <AlicloudHttpDNS/Log/HttpdnsLoggerProtocol.h>
-#include <AlicloudHttpDNS/HttpdnsDegradationDelegate.h>
-#include <AlicloudHttpDNS/IpStack/HttpdnsIpStackDetector.h>
+#include <AlicloudHTTPDNS/Log/HttpdnsLog.h>
+#include <AlicloudHTTPDNS/Config/HttpdnsPublicConstant.h>
+#include <AlicloudHTTPDNS/HttpdnsService.h>
+#include <AlicloudHTTPDNS/Model/HttpdnsRequest.h>
+#include <AlicloudHTTPDNS/Model/HttpDnsResult.h>
+#include <AlicloudHTTPDNS/Log/HttpdnsLoggerProtocol.h>
+#include <AlicloudHTTPDNS/HttpdnsDegradationDelegate.h>
+#include <AlicloudHTTPDNS/IpStack/HttpdnsIpStackDetector.h>
