@@ -77,8 +77,10 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
         _scheduleFetchConfigAsyncQueue = dispatch_queue_create("com.aliyun.httpdns.scheduleFetchConfigAsyncQueue", DISPATCH_QUEUE_CONCURRENT);
         _scheduleConfigLocalOperationQueue = dispatch_queue_create("com.aliyun.httpdns.scheduleConfigLocalOperationQueue", DISPATCH_QUEUE_SERIAL);
 
-        _currentActiveUpdateHostIndex = 0;
-        _currentActiveServiceHostIndex = 0;
+        dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
+            self->_currentActiveUpdateHostIndex = 0;
+            self->_currentActiveServiceHostIndex = 0;
+        });
 
         _scheduleCenterResultPath = [[HttpdnsPersistenceUtils scheduleCenterResultDirectory]
                                      stringByAppendingPathComponent:kScheduleRegionConfigLocalCacheFileName];
@@ -229,17 +231,19 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 }
 
 - (void)initServerListByRegion:(NSString *)region {
-    self->_currentRegion = region;
+    dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
+        self->_currentRegion = region;
 
-    HttpdnsRegionConfigLoader *regionConfigLoader = [HttpdnsRegionConfigLoader sharedInstance];
+        HttpdnsRegionConfigLoader *regionConfigLoader = [HttpdnsRegionConfigLoader sharedInstance];
 
-    self.ipv4ServiceServerHostList = [regionConfigLoader getSeriveV4HostList:region];
-    self.ipv4UpdateServerHostList = [HttpdnsUtil joinArrays:[regionConfigLoader getSeriveV4HostList:region]
-                                                  withArray:[regionConfigLoader getUpdateV4FallbackHostList:region]];
+        self.ipv4ServiceServerHostList = [regionConfigLoader getSeriveV4HostList:region];
+        self.ipv4UpdateServerHostList = [HttpdnsUtil joinArrays:[regionConfigLoader getSeriveV4HostList:region]
+                                                      withArray:[regionConfigLoader getUpdateV4FallbackHostList:region]];
 
-    self.ipv6ServiceServerHostList = [regionConfigLoader getSeriveV6HostList:region];
-    self.ipv6UpdateServerHostList = [HttpdnsUtil joinArrays:[regionConfigLoader getSeriveV6HostList:region]
-                                                  withArray:[regionConfigLoader getUpdateV6FallbackHostList:region]];
+        self.ipv6ServiceServerHostList = [regionConfigLoader getSeriveV6HostList:region];
+        self.ipv6UpdateServerHostList = [HttpdnsUtil joinArrays:[regionConfigLoader getSeriveV6HostList:region]
+                                                      withArray:[regionConfigLoader getUpdateV6FallbackHostList:region]];
+    });
 }
 
 - (void)rotateServiceServerHost {
@@ -349,27 +353,51 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
 #pragma mark - For Test Only
 
 - (NSArray<NSString *> *)currentUpdateServerV4HostList {
-    return self.ipv4UpdateServerHostList;
+    __block NSArray<NSString *> *list = nil;
+    dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
+        list = [self.ipv4UpdateServerHostList copy];
+    });
+    return list;
 }
 
 - (NSArray<NSString *> *)currentServiceServerV4HostList {
-    return self.ipv4ServiceServerHostList;
+    __block NSArray<NSString *> *list = nil;
+    dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
+        list = [self.ipv4ServiceServerHostList copy];
+    });
+    return list;
 }
 
 - (NSArray<NSString *> *)currentUpdateServerV6HostList {
-    return self.ipv6UpdateServerHostList;
+    __block NSArray<NSString *> *list = nil;
+    dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
+        list = [self.ipv6UpdateServerHostList copy];
+    });
+    return list;
 }
 
 - (NSArray<NSString *> *)currentServiceServerV6HostList {
-    return self.ipv6ServiceServerHostList;
+    __block NSArray<NSString *> *list = nil;
+    dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
+        list = [self.ipv6ServiceServerHostList copy];
+    });
+    return list;
 }
 
 - (int)currentActiveUpdateServerHostIndex {
-    return self.currentActiveUpdateHostIndex;
+    __block int index = 0;
+    dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
+        index = self.currentActiveUpdateHostIndex;
+    });
+    return index;
 }
 
 - (int)currentActiveServiceServerHostIndex {
-    return self.currentActiveServiceHostIndex;
+    __block int index = 0;
+    dispatch_sync(_scheduleConfigLocalOperationQueue, ^{
+        index = self.currentActiveServiceHostIndex;
+    });
+    return index;
 }
 
 @end
