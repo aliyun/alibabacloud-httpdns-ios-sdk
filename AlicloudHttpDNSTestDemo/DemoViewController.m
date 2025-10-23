@@ -7,27 +7,14 @@
 
 #import "DemoViewController.h"
 #import "DemoResolveModel.h"
-#import "DemoConfigLoader.h"
 #import "DemoLogViewController.h"
+#import "DemoHttpdnsScenario.h"
 
-@interface DemoUILogger : NSObject <HttpdnsLoggerProtocol>
-@property (nonatomic, copy) void (^sink)(NSString *msg);
+@interface DemoViewController () <DemoHttpdnsScenarioDelegate>
 
-@end
-
-@implementation DemoUILogger
-- (void)log:(NSString *)logStr {
-    if (self.sink != nil) {
-        self.sink(logStr);
-    }
-}
-@end
-
-@interface DemoViewController ()
-
-@property (nonatomic, strong) HttpDnsService *service;
+@property (nonatomic, strong) DemoHttpdnsScenario *scenario;
+@property (nonatomic, strong) DemoHttpdnsScenarioConfig *scenarioConfig;
 @property (nonatomic, strong) DemoResolveModel *model;
-@property (nonatomic, strong) DemoUILogger *uiLogger;
 
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIStackView *stack;
@@ -44,7 +31,6 @@
 
 @property (nonatomic, strong) UITextView *resultTextView;
 
-@property (nonatomic, strong) NSMutableString *logBuffer;
 @property (nonatomic, weak) DemoLogViewController *presentedLogVC;
 
 @end
@@ -55,47 +41,12 @@
     [super viewDidLoad];
     self.title = @"HTTPDNS Demo";
     self.view.backgroundColor = [UIColor systemBackgroundColor];
-
-    self.model = [[DemoResolveModel alloc] init];
-
-    [self buildService];
+    self.scenario = [[DemoHttpdnsScenario alloc] initWithDelegate:self];
+    self.model = self.scenario.model;
+    self.scenarioConfig = [[DemoHttpdnsScenarioConfig alloc] init];
     [self buildUI];
+    [self reloadUIFromModel:self.model];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"日志" style:UIBarButtonItemStylePlain target:self action:@selector(onShowLog)];
-}
-
-- (void)buildService {
-    DemoConfigLoader *cfg = [DemoConfigLoader shared];
-    if (cfg.hasValidAccount) {
-        if (cfg.aesSecretKey.length > 0) {
-            self.service = [[HttpDnsService alloc] initWithAccountID:cfg.accountID secretKey:cfg.secretKey aesSecretKey:cfg.aesSecretKey];
-        } else {
-            self.service = [[HttpDnsService alloc] initWithAccountID:cfg.accountID secretKey:cfg.secretKey];
-        }
-    } else {
-        self.service = [HttpDnsService sharedInstance];
-    }
-    self.service.ttlDelegate = self;
-    [self.service setLogEnabled:YES];
-    [self.service setNetworkingTimeoutInterval:8];
-    [self.service setDegradeToLocalDNSEnabled:YES];
-
-    __weak typeof(self) weakSelf = self;
-    self.logBuffer = [NSMutableString string];
-    self.uiLogger = [DemoUILogger new];
-    self.uiLogger.sink = ^(NSString *msg) {
-        __strong typeof(weakSelf) selfRef = weakSelf;
-        if (selfRef == nil) {
-            return;
-        }
-        NSString *line = [NSString stringWithFormat:@"%@ %@\n", [NSDate date], msg];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [selfRef.logBuffer appendString:line];
-            if (selfRef.presentedLogVC != nil) {
-                [selfRef.presentedLogVC appendLine:line];
-            }
-        });
-    };
-    [self.service setLogHandler:self.uiLogger];
 }
 
 - (void)buildUI {
@@ -125,14 +76,14 @@
     UIStackView *row1 = [self labeledRow:@"Host"];
     self.hostField = [[UITextField alloc] init];
     self.hostField.placeholder = @"www.aliyun.com";
-    self.hostField.text = self.model.host;
+    self.hostField.text = self.scenarioConfig.host;
     self.hostField.borderStyle = UITextBorderStyleRoundedRect;
     [row1 addArrangedSubview:self.hostField];
     [self.stack addArrangedSubview:row1];
 
     UIStackView *row2 = [self labeledRow:@"IP Type"];
     self.ipTypeSeg = [[UISegmentedControl alloc] initWithItems:@[@"IPv4", @"IPv6", @"Both"]];
-    self.ipTypeSeg.selectedSegmentIndex = 2;
+    self.ipTypeSeg.selectedSegmentIndex = [self segmentIndexForIpType:self.scenarioConfig.ipType];
     [self.ipTypeSeg addTarget:self action:@selector(onIPTypeChanged:) forControlEvents:UIControlEventValueChanged];
     [row2 addArrangedSubview:self.ipTypeSeg];
     [self.stack addArrangedSubview:row2];
@@ -148,9 +99,9 @@
     [opts addArrangedSubview:[self switchItem:@"持久化" action:@selector(onTogglePersist:) out:&_swPersist]];
     [opts addArrangedSubview:[self switchItem:@"复用过期" action:@selector(onToggleReuse:) out:&_swReuse]];
 
-    self.swHTTPS.on = NO;
-    self.swPersist.on = YES;
-    self.swReuse.on = YES;
+    self.swHTTPS.on = self.scenarioConfig.httpsEnabled;
+    self.swPersist.on = self.scenarioConfig.persistentCacheEnabled;
+    self.swReuse.on = self.scenarioConfig.reuseExpiredIPEnabled;
     [self applyOptionSwitches];
 
     UIStackView *actions = [[UIStackView alloc] init];
@@ -257,20 +208,33 @@
     return box;
 }
 
-#pragma mark - Actions
-
-- (void)onIPTypeChanged:(UISegmentedControl *)seg {
-    switch (seg.selectedSegmentIndex) {
-        case 0: self.model.ipType = HttpdnsQueryIPTypeIpv4; break;
-        case 1: self.model.ipType = HttpdnsQueryIPTypeIpv6; break;
-        default: self.model.ipType = HttpdnsQueryIPTypeBoth; break;
+- (NSInteger)segmentIndexForIpType:(HttpdnsQueryIPType)ipType {
+    switch (ipType) {
+        case HttpdnsQueryIPTypeIpv4: { return 0; }
+        case HttpdnsQueryIPTypeIpv6: { return 1; }
+        default: { return 2; }
     }
 }
 
+#pragma mark - Actions
+
+- (void)onIPTypeChanged:(UISegmentedControl *)seg {
+    HttpdnsQueryIPType type = HttpdnsQueryIPTypeBoth;
+    switch (seg.selectedSegmentIndex) {
+        case 0: type = HttpdnsQueryIPTypeIpv4; break;
+        case 1: type = HttpdnsQueryIPTypeIpv6; break;
+        default: type = HttpdnsQueryIPTypeBoth; break;
+    }
+    self.model.ipType = type;
+    self.scenarioConfig.ipType = type;
+    [self.scenario applyConfig:self.scenarioConfig];
+}
+
 - (void)applyOptionSwitches {
-    [self.service setHTTPSRequestEnabled:self.swHTTPS.isOn];
-    [self.service setPersistentCacheIPEnabled:self.swPersist.isOn];
-    [self.service setReuseExpiredIPEnabled:self.swReuse.isOn];
+    self.scenarioConfig.httpsEnabled = self.swHTTPS.isOn;
+    self.scenarioConfig.persistentCacheEnabled = self.swPersist.isOn;
+    self.scenarioConfig.reuseExpiredIPEnabled = self.swReuse.isOn;
+    [self.scenario applyConfig:self.scenarioConfig];
 }
 
 - (void)onToggleHTTPS:(UISwitch *)s { [self applyOptionSwitches]; }
@@ -279,58 +243,60 @@
 
 - (void)onResolveAsync {
     [self.view endEditing:YES];
-    self.model.host = self.hostField.text.length > 0 ? self.hostField.text : @"www.aliyun.com";
-    NSTimeInterval startMs = [[NSDate date] timeIntervalSince1970] * 1000.0;
-    HttpdnsResult *res = [self.service resolveHostSyncNonBlocking:self.model.host byIpType:self.model.ipType];
-    [self.model updateWithResult:res startTimeMs:startMs];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self reloadUIFromModel];
-    });
+    NSString *host = self.hostField.text.length > 0 ? self.hostField.text : @"www.aliyun.com";
+    self.model.host = host;
+    self.scenarioConfig.host = host;
+    [self.scenario applyConfig:self.scenarioConfig];
+    [self.scenario resolveSyncNonBlocking];
 }
 
 - (void)onResolveSync {
     [self.view endEditing:YES];
-    self.model.host = self.hostField.text.length > 0 ? self.hostField.text : @"www.aliyun.com";
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-        NSTimeInterval startMs = [[NSDate date] timeIntervalSince1970] * 1000.0;
-        HttpdnsResult *res = [self.service resolveHostSync:self.model.host byIpType:self.model.ipType];
-        [self.model updateWithResult:res startTimeMs:startMs];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self reloadUIFromModel];
-        });
-    });
+    NSString *host = self.hostField.text.length > 0 ? self.hostField.text : @"www.aliyun.com";
+    self.model.host = host;
+    self.scenarioConfig.host = host;
+    [self.scenario applyConfig:self.scenarioConfig];
+    [self.scenario resolveSync];
 }
 
 - (void)onShowLog {
     DemoLogViewController *logVC = [DemoLogViewController new];
-    [logVC setInitialText:[self.logBuffer copy]];
+    [logVC setInitialText:[self.scenario logSnapshot]];
     self.presentedLogVC = logVC;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:logVC];
     nav.modalPresentationStyle = UIModalPresentationAutomatic;
     [self presentViewController:nav animated:YES completion:nil];
 }
 
-- (void)reloadUIFromModel {
-    self.elapsedLabel.text = [NSString stringWithFormat:@"elapsed: %.0f ms", self.model.elapsedMs];
-    self.ttlLabel.text = [NSString stringWithFormat:@"ttl v4/v6: %.0f/%.0f s", self.model.ttlV4, self.model.ttlV6];
-    self.resultTextView.text = [self buildJSONText];
+- (void)reloadUIFromModel:(DemoResolveModel *)model {
+    self.model = model;
+    if (![self.hostField isFirstResponder]) {
+        self.hostField.text = model.host;
+    }
+    NSInteger segIndex = [self segmentIndexForIpType:model.ipType];
+    if (self.ipTypeSeg.selectedSegmentIndex != segIndex) {
+        self.ipTypeSeg.selectedSegmentIndex = segIndex;
+    }
+    self.elapsedLabel.text = [NSString stringWithFormat:@"elapsed: %.0f ms", model.elapsedMs];
+    self.ttlLabel.text = [NSString stringWithFormat:@"ttl v4/v6: %.0f/%.0f s", model.ttlV4, model.ttlV6];
+    self.resultTextView.text = [self buildJSONText:model];
 }
 
 
-- (NSString *)buildJSONText {
+- (NSString *)buildJSONText:(DemoResolveModel *)model {
     NSString *ipTypeStr = @"both";
-    switch (self.model.ipType) {
+    switch (model.ipType) {
         case HttpdnsQueryIPTypeIpv4: { ipTypeStr = @"ipv4"; break; }
         case HttpdnsQueryIPTypeIpv6: { ipTypeStr = @"ipv6"; break; }
         default: { ipTypeStr = @"both"; break; }
     }
     NSDictionary *dict = @{
-        @"host": self.model.host ?: @"",
+        @"host": model.host ?: @"",
         @"ipType": ipTypeStr,
-        @"elapsedMs": @(self.model.elapsedMs),
-        @"ttl": @{ @"v4": @(self.model.ttlV4), @"v6": @(self.model.ttlV6) },
-        @"ipv4": self.model.ipv4s ?: @[],
-        @"ipv6": self.model.ipv6s ?: @[]
+        @"elapsedMs": @(model.elapsedMs),
+        @"ttl": @{ @"v4": @(model.ttlV4), @"v6": @(model.ttlV6) },
+        @"ipv4": model.ipv4s ?: @[],
+        @"ipv6": model.ipv6s ?: @[]
     };
     NSError *err = nil;
     NSData *data = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:&err];
@@ -340,10 +306,16 @@
     return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
 }
 
-#pragma mark - HttpdnsTTLDelegate
+#pragma mark - DemoHttpdnsScenarioDelegate
 
-- (int64_t)httpdnsHost:(NSString *)host ipType:(AlicloudHttpDNS_IPType)ipType ttl:(int64_t)ttl {
-    return ttl; // 保持服务端 TTL，演示中不覆写
+- (void)scenario:(DemoHttpdnsScenario *)scenario didUpdateModel:(DemoResolveModel *)model {
+    [self reloadUIFromModel:model];
+}
+
+- (void)scenario:(DemoHttpdnsScenario *)scenario didAppendLogLine:(NSString *)line {
+    if (self.presentedLogVC != nil) {
+        [self.presentedLogVC appendLine:line];
+    }
 }
 
 @end

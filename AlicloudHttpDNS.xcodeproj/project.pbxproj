@@ -96,6 +96,7 @@
 		94A014712BF38F410018B096 /* HttpdnsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 94A0146D2BF38F410018B096 /* HttpdnsService.m */; };
 		94A014732BF38F410018B096 /* HttpdnsService.h in Headers */ = {isa = PBXBuildFile; fileRef = 94A0146E2BF38F410018B096 /* HttpdnsService.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		94A014742BF38F410018B096 /* HttpdnsService_Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 94A0146F2BF38F410018B096 /* HttpdnsService_Internal.h */; };
+		94A969EF2EA9D9B9005538BD /* DemoHttpdnsScenario.m in Sources */ = {isa = PBXBuildFile; fileRef = 94A969EE2EA9D9B9005538BD /* DemoHttpdnsScenario.m */; };
 		94AE92412CA84F1000CB95F2 /* HttpdnsHostObjectInMemoryCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 94AE923F2CA84F1000CB95F2 /* HttpdnsHostObjectInMemoryCache.h */; };
 		94AE92422CA84F1000CB95F2 /* HttpdnsHostObjectInMemoryCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 94AE92402CA84F1000CB95F2 /* HttpdnsHostObjectInMemoryCache.m */; };
 		94AE92432CA84F1000CB95F2 /* HttpdnsHostObjectInMemoryCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 94AE923F2CA84F1000CB95F2 /* HttpdnsHostObjectInMemoryCache.h */; };
@@ -197,6 +198,8 @@
 		94A0146D2BF38F410018B096 /* HttpdnsService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpdnsService.m; sourceTree = "<group>"; };
 		94A0146E2BF38F410018B096 /* HttpdnsService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsService.h; sourceTree = "<group>"; };
 		94A0146F2BF38F410018B096 /* HttpdnsService_Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpdnsService_Internal.h; sourceTree = "<group>"; };
+		94A969ED2EA9D9B9005538BD /* DemoHttpdnsScenario.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DemoHttpdnsScenario.h; sourceTree = "<group>"; };
+		94A969EE2EA9D9B9005538BD /* DemoHttpdnsScenario.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DemoHttpdnsScenario.m; sourceTree = "<group>"; };
 		94AE923F2CA84F1000CB95F2 /* HttpdnsHostObjectInMemoryCache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsHostObjectInMemoryCache.h; sourceTree = "<group>"; };
 		94AE92402CA84F1000CB95F2 /* HttpdnsHostObjectInMemoryCache.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsHostObjectInMemoryCache.m; sourceTree = "<group>"; };
 		94B60FEC2C21EAD700DCA078 /* HttpdnsRequest_Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsRequest_Internal.h; sourceTree = "<group>"; };
@@ -339,12 +342,14 @@
 				94008EE42E9222D800C86EFB /* DemoConfig.plist */,
 				4AF4AB62211439A600D712DF /* AppDelegate.h */,
 				4AF4AB63211439A600D712DF /* AppDelegate.m */,
-				E7B6D6A0251E4820B3C7C9A1 /* DemoViewController.h */,
-				E7B6D6A1251E4820B3C7C9A2 /* DemoViewController.m */,
 				E7B6D6A2251E4820B3C7C9A3 /* DemoResolveModel.h */,
 				E7B6D6A3251E4820B3C7C9A4 /* DemoResolveModel.m */,
 				E7B6D6A4251E4820B3C7C9A5 /* DemoConfigLoader.h */,
 				E7B6D6A5251E4820B3C7C9A6 /* DemoConfigLoader.m */,
+				94A969ED2EA9D9B9005538BD /* DemoHttpdnsScenario.h */,
+				94A969EE2EA9D9B9005538BD /* DemoHttpdnsScenario.m */,
+				E7B6D6A0251E4820B3C7C9A1 /* DemoViewController.h */,
+				E7B6D6A1251E4820B3C7C9A2 /* DemoViewController.m */,
 				4AF4AB6B211439A800D712DF /* Assets.xcassets */,
 				4AF4AB6D211439A800D712DF /* LaunchScreen.storyboard */,
 				4AF4AB70211439A800D712DF /* Info.plist */,
@@ -876,6 +881,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94A969EF2EA9D9B9005538BD /* DemoHttpdnsScenario.m in Sources */,
 				E7B6D6A9251E4820B3C7C9A7 /* DemoViewController.m in Sources */,
 				E7B6D6AC251E4820B3C7C9AA /* DemoResolveModel.m in Sources */,
 				E7B6D6AF251E4820B3C7C9AD /* DemoConfigLoader.m in Sources */,

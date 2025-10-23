@@ -6,8 +6,8 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "HttpdnsService.h"
+#import "DemoHttpdnsScenario.h"
 
-@interface DemoViewController : UIViewController <HttpdnsTTLDelegate>
+@interface DemoViewController : UIViewController <DemoHttpdnsScenarioDelegate>
 
 @end
