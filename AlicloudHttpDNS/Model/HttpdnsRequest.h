@@ -10,6 +10,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#ifndef ALICLOUDHTTPDNSQUERYIPTYPE
+#define ALICLOUDHTTPDNSQUERYIPTYPE
+
 typedef enum {
     AlicloudHttpDNS_IPTypeV4     = 0,            //ipv4
     AlicloudHttpDNS_IPTypeV6     = 1,            //ipv6
@@ -22,6 +25,8 @@ typedef NS_OPTIONS(NSUInteger, HttpdnsQueryIPType) {
     HttpdnsQueryIPTypeIpv6 = 1 << 1,
     HttpdnsQueryIPTypeBoth = HttpdnsQueryIPTypeIpv4 | HttpdnsQueryIPTypeIpv6,
 };
+
+#endif
 
 @interface HttpdnsRequest : NSObject
 
