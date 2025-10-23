@@ -57,6 +57,8 @@ typedef struct {
 
 @property (atomic, setter=setPersistentCacheIpEnabled:, assign) BOOL persistentCacheIpEnabled;
 @property (atomic, setter=setDegradeToLocalDNSEnabled:, assign) BOOL degradeToLocalDNSEnabled;
+@property (atomic, assign) BOOL atomicExpiredIPEnabled;
+@property (atomic, assign) BOOL atomicPreResolveAfterNetworkChanged;
 
 @property (atomic, assign) NSTimeInterval lastUpdateTimestamp;
 @property (atomic, assign) HttpdnsNetworkStatus lastNetworkStatus;
@@ -64,8 +66,6 @@ typedef struct {
 @end
 
 @implementation HttpdnsRequestManager {
-    BOOL _isExpiredIPEnabled;
-    BOOL _isPreResolveAfterNetworkChangedEnabled;
     HttpdnsHostObjectInMemoryCache *_hostObjectInMemoryCache;
     HttpdnsDB *_httpdnsDB;
 }
@@ -84,8 +84,8 @@ typedef struct {
         _ownerService = service;
 
         HttpdnsReachability *reachability = [HttpdnsReachability sharedInstance];
-        _isExpiredIPEnabled = NO;
-        _isPreResolveAfterNetworkChangedEnabled = NO;
+        self.atomicExpiredIPEnabled = NO;
+        self.atomicPreResolveAfterNetworkChanged = NO;
         _hostObjectInMemoryCache = [[HttpdnsHostObjectInMemoryCache alloc] init];
         _httpdnsDB = [[HttpdnsDB alloc] initWithAccountId:accountId];
         [[HttpdnsIpStackDetector sharedInstance] redetectIpStack];
@@ -103,7 +103,7 @@ typedef struct {
 }
 
 - (void)setExpiredIPEnabled:(BOOL)enable {
-    _isExpiredIPEnabled = enable;
+    self.atomicExpiredIPEnabled = enable;
 }
 
 - (void)setCachedIPEnabled:(BOOL)enable discardRecordsHasExpiredFor:(NSTimeInterval)duration {
@@ -122,7 +122,7 @@ typedef struct {
 }
 
 - (void)setPreResolveAfterNetworkChanged:(BOOL)enable {
-    _isPreResolveAfterNetworkChangedEnabled = enable;
+    self.atomicPreResolveAfterNetworkChanged = enable;
 }
 
 - (void)preResolveHosts:(NSArray *)hosts queryType:(HttpdnsQueryIPType)queryType {
@@ -256,10 +256,10 @@ typedef struct {
     }
 
     if ([hostObject isExpiredUnderQueryIpType:queryType]) {
-        if (_isExpiredIPEnabled || [hostObject isLoadFromDB]) {
+        if (self.atomicExpiredIPEnabled || [hostObject isLoadFromDB]) {
             // 只有开启了允许过期缓存，和开启持久化缓存情况下启动后加载到内存中的缓存，才可以直接复用过期结果
             HttpdnsLogDebug("The ips is expired, but we accept it, host: %@, queryType: %ld, expiredIpEnabled: %d, isLoadFromDB: %d",
-                            hostObject.hostName, queryType, _isExpiredIPEnabled, [hostObject isLoadFromDB]);
+                            hostObject.hostName, queryType, self.atomicExpiredIPEnabled, [hostObject isLoadFromDB]);
             // 复用过期结果，同时也需要发起新的解析请求
             return (HostObjectExamingResult){YES, YES};
         }
@@ -525,7 +525,7 @@ typedef struct {
                 [self->_hostObjectInMemoryCache removeHostObjectByCacheKey:host];
             }
 
-            if (self->_isPreResolveAfterNetworkChangedEnabled && hostArray.count > 0) {
+            if (self.atomicPreResolveAfterNetworkChanged && hostArray.count > 0) {
                 HttpdnsLogDebug("Network changed, pre resolve for host-key entries: %@", hostArray);
                 [self preResolveHosts:hostArray queryType:HttpdnsQueryIPTypeAuto];
             }
