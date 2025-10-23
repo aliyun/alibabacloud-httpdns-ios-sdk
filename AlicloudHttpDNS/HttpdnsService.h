@@ -20,7 +20,7 @@
 #import <Foundation/Foundation.h>
 // 头文件包含需使用相对目录，确保通过 CocoaPods 安装后能被模块化编译找到
 #import "Model/HttpdnsRequest.h"
-#import "Model/HttpDnsResult.h"
+#import "Model/HttpdnsResult.h"
 #import "HttpdnsDegradationDelegate.h"
 #import "Log/HttpdnsLoggerProtocol.h"
 
@@ -314,7 +314,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 先查询缓存，缓存中存在有效结果(未过期，或者过期但配置了可以复用过期解析结果)，则直接返回结果，如果缓存未命中，则发起异步解析请求
 /// @param host 需要解析的域名
 /// @param queryIpType 可设置为自动选择，ipv4，ipv6. 设置为自动选择时，会自动根据当前所处网络环境选择解析ipv4或ipv6
-/// @param sdnsParam 如果域名配置了sdns自定义解析，通过此参数携带自定义参数
+/// @param sdnsParams 如果域名配置了sdns自定义解析，通过此参数携带自定义参数
 /// @param cacheKey sdns自定义解析缓存key
 /// @return 解析结果
 - (nullable HttpdnsResult *)resolveHostSyncNonBlocking:(NSString *)host byIpType:(HttpdnsQueryIPType)queryIpType withSdnsParams:(nullable NSDictionary<NSString *, NSString *> *)sdnsParams sdnsCacheKey:(nullable NSString *)cacheKey;
