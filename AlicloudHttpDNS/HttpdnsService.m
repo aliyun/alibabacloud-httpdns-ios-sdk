@@ -423,12 +423,14 @@ static HttpDnsService *httpdnsSharedStubInstance;
         dispatch_async(asyncTaskConcurrentQueue, ^{
             handler(nil);
         });
+        return;
     }
 
     if ([self _shouldDegradeHTTPDNS:request.host]) {
         dispatch_async(asyncTaskConcurrentQueue, ^{
             handler(nil);
         });
+        return;
     }
 
     [self refineResolveRequest:request];
