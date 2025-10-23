@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.authors      = { "zhouzhuo" => "yecan.xyc@alibaba-inc.com" }
 
   # 注意：发布到 Specs 仓库前，请将 git 地址指向正式仓库并按版本打 tag
-  s.source       = { :git => "https://github.com/xuyecan/alibabacloud-httpdns-ios-sdk", :tag => s.version.to_s }
+  s.source       = { :git => "https://github.com/aliyun/alibabacloud-httpdns-ios-sdk", :tag => s.version.to_s }
 
   s.platform     = :ios, "10.0"
   s.requires_arc = true
