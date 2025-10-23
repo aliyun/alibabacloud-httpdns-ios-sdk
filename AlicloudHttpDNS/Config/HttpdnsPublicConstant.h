@@ -9,7 +9,7 @@
 #ifndef PublicConstant_h
 #define PublicConstant_h
 
-static NSString *const HTTPDNS_IOS_SDK_VERSION = @"3.2.1";
+static NSString *const HTTPDNS_IOS_SDK_VERSION = @"3.3.0";
 
 #define ALICLOUD_HTTPDNS_DEFAULT_REGION_KEY @"cn"
 #define ALICLOUD_HTTPDNS_HONGKONG_REGION_KEY @"hk"
