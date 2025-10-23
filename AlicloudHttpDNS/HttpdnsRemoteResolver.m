@@ -643,7 +643,7 @@ static NSURLSession *_resolveHostSession = nil;
         return nil;
     }
     HttpDnsService *httpdnsService = self.service;
-    if (httpdnsService.enableHttpsRequest || httpdnsService.hasAllowedArbitraryLoadsInATS) {
+    if (httpdnsService.enableHttpsRequest || httpdnsService.allowedArbitraryLoadsInATS) {
         NSString *fullUrlStr = httpdnsService.enableHttpsRequest
             ? [NSString stringWithFormat:@"https://%@", urlStr]
             : [NSString stringWithFormat:@"http://%@", urlStr];

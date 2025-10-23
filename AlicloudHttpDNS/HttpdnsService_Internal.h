@@ -28,17 +28,17 @@
 @property (nonatomic, strong) HttpdnsRequestManager *requestManager;
 @property (nonatomic, strong) HttpdnsScheduleCenter *scheduleCenter;
 
-@property (nonatomic, assign) NSTimeInterval authTimeOffset;
+@property (atomic, assign) NSTimeInterval authTimeOffset;
 
 @property (nonatomic, copy) NSDictionary<NSString *, NSNumber *> *IPRankingDataSource;
 
-@property (nonatomic, assign) NSTimeInterval timeoutInterval;
+@property (atomic, assign) NSTimeInterval timeoutInterval;
 
-@property (nonatomic, assign) BOOL enableHttpsRequest;
+@property (atomic, assign) BOOL enableHttpsRequest;
 
-@property (nonatomic, assign) BOOL hasAllowedArbitraryLoadsInATS;
+@property (atomic, assign) BOOL allowedArbitraryLoadsInATS;
 
-@property (nonatomic, assign) BOOL enableDegradeToLocalDNS;
+@property (atomic, assign) BOOL enableDegradeToLocalDNS;
 
 - (NSString *)getIpByHost:(NSString *)host;
 

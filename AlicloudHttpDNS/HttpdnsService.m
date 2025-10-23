@@ -192,7 +192,7 @@ static HttpDnsService *httpdnsSharedStubInstance;
 
 - (void)setInternalAuthTimeBaseBySpecifyingCurrentTime:(NSTimeInterval)currentTime {
     NSTimeInterval localTime = [[NSDate date] timeIntervalSince1970];
-    _authTimeOffset = currentTime - localTime;
+    self.authTimeOffset = currentTime - localTime;
 }
 
 - (void)setCachedIPEnabled:(BOOL)enable {
@@ -222,15 +222,15 @@ static HttpDnsService *httpdnsSharedStubInstance;
 }
 
 - (void)setHTTPSRequestEnabled:(BOOL)enable {
-    _enableHttpsRequest = enable;
+    self.enableHttpsRequest = enable;
 }
 
 - (void)setHasAllowedArbitraryLoadsInATS:(BOOL)hasAllowedArbitraryLoadsInATS {
-    _hasAllowedArbitraryLoadsInATS = hasAllowedArbitraryLoadsInATS;
+    self.allowedArbitraryLoadsInATS = hasAllowedArbitraryLoadsInATS;
 }
 
 - (void)setNetworkingTimeoutInterval:(NSTimeInterval)timeoutInterval {
-    _timeoutInterval = timeoutInterval;
+    self.timeoutInterval = timeoutInterval;
 }
 
 - (void)setRegion:(NSString *)region {
@@ -311,7 +311,7 @@ static HttpDnsService *httpdnsSharedStubInstance;
 }
 
 - (void)setDegradeToLocalDNSEnabled:(BOOL)enable {
-    _enableDegradeToLocalDNS = enable;
+    self.enableDegradeToLocalDNS = enable;
     [_requestManager setDegradeToLocalDNSEnabled:enable];
 }
 
@@ -1197,13 +1197,6 @@ static HttpDnsService *httpdnsSharedStubInstance;
     }
 #pragma clang diagnostic pop
     return NO;
-}
-
-#pragma mark -
-#pragma mark -------------- HttpdnsRequestScheduler_Internal
-
-- (NSTimeInterval)authTimeOffset {
-    return _authTimeOffset;
 }
 
 - (NSString *)getIpByHost:(NSString *)host {
