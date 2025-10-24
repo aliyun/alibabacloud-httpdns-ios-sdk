@@ -30,6 +30,15 @@
 #import "HttpdnsRequestManager.h"
 #import "HttpdnsCFHttpWrapper.h"
 #import "HttpdnsIpStackDetector.h"
+#if __has_include(<Security/SecCertificate.h>)
+#import <Security/SecCertificate.h>
+#endif
+#if __has_include(<Security/SecTrust.h>)
+#import <Security/SecTrust.h>
+#endif
+#if __has_include(<Security/SecPolicy.h>)
+#import <Security/SecPolicy.h>
+#endif
 
 
 static dispatch_queue_t _streamOperateSyncQueue = 0;
@@ -757,14 +766,17 @@ static NSURLSession *_resolveHostSession = nil;
     if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
         NSString *validIP = ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP;
         BOOL isServerTrustValid = NO;
+        [self logServerCertificateSubject:challenge.protectionSpace.serverTrust];
 
         isServerTrustValid = [self evaluateServerTrust:challenge.protectionSpace.serverTrust forDomain:validIP];
+        HttpdnsLogDebug("Evaluate serverTrust by %@ result: %d", validIP, isServerTrustValid);
         if (!isServerTrustValid) {
             NSURL *requestURL = task.currentRequest.URL ?: task.originalRequest.URL;
             NSString *targetDomain = requestURL.host;
 
             if ([HttpdnsUtil isNotEmptyString:targetDomain]) {
                 isServerTrustValid = [self evaluateServerTrust:challenge.protectionSpace.serverTrust forDomain:targetDomain];
+                HttpdnsLogDebug("Evaluate serverTrust by %@ result: %d", targetDomain, isServerTrustValid);
             }
         }
         if (isServerTrustValid) {
@@ -796,6 +808,94 @@ static NSURLSession *_resolveHostSession = nil;
         SecTrustEvaluate(serverTrust, &result);
     }
     return (result == kSecTrustResultUnspecified || result == kSecTrustResultProceed);
+}
+
+- (void)logServerCertificateSubject:(SecTrustRef)serverTrust {
+    if (!serverTrust) {
+        return;
+    }
+    CFIndex certificateCount = SecTrustGetCertificateCount(serverTrust);
+    if (certificateCount <= 0) {
+        HttpdnsLogDebug("Server trust has no certificate");
+        return;
+    }
+    SecCertificateRef certificate = SecTrustGetCertificateAtIndex(serverTrust, 0);
+    if (!certificate) {
+        HttpdnsLogDebug("Failed to obtain server certificate");
+        return;
+    }
+    CFStringRef subjectRef = SecCertificateCopySubjectSummary(certificate);
+    if (subjectRef) {
+        NSString *subject = (__bridge_transfer NSString *)subjectRef;
+        HttpdnsLogDebug("HTTPS certificate subject: %@", subject);
+    } else {
+        HttpdnsLogDebug("Server certificate subject missing");
+    }
+
+#if defined(kSecOIDSubjectAltName)
+    CFArrayRef targetKeys = (__bridge CFArrayRef) @[ (__bridge NSString *)kSecOIDSubjectAltName ];
+    CFDictionaryRef rawAltNameValues = SecCertificateCopyValues(certificate, targetKeys, NULL);
+    NSDictionary *altNameValues = CFBridgingRelease(rawAltNameValues);
+    if (![altNameValues isKindOfClass:[NSDictionary class]]) {
+        HttpdnsLogDebug("Server certificate SAN missing");
+        return;
+    }
+    NSDictionary *altNameDict = altNameValues[(__bridge NSString *)kSecOIDSubjectAltName];
+    if (![altNameDict isKindOfClass:[NSDictionary class]]) {
+        HttpdnsLogDebug("Server certificate SAN entry missing");
+        return;
+    }
+#else
+    HttpdnsLogDebug("SAN key unsupported on current platform");
+    return;
+#endif
+#if defined(kSecPropertyKeyValue)
+    NSArray *sanItems = altNameDict[(__bridge NSString *)kSecPropertyKeyValue];
+#else
+    NSArray *sanItems = nil;
+#endif
+    if (![sanItems isKindOfClass:[NSArray class]] || sanItems.count == 0) {
+        HttpdnsLogDebug("Server certificate SAN empty");
+        return;
+    }
+
+    NSMutableArray<NSString *> *dnsNames = [NSMutableArray array];
+    NSMutableArray<NSString *> *ipAddresses = [NSMutableArray array];
+    for (NSDictionary *item in sanItems) {
+        if (![item isKindOfClass:[NSDictionary class]]) {
+            continue;
+        }
+#if defined(kSecPropertyKeyLabel)
+        NSString *label = item[(__bridge NSString *)kSecPropertyKeyLabel];
+#else
+        NSString *label = nil;
+#endif
+#if defined(kSecPropertyKeyValue)
+        id value = item[(__bridge NSString *)kSecPropertyKeyValue];
+#else
+        id value = nil;
+#endif
+        if (![label isKindOfClass:[NSString class]] || !value) {
+            continue;
+        }
+        // 遍历SAN条目，按照标签区分域名与IP
+        if ([label rangeOfString:@"DNS" options:NSCaseInsensitiveSearch].location != NSNotFound) {
+            if ([value isKindOfClass:[NSString class]]) {
+                [dnsNames addObject:value];
+            }
+        } else if ([label rangeOfString:@"IP" options:NSCaseInsensitiveSearch].location != NSNotFound) {
+            if ([value isKindOfClass:[NSString class]]) {
+                [ipAddresses addObject:value];
+            }
+        }
+    }
+
+    if (dnsNames.count > 0) {
+        HttpdnsLogDebug("HTTPS certificate SAN DNS: %@", [dnsNames componentsJoinedByString:@","]);
+    }
+    if (ipAddresses.count > 0) {
+        HttpdnsLogDebug("HTTPS certificate SAN IP: %@", [ipAddresses componentsJoinedByString:@","]);
+    }
 }
 
 
