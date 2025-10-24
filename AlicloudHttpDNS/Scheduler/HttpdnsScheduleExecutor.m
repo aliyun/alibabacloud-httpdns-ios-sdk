@@ -154,9 +154,20 @@ static NSURLSession *_scheduleCenterSession = nil;
     }
     NSURLSessionAuthChallengeDisposition disposition = NSURLSessionAuthChallengePerformDefaultHandling;
     NSURLCredential *credential = nil;
-    NSString *host = ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP;
     if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
-        if ([self evaluateServerTrust:challenge.protectionSpace.serverTrust forDomain:host]) {
+        NSString *validIP = ALICLOUD_HTTPDNS_VALID_SERVER_CERTIFICATE_IP;
+        BOOL isServerTrustValid = NO;
+
+        isServerTrustValid = [self evaluateServerTrust:challenge.protectionSpace.serverTrust forDomain:validIP];
+        if (!isServerTrustValid) {
+            NSURL *requestURL = task.currentRequest.URL ?: task.originalRequest.URL;
+            NSString *targetDomain = requestURL.host;
+
+            if ([HttpdnsUtil isNotEmptyString:targetDomain]) {
+                isServerTrustValid = [self evaluateServerTrust:challenge.protectionSpace.serverTrust forDomain:targetDomain];
+            }
+        }
+        if (isServerTrustValid) {
             disposition = NSURLSessionAuthChallengeUseCredential;
             credential = [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust];
         } else {
