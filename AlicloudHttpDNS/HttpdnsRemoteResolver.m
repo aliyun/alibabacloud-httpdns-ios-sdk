@@ -369,7 +369,6 @@ static NSURLSession *_resolveHostSession = nil;
                                            signature:signature
                                              request:request];
 
-    HttpdnsLogDebug("Constructed v2 API URL: %@", finalUrl);
     return finalUrl;
 }
 

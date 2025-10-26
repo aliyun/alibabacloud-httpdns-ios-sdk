@@ -13,20 +13,37 @@
 #import "HttpdnsInternalConstant.h"
 #import <CFNetwork/CFNetwork.h>
 
-typedef struct {
-    NSURL *url;
-    CFReadStreamRef readStream;
-    CFRunLoopTimerRef timer;
-    BOOL hasTimedOut;
-    NSMutableData *responseData;
-    void (^completionHandler)(NSData *data, NSError *error);
-} RequestContext;
+@interface HttpdnsRequestContext : NSObject
+@property (nonatomic, strong) NSURL *url;
+@property (nonatomic, assign) CFReadStreamRef readStream;
+@property (nonatomic, assign) CFRunLoopTimerRef timer;
+@property (nonatomic, strong) NSMutableData *responseData;
+@property (nonatomic, copy) void (^completionHandler)(NSData *data, NSError *error);
+@property (nonatomic, assign) BOOL hasTimedOut;
+@end
+
+@implementation HttpdnsRequestContext
+
+- (void)dealloc {
+    if (_readStream) {
+        CFReadStreamClose(_readStream);
+        CFRelease(_readStream);
+        _readStream = NULL;
+    }
+    if (_timer) {
+        CFRunLoopTimerInvalidate(_timer);
+        CFRelease(_timer);
+        _timer = NULL;
+    }
+}
+
+@end
 
 @interface HttpdnsCFHttpWrapper ()
 
-- (void)cancelRequest:(RequestContext *)context;
-- (void)handleTimeout:(RequestContext *)context;
-- (void)handleResponseForStream:(CFReadStreamRef)stream eventType:(CFStreamEventType)eventType context:(RequestContext *)context;
+- (void)cancelRequest:(HttpdnsRequestContext *)context;
+- (void)handleTimeout:(HttpdnsRequestContext *)context;
+- (void)handleResponseForStream:(CFReadStreamRef)stream eventType:(CFStreamEventType)eventType context:(HttpdnsRequestContext *)context;
 
 @end
 
@@ -46,24 +63,23 @@ typedef struct {
     CFReadStreamRef readStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, request);
 #pragma clang diagnostic pop
 
-    RequestContext *context = malloc(sizeof(RequestContext));
-    context->url = url;
-    context->readStream = readStream;
-    context->hasTimedOut = NO;
-    context->responseData = [NSMutableData data];
-    context->completionHandler = [completion copy];
+    HttpdnsRequestContext *context = [[HttpdnsRequestContext alloc] init];
+    context.url = url;
+    context.readStream = readStream;
+    context.hasTimedOut = NO;
+    context.responseData = [NSMutableData data];
+    context.completionHandler = [completion copy];
 
-    CFStreamClientContext clientContext = {0, context, NULL, NULL, NULL};
+    CFStreamClientContext clientContext = {0, (__bridge void *)context, NULL, NULL, NULL};
     CFReadStreamSetClient(readStream, kCFStreamEventHasBytesAvailable | kCFStreamEventEndEncountered | kCFStreamEventErrorOccurred,
                           (CFReadStreamClientCallBack)&HttpdnsHttpAgent_handleResponse, &clientContext);
 
     CFReadStreamScheduleWithRunLoop(readStream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
 
-    // Create and schedule the timeout timer
-    CFRunLoopTimerContext timerContext = {0, context, NULL, NULL, NULL};
+    CFRunLoopTimerContext timerContext = {0, (__bridge void *)context, NULL, NULL, NULL};
     double timeoutInterval = [HttpDnsService sharedInstance].timeoutInterval;
-    context->timer = CFRunLoopTimerCreate(kCFAllocatorDefault, CFAbsoluteTimeGetCurrent() + timeoutInterval, 0, 0, 0, &HttpdnsHttpAgent_handleTimeout, &timerContext);
-    CFRunLoopAddTimer(CFRunLoopGetCurrent(), context->timer, kCFRunLoopCommonModes);
+    context.timer = CFRunLoopTimerCreate(kCFAllocatorDefault, CFAbsoluteTimeGetCurrent() + timeoutInterval, 0, 0, 0, &HttpdnsHttpAgent_handleTimeout, &timerContext);
+    CFRunLoopAddTimer(CFRunLoopGetCurrent(), context.timer, kCFRunLoopCommonModes);
 
     if (CFReadStreamOpen(readStream)) {
         CFRunLoopRun();
@@ -80,36 +96,36 @@ typedef struct {
 
 #pragma mark - Private Methods
 
-- (void)cancelRequest:(RequestContext *)context {
-    if (context->readStream) {
-        CFReadStreamClose(context->readStream);
-        CFReadStreamUnscheduleFromRunLoop(context->readStream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
-        CFRelease(context->readStream);
-        context->readStream = NULL;
+- (void)cancelRequest:(HttpdnsRequestContext *)context {
+    if (context.readStream) {
+        CFReadStreamSetClient(context.readStream, kCFStreamEventNone, NULL, NULL);
+        CFReadStreamClose(context.readStream);
+        CFReadStreamUnscheduleFromRunLoop(context.readStream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
+        CFRelease(context.readStream);
+        context.readStream = NULL;
     }
 
-    if (context->timer) {
-        CFRunLoopTimerInvalidate(context->timer);
-        CFRelease(context->timer);
-        context->timer = NULL;
+    if (context.timer) {
+        CFRunLoopTimerInvalidate(context.timer);
+        CFRelease(context.timer);
+        context.timer = NULL;
     }
 
-    context->url = nil;
-    context->responseData = nil;
-
-    free(context);
+    context.url = nil;
+    context.responseData = nil;
+    context.completionHandler = nil;
 }
 
-- (void)handleTimeout:(RequestContext *)context {
-    if (!context->hasTimedOut) {
-        context->hasTimedOut = YES;
-        HttpdnsLogDebug("Request timed out for request: %@", [context->url absoluteString]);
+- (void)handleTimeout:(HttpdnsRequestContext *)context {
+    if (!context.hasTimedOut) {
+        context.hasTimedOut = YES;
+        HttpdnsLogDebug("Request timed out for request: %@", [context.url absoluteString]);
 
-        if (context->completionHandler) {
-            context->completionHandler(nil, [NSError errorWithDomain:ALICLOUD_HTTPDNS_ERROR_DOMAIN
-                                                                code:ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE
-                                                            userInfo:@{NSLocalizedDescriptionKey: @"Request Timeout"}]);
-            context->completionHandler = nil;
+        if (context.completionHandler) {
+            context.completionHandler(nil, [NSError errorWithDomain:ALICLOUD_HTTPDNS_ERROR_DOMAIN
+                                                               code:ALICLOUD_HTTPDNS_HTTP_TIMEOUT_ERROR_CODE
+                                                           userInfo:@{NSLocalizedDescriptionKey: @"Request Timeout"}]);
+            context.completionHandler = nil;
         }
 
         [self cancelRequest:context];
@@ -119,8 +135,8 @@ typedef struct {
 
 - (void)handleResponseForStream:(CFReadStreamRef)stream
                       eventType:(CFStreamEventType)eventType
-                        context:(RequestContext *)context {
-    if (context->hasTimedOut) {
+                        context:(HttpdnsRequestContext *)context {
+    if (context.hasTimedOut) {
         return;
     }
 
@@ -137,15 +153,15 @@ typedef struct {
                     UInt8 buffer[1024];
                     CFIndex bytesRead = CFReadStreamRead(stream, buffer, sizeof(buffer));
                     if (bytesRead > 0) {
-                        [context->responseData appendBytes:buffer length:bytesRead];
+                        [context.responseData appendBytes:buffer length:bytesRead];
                     }
                 } else {
                     NSError *error = [NSError errorWithDomain:ALICLOUD_HTTPDNS_ERROR_DOMAIN
                                                          code:statusCode
                                                      userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"HTTPStatusError: %ld", (long)statusCode]}];
-                    if (context->completionHandler) {
-                        context->completionHandler(nil, error);
-                        context->completionHandler = nil;
+                    if (context.completionHandler) {
+                        context.completionHandler(nil, error);
+                        context.completionHandler = nil;
                     }
                     [self cancelRequest:context];
                     CFRunLoopStop(CFRunLoopGetCurrent());
@@ -156,10 +172,10 @@ typedef struct {
             break;
         }
         case kCFStreamEventEndEncountered: {
-            HttpdnsLogDebug("Request completed successfully for url: %@", [context->url absoluteString]);
-            if (context->completionHandler) {
-                context->completionHandler([context->responseData copy], nil);
-                context->completionHandler = nil;
+            HttpdnsLogDebug("Request completed successfully for url: %@", [context.url absoluteString]);
+            if (context.completionHandler) {
+                context.completionHandler([context.responseData copy], nil);
+                context.completionHandler = nil;
             }
             [self cancelRequest:context];
             CFRunLoopStop(CFRunLoopGetCurrent());
@@ -167,11 +183,11 @@ typedef struct {
         }
         case kCFStreamEventErrorOccurred: {
             CFErrorRef error = CFReadStreamCopyError(stream);
-            HttpdnsLogDebug("Request error occurred: %@, url: %@", error, [context->url absoluteString]);
-            if (context->completionHandler) {
+            HttpdnsLogDebug("Request error occurred: %@, url: %@", error, [context.url absoluteString]);
+            if (context.completionHandler) {
                 NSError *nsError = (__bridge_transfer NSError *)error;
-                context->completionHandler(nil, nsError);
-                context->completionHandler = nil;
+                context.completionHandler(nil, nsError);
+                context.completionHandler = nil;
             }
             [self cancelRequest:context];
             CFRunLoopStop(CFRunLoopGetCurrent());
@@ -185,13 +201,13 @@ typedef struct {
 #pragma mark - C Callbacks
 
 static void HttpdnsHttpAgent_handleTimeout(CFRunLoopTimerRef timer, void *info) {
-    RequestContext *context = (RequestContext *)info;
+    HttpdnsRequestContext *context = (__bridge HttpdnsRequestContext *)info;
     HttpdnsCFHttpWrapper *agent = [[HttpdnsCFHttpWrapper alloc] init];
     [agent handleTimeout:context];
 }
 
 static void HttpdnsHttpAgent_handleResponse(CFReadStreamRef stream, CFStreamEventType eventType, void *clientCallBackInfo) {
-    RequestContext *context = (RequestContext *)clientCallBackInfo;
+    HttpdnsRequestContext *context = (__bridge HttpdnsRequestContext *)clientCallBackInfo;
     HttpdnsCFHttpWrapper *agent = [[HttpdnsCFHttpWrapper alloc] init];
     [agent handleResponseForStream:stream eventType:eventType context:context];
 }

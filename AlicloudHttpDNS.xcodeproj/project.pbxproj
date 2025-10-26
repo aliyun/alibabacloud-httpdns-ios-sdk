@@ -100,6 +100,7 @@
 		94A014712BF38F410018B096 /* HttpdnsService.m in Sources */ = {isa = PBXBuildFile; fileRef = 94A0146D2BF38F410018B096 /* HttpdnsService.m */; };
 		94A014732BF38F410018B096 /* HttpdnsService.h in Headers */ = {isa = PBXBuildFile; fileRef = 94A0146E2BF38F410018B096 /* HttpdnsService.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		94A014742BF38F410018B096 /* HttpdnsService_Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 94A0146F2BF38F410018B096 /* HttpdnsService_Internal.h */; };
+		94A96AEF2EAE751C005538BD /* AlicloudHttpDNS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB1E4EE32A8CA91800F01EAC /* AlicloudHttpDNS.framework */; };
 		94AE92412CA84F1000CB95F2 /* HttpdnsHostObjectInMemoryCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 94AE923F2CA84F1000CB95F2 /* HttpdnsHostObjectInMemoryCache.h */; };
 		94AE92422CA84F1000CB95F2 /* HttpdnsHostObjectInMemoryCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 94AE92402CA84F1000CB95F2 /* HttpdnsHostObjectInMemoryCache.m */; };
 		94AE92432CA84F1000CB95F2 /* HttpdnsHostObjectInMemoryCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 94AE923F2CA84F1000CB95F2 /* HttpdnsHostObjectInMemoryCache.h */; };
@@ -266,6 +267,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94A96AEF2EAE751C005538BD /* AlicloudHttpDNS.framework in Frameworks */,
 				4AF4AB9921143A3800D712DF /* libz.tbd in Frameworks */,
 				4AF4AB96211439F900D712DF /* libresolv.9.tbd in Frameworks */,
 			);
