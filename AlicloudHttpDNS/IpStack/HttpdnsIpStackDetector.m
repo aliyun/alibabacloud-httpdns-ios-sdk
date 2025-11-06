@@ -105,6 +105,7 @@ static HttpdnsIPStackType detectIpStack(void) {
 @implementation HttpdnsIpStackDetector {
     HttpdnsIPStackType _lastDetectedIpStack;
     dispatch_queue_t _detectSerialQueue; // 用于控制检测操作的串行队列
+    dispatch_queue_t _updateSerialQueue;
     BOOL _isDetecting;                   // 标记是否正在进行检测
     NSTimeInterval _lastDetectionTime;   // 上次检测的时间戳
 }
@@ -126,19 +127,15 @@ static HttpdnsIPStackType detectIpStack(void) {
         _lastDetectionTime = 0;
         // 创建串行队列用于控制IP栈检测的并发
         _detectSerialQueue = dispatch_queue_create("com.aliyun.httpdns.ipstack.detect", DISPATCH_QUEUE_SERIAL);
+        _updateSerialQueue = dispatch_queue_create("com.aliyun.httpdns.ipstack.update", DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
 
 - (HttpdnsIPStackType)currentIpStack {
-    // 如果当前已经在主队列，直接返回值
-    if (NSThread.isMainThread) {
-        return _lastDetectedIpStack;
-    }
-
     // 如果不在主队列，同步获取主队列中的值以确保线程安全
     __block HttpdnsIPStackType result;
-    dispatch_sync(dispatch_get_main_queue(), ^{
+    dispatch_sync(_updateSerialQueue, ^{
         result = self->_lastDetectedIpStack;
     });
     return result;
@@ -174,7 +171,7 @@ static HttpdnsIPStackType detectIpStack(void) {
         HttpdnsIPStackType detectedStack = detectIpStack();
 
         // 在主队列中更新结果，确保线程安全
-        dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_async(self->_updateSerialQueue, ^{
             self->_lastDetectedIpStack = detectedStack;
 
             // 重置检测状态（已经在串行队列的异步块中，完成后再次异步到串行队列）
