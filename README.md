@@ -15,7 +15,7 @@
 ```ruby
 platform :ios, '12.0'
 target 'YourApp' do
-  pod 'AlicloudHTTPDNS', '~> 3.4.1'
+  pod 'AlicloudHTTPDNS', '~> 3.4.2'
 end
 ```
 
