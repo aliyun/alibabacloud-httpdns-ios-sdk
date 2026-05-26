@@ -249,7 +249,10 @@ typedef struct {
             dispatch_semaphore_signal(semaphore);
         }
     });
-    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(request.resolveTimeoutInSecond * NSEC_PER_SEC)));
+    long waitResult = dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(request.resolveTimeoutInSecond * NSEC_PER_SEC)));
+    if (waitResult != 0) {
+        return nil;
+    }
     return result;
 }
 

@@ -389,7 +389,6 @@
         *remoteConnectionClosed = exchange.remoteClosed;
     }
 
-    self.lastUsedDate = [NSDate date];
     return [exchange.buffer copy];
 }
 
