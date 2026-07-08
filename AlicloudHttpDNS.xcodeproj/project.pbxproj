@@ -146,6 +146,7 @@
 		9AF9A5FE1EC4CFCF0018063B /* HttpdnsHostRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AA0FC6F1EB9AFB700E242DD /* HttpdnsHostRecord.m */; };
 		9AF9A60E1EC4D2EA0018063B /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9AF9A60D1EC4D2EA0018063B /* libsqlite3.tbd */; };
 		B5EA18ABF0EB32054A9C07FD /* Pods_AlicloudHttpDNSTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 15FD19FB9D27F0491A62B730 /* Pods_AlicloudHttpDNSTests.framework */; };
+		B71A1B4466A1F4DB7F1D6C8C /* HttpdnsLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9281656BB6A876050BCE5FB5 /* HttpdnsLogTests.m */; };
 		CB1E4EE82A8CBD1B00F01EAC /* HttpDnsLocker.m in Sources */ = {isa = PBXBuildFile; fileRef = CB1E4EE72A8CBD1B00F01EAC /* HttpDnsLocker.m */; };
 		D1F0A12345ABCDEFFEDCBA03 /* DemoLogViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D1F0A12345ABCDEFFEDCBA02 /* DemoLogViewController.m */; };
 		E7B6D6A9251E4820B3C7C9A7 /* DemoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E7B6D6A1251E4820B3C7C9A2 /* DemoViewController.m */; };
@@ -180,6 +181,7 @@
 		736ADE601256D763536B1414 /* Pods-AlicloudHttpDNSTestDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AlicloudHttpDNSTestDemo.release.xcconfig"; path = "Target Support Files/Pods-AlicloudHttpDNSTestDemo/Pods-AlicloudHttpDNSTestDemo.release.xcconfig"; sourceTree = "<group>"; };
 		7EB5412B2BD5FBFB001DFF47 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		880B3002B636BE24B549C85C /* Pods-AlicloudHttpDNSTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AlicloudHttpDNSTests.debug.xcconfig"; path = "Target Support Files/Pods-AlicloudHttpDNSTests/Pods-AlicloudHttpDNSTests.debug.xcconfig"; sourceTree = "<group>"; };
+		9281656BB6A876050BCE5FB5 /* HttpdnsLogTests.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = HttpdnsLogTests.m; sourceTree = "<group>"; };
 		94008EE42E9222D800C86EFB /* DemoConfig.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = DemoConfig.plist; sourceTree = "<group>"; };
 		940585122D85AC9C001FEB15 /* HttpdnsDB.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpdnsDB.h; sourceTree = "<group>"; };
 		940585132D85AC9C001FEB15 /* HttpdnsDB.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpdnsDB.m; sourceTree = "<group>"; };
@@ -490,6 +492,7 @@
 				9406FDA22C198E310003CB6A /* CacheKeyFunctionTest.m */,
 				94C3F8AF2C05D4FD00A4A9B8 /* EnableReuseExpiredIpTest.m */,
 				94C3F8B12C06FFA800A4A9B8 /* SdnsScenarioTest.m */,
+				9281656BB6A876050BCE5FB5 /* HttpdnsLogTests.m */,
 			);
 			path = HighLevelTest;
 			sourceTree = "<group>";
@@ -960,6 +963,7 @@
 				945BA3F62C2039D70098FC52 /* CustomTTLTest.m in Sources */,
 				9A59148B1EA0C1B600A7ED28 /* TestBase.m in Sources */,
 				9A5914901EA0C26200A7ED28 /* XCTestCase+AsyncTesting.m in Sources */,
+				B71A1B4466A1F4DB7F1D6C8C /* HttpdnsLogTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
