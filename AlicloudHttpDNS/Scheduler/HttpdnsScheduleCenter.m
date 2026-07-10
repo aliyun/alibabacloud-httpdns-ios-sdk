@@ -129,7 +129,9 @@ static int const MAX_UPDATE_RETRY_COUNT = 2;
         id ts = [scheduleCenterResult objectForKey:kLastUpdateUnixTimestampKey];
         if ([ts respondsToSelector:@selector(doubleValue)]) {
             NSDate *lastUpdateDate = [NSDate dateWithTimeIntervalSince1970:[ts doubleValue]];
-            self->_lastScheduleCenterConnectDate = lastUpdateDate;
+            dispatch_sync(self->_scheduleConfigLocalOperationQueue, ^{
+                self->_lastScheduleCenterConnectDate = lastUpdateDate;
+            });
         }
         [self updateRegionConfig:scheduleCenterResult];
     });
